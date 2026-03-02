@@ -1,0 +1,43 @@
+# Environment & secrets
+.env
+.env.*
+.env.py
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+errors.log
+pipeline.log
+concepts_cache.json
+
+# Node
+node_modules/
+dist/
+.vercel/
+
+# Claude Code project memory
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Large binary files — keep in local folder, not in git
+Brief/
+Meeting notes/
+*.mp4
+*.pptx
+*.docx
+*.pdf
+
+# Vercel local
+.vercel
+
+# Recovery keys
+proton-recovery-kit.pdf
+
+# Notion setup artifacts (one-time scripts, keep for reference but ignore logs)
+schema_update_log.txt
+notion_ids.txt
