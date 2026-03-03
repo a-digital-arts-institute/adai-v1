@@ -1,25 +1,31 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 
+// ── Constants ────────────────────────────────────────────────────
 const STAGES = ["idle", "uploading", "transcribing", "summarising", "posting", "done", "error"];
+const NOTION_DB_SIGNALS = "e380fc07d10f4242baefffbc58ed0e95";
 
 const stageLabel = {
   idle: "",
-  uploading: "Uploading to AssemblyAI\u2026",
-  transcribing: "Transcribing + detecting speakers\u2026",
-  summarising: "Generating summary & tags via Claude\u2026",
-  posting: "Posting to Notion Signal Inbox\u2026",
+  uploading: "Uploading to AssemblyAI…",
+  transcribing: "Transcribing + detecting speakers…",
+  summarising: "Generating summary & tags via Claude…",
+  posting: "Posting to Notion Signal Inbox…",
   done: "Done",
   error: "Error",
 };
 
-// ── env keys (pre-filled from .env via Vite) ──────────────────────
-const ENV = {
-  assemblyai: import.meta.env.VITE_ASSEMBLYAI_KEY ?? "",
-  anthropic: import.meta.env.VITE_ANTHROPIC_API_KEY ?? "",
-  notion: import.meta.env.VITE_NOTION_TOKEN ?? "",
-  notionDb: import.meta.env.VITE_NOTION_DB_SIGNALS ?? "",
-};
+// ── localStorage helpers ─────────────────────────────────────────
+const STORAGE_KEY = "adai_transcriber_keys";
+function loadKeys() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+  } catch { return {}; }
+}
+function saveKeys(keys) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(keys));
+}
 
+// ── Utilities ────────────────────────────────────────────────────
 function LogLine({ text, dim }) {
   return (
     <div style={{ color: dim ? "#A09890" : "#6B9E78", fontFamily: "monospace", fontSize: 13, lineHeight: 1.7 }}>
@@ -32,7 +38,7 @@ async function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 // ── 1. Upload to AssemblyAI ──────────────────────────────────────
 async function uploadToAssemblyAI(file, apiKey, onLog) {
-  onLog("Uploading file\u2026");
+  onLog("Uploading file…");
   const res = await fetch("https://api.assemblyai.com/v2/upload", {
     method: "POST",
     headers: { authorization: apiKey, "content-type": "application/octet-stream" },
@@ -40,13 +46,13 @@ async function uploadToAssemblyAI(file, apiKey, onLog) {
   });
   if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
   const { upload_url } = await res.json();
-  onLog(`Uploaded \u2192 ${upload_url.slice(0, 48)}\u2026`);
+  onLog(`Uploaded → ${upload_url.slice(0, 48)}…`);
   return upload_url;
 }
 
 // ── 2. Transcribe with speaker diarization ───────────────────────
 async function transcribeWithAssemblyAI(uploadUrl, apiKey, onLog) {
-  onLog("Submitting transcription job (speaker diarization on)\u2026");
+  onLog("Submitting transcription job (speaker diarization on)…");
   const res = await fetch("https://api.assemblyai.com/v2/transcript", {
     method: "POST",
     headers: { authorization: apiKey, "content-type": "application/json" },
@@ -54,11 +60,11 @@ async function transcribeWithAssemblyAI(uploadUrl, apiKey, onLog) {
   });
   if (!res.ok) {
     const errBody = await res.text();
-    onLog(`AssemblyAI response: ${errBody.slice(0, 300)}`);
-    throw new Error(`Transcription submit failed: ${res.status} — ${errBody.slice(0, 200)}`);
+    onLog(`AssemblyAI: ${errBody.slice(0, 300)}`);
+    throw new Error(`Transcription submit failed: ${res.status}`);
   }
   const { id } = await res.json();
-  onLog(`Job ID: ${id} \u2014 polling\u2026`);
+  onLog(`Job ID: ${id} — polling…`);
 
   let attempts = 0;
   while (attempts < 120) {
@@ -73,12 +79,12 @@ async function transcribeWithAssemblyAI(uploadUrl, apiKey, onLog) {
       return data;
     }
     if (data.status === "error") throw new Error(`AssemblyAI error: ${data.error}`);
-    if (attempts % 5 === 0) onLog(`Still transcribing\u2026 (${attempts * 3}s elapsed)`);
+    if (attempts % 5 === 0) onLog(`Still transcribing… (${attempts * 3}s elapsed)`);
   }
   throw new Error("Transcription timed out after 6 minutes");
 }
 
-// ── format utterances ────────────────────────────────────────────
+// ── Format utterances ────────────────────────────────────────────
 function formatUtterances(utterances) {
   if (!utterances?.length) return "";
   return utterances.map(u => {
@@ -89,10 +95,10 @@ function formatUtterances(utterances) {
   }).join("\n");
 }
 
-// ── 3. Summarise with Claude (via Vite proxy) ────────────────────
+// ── 3. Summarise with Claude (direct browser access) ─────────────
 async function summariseWithClaude(transcript, filename, anthropicKey, onLog) {
-  onLog("Sending to Claude for summary + tags\u2026");
-  const res = await fetch("/api/anthropic/v1/messages", {
+  onLog("Sending to Claude for summary + tags…");
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
       "content-type": "application/json",
@@ -105,7 +111,7 @@ async function summariseWithClaude(transcript, filename, anthropicKey, onLog) {
       max_tokens: 1200,
       messages: [{
         role: "user",
-        content: `You are an intelligence analyst for A(DAI) \u2014 A Digital Arts Institute. Analyze this transcript and return ONLY a JSON object (no markdown, no preamble) with these fields:
+        content: `You are an intelligence analyst for A(DAI) — A Digital Arts Institute. Analyze this transcript and return ONLY a JSON object (no markdown, no preamble) with these fields:
 - "summary": 2-3 paragraph synthesis, written as a field signal brief. What matters, what patterns, what implications for digital arts/culture/tech.
 - "tags": array of 4-8 lowercase tags (topics, themes, people, orgs, technologies)
 - "signal_type": one of ["conversation", "lecture", "interview", "meeting", "field_recording", "panel", "other"]
@@ -129,15 +135,14 @@ ${transcript.slice(0, 8000)}`
   return parsed;
 }
 
-// ── 4. Post to Notion Signal Inbox ───────────────────────────────
-async function postToNotion(notionKey, dbId, filename, transcriptFormatted, analysis, submittedBy, onLog) {
-  onLog("Creating Notion page in Signal Inbox\u2026");
+// ── 4. Post to Notion Signal Inbox (via serverless proxy) ────────
+async function postToNotion(notionKey, filename, transcriptFormatted, analysis, submittedBy, onLog) {
+  onLog("Creating Notion page in Signal Inbox…");
 
   const today = new Date().toISOString().split("T")[0];
   const tagProps = (analysis.tags || []).map(t => ({ name: t }));
   const keyQuotesText = (analysis.key_quotes || []).join("\n\n---\n\n");
 
-  // ── Page body blocks ───────────────────────────────────────────
   const children = [
     { object: "block", type: "heading_2", heading_2: { rich_text: [{ type: "text", text: { content: "Summary" } }] } },
     ...(analysis.summary || "").split("\n\n").filter(Boolean).map(p => ({
@@ -152,7 +157,6 @@ async function postToNotion(notionKey, dbId, filename, transcriptFormatted, anal
     { object: "block", type: "heading_2", heading_2: { rich_text: [{ type: "text", text: { content: "Full Transcript" } }] } },
   ];
 
-  // Notion rich_text blocks max 2000 chars — chunk transcript
   for (let i = 0; i < transcriptFormatted.length; i += 1900) {
     children.push({
       object: "block", type: "code",
@@ -160,9 +164,8 @@ async function postToNotion(notionKey, dbId, filename, transcriptFormatted, anal
     });
   }
 
-  // ── Notion page properties (matches Signal Inbox schema) ───────
   const body = {
-    parent: { database_id: dbId },
+    parent: { database_id: NOTION_DB_SIGNALS },
     properties: {
       Name: { title: [{ text: { content: filename } }] },
       source_type: { select: { name: "transcript" } },
@@ -175,11 +178,13 @@ async function postToNotion(notionKey, dbId, filename, transcriptFormatted, anal
       signal_type: { select: { name: analysis.signal_type || "other" } },
       key_quotes: { rich_text: [{ text: { content: keyQuotesText.slice(0, 2000) } }] },
       tags: { multi_select: tagProps },
+      intelligence_tier: { select: { name: "primary" } },
+      signal_confidence: { select: { name: "verified" } },
     },
     children,
   };
 
-  const res = await fetch("/api/notion/v1/pages", {
+  const res = await fetch("/api/notion", {
     method: "POST",
     headers: {
       authorization: `Bearer ${notionKey}`,
@@ -194,9 +199,10 @@ async function postToNotion(notionKey, dbId, filename, transcriptFormatted, anal
     throw new Error(`Notion error ${res.status}: ${err.slice(0, 300)}`);
   }
   const page = await res.json();
-  onLog(`Page created \u2192 ${page.url}`);
+  onLog(`Page created → ${page.url}`);
   return page.url;
 }
+
 
 // ══════════════════════════════════════════════════════════════════
 // Component
@@ -209,35 +215,41 @@ export default function Transcriber() {
   const [dragOver, setDragOver] = useState(false);
   const [submittedBy, setSubmittedBy] = useState("Iri");
   const [file, setFile] = useState(null);
+  const [showSetup, setShowSetup] = useState(false);
   const fileRef = useRef();
+
+  const [keys, setKeys] = useState(() => loadKeys());
+  const hasKeys = keys.assemblyai && keys.anthropic && keys.notion;
+
+  useEffect(() => { if (!hasKeys) setShowSetup(true); }, []);
+
+  function updateKey(field, value) {
+    const next = { ...keys, [field]: value.trim() };
+    setKeys(next);
+    saveKeys(next);
+  }
 
   const log = useCallback((msg) => setLogs(l => [...l, msg]), []);
 
   const run = useCallback(async (f) => {
-    if (!ENV.assemblyai || !ENV.notion || !ENV.notionDb || !ENV.anthropic) {
-      alert("Missing API keys. Check prototype/.env has all VITE_ vars set.");
-      return;
-    }
+    if (!hasKeys) { setShowSetup(true); return; }
     setLogs([]);
     setResult(null);
     setFile(f);
 
     try {
       setStage("uploading");
-      const uploadUrl = await uploadToAssemblyAI(f, ENV.assemblyai, log);
+      const uploadUrl = await uploadToAssemblyAI(f, keys.assemblyai, log);
 
       setStage("transcribing");
-      const transcript = await transcribeWithAssemblyAI(uploadUrl, ENV.assemblyai, log);
+      const transcript = await transcribeWithAssemblyAI(uploadUrl, keys.assemblyai, log);
       const formatted = formatUtterances(transcript.utterances) || transcript.text;
 
       setStage("summarising");
-      const analysis = await summariseWithClaude(formatted, f.name, ENV.anthropic, log);
+      const analysis = await summariseWithClaude(formatted, f.name, keys.anthropic, log);
 
       setStage("posting");
-      const pageUrl = await postToNotion(
-        ENV.notion, ENV.notionDb.replace(/-/g, ""),
-        f.name, formatted, analysis, submittedBy, log
-      );
+      const pageUrl = await postToNotion(keys.notion, f.name, formatted, analysis, submittedBy, log);
 
       setResult({ pageUrl, analysis });
       setStage("done");
@@ -245,7 +257,7 @@ export default function Transcriber() {
       log(`ERROR: ${e.message}`);
       setStage("error");
     }
-  }, [log, submittedBy]);
+  }, [log, submittedBy, keys, hasKeys]);
 
   const handleDrop = useCallback((e) => {
     e.preventDefault();
@@ -274,7 +286,9 @@ export default function Transcriber() {
     }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500&family=Space+Grotesk:wght@300;600&display=swap');
-        input, select { background: #EEEAE3; border: 1px solid #C8BFB0; color: #2A2420; padding: 8px 12px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; width: 100%; box-sizing: border-box; outline: none; border-radius: 2px; }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: #FAF7F2; }
+        input, select { background: #EEEAE3; border: 1px solid #C8BFB0; color: #2A2420; padding: 8px 12px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; width: 100%; outline: none; border-radius: 2px; }
         input:focus, select:focus { border-color: #6B9E78; }
         input::placeholder { color: #A09890; }
         select option { background: #F5F1EB; color: #2A2420; }
@@ -285,6 +299,9 @@ export default function Transcriber() {
         @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:0.4 } }
         .pulsing { animation: pulse 1.2s ease-in-out infinite; }
         a { color: #6B9E78; text-decoration: none; } a:hover { text-decoration: underline; }
+        .btn { background: transparent; border: 1px solid #C8BFB0; color: #9E9490; padding: 8px 20px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; cursor: pointer; border-radius: 2px; letter-spacing: 1px; transition: all 0.2s; }
+        .btn:hover { border-color: #6B9E78; color: #6B9E78; }
+        .btn-primary { border-color: #6B9E78; color: #6B9E78; }
       `}</style>
 
       {/* Header */}
@@ -298,6 +315,41 @@ export default function Transcriber() {
         <div style={{ fontSize: 12, color: "#9E9490", marginTop: 8 }}>Audio/Video &rarr; AssemblyAI &rarr; Claude &rarr; Notion Signal Inbox</div>
       </div>
       <div style={{ width: "100%", maxWidth: 560, height: 1, background: "linear-gradient(90deg, transparent, #6B9E78 30%, #6B9E78 70%, transparent)", marginBottom: 32, opacity: 0.35 }} />
+
+      {/* Setup toggle */}
+      <div style={{ width: "100%", maxWidth: 560, marginBottom: 16, textAlign: "right" }}>
+        <button className={`btn${hasKeys ? "" : " btn-primary"}`} onClick={() => setShowSetup(!showSetup)}>
+          {showSetup ? "HIDE SETUP" : "SETUP"}
+        </button>
+      </div>
+
+      {/* Key entry panel */}
+      {showSetup && (
+        <div style={{
+          width: "100%", maxWidth: 560, border: "1px solid #D4CCBC", borderRadius: 2,
+          padding: 24, marginBottom: 24, background: "#EDE9E2",
+        }}>
+          <div style={{ fontSize: 10, letterSpacing: 3, color: "#9E9490", marginBottom: 16, textTransform: "uppercase" }}>API Keys — saved in your browser</div>
+          {[
+            { key: "assemblyai", label: "AssemblyAI Key", placeholder: "72973ae8…" },
+            { key: "anthropic", label: "Anthropic Key", placeholder: "sk-ant-api03-…" },
+            { key: "notion", label: "Notion Token", placeholder: "ntn_…" },
+          ].map(({ key, label, placeholder }) => (
+            <div key={key} style={{ marginBottom: 12 }}>
+              <div style={{ fontSize: 11, color: "#9E9490", marginBottom: 4 }}>{label}</div>
+              <input
+                type="password"
+                placeholder={placeholder}
+                value={keys[key] || ""}
+                onChange={e => updateKey(key, e.target.value)}
+              />
+            </div>
+          ))}
+          <div style={{ fontSize: 11, color: hasKeys ? "#5A8A68" : "#A07060", marginTop: 8 }}>
+            {hasKeys ? "All keys set — stored in localStorage" : "Enter all 3 keys to enable transcription"}
+          </div>
+        </div>
+      )}
 
       {/* Submitted By selector */}
       <div style={{ width: "100%", maxWidth: 560, marginBottom: 24 }}>
@@ -322,21 +374,25 @@ export default function Transcriber() {
           width: "100%", maxWidth: 560, height: 160,
           border: `1px dashed ${dragOver ? "#6B9E78" : "#C8BFB0"}`,
           borderRadius: 4, display: "flex", flexDirection: "column",
-          alignItems: "center", justifyContent: "center", cursor: isRunning ? "not-allowed" : "pointer",
+          alignItems: "center", justifyContent: "center",
+          cursor: isRunning ? "not-allowed" : hasKeys ? "pointer" : "not-allowed",
           transition: "border-color 0.2s, background 0.2s",
           background: dragOver ? "rgba(107,158,120,0.04)" : "#EDE9E2",
+          opacity: hasKeys ? 1 : 0.5,
           marginBottom: 32,
         }}
         onDragOver={e => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
-        onClick={() => !isRunning && fileRef.current.click()}
+        onClick={() => !isRunning && hasKeys && fileRef.current.click()}
       >
         <input ref={fileRef} type="file" accept="video/*,audio/*" style={{ display: "none" }} onChange={handleFile} />
         {isRunning ? (
           <div className="pulsing" style={{ color: "#6B9E78", fontSize: 12 }}>{stageLabel[stage]}</div>
         ) : stage === "done" ? (
           <div style={{ color: "#6B9E78", fontSize: 12 }}>Done &mdash; {file?.name} &mdash; drop another to run again</div>
+        ) : !hasKeys ? (
+          <div style={{ fontSize: 12, color: "#A09890" }}>Enter API keys above to enable</div>
         ) : (
           <>
             <div style={{ fontSize: 24, marginBottom: 8, color: "#6B9E78" }}>+</div>
@@ -398,6 +454,11 @@ export default function Transcriber() {
           </div>
         </div>
       )}
+
+      {/* Footer */}
+      <div style={{ marginTop: 48, fontSize: 10, color: "#B8B0A8", letterSpacing: 2 }}>
+        A(DAI) &middot; A DIGITAL ARTS INSTITUTE
+      </div>
     </div>
   );
 }
