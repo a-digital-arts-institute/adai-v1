@@ -1,0 +1,102 @@
+{
+  "basic_info": {
+    "name": "Florian Hecker",
+    "type": "artist",
+    "active_years": "1990s-present",
+    "location": "Vienna, Austria / London, UK [uncertain]",
+    "url": "https://florianhecker.blogspot.com/ [uncertain]"
+  },
+  "practice_description": {
+    "medium": "sound art, psychoacoustic sculpture, installation, electronic music, spatial audio",
+    "practice_summary": "Florian Hecker creates psychoacoustic sculptures and sound installations that use auditory illusions, spectral composition, and computational synthesis to alter listeners' spatial perception. His work treats sound as a sculptural material that operates directly on the perceptual apparatus.",
+    "methodology": "Hecker works with advanced psychoacoustic research, computational sound synthesis, and spectral analysis to create sonic experiences that exploit the gaps and ambiguities in human auditory perception. He collaborates with scientists, philosophers (notably Reza Negarestani and Robin Mackay), and other sound artists. His process involves precise algorithmic composition using tools from computer music research, combined with rigorous spatial deployment in exhibition contexts."
+  },
+  "relevance_to_sense_room": {
+    "relevance_summary": "Hecker's psychoacoustic practice is directly generative in the perceptual register: his sound works literally alter how listeners perceive space, creating virtual spatial experiences through auditory processing alone. This makes his work essential for a Sense room that aims to compose through sensory experience rather than representation.",
+    "art_as_substrate": "Yes, strongly. Hecker's sound works function as perceptual substrates that reshape the listener's experience of space. They are not representational but operational: they do something to the perceiver. This makes them ideal substrate material for a generative composition environment.",
+    "relational_composition": "His work is relational in the sense that it exists in the relationship between sound, space, and the listener's perceptual apparatus. The artwork is not in the speakers or the signal but in the perceptual event that occurs between them.",
+    "self_recomposing": "The works are precisely composed, but the perceptual experience is different for each listener and in each spatial configuration. In this sense, the work recomposes itself through each act of perception. Some pieces use generative algorithms that produce variation over time."
+  },
+  "key_works": {
+    "works": [
+      {
+        "title": "Chimerization",
+        "year": 2013,
+        "description": "Sound installation using chimeric sound objects that exploit auditory grouping and streaming to create perceptual fusions and fissions. Developed in dialogue with philosopher Reza Negarestani. Exhibited at Kunsthalle Wien and elsewhere.",
+        "relevance": "Demonstrates how sound can create unstable perceptual objects that resist fixed categorization. Directly relevant to a Sense room that aims to compose through perceptual instability and emergence."
+      },
+      {
+        "title": "FAVN",
+        "year": 2017,
+        "description": "Spatial audio work exploring auditory hallucination and chimeric perception, using multi-channel audio to create sound objects that exist only in the listener's perception. Presented at Old Selfridges Hotel, London.",
+        "relevance": "A model for how sound can create virtual spatial objects through psychoacoustic means alone, without physical sculpture. Essential reference for the Sense room's sonic dimension."
+      },
+      {
+        "title": "Inspection II",
+        "year": 2010,
+        "description": "Multi-part work including sound installation and performance exploring the relationship between acoustic signal, perception, and linguistic description. Collaboration with Negarestani on the concept of 'sound as concept.'",
+        "relevance": "Demonstrates the intersection of computational sound synthesis, philosophy, and perceptual experience. A model for how art can operate at the boundary between sensation and cognition."
+      }
+    ]
+  },
+  "protocol_art_resonance": {
+    "protocol_art_summary": "Hecker's practice does not design social or institutional protocols, but his compositional methodology constitutes a protocol for perceptual engineering: systematic processes for constructing auditory experiences that exploit specific psychoacoustic phenomena.",
+    "system_designed": "No formal public-facing system or protocol, but his compositional frameworks for psychoacoustic sculpture constitute replicable methodologies for perceptual manipulation through sound."
+  },
+  "commons_orientation": {
+    "licence_model": "proprietary",
+    "commons_summary": "Hecker operates primarily within the gallery and institutional art world (Sadie Coles HQ gallery) and the experimental electronic music scene (Editions Mego label). His work is not open-source or commons-oriented, though his collaborations with researchers contribute to shared knowledge in psychoacoustics and computer music."
+  },
+  "governance_model": {
+    "governance_type": "solo",
+    "governance_detail": "Solo artistic practice with collaborative research. Key intellectual partnerships with Reza Negarestani, Robin Mackay (Urbanomic), and scientists. Artistic decisions are author-driven."
+  },
+  "consent_and_authorship": {
+    "consent_approach": "Hecker's work raises interesting questions about perceptual consent: his psychoacoustic works operate on listeners in ways they may not consciously control or choose. The experience is involuntary at the perceptual level. This is acknowledged as part of the work's meaning.",
+    "authorship_model": "Solo authorship with philosophical collaboration. Key works are developed in dialogue with Negarestani and Mackay, but Hecker is the named artist and primary creative decision-maker."
+  },
+  "liveness_and_duration": {
+    "temporal_type": "durational-finite",
+    "temporal_detail": "Installations run for exhibition durations with precisely composed sound that unfolds over time. Some works have fixed durations; others loop or evolve algorithmically. The perceptual experience shifts as the listener moves through the space and as their auditory system adapts."
+  },
+  "data_materiality": {
+    "data_sources": "Algorithmically synthesized sound, psychoacoustic research data, spectral analysis, computational synthesis engines, acoustic measurements of exhibition spaces",
+    "data_provenance": "Self-generated through computational processes. Sound material is synthesized rather than sampled. Psychoacoustic parameters drawn from published scientific research."
+  },
+  "embedding_space_relevance": {
+    "embedding_summary": "Hecker does not work with computational embedding spaces in the ML sense, but his practice navigates a perceptual parameter space: the multi-dimensional space of psychoacoustic phenomena (frequency, amplitude, spatial position, temporal pattern, spectral content) is explored systematically to find points where perception becomes unstable or chimeric.",
+    "multimodal": false
+  },
+  "exhibition_modality": {
+    "modality": "spatial-audio | installation",
+    "spatial_description": "Precise multi-channel audio installations that require specific spatial configurations. Works exploit the acoustic properties of exhibition spaces, positioning speakers to create psychoacoustic phenomena (binaural beating, spectral fusion, spatial hallucination). The listener's position in the room is integral to the experience."
+  },
+  "sensory_register": {
+    "senses": "sonic | proprioceptive",
+    "dominant_register": "sonic"
+  },
+  "interoperability": {
+    "composability": "Low. Works are precisely calibrated to specific spatial and acoustic conditions. They are not designed as modular or composable elements. However, the psychoacoustic principles underlying the work are transferable.",
+    "technical_openness": "Closed system. Works are bespoke installations. Some recordings released on Editions Mego (vinyl/digital) but these are fundamentally different from the spatial installations."
+  },
+  "technical_approach": {
+    "stack": "SuperCollider, Max/MSP, custom synthesis software, multi-channel audio hardware, psychoacoustic analysis tools, spectral processing, ambisonics"
+  },
+  "network_position": {
+    "position_type": "bridge",
+    "scene_affiliation": "Experimental electronic music (Editions Mego, Raster-Noton), gallery-based sound art, speculative philosophy (Urbanomic, CCRU legacy), Vienna electronic music scene, London art scene, psychoacoustics research community",
+    "connections": "Reza Negarestani (philosophical collaborator), Robin Mackay / Urbanomic (publishing collaborator), Mark Fell (computer music), Russell Haswell (noise/electronic), Lawrence Abu Hamdan (shared sound art territory), Iannis Xenakis (historical precedent), Peter Ablinger (sound art)"
+  },
+  "potential_role_in_adai": {
+    "role": "artwork-in-graph",
+    "role_detail": "Hecker's psychoacoustic sculpture could provide the Sense room's most radical sonic dimension: sound that literally reshapes spatial perception. His work demonstrates that generativity can operate at the perceptual level, not just the algorithmic level. Could serve as a model or direct contributor of sonic substrate material that alters the perceptual ground of the exhibition experience."
+  },
+  "temporal_status": {
+    "status": "ongoing-practice"
+  },
+  "uncertain": [
+    "url",
+    "location",
+    "active_years"
+  ]
+}

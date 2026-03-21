@@ -1,0 +1,100 @@
+{
+  "basic_info": {
+    "name": "Ian Cheng",
+    "type": "artist",
+    "active_years": "2012-present",
+    "location": "New York, USA (born Los Angeles, 1984)",
+    "url": "https://iancheng.com/"
+  },
+  "practice_description": {
+    "medium": "Live simulation, real-time software rendering, AI-driven virtual ecosystems, animated film (Unity engine)",
+    "practice_summary": "Ian Cheng creates live simulations — virtual ecosystems of potentially infinite duration populated by AI-driven agents programmed with behavioral drives but left to self-evolve without authorial control, following the unforgiving causality found in nature. His work explores agency, consciousness, and the capacity of living systems to deal with change.",
+    "methodology": "Cheng builds virtual worlds in the Unity game engine, programming characters with behavioral rules, cognitive models, and environmental physics. Once constraints are set, simulations run live in galleries as real-time software renderings — 'a video game that plays itself.' Drawing on his dual degree in cognitive science and art from UC Berkeley, and influenced by Julian Jaynes's theory of consciousness, chaos theory, and video game design, Cheng creates systems where narrative agents (emissaries) pursue deterministic goals within open-ended simulations populated by non-narrative agents. After working at Industrial Light & Magic and studying MFA at Columbia, he worked with Paul Chan and Pierre Huyghe before developing his simulation practice. BOB introduced a unique AI model combining inductive learning with a 'congress of demons' — competing mini-personalities that fight for control of the creature's behavior."
+  },
+  "relevance_to_sense_room": {
+    "relevance_summary": "Cheng's live simulations are a primary precedent for A(DAI)'s concept of self-recomposing artworks within a graph-curated exhibition. His work demonstrates how emergent narrative can arise from programmed behavioral rules and relational interactions between agents — directly analogous to how graph connections could generate exhibition compositions.",
+    "art_as_substrate": "Yes, strongly. Cheng's simulations are generative substrates by design — they produce continuously evolving visual, narrative, and behavioral outputs that could serve as living layers within a larger compositional system. The simulations are not fixed objects but ongoing processes that generate material endlessly.",
+    "relational_composition": "Yes. The core mechanic of Cheng's simulations is relational: agents interact with each other and their environment according to behavioral rules, and the emergent narrative arises from these interactions. In BOB, a 'congress of demons' (competing internal motivations) determines behavior through relational competition. The Emissaries trilogy is structured around the tension between narrative agents and non-narrative agents whose interactions produce unpredictable outcomes.",
+    "self_recomposing": "Yes — this is the defining characteristic of Cheng's work. Simulations continuously self-recompose based on their internal logic. Agents evolve, learn, and change behavior. BOB's personality, body, and life script evolve across exhibitions. Visitor presence can permanently influence BOB's beliefs and emotional life. The artist explicitly relinquishes control over outcomes once the system is set in motion."
+  },
+  "key_works": {
+    "works": [
+      {
+        "title": "Emissaries trilogy (Emissary in the Squat of Gods / Emissary Forks at Perfection / Emissary Sunsets the Self)",
+        "year": "2015-2017",
+        "description": "Three episodic live simulations exploring the history of cognitive evolution. Each features a landscape (Volcano, Crater Lake, Sentient Atoll) populated by an emissary pursuing narrative goals within an open-ended simulation. The emissary's deterministic story is continuously disrupted by non-narrative agents, producing emergent narrative. Shown at MoMA PS1 and Serpentine Galleries.",
+        "relevance": "Foundational precedent for emergent narrative from programmed relational rules. Demonstrates how a graph of agent relationships and behavioral drives can produce continuously evolving artwork without authorial intervention — precisely the mechanism A(DAI) proposes at exhibition scale."
+      },
+      {
+        "title": "BOB (Bag of Beliefs)",
+        "year": "2018",
+        "description": "An AI creature whose personality, body, and life script evolve across exhibitions. Features a unique AI model combining an inductive learning engine with a motivational framework of competing 'demons.' Each BOB can learn from, love, hate, or ignore visitors, and visitors can permanently alter its behavior and beliefs. Premiered at Serpentine Galleries.",
+        "relevance": "Demonstrates 'art with a nervous system' — artwork that accumulates experience across time and encounters. Directly relevant to A(DAI)'s concept of artworks that evolve through relational encounters within a graph. BOB's 'congress of demons' model is a compelling precedent for how competing forces (analogous to graph tensions) can drive artwork evolution."
+      },
+      {
+        "title": "Life After BOB: The Chalice Study",
+        "year": "2021-2024",
+        "description": "First episode of a planned anime series built entirely in Unity and rendered in real-time. Explores a future where AI optimizes human life — a neural engineer implants an AI in his daughter's brain, creating a dilemma about lived experience vs. AI-guided existence. Toured internationally from LUMA Arles to The Shed, HEK Basel, MMCA.",
+        "relevance": "Extends the live simulation into narrative film territory while maintaining real-time rendering. Thematically explores the tension between human agency and algorithmic guidance — directly relevant to A(DAI)'s questions about how intelligence systems relate to human creative autonomy."
+      }
+    ]
+  },
+  "protocol_art_resonance": {
+    "protocol_art_summary": "Cheng's practice treats the design of behavioral rules, cognitive models, and interaction protocols as the primary creative act. The artist designs the system — the agents, their drives, the environmental constraints — and then relinquishes authorial control. The 'protocol' (the set of rules governing agent behavior and interaction) IS the artwork. This is protocol-as-art in a deep sense: the rules generate infinite unique outcomes.",
+    "system_designed": "A framework for 'live simulation' as an art form — virtual ecosystems with programmed behavioral rules that produce emergent narrative. The BOB AI architecture (inductive learning engine + congress of demons motivational framework) is a novel AI system designed as artwork. Cheng coined and established 'live simulation' as a recognized category of contemporary art practice."
+  },
+  "commons_orientation": {
+    "licence_model": "proprietary",
+    "commons_summary": "Cheng operates within the commercial gallery system (represented by Pilar Corrias, previously Gladstone Gallery). Works are sold as unique editions or installations. The Unity-based simulation code and BOB's AI architecture are not open-source. There is no commons infrastructure dimension to the practice. The work circulates through institutional exhibitions and commercial sales rather than open distribution."
+  },
+  "governance_model": {
+    "governance_type": "solo",
+    "governance_detail": "Solo artistic practice. Cheng is the sole author and creative director. He programs the simulations, designs the behavioral rules, and sets the parameters. Once a simulation is running, governance shifts to the algorithmic system — the agents self-govern according to their programmed drives without Cheng's intervention. This creates an interesting hybrid: solo human governance of system design, algorithmic self-governance of system execution."
+  },
+  "consent_and_authorship": {
+    "consent_approach": "For BOB, visitor interaction is voluntary but consequential — visitors who engage with BOB can permanently alter its behavior and beliefs. There is no explicit consent mechanism for this influence; it happens through presence and interaction in the gallery. The work raises interesting questions about consent in interactive art: can you consent to permanently changing an AI creature's personality? [uncertain]",
+    "authorship_model": "Solo authorship with machine co-creation. Cheng designs the systems but explicitly relinquishes control over their outputs. The simulations produce outcomes the artist did not author or foresee. Cheng describes this as giving the work autonomy — the authorship is of the system, not of any particular output. BOB has a form of agency that complicates traditional authorship."
+  },
+  "liveness_and_duration": {
+    "temporal_type": "durational-infinite",
+    "temporal_detail": "Simulations are designed to run indefinitely with no predetermined endpoint. The Emissaries trilogy simulations loop through episodic cycles but never repeat exactly. BOB evolves continuously across exhibition contexts, accumulating experience and changing over its lifetime. Change is driven entirely by the internal logic of the system — agent interactions, environmental physics, and (in BOB's case) visitor influence. Cheng coined 'live simulation' to describe this temporal mode: always live, always unique, never a recording."
+  },
+  "data_materiality": {
+    "data_sources": "Self-generated simulation data — the primary material is the real-time computational output of agent behaviors, physics simulations, and environmental interactions within Unity. For BOB, visitor presence and interaction become input data. No external datasets are used; the 'data' is the live state of the virtual ecosystem.",
+    "data_provenance": "Entirely self-generated within the simulation. No scraped data, no external datasets, no institutional archives. The simulation creates its own data through its own internal processes. Visitor interaction data in BOB is generated through voluntary gallery presence."
+  },
+  "embedding_space_relevance": {
+    "embedding_summary": "Cheng does not work with embedding spaces or latent spaces in the machine learning sense. His AI systems use rule-based behavioral programming, inductive learning, and motivational architectures rather than neural network embeddings. The 'intelligence' in his work is emergent from simple rules rather than learned from data distributions.",
+    "multimodal": "Primarily visual with narrative/textual dimensions (Life After BOB incorporates dialogue and story). Not multimodal in the sense of spanning modalities through a unified computational space."
+  },
+  "exhibition_modality": {
+    "modality": "installation",
+    "spatial_description": "Simulations are typically displayed on large screens or projections in gallery spaces. The works occupy the screen as windows into virtual worlds rather than filling the physical space immersively. BOB was presented as a creature inhabiting a screen-based environment that visitors could observe and influence. Life After BOB was presented as an immersive real-time animated film. The spatial relationship is one of observation and occasional interaction rather than full bodily immersion."
+  },
+  "sensory_register": {
+    "senses": "visual, sonic",
+    "dominant_register": "visual"
+  },
+  "interoperability": {
+    "composability": "Cheng's simulations are self-contained worlds. They do not expose APIs or produce outputs designed for external consumption. However, the conceptual architecture — behavioral rules, agent interactions, emergent narrative — is highly portable as a framework. BOB's ability to evolve across exhibition contexts suggests a form of composability with different environments, though this is managed by the artist rather than through open protocols.",
+    "technical_openness": "Closed system. Built in Unity but not open-source. The simulation code, AI architectures (BOB's inductive engine and demon congress), and behavioral rules are proprietary to the artist."
+  },
+  "technical_approach": {
+    "stack": "Unity game engine (primary platform for all works), custom AI behavioral programming, inductive learning engines (BOB), real-time rendering, physics simulation within Unity. Cheng describes Unity as 'the Photoshop for videogame making' — valued for its real-time rendering capability. Earlier works at ILM used industrial VFX tools. The practice is deliberately built on game engine technology rather than ML/neural network frameworks."
+  },
+  "network_position": {
+    "position_type": "bridge",
+    "scene_affiliation": "Contemporary art (blue-chip gallery and museum circuit — MoMA, Serpentine, LUMA, The Shed), new media art, game art, AI art, simulation art. Bridges the contemporary art mainstream with experimental technology-driven practice. Connected to post-internet art generation but working with fundamentally different (simulation-based) approaches. Intellectual connections to cognitive science, complexity theory, and philosophy of mind communities.",
+    "connections": "Refik Anadol (both create real-time generative artworks, but Cheng uses rule-based simulation while Anadol uses ML latent spaces — they represent complementary approaches to computational art). teamLab (shared interest in responsive, evolving environments, but Cheng works at screen/simulation scale while teamLab works at architectural/immersive scale). Pierre Huyghe (Cheng worked with Huyghe; both explore artificial life and emergent systems in art)."
+  },
+  "potential_role_in_adai": {
+    "role": "theoretical-reference",
+    "role_detail": "Cheng's work is perhaps the strongest single precedent for A(DAI)'s core concept: artworks that self-recompose based on relational rules and emergent interactions. His 'live simulation' framework — where the artist designs the system/protocol and then relinquishes control — maps directly onto A(DAI)'s vision of graph-curated generative exhibition. BOB's 'congress of demons' model offers a specific architectural precedent for how competing forces within a graph could drive artwork evolution. His theoretical writing on agency, emergence, and the relationship between narrative and chaos provides conceptual vocabulary for A(DAI). The limitation is his closed, solo, commercial-gallery positioning — no commons dimension."
+  },
+  "temporal_status": {
+    "status": "ongoing-practice"
+  },
+  "uncertain": [
+    "consent_approach"
+  ]
+}

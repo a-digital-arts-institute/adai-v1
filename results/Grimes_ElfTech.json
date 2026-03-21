@@ -1,0 +1,98 @@
+{
+  "basic_info": {
+    "name": "Grimes / Elf.Tech",
+    "type": "artist-project",
+    "active_years": "2023-present",
+    "location": "Los Angeles, USA",
+    "url": "https://elf.tech"
+  },
+  "practice_description": {
+    "medium": "AI voice models, music production, software platform",
+    "practice_summary": "Grimes launched Elf.Tech as an open AI voice platform allowing anyone to create music using her voice via a trained voice model, with a revenue-sharing agreement that splits royalties 50/50 with creators who use the tool commercially.",
+    "methodology": "Grimes trained an AI model on her vocal recordings and released it publicly through the Elf.Tech platform. Users upload instrumentals or vocals, and the system transforms them into Grimes' voice using AI voice conversion technology. The project emerged from Grimes' public stance that she would 'split 50% royalties on any successful AI-generated song that uses my voice.' She collaborated with CreateSafe (the team behind the platform) to build the technical infrastructure. The approach treats the artist's voice as an open instrument -- a commercial parallel to Holly Herndon's Holly+ protocol art, but operating within mainstream music industry distribution channels (Spotify, Apple Music, etc.) rather than DAO governance."
+  },
+  "relevance_to_sense_room": {
+    "relevance_summary": "Elf.Tech demonstrates how an artist's creative identity can become substrate for others' compositions at commercial scale, offering a mainstream model for voice-as-open-instrument that directly parallels A(DAI)'s interest in art as primary material and composable infrastructure.",
+    "art_as_substrate": "Yes -- Grimes' voice model is explicitly designed as raw material for others to compose with. The voice becomes an instrument/substrate layer that anyone can build upon, though within a commercial framework rather than a commons one.",
+    "relational_composition": "Limited -- the platform is more of a one-directional tool (input audio, get Grimes voice output) than a relational/graph-based composition system. However, the ecosystem of derivative works creates an implicit network of compositions sharing a common vocal substrate.",
+    "self_recomposing": "No -- the voice model itself is relatively static once deployed. The ecosystem of outputs grows as more creators use it, but the model does not evolve based on use or community input."
+  },
+  "key_works": {
+    "works": [
+      {
+        "title": "Elf.Tech Platform",
+        "year": 2023,
+        "description": "AI voice conversion platform that allows anyone to create songs in Grimes' voice. Users upload audio and receive AI-transformed output. Launched with a 50/50 revenue split for commercial releases distributed through major platforms.",
+        "relevance": "Direct example of artist voice as open substrate with a commercial revenue-sharing model. Contrasts with Holly+'s DAO governance approach -- same concept, different economic and governance architecture."
+      },
+      {
+        "title": "Open source AI voice announcement",
+        "year": 2023,
+        "description": "Grimes publicly announced on social media that anyone could use her voice for AI-generated music and split royalties 50/50, sparking widespread debate about AI, consent, and music industry economics.",
+        "relevance": "Cultural moment that brought voice-as-commons/instrument concept to mainstream attention, demonstrating public appetite for open creative identity models."
+      },
+      {
+        "title": "Player of Games / Miss Anthropocene",
+        "year": "2020-2022",
+        "description": "Grimes' albums that increasingly incorporated AI and procedural elements in production, establishing her identity as an artist working at the intersection of technology, pop culture, and experimental practice.",
+        "relevance": "Context for Elf.Tech -- Grimes' prior work establishes the creative identity that the voice model encodes and makes available as substrate."
+      }
+    ]
+  },
+  "protocol_art_resonance": {
+    "protocol_art_summary": "Elf.Tech treats the revenue-sharing agreement and distribution infrastructure as creative decisions -- the 50/50 split, the open access model, and the choice to work within existing music industry channels rather than blockchain governance are all design choices that shape the creative ecosystem. However, it is more commercially pragmatic than deeply protocol-artistic.",
+    "system_designed": "Elf.Tech voice conversion platform with integrated 50/50 revenue-sharing model for AI-generated music distributed through mainstream streaming platforms."
+  },
+  "commons_orientation": {
+    "licence_model": "Hybrid -- open access to voice model for creation, proprietary platform infrastructure, 50/50 commercial revenue split with creators",
+    "commons_summary": "Elf.Tech is commons-adjacent but commercially oriented. It opens Grimes' voice as a shared resource but within a proprietary platform and traditional music industry distribution. Unlike Holly+'s DAO model, governance remains centralized with Grimes and CreateSafe. It demonstrates that open voice models can function within existing commercial infrastructure, but does not build commons infrastructure per se."
+  },
+  "governance_model": {
+    "governance_type": "solo",
+    "governance_detail": "Governance is centralized with Grimes and the CreateSafe team. Grimes sets the terms of use (50/50 split, open access), and the platform enforces them. There is no community governance, DAO, or participatory decision-making about how the voice model is used or developed. Terms of service and content moderation decisions rest with the platform."
+  },
+  "consent_and_authorship": {
+    "consent_approach": "Grimes explicitly consented to her voice being used by others -- the entire project is built on her voluntary openness. However, the consent framework is one-directional: Grimes consents to her voice being used, but there is no mechanism for community input on how the model develops or what it is used for beyond basic terms of service.",
+    "authorship_model": "Hybrid -- Grimes is the originating voice/identity, but creators who use Elf.Tech are recognized as co-authors with a 50% revenue share. Machine co-authorship is implicit (the AI performs the voice conversion) but not foregrounded as a creative partner in the way Holly Herndon frames Spawn."
+  },
+  "liveness_and_duration": {
+    "temporal_type": "generative-on-demand",
+    "temporal_detail": "The voice model is persistent and available on-demand. Each use generates a new output, but the model itself does not evolve. The ecosystem of derivative works grows over time as more creators use the platform, creating an expanding corpus of Grimes-voiced music."
+  },
+  "data_materiality": {
+    "data_sources": "Grimes' vocal recordings -- her existing discography and potentially additional vocal recordings made specifically for training the model.",
+    "data_provenance": "Fully consented -- Grimes voluntarily contributed her own voice data for model training. The training data is self-generated from her own recordings. No third-party scraped data is involved in the voice model itself."
+  },
+  "embedding_space_relevance": {
+    "embedding_summary": "The voice model operates in a latent vocal space, mapping input audio characteristics onto Grimes' learned vocal representation. This is engagement with embedding space as a creative medium, though the technical details of the model architecture are not publicly documented in detail.",
+    "multimodal": "Primarily audio-only (voice conversion), though Grimes' broader practice spans visual art, music video, and social media presence."
+  },
+  "exhibition_modality": {
+    "modality": "web",
+    "spatial_description": "Elf.Tech exists primarily as a web platform -- users interact through a browser interface to upload audio and receive transformed output. The outputs are distributed through streaming platforms (Spotify, Apple Music, etc.). There is no physical installation or spatial exhibition component to the platform itself, though derivative works may be performed live."
+  },
+  "sensory_register": {
+    "senses": "sonic",
+    "dominant_register": "sonic"
+  },
+  "interoperability": {
+    "composability": "Moderate -- the platform produces audio outputs (WAV/MP3) that can be used in any music production workflow. However, the platform itself is not API-accessible or designed for programmatic integration. Outputs serve as inputs for music production but not for other AI systems or generative pipelines.",
+    "technical_openness": "Closed platform -- the voice model is accessible through the Elf.Tech web interface but is not open source, forkable, or self-hostable. The underlying CreateSafe technology is proprietary."
+  },
+  "technical_approach": {
+    "stack": "AI voice conversion model (likely based on neural network voice synthesis/style transfer architectures); CreateSafe platform infrastructure; web-based interface; integration with major music distribution platforms (DistroKid, TuneCore, etc. for commercial releases) [uncertain]"
+  },
+  "network_position": {
+    "position_type": "bridge",
+    "scene_affiliation": "Mainstream pop/electronic music; AI art and music; tech industry (relationship with Elon Musk brought mainstream attention); Web3/crypto-adjacent; experimental electronic music; CreateSafe ecosystem",
+    "connections": "Holly Herndon / Holly+ (direct conceptual parallel -- voice as open instrument); Mat Dryhurst (has discussed Elf.Tech in context of Spawning AI and consent infrastructure); CreateSafe (technical partner); Endel (AI music); mainstream music industry AI debate"
+  },
+  "potential_role_in_adai": {
+    "role": "theoretical-reference",
+    "role_detail": "Elf.Tech serves as a key comparative case study for A(DAI): it demonstrates the commercial/mainstream approach to voice-as-open-instrument, contrasting with Holly+'s commons/DAO approach. Useful for understanding the spectrum of governance models for creative AI identity -- from centralized-commercial (Elf.Tech) to collective-commons (Holly+). Less likely as a direct contributor given commercial orientation, but valuable as a reference point in the field map."
+  },
+  "temporal_status": {
+    "status": "active-infrastructure"
+  },
+  "uncertain": ["active_years", "stack"]
+}

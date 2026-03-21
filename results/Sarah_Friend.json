@@ -1,0 +1,98 @@
+{
+  "basic_info": {
+    "name": "Sarah Friend",
+    "type": "artist",
+    "active_years": "2015-present",
+    "location": "Berlin, Germany",
+    "url": "https://isthisa.com"
+  },
+  "practice_description": {
+    "medium": "Software, blockchain, smart contracts, installation, web-based work, game design",
+    "practice_summary": "Artist and software engineer who creates blockchain-based artworks that embed governance rules, economic logic, and commons principles into their structure. Her works are designed systems where the rules of ownership, transfer, and decay ARE the artistic medium -- NFTs that die if not shared, games about land enclosure, and tools for collective resource management.",
+    "methodology": "Friend writes smart contracts and software systems that encode specific social and economic logics, then releases them as functioning artworks. She approaches code as a medium for testing political and philosophical propositions -- what if property had to circulate? What if digital objects could die? Her background combines software engineering (formerly at ConsenSys/Ethereum ecosystem) with conceptual art practice. She collaborates with organizations like trust (Berlin), Haus der Kulturen der Welt, and the blockchain art community. Her methodology is fundamentally about designing rules and watching what emerges from them."
+  },
+  "relevance_to_sense_room": {
+    "relevance_summary": "Friend's practice directly models how governance rules and commons principles can function as artistic medium. Her works are living systems whose behavior emerges from encoded rules about circulation, decay, and collective stewardship -- precisely the kind of logic that could structure a graph-curated generative exhibition.",
+    "art_as_substrate": "Yes -- her smart contracts and governance systems create substrate layers that generate emergent social behavior. Lifeforms creates a substrate of circulating NFTs whose collective movement patterns constitute the artwork. The rules are the ground layer; participant behavior is the emergent composition.",
+    "relational_composition": "Yes -- Lifeforms is fundamentally relational: each token's survival depends on its relationship to successive owners. The artwork is the graph of transfers between wallets. Isthmus explores relational dynamics of land enclosure and commons. The composition IS the network of relationships between participants and tokens.",
+    "self_recomposing": "Yes -- Lifeforms continuously evolves as tokens transfer between wallets, with some tokens 'dying' (being burned) if not passed on. The composition is always changing based on participant decisions about whether and when to transfer. Each token's lifespan is determined by collective behavior."
+  },
+  "key_works": {
+    "works": [
+      {
+        "title": "Lifeforms",
+        "year": 2021,
+        "description": "Series of NFTs that must be transferred to a new owner within a set period (e.g., 90 days) or they are permanently burned (destroyed). The tokens are animated digital organisms whose visual form reflects their transfer history. They cannot be sold, only gifted. The artwork is the circulation pattern -- the social graph of giving.",
+        "relevance": "Paradigmatic commons-as-art: encodes anti-enclosure logic directly into the token. Property that must circulate or die is a radical protocol design. The transfer graph IS the artwork, directly modeling how a knowledge graph's vitality depends on circulation and connection."
+      },
+      {
+        "title": "Isthmus",
+        "year": 2022,
+        "description": "A web-based game/simulation exploring land enclosure, commons, and resource management. Players navigate a landscape where private property and commons exist in tension, experiencing how enclosure dynamics work through gameplay mechanics.",
+        "relevance": "Makes commons governance tangible through interactive experience. The game's rules encode political propositions about property and shared resources, directly relevant to how A(DAI) might design governance for shared creative resources."
+      },
+      {
+        "title": "Clickmine",
+        "year": 2017,
+        "description": "A web-based work where visitors click to 'mine' a custom cryptocurrency, accumulating tokens through pure labor. Explores the relationship between clicking (digital labor), mining (resource extraction), and value creation.",
+        "relevance": "Early exploration of how economic protocols (mining, labor, value) function as artistic medium. Foregrounds the rules of value creation as creative material."
+      }
+    ]
+  },
+  "protocol_art_resonance": {
+    "protocol_art_summary": "Friend is one of the most rigorous protocol artists working today. Her smart contracts encode specific political propositions -- anti-enclosure, forced circulation, commons stewardship -- into executable code. The protocol rules ARE the artwork: Lifeforms' transfer-or-die logic, Isthmus' enclosure mechanics, Clickmine's labor-value protocol. She treats blockchain not as a market tool but as a medium for testing governance propositions.",
+    "system_designed": "Lifeforms: an NFT protocol where tokens must circulate or die, encoding anti-accumulation logic. Isthmus: a commons/enclosure simulation system. Clickmine: a labor-based mining protocol. Also contributed to various Ethereum ecosystem tools and governance experiments through her work at ConsenSys and in the broader blockchain art community."
+  },
+  "commons_orientation": {
+    "licence_model": "commons-based",
+    "commons_summary": "Friend's practice is explicitly commons-oriented. Lifeforms encodes anti-enclosure logic: tokens cannot be sold and must be gifted or they die, preventing accumulation and enforcing circulation. Her intellectual engagement with commons theory (Ostrom, enclosure history, digital commons) directly informs her artistic practice. She builds systems that test and demonstrate commons principles, functioning as both art and advocacy for non-proprietary models of ownership and governance."
+  },
+  "governance_model": {
+    "governance_type": "algorithmic",
+    "governance_detail": "Governance is encoded in smart contract logic. Lifeforms' rules are algorithmic: the contract enforces the transfer-or-burn deadline without human intervention. There is no central authority or voting mechanism -- the governance is the code itself. Friend designs the initial rules, then the system operates autonomously. Isthmus uses game mechanics as governance rules that players must navigate. The artist sets initial conditions; emergent behavior follows from the protocol."
+  },
+  "consent_and_authorship": {
+    "consent_approach": "Participants consent by choosing to receive and hold tokens (Lifeforms) or by entering the game (Isthmus). The rules are transparent and encoded in publicly readable smart contracts. Consent is informed: participants know the transfer-or-die mechanic before accepting a Lifeform. The transparency of blockchain makes the consent framework verifiable.",
+    "authorship_model": "Hybrid -- Friend is the author of the system/protocol, but the artwork (the pattern of transfers, the game outcomes) is collectively authored by all participants. Machine authorship operates through the smart contract's autonomous enforcement of rules. The visual form of Lifeforms tokens is generated by their transfer history, making the collective a co-author."
+  },
+  "liveness_and_duration": {
+    "temporal_type": "continuously-evolving",
+    "temporal_detail": "Lifeforms are continuously evolving: each token has an active countdown that resets on transfer. Tokens are born, circulate, and potentially die. The collective lifespan pattern of all tokens constitutes the artwork's temporal form. Some tokens may circulate for years; others die quickly. The system is durational-infinite in design but tokens are individually durational-finite."
+  },
+  "data_materiality": {
+    "data_sources": "Blockchain transaction data (Ethereum wallet addresses, transfer timestamps, burn events); game interaction data (Isthmus); click/mining data (Clickmine). All data is generated by participant interaction with the system.",
+    "data_provenance": "Self-generated through participation. All blockchain data is public and transparent by design. No scraped or non-consented external data. The provenance of every transaction is permanently recorded on-chain."
+  },
+  "embedding_space_relevance": {
+    "embedding_summary": "Friend's work does not engage with embedding spaces in the ML sense. However, Lifeforms' transfer graphs create a kind of social topology -- a network embedding where tokens' positions in the social graph (who has held them, how far they've traveled) constitute a meaningful space. The visual representation of tokens encodes their graph-journey.",
+    "multimodal": "Primarily visual and interactive (web-based, generative token visuals). Not multimodal in the sense of spanning audio/video/text in a unified space."
+  },
+  "exhibition_modality": {
+    "modality": "web",
+    "spatial_description": "Lifeforms exists primarily as web-based tokens that live in wallets and are transferred through the Ethereum network -- the 'exhibition space' is the blockchain itself. Gallery presentations include visualizations of transfer patterns and token states. Isthmus is a web-based interactive experience. Physical installations at venues like Haus der Kulturen der Welt, Kunstverein Hamburg, and Feral File contextualize the digital works within gallery settings."
+  },
+  "sensory_register": {
+    "senses": "visual, textual",
+    "dominant_register": "visual"
+  },
+  "interoperability": {
+    "composability": "High -- works are built on Ethereum standards (ERC-721 for Lifeforms), making them inherently interoperable with the blockchain ecosystem. Tokens can be read by any compatible wallet or platform. The transfer graph data is public and could serve as input for other generative systems. Smart contract code is publicly verifiable.",
+    "technical_openness": "Open -- smart contracts are public on the blockchain and verifiable. Friend's engineering background and connection to open-source blockchain development means the technical infrastructure is transparent and inspectable."
+  },
+  "technical_approach": {
+    "stack": "Solidity (Ethereum smart contracts), ERC-721 and ERC-20 token standards, JavaScript/TypeScript, web3.js/ethers.js, generative visual algorithms for token rendering, web-based game engines (Isthmus), IPFS for decentralized storage."
+  },
+  "network_position": {
+    "position_type": "bridge",
+    "scene_affiliation": "Blockchain art community (central figure); Berlin digital art scene; Ethereum developer community (former ConsenSys); trust (Berlin art/tech collective); Haus der Kulturen der Welt; Feral File; Rhizome; crypto-art and DAO discourse; commons/governance theory community; Radical Networks.",
+    "connections": "Jonas Lund (blockchain art, governance-as-art); Mat Dryhurst and Holly Herndon (commons governance, protocol art); Harm van den Dorpel (blockchain art); Casey Reas (Feral File); Simon Denny (blockchain art); Ruth Catlow (Furtherfield, blockchain art commons); connected to broader Ethereum governance community through ConsenSys background."
+  },
+  "potential_role_in_adai": {
+    "role": "conversation-partner",
+    "role_detail": "Friend's practice is among the most directly relevant to A(DAI): she builds commons governance systems as artworks, encodes anti-enclosure principles in code, and treats protocol design as creative practice. Her technical expertise (Ethereum smart contracts, web3) combined with her theoretical engagement with commons governance makes her an ideal conversation partner for A(DAI)'s infrastructure design. Lifeforms' circulation-or-death model is a provocative reference for how knowledge graph nodes might need to circulate and connect to remain alive."
+  },
+  "temporal_status": {
+    "status": "ongoing-practice"
+  },
+  "uncertain": ["active_years", "url", "location"]
+}

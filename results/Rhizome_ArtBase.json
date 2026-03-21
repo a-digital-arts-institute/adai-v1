@@ -1,0 +1,98 @@
+{
+  "basic_info": {
+    "name": "Rhizome / ArtBase",
+    "type": "institution",
+    "active_years": "1996-present (Rhizome); 1999-present (ArtBase)",
+    "location": "New York, NY, USA (affiliated with the New Museum)",
+    "url": "https://rhizome.org"
+  },
+  "practice_description": {
+    "medium": "Digital art preservation, web archiving, born-digital art curation, software preservation, editorial publishing",
+    "practice_summary": "Rhizome is a nonprofit arts organization that champions born-digital art through commissions, exhibitions, scholarship, and digital preservation. ArtBase, its online archive founded in 1999, contains over 2,110 artworks spanning software, code, websites, games, and interactive media.",
+    "methodology": "Rhizome operates through several interlocking programs: ArtBase (archival collection), Net Art Anthology (historical restaging of key works), ArtBase Anthologies (monthly curated exhibitions of restored works), editorial publishing, and a digital preservation program led by Dragan Espenschied that develops open-source tools for web archiving and software preservation. Curatorial direction is led by Artistic Director Michael Connor. Works are accessioned into ArtBase through editorial selection, and the preservation team maintains and restores aging digital artworks."
+  },
+  "relevance_to_sense_room": {
+    "relevance_summary": "Rhizome represents the archival and preservation dimension of the digital art field. Its ArtBase is the most significant collection of born-digital art, but it functions as a catalogue rather than a relational graph. A(DAI) could build the relational intelligence layer that connects the entities Rhizome preserves.",
+    "art_as_substrate": "Partially. ArtBase contains artworks that could serve as substrate material (interactive websites, software art, games), but Rhizome's role is preservation rather than recomposition. The archived works themselves are rich substrates if made available for compositional use.",
+    "relational_composition": "Limited. Rhizome organizes works editorially (chronologically, thematically) but does not expose the relational graph between artists, works, concepts, and movements. Net Art Anthology created temporal and thematic narratives but not a navigable relational structure.",
+    "self_recomposing": "No. Rhizome's role is preservation -- maintaining works in their original state. However, ArtBase Anthologies recontextualize archived works through monthly curated presentations, creating evolving interpretive frames around static artworks."
+  },
+  "key_works": {
+    "works": [
+      {
+        "title": "Net Art Anthology",
+        "year": "2016-2019",
+        "description": "A multi-year project restaging 100 key net art works from the 1980s to present, combining digital conservation with historical narrative. Funded by the Thoma Art Foundation.",
+        "relevance": "Demonstrated that digital art history requires active preservation and recontextualization. The anthology's structure (chronological chapters, restored works, contextual essays) is a curatorial framework that A(DAI) could extend into a relational graph."
+      },
+      {
+        "title": "ArtBase Anthologies",
+        "year": "2024-present",
+        "description": "Monthly curated exhibitions of newly restored artworks from ArtBase, launched with works by Auriea Harvey and Entropy8Zuper! Each edition presents a solo deep dive, historical snapshot, or thematic curation.",
+        "relevance": "Shows how archived digital art can be reactivated through curatorial framing -- a model for how A(DAI)'s graph could surface and recontextualize works dynamically."
+      },
+      {
+        "title": "Webrecorder / Conifer",
+        "year": "2014-present",
+        "description": "Open-source web archiving tools developed by Rhizome's preservation program to capture interactive web-based artworks, now spun off as an independent project.",
+        "relevance": "Infrastructure for preserving the web-based artworks that A(DAI) would map. Demonstrates Rhizome's commitment to open-source tooling for the commons."
+      }
+    ]
+  },
+  "protocol_art_resonance": {
+    "protocol_art_summary": "Rhizome does not explicitly frame preservation as artistic practice, but its development of open-source archiving tools (Webrecorder) and its editorial framing of digital art history function as infrastructure design with cultural purpose. The decision of what to preserve and how to restore it is itself a form of protocol design that shapes what the field remembers.",
+    "system_designed": "ArtBase (born-digital art archive), Webrecorder/Conifer (open-source web archiving tools), Net Art Anthology (historical restaging framework), and the ArtBase Anthologies curatorial program."
+  },
+  "commons_orientation": {
+    "licence_model": "commons-based",
+    "commons_summary": "Rhizome is a nonprofit. Its preservation tools (Webrecorder) are open-source and designed to decentralize web archiving practices. ArtBase is publicly accessible. The organization is sustained by membership, grants (Thoma Foundation, NEA), and its affiliation with the New Museum. It builds commons infrastructure for digital art preservation."
+  },
+  "governance_model": {
+    "governance_type": "institutional",
+    "governance_detail": "Governed as a nonprofit with an executive director, artistic director (Michael Connor), and digital preservation lead (Dragan Espenschied). Affiliated with the New Museum of Contemporary Art. Editorial and curatorial decisions are made by a small professional team. Accession to ArtBase is editorially determined -- this is the bottleneck identified in the task brief."
+  },
+  "consent_and_authorship": {
+    "consent_approach": "Artists consent to inclusion in ArtBase and to preservation/restoration of their works. Rhizome's preservation program works with artists when possible to ensure faithful restoration. Historical works where artists are unreachable require institutional judgment.",
+    "authorship_model": "Individual artist authorship is recognized and preserved. Rhizome functions as institutional steward, not co-author. The editorial and curatorial framing adds an interpretive layer but does not claim co-authorship."
+  },
+  "liveness_and_duration": {
+    "temporal_type": "durational-infinite",
+    "temporal_detail": "Rhizome's mission is perpetual preservation -- maintaining access to born-digital artworks against technological obsolescence. ArtBase Anthologies create periodic reactivations of archived works. The archive itself grows through new accessions (three new works added for the 30th anniversary in 2026)."
+  },
+  "data_materiality": {
+    "data_sources": "Born-digital artworks (websites, software, code, games, interactive media), web archives, artist documentation, contextual essays, historical metadata.",
+    "data_provenance": "Artworks are contributed by artists or acquired through institutional partnerships. Preservation involves capturing and restoring original digital materials. Web archiving captures publicly accessible web content. All provenance is documented through Rhizome's curatorial and preservation processes."
+  },
+  "embedding_space_relevance": {
+    "embedding_summary": "Rhizome does not directly engage with embedding or latent spaces. Its organizational logic is editorial and chronological rather than computational. However, the ArtBase collection could be a rich dataset for embedding-based exploration of digital art history if made computationally accessible.",
+    "multimodal": "Yes, implicitly. ArtBase contains works spanning text, image, video, audio, interactive software, and games -- a multimodal collection, though not unified in a computational embedding space."
+  },
+  "exhibition_modality": {
+    "modality": "web",
+    "spatial_description": "Primarily web-based. ArtBase and Net Art Anthology are online exhibitions. Rhizome World (2025) brought programming into physical gallery space at WSA, New York. ArtBase Anthologies present restored works in online exhibition format with contextual framing."
+  },
+  "sensory_register": {
+    "senses": "visual, textual, sonic",
+    "dominant_register": "visual"
+  },
+  "interoperability": {
+    "composability": "Limited as an archive. ArtBase does not expose a public API or structured data feed for its collection. Webrecorder tools are open-source and interoperable. The archived works themselves vary in technical openness.",
+    "technical_openness": "Webrecorder tools are fully open source. ArtBase content is publicly viewable but not programmatically accessible via API. The organization advocates for open standards in digital preservation."
+  },
+  "technical_approach": {
+    "stack": "Webrecorder (open-source web archiving, WARC format), browser-based emulation for legacy works, custom CMS for editorial content, standard web technologies for online exhibitions. Preservation tools include software emulation and code migration."
+  },
+  "network_position": {
+    "position_type": "hub",
+    "scene_affiliation": "Central institution in the net art and born-digital art preservation community. Affiliated with the New Museum (New York). Connected to academic digital humanities, museum conservation, and the broader new media art world. Bridges art history, technology, and institutional preservation.",
+    "connections": "Are.na (shared New York new media art community; Are.na co-founder Charles Broskoski worked for Rhizome's John Michael Boling), Art Blocks (digital art preservation parallels), New Museum / New Inc (institutional affiliation, New Inc partners with Metalabel)"
+  },
+  "potential_role_in_adai": {
+    "role": "conversation-partner",
+    "role_detail": "Rhizome's ArtBase represents the most significant existing attempt to archive born-digital art, but lacks relational intelligence. A(DAI) could build the relational and graph-based layer that connects ArtBase's preserved works to practitioners, concepts, and scenes. Rhizome's editorial expertise and preservation knowledge make it a natural conversation partner for defining how intelligence about digital art should be structured."
+  },
+  "temporal_status": {
+    "status": "active-infrastructure"
+  },
+  "uncertain": ["composability"]
+}

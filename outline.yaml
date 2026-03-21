@@ -1,0 +1,275 @@
+topic: "Art-First Sense Room: Artists, Practices & Infrastructure for Graph-Curated Generative Exhibition"
+description: >
+  Research for A(DAI) Option C — the Sense room as a graph-curated generative exhibition
+  where artworks are primary material. Identifying artists, collectives, platforms, and
+  theoretical voices relevant to building an immersive artefact where art is substrate,
+  voice is surface, and the graph's relational structure determines composition.
+  Holly Herndon & Mat Dryhurst as protocol art precedent (important, not centre of gravity).
+
+items:
+  # === CORE FOCUS: PROTOCOL ART PRECEDENT ===
+  - id: 1
+    name: "Holly Herndon"
+    type: artist
+    summary: "Composer/artist. PROTO trained AI (Spawn) on ensemble voices. Holly+ open voice instrument. Protocol art: systems/governance as creative work."
+  - id: 2
+    name: "Mat Dryhurst"
+    type: artist
+    summary: "Co-creator Spawn/Holly+. Spawning AI. Interdependence theory. Art practice as systems design for collective benefit."
+  - id: 3
+    name: "Spawning AI / Source.Plus"
+    type: platform
+    summary: "Consent layer for AI training data. Evolution from HaveIBeenTrained.com to Source.Plus. ai.txt protocol. Commons infrastructure."
+  - id: 4
+    name: "Holly+"
+    type: project
+    summary: "DAO-governed voice instrument. Anyone submits audio, receives it in Holly's voice. Governance over creative identity."
+  - id: 5
+    name: "Interdependence (podcast/framework)"
+    type: theoretical
+    summary: "Herndon & Dryhurst's podcast/framework. Maps relational structures in art/tech. Systems thinking for interdependent practice."
+
+  # === HOLLY/MAT KEY WORKS ON FELLOWSHIP ===
+  - id: 6
+    name: "The Call (Herndon/Dryhurst + Serpentine)"
+    type: artwork
+    summary: "Choral AI installation. Three interconnected installations: Hearth, Wheel, Oratory. AI as extension of collective singing traditions. With Serpentine Arts Technologies."
+  - id: 7
+    name: "Starmirror (Herndon/Dryhurst)"
+    type: artwork
+    summary: "AI models coordinate humans to generate intelligence for collective benefit. Extends protocol art into speculative infrastructure."
+
+  # === GALLERY / PLATFORM INFRASTRUCTURE ===
+  - id: 8
+    name: "Fellowship.xyz"
+    type: gallery
+    summary: "Gallery canonising AI/algorithmic art. No permanent space. Represents Holly/Mat. alignDRAW book with Mat essay. Daily Program: 137 artists, 3500+ works. Institutional placements at MoMA, LACMA, ZKM."
+  - id: 9
+    name: "Serpentine Arts Technologies"
+    type: institution
+    summary: "Kay Watson's program. Future Art Ecosystems reports. Commissions at art/tech intersection. Collaborated with Holly/Mat on The Call."
+  - id: 10
+    name: "Feral File"
+    type: platform
+    summary: "Casey Reas / Bitmark. Artist-curated digital exhibitions. Strong practitioner community. Natural A(DAI) interoperability partner."
+  - id: 11
+    name: "Art Blocks"
+    type: platform
+    summary: "On-chain generative art. Survived downturn. Curated board model. Expanding via Engine into institutional partnerships."
+  - id: 12
+    name: "Rhizome / ArtBase"
+    type: institution
+    summary: "Digital art preservation. Net Art Anthology. Editorially bottlenecked. A(DAI) maps relational intelligence Rhizome doesn't."
+  - id: 13
+    name: "Are.na"
+    type: platform
+    summary: "Collaborative knowledge commons. No structured relations, no field-level synthesis. A(DAI) builds the relational layer."
+  - id: 14
+    name: "fx(hash) v2 / Tezos ecosystem"
+    type: platform
+    summary: "Commons-oriented on-chain generative art with evolving governance tools."
+  - id: 15
+    name: "Metalabel"
+    type: platform
+    summary: "Yancey Strickler. Collective releasing infrastructure. Commons framework for groups to publish creative work."
+
+  # === GRAPH-CURATED / RELATIONAL EXHIBITION PRECEDENTS ===
+  - id: 16
+    name: "teamLab"
+    type: collective
+    summary: "Immersive digital art environments (Borderless, Planets). Works respond to each other and visitors in real-time."
+  - id: 17
+    name: "Refik Anadol"
+    type: artist
+    summary: "Data sculptures. Unsupervised (MoMA). Large Nature Model (ecological data). Building/environment as generative system."
+  - id: 18
+    name: "Ian Cheng"
+    type: artist
+    summary: "Emissaries trilogy, BOB: live simulations that evolve. Self-recomposing artworks with emergent narrative from internal logic."
+  - id: 19
+    name: "Vladan Joler"
+    type: artist
+    summary: "Large-scale relational diagrams of AI infrastructure AS artwork (New Extractivism). Graph-as-exhibition direct precedent."
+  - id: 20
+    name: "Suzanne Treister"
+    type: artist
+    summary: "Decades mapping knowledge networks as art (HEXEN 2.0). Graph/diagram as artistic form."
+  - id: 21
+    name: "Forensic Architecture"
+    type: collective
+    summary: "Spatial evidence assemblies using relational data and graph analysis. Exhibition IS the investigative infrastructure."
+
+  # === GENERATIVE COMPOSITION / LIVE SYSTEMS ===
+  - id: 22
+    name: "Casey Reas"
+    type: artist
+    summary: "Co-creator Processing. {Software} Structures. Art emerging from relational rules. Also co-founded Feral File."
+  - id: 23
+    name: "Brian Eno"
+    type: artist
+    summary: "Generative music pioneer. Music for Installations. Systems that never repeat. Ambient generative composition."
+  - id: 24
+    name: "Ryoji Ikeda"
+    type: artist
+    summary: "Data-driven immersive installations (datamatics, the planck universe). Making data legible as sensory experience."
+  - id: 25
+    name: "Sougwen Chung"
+    type: artist
+    summary: "Robotic co-drawing systems. Artwork IS the feedback loop between human and machine. Relational composition as medium."
+  - id: 26
+    name: "Philip Beesley"
+    type: artist
+    summary: "Responsive architectural environments. Sensor-actuator meshes that breathe and respond. Physical model for Sense room."
+
+  # === EMBEDDING SPACE / SEMANTIC ART ===
+  - id: 27
+    name: "Memo Akten"
+    type: artist
+    summary: "Deep Meditations. Work on embedding spaces as artistic territory. Navigating latent/semantic spaces."
+  - id: 28
+    name: "Allison Parrish"
+    type: artist
+    summary: "Computational poet navigating embedding spaces as poetic terrain. Most articulate on semantic space as artistic medium."
+  - id: 29
+    name: "Sofia Crespo / Entangled Others"
+    type: artist-collective
+    summary: "Neural network organisms. Ecosystemic generative art. More-than-human relational frameworks between species."
+  - id: 30
+    name: "Mario Klingemann (Quasimondo)"
+    type: artist
+    summary: "GAN art pioneer. Latent space navigation as artistic practice."
+  - id: 31
+    name: "Anna Ridler"
+    type: artist
+    summary: "Datasets as artistic medium. Hand-labeled training data as craft. Explicit data provenance engagement."
+
+  # === COMMONS / COLLECTIVE INTELLIGENCE / PROTOCOL ART ===
+  - id: 32
+    name: "Lauren Lee McCarthy"
+    type: artist
+    summary: "Creator p5.js. Social systems/interfaces as artwork (LAUREN, Follower, Surrogate). Protocol art in social register."
+  - id: 33
+    name: "Jonas Lund"
+    type: artist
+    summary: "Jonas Lund Token: practice governed by token holders. Governance-as-art."
+  - id: 34
+    name: "Sarah Friend"
+    type: artist
+    summary: "Lifeforms (NFTs that must transfer or die), Isthmus. Commons governance as artistic material."
+  - id: 35
+    name: "Tega Brain"
+    type: artist
+    summary: "Environmental/systems art. Data infrastructure and governance as material. Asunder (AI land management)."
+  - id: 36
+    name: "Sam Lavigne"
+    type: artist
+    summary: "Tools and data systems as artworks. Scrapism, Videogrep. Data curation/recomposition as creative act."
+  - id: 37
+    name: "Everest Pipkin"
+    type: artist
+    summary: "Commons-oriented tool-making as art. Critical perspective on extractive tech."
+  - id: 38
+    name: "0xSalon"
+    type: collective
+    summary: "Relational/graph thinking and knowledge commons as artistic medium. Philosophy meets blockchain meets art."
+  - id: 39
+    name: "Trust (Berlin)"
+    type: collective
+    summary: "Knowledge commons and study infrastructure as creative practice."
+  - id: 40
+    name: "Harm van den Dorpel"
+    type: artist
+    summary: "Mutant Garden Seeder. Evolutionary algorithms. On-chain curation and relational aesthetics."
+  - id: 41
+    name: "Grimes / Elf.Tech"
+    type: artist-project
+    summary: "Open voice model with revenue-sharing. Commercial parallel to Holly+ protocol art."
+
+  # === IDENTITY / ARCHIVE / GOVERNANCE ===
+  - id: 42
+    name: "Jake Elwes"
+    type: artist
+    summary: "Zizi project: deepfake drag performance. Identity, training data, consent."
+  - id: 43
+    name: "Danielle Brathwaite-Shirley"
+    type: artist
+    summary: "Interactive archives centering Black trans experience. Rethinks who governs identity data."
+  - id: 44
+    name: "American Artist"
+    type: artist
+    summary: "My Blue Window. Surveillance, data as material. How knowledge systems encode power."
+  - id: 45
+    name: "Libby Heaney"
+    type: artist
+    summary: "Quantum computing as generative medium. Entanglement as model for relational connections. Venice Biennale."
+
+  # === CRITICAL / POLITICAL ===
+  - id: 46
+    name: "Hito Steyerl"
+    type: artist
+    summary: "This is the Future. AI, prediction, politics of data. Lecture-performances on political economy of generative AI."
+  - id: 47
+    name: "K Allado-McDowell"
+    type: artist-writer
+    summary: "Co-founded Artists + Machine Intelligence. Pharmako-AI co-authorship with LLMs."
+
+  # === SONIC / SPATIAL ===
+  - id: 48
+    name: "Lawrence Abu Hamdan"
+    type: artist
+    summary: "Sound as forensic/political material. Turner Prize. Makes auditory evidence spatial. Crucial for sonic Sense room dimension."
+  - id: 49
+    name: "Florian Hecker"
+    type: artist
+    summary: "Psychoacoustic sculpture. Sound that alters spatial perception. Generative in perceptual register."
+
+  # === THEORETICAL / CRITICAL VOICES ===
+  - id: 50
+    name: "Yuk Hui"
+    type: theorist
+    summary: "Philosopher of cosmotechnics. Non-extractive, culturally situated technology."
+  - id: 51
+    name: "Matteo Pasquinelli"
+    type: theorist
+    summary: "The Eye of the Master. What 'commons intelligence' means vs extractive intelligence."
+  - id: 52
+    name: "Legacy Russell"
+    type: theorist
+    summary: "Glitch Feminism. Resistance to categorisation. Relevant to frontier signals."
+  - id: 53
+    name: "McKenzie Wark"
+    type: theorist
+    summary: "Capital is Dead. Information commons. Political economy of vectoralist class."
+  - id: 54
+    name: "James Bridle"
+    type: theorist
+    summary: "New Dark Age, Ways of Being. Non-extractive knowledge systems. Intelligence beyond the human."
+  - id: 55
+    name: "Kate Crawford"
+    type: theorist
+    summary: "Atlas of AI. Material infrastructure of AI. Critical framing for responsible commons."
+
+  # === NON-WESTERN / GLOBAL SOUTH ===
+  - id: 56
+    name: "Cao Fei"
+    type: artist
+    summary: "Virtual worlds, digital urbanism from Chinese context. RMB City. Extends geographic range."
+  - id: 57
+    name: "Tabita Rezaire"
+    type: artist
+    summary: "Decolonial technology. Challenges extractive knowledge frameworks from Global South."
+
+  # === EXHIBITIONS / REPORTS ===
+  - id: 58
+    name: "Serpentine FAE4: Art x Decentralised AI (2024)"
+    type: report
+    summary: "Report mapping decentralised AI and art infrastructure. Direct field intelligence for A(DAI)."
+  - id: 59
+    name: "alignDRAW 10-Year Anniversary (Fellowship.xyz)"
+    type: exhibition-publication
+    summary: "Book with essays by Mat Dryhurst, Lev Manovich, Eva Jäger. Exhibited Art Basel 2024, Worcester Art Museum. Neural network image generation history."
+
+execution:
+  batch_size: 5
+  items_per_agent: 5
+  output_dir: "./results"

@@ -1,0 +1,98 @@
+{
+  "basic_info": {
+    "name": "Brian Eno",
+    "type": "artist",
+    "active_years": "1971-present",
+    "location": "London, UK",
+    "url": "https://brian-eno.net"
+  },
+  "practice_description": {
+    "medium": "generative music, ambient sound, light installation, generative software, video",
+    "practice_summary": "Pioneer of ambient and generative music who designs self-generating systems that produce endlessly non-repeating compositions. His practice centers on building frameworks that make music with minimal ongoing intervention — the artist as planner and programmer, then audience to the results.",
+    "methodology": "Eno designs systems using incommensurable loops — multiple independent audio or visual tracks of different lengths that, when layered, produce combinations that never exactly repeat. Inspired by wind chimes and Steve Reich's tape pieces, he builds frameworks where elements recombine endlessly. His approach progressed from tape loops (Discreet Music, 1975) through MIDI-based generative systems (1990s) to software apps (Bloom, Reflection) and generative film (Eno documentary, 2024). He describes himself as 'a systems manipulator' rather than a musician, gravitating toward 'situations and systems that, once set into operation, could create music with little or no intervention.' His visual practice uses the same generative logic — 77 Million Paintings layers hand-painted slides via software to produce combinations requiring 10,000 years to exhaust."
+  },
+  "relevance_to_sense_room": {
+    "relevance_summary": "Eno's generative systems are the foundational model for continuously self-recomposing art that never repeats. His approach — designing frameworks of independent elements that recombine according to simple rules — directly demonstrates how a Sense Room could function: art as an endlessly evolving ambient field shaped by relational parameters.",
+    "art_as_substrate": "Yes, profoundly. Eno's ambient works are explicitly designed to function as environmental substrate — 'ambient music is intended to induce calm and create a space in which to think.' His light installations and generative paintings serve as ground layers for inhabited spaces (hospitals, airports, museums).",
+    "relational_composition": "Yes. The core technique of incommensurable loops IS relational composition — independent elements relate to each other through temporal offset, and the artwork emerges from the continuously shifting relationships between them.",
+    "self_recomposing": "Yes, fundamentally. This is the central characteristic of all Eno's generative work. Systems never repeat — Reflection's app creates 'an endless and endlessly changing version of the piece.' 77 Million Paintings would take 400+ years before any visual repetition."
+  },
+  "key_works": {
+    "works": [
+      {
+        "title": "Music for Airports (Ambient 1)",
+        "year": "1978",
+        "description": "Foundational ambient album using tape loops of different lengths to create endlessly recombining compositions. Track '2/1' uses seven vocal loops and one piano loop of incommensurable lengths.",
+        "relevance": "Establishes the core generative technique — independent loops with different periods producing non-repeating compositions — that directly models how relational elements in a Sense Room could recombine."
+      },
+      {
+        "title": "77 Million Paintings",
+        "year": "2006",
+        "description": "Generative software combining 296 hand-painted glass slides four at a time, with generative music, producing 77 million possible combinations. Software developed by Jake Dowie. Released as DVD/software and exhibited on the Sydney Opera House sails.",
+        "relevance": "Demonstrates generative visual-sonic composition for inhabited spaces. The hand-made-to-algorithmic pipeline (paint on glass to software recombination) models how human-created art materials can be substrate for generative systems."
+      },
+      {
+        "title": "Reflection",
+        "year": "2017",
+        "description": "Album released alongside a generative app (developed with Peter Chilvers) that creates an endless, endlessly changing version of the piece. Represents the most sophisticated of Eno's ambient generative experiments.",
+        "relevance": "The app format puts generative composition directly in users' hands — a model for how Sense Room experiences could be distributed and co-inhabited."
+      }
+    ]
+  },
+  "protocol_art_resonance": {
+    "protocol_art_summary": "Eno's entire practice treats system design as the artistic act. He designs the rules, parameters, and relationships — then steps back to let the system perform. His Oblique Strategies cards (with Peter Schmidt) formalize creative decision-making as a protocol. His role at the Long Now Foundation extends systems thinking to civilizational timescales.",
+    "system_designed": "Generative music systems using incommensurable loops; Oblique Strategies (decision-making protocol for creative practice); generative software frameworks (77 Million Paintings, Bloom, Scape, Reflection apps); permanent generative installations for hospitals and public spaces."
+  },
+  "commons_orientation": {
+    "licence_model": "proprietary",
+    "commons_summary": "Eno's generative apps (Bloom, Scape, Reflection) are commercial products. His music and installations operate within standard commercial art/music markets. However, his philosophical contributions to generative art are widely shared through lectures, writing, and the Long Now Foundation. The conceptual framework (generative systems, ambient as environmental art) has become commons knowledge even if specific implementations are proprietary."
+  },
+  "governance_model": {
+    "governance_type": "solo",
+    "governance_detail": "Eno operates as solo artist with collaborators (Peter Chilvers for apps, Jake Dowie for 77 Million Paintings software, various musicians). Creative decisions are ultimately his. Long-term collaborations with institutions (Long Now Foundation, hospitals) involve some shared governance of permanent installations."
+  },
+  "consent_and_authorship": {
+    "consent_approach": "Generative works invite audience participation (apps allow co-creation) but within Eno's defined parameters. Installation visitors are passive recipients of the generative environment. No explicit consent framework beyond standard commercial art relationships.",
+    "authorship_model": "Solo with technical collaborators. Eno designs the system; collaborators implement software. The generative system itself becomes a co-author in a philosophical sense — Eno explicitly positions himself as audience to his own systems' outputs."
+  },
+  "liveness_and_duration": {
+    "temporal_type": "durational-infinite",
+    "temporal_detail": "Generative works are designed to run indefinitely without repeating. 77 Million Paintings would take 400+ years to cycle through all visual combinations. Some works calculated to require 10,000 years for full exploration. Permanent installations at Montefiore Hospital run continuously. The generative principle means each moment is unique and unrepeatable."
+  },
+  "data_materiality": {
+    "data_sources": "Self-generated: hand-painted glass slides (77 Million Paintings), composed musical fragments, vocal recordings, synthesized tones, bell-like sounds. All source material is created by Eno or close collaborators.",
+    "data_provenance": "Self-generated. All source material is original — painted slides, composed audio fragments, recorded performances. No scraped or external data. Clean provenance chain from artist to generative system."
+  },
+  "embedding_space_relevance": {
+    "embedding_summary": "Eno's generative systems do not engage with computational embedding spaces. However, his combinatorial approach — layering independent elements to produce emergent wholes — is conceptually analogous to navigating a high-dimensional space of possible compositions. The 77-million-combination space is a discrete combinatorial space rather than a continuous embedding.",
+    "multimodal": "Yes — 77 Million Paintings and installations combine generative visual and sonic elements in a unified ambient environment. The Eno documentary (2024) is a generative film combining visual and audio."
+  },
+  "exhibition_modality": {
+    "modality": "ambient",
+    "spatial_description": "Installations designed to transform inhabited spaces into generative ambient environments. Works are projected onto walls, displayed on plasma screens, and fill rooms with sound. Permanent installations in hospitals and public venues. Large-scale projections (Sydney Opera House sails). Gallery exhibitions create immersive light-and-sound environments designed for extended contemplation."
+  },
+  "sensory_register": {
+    "senses": "sonic, visual",
+    "dominant_register": "sonic"
+  },
+  "interoperability": {
+    "composability": "Limited. Eno's generative systems are self-contained — they produce outputs but are not designed to accept external inputs or compose with other systems. The apps (Bloom, Scape) allow user interaction but within closed parameters.",
+    "technical_openness": "Closed system. Proprietary software, commercial apps, no open-source components."
+  },
+  "technical_approach": {
+    "stack": "Custom generative software (Jake Dowie for 77 Million Paintings), iOS app development (Peter Chilvers for Bloom, Scape, Reflection), MIDI-based generative systems, tape loop techniques, custom light installations using LED/plasma screens, generative film software (Brendan Dawes for Eno documentary)"
+  },
+  "network_position": {
+    "position_type": "hub",
+    "scene_affiliation": "Bridges ambient music, contemporary art, generative systems, and long-term thinking communities. Connected to Long Now Foundation, Roxy Music legacy, art-rock and electronic music scenes, museum/gallery world (Tate, MoMA), and the broader generative art movement.",
+    "connections": "Peter Chilvers (app collaborator), Long Now Foundation (Stewart Brand), generative music lineage (Steve Reich, Terry Riley), Robert Fripp, David Bowie legacy, Gary Hustwit (Eno documentary)"
+  },
+  "potential_role_in_adai": {
+    "role": "theoretical-reference",
+    "role_detail": "Eno's generative practice provides the foundational conceptual model for A(DAI)'s Sense Room: systems that self-compose endlessly from relational parameters. His ambient philosophy — art as environmental substrate that enhances rather than demands attention — directly informs how a graph-curated exhibition could function as an inhabited generative environment. His incommensurable-loops technique is a simple, powerful model for relational composition."
+  },
+  "temporal_status": {
+    "status": "ongoing-practice"
+  },
+  "uncertain": []
+}

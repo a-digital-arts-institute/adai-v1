@@ -1,0 +1,98 @@
+{
+  "basic_info": {
+    "name": "Interdependence (podcast/framework)",
+    "type": "theoretical",
+    "active_years": "2020-present",
+    "location": "Berlin, Germany (produced); distributed globally (listenership)",
+    "url": "https://www.patreon.com/interdependence"
+  },
+  "practice_description": {
+    "medium": "Podcast, writing, theoretical framework",
+    "practice_summary": "Podcast and intellectual framework by Holly Herndon and Mat Dryhurst mapping relational structures across art, technology, and culture. Described as a '$5 grad school' covering the people, projects, and technologies shaping 21st century culture, with focus on AI, crypto, DAOs, and decentralized systems.",
+    "methodology": "Long-form conversational interviews with practitioners, technologists, and thinkers at the intersection of art, technology, and policy. The podcast establishes context for emergent work by revealing interdependencies between projects, scenes, and ideas. Patreon-supported ($6.50/month) with weekly episodes for patrons and time-delayed free feed. The framework foregrounds interdependence as an organizing principle -- understanding that creative and technological practices are relationally determined rather than autonomous."
+  },
+  "relevance_to_sense_room": {
+    "relevance_summary": "Interdependence provides the theoretical vocabulary and relational mapping methodology that a graph-curated generative exhibition needs. Its framework of understanding art and technology as interdependent systems directly supports A(DAI)'s graph-based approach to collective intelligence.",
+    "art_as_substrate": "Indirectly -- the podcast and framework do not produce art-as-substrate themselves, but they articulate the theoretical basis for why art should function as substrate in relational systems. The conversations surface the conceptual ground on which projects like Holly+ and Spawning are built.",
+    "relational_composition": "This is the core proposition. Interdependence is explicitly about relational composition -- understanding that creative practices, technologies, and communities are interdependent rather than isolated. The podcast reveals the graph of connections between practitioners, and the framework provides vocabulary for describing how these connections generate meaning.",
+    "self_recomposing": "Yes, in a discursive sense. The framework evolves with each episode and each guest's contribution. New conversations recontextualize earlier ones. The network of ideas and practitioners mapped by the podcast continuously recomposes as the field changes."
+  },
+  "key_works": {
+    "works": [
+      {
+        "title": "Interdependence Podcast",
+        "year": 2020,
+        "description": "Ongoing weekly podcast hosted by Holly Herndon and Mat Dryhurst. Long-form conversations with artists, technologists, and thinkers on music, AI, crypto, DAOs, energy policy, digital culture. Guests have included Evgeny Morozov, Marianna Simnett, Shawn Reynaldo, and many others across the art/tech spectrum. Patreon-supported.",
+        "relevance": "The primary output of the interdependence framework. Functions as a living map of the relational field that A(DAI) aims to serve. Episodes surface connections, debates, and emerging practices that would be invisible without this kind of sustained conversational inquiry."
+      },
+      {
+        "title": "Interdependence as Theoretical Framework",
+        "year": 2020,
+        "description": "The conceptual framework underlying the podcast: that creative and technological practices are fundamentally interdependent -- not autonomous or merely 'influenced by' each other, but relationally constituted. Draws on systems thinking, decentralized technology, and Herndon/Dryhurst's own art practice to argue for collective, relational approaches to creative production.",
+        "relevance": "Provides theoretical grounding for A(DAI)'s graph-based intelligence model. The idea that practices are relationally determined maps directly onto graph topology where nodes gain meaning from their connections."
+      },
+      {
+        "title": "Herndon/Dryhurst Public Discourse (Talks, Interviews, Writing)",
+        "year": "2019-present",
+        "description": "Beyond the podcast, Herndon and Dryhurst articulate interdependence through TED talks, institutional conversations (Hans Ulrich Obrist at Serpentine), press interviews, and Foundation blog posts. These public interventions extend the framework's reach and refine its concepts.",
+        "relevance": "Extends the interdependence framework into institutional and mainstream discourse, demonstrating how theoretical work translates into policy influence (EU text and data mining), institutional programming (Serpentine), and recognition (TIME 100 AI voices)."
+      }
+    ]
+  },
+  "protocol_art_resonance": {
+    "protocol_art_summary": "Interdependence is itself a protocol -- a set of conversational practices, intellectual commitments, and community-building methods that generate collective knowledge. The podcast is not just documentation of protocol art but an instance of it: a recurring ritual of conversation that produces shared understanding. The framework provides the theoretical justification for protocol art as a category.",
+    "system_designed": "The Interdependence podcast/Patreon as a knowledge production and community formation system; the interdependence framework as a theoretical tool for understanding art-as-systems-design; the conversational format as a protocol for surfacing relational structures in the field."
+  },
+  "commons_orientation": {
+    "licence_model": "Hybrid -- Patreon-supported with paid early access ($6.50/month) and free time-delayed feed. Knowledge is ultimately made publicly available but patrons subsidize production.",
+    "commons_summary": "Interdependence builds intellectual commons. The podcast makes high-level discourse about AI, art, and technology accessible to a broad audience (described as a '$5 grad school'). The knowledge produced is cumulative and shared. The framework itself is open -- anyone can apply interdependence thinking to their practice. The economic model (Patreon) sustains commons production without enclosing it."
+  },
+  "governance_model": {
+    "governance_type": "solo",
+    "governance_detail": "Hosted and editorially controlled by Holly Herndon and Mat Dryhurst as a duo. Guest selection, topic framing, and episode structure are their editorial decisions. Patreon supporters have no formal governance role but their financial support sustains the project. The format is conversational rather than directive -- guests shape the discourse within the hosts' editorial framework."
+  },
+  "consent_and_authorship": {
+    "consent_approach": "Guests consent to appear and share their perspectives. The conversational format means ideas are co-produced in dialogue rather than extracted. No data collection or training data issues -- this is a discourse-based practice.",
+    "authorship_model": "Collaborative -- Herndon and Dryhurst are hosts/editors, but each episode is co-authored with guests. The framework emerges from collective conversation rather than individual pronouncement. The podcast makes authorship of ideas visible by attributing them to specific practitioners."
+  },
+  "liveness_and_duration": {
+    "temporal_type": "continuously-evolving",
+    "temporal_detail": "The podcast has been running weekly since 2020. The framework evolves with each episode. New guests and topics recontextualize earlier conversations. The archive of episodes forms a growing knowledge base. The project has no planned end date and continues to adapt to emerging developments in AI, art, and technology."
+  },
+  "data_materiality": {
+    "data_sources": "Conversations with practitioners, technologists, artists, and thinkers. The 'data' is discourse -- spoken knowledge, perspectives, experiences, and analysis from guests across the art/tech spectrum.",
+    "data_provenance": "Fully consented. Guests voluntarily participate in recorded conversations. All discourse is attributed to named speakers. No scraped or extracted data."
+  },
+  "embedding_space_relevance": {
+    "embedding_summary": "Interdependence does not directly engage with embedding spaces technically. However, the framework describes a kind of conceptual embedding space -- a relational topology where practitioners, projects, and ideas are positioned relative to each other. The podcast maps this space through conversation, revealing clusters, connections, and distances between different approaches.",
+    "multimodal": "Primarily audio (podcast), with textual extensions (writing, social media). Not multimodal in the technical sense of spanning data modalities."
+  },
+  "exhibition_modality": {
+    "modality": "web",
+    "spatial_description": "Primarily distributed via podcast platforms (Apple Podcasts, Spotify, Patreon). The podcast exists in the intimate space of headphones and personal listening. Some ideas from the framework have been exhibited through Herndon and Dryhurst's installations (The Call, etc.) but the podcast itself is a web-distributed audio format."
+  },
+  "sensory_register": {
+    "senses": "sonic, textual",
+    "dominant_register": "sonic"
+  },
+  "interoperability": {
+    "composability": "Moderate -- the ideas produced by Interdependence are highly composable (they inform and connect to many other practices and projects), but the podcast format itself is a closed medium. The framework is composable as an intellectual tool that can be applied to other contexts.",
+    "technical_openness": "Partially open -- free episodes are publicly available (time-delayed). Patreon episodes are behind a paywall. The intellectual framework is open and freely applicable."
+  },
+  "technical_approach": {
+    "stack": "Podcast recording and production; Patreon for subscription management and distribution; Apple Podcasts, Spotify, and other podcast platforms for distribution; social media (X/Twitter) for promotion and discourse extension."
+  },
+  "network_position": {
+    "position_type": "bridge",
+    "scene_affiliation": "AI art and ethics; electronic music; crypto/Web3 art; Berlin art and technology scene; decentralized technology community; AI policy discourse; contemporary art institutional world (Serpentine, Whitney, Ars Electronica connections through guests and hosts).",
+    "connections": "Holly Herndon (co-host); Mat Dryhurst (co-host); Spawning AI / Source.Plus (discussed and contextualized by the podcast); Holly+ (discussed and contextualized); all podcast guests form an extended network; Evgeny Morozov; Marianna Simnett; Hans Ulrich Obrist; Serpentine Galleries; broader AI ethics community."
+  },
+  "potential_role_in_adai": {
+    "role": "theoretical-reference",
+    "role_detail": "Interdependence provides the most directly relevant theoretical framework for A(DAI)'s approach. The idea that practices are relationally constituted (not autonomous) maps onto A(DAI)'s graph topology. The podcast's method of surfacing connections through sustained conversation parallels A(DAI)'s signal processing and sensemaking. The framework's vocabulary (interdependence, systems-centric art, protocol art) provides language for articulating what A(DAI) is building. Could also serve as a distribution channel if Herndon/Dryhurst engaged with A(DAI)."
+  },
+  "temporal_status": {
+    "status": "ongoing-practice"
+  },
+  "uncertain": []
+}

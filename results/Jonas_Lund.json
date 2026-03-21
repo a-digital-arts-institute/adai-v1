@@ -1,0 +1,98 @@
+{
+  "basic_info": {
+    "name": "Jonas Lund",
+    "type": "artist",
+    "active_years": "2011-present",
+    "location": "Berlin, Germany (formerly Amsterdam)",
+    "url": "https://jonaslund.com"
+  },
+  "practice_description": {
+    "medium": "Software, blockchain, painting, installation, performance, data visualization, web-based work",
+    "practice_summary": "Artist whose practice is governed by holders of the Jonas Lund Token (JLT), making governance and decision-making the primary artistic medium. His broader practice uses data mining, algorithms, and institutional critique to expose the hidden systems that shape the art world.",
+    "methodology": "Lund creates algorithmic and data-driven systems that expose or replicate the logic of art world institutions, markets, and social networks. His most significant work, the Jonas Lund Token, transfers governance of his artistic practice to token holders who vote on what he should make, where to exhibit, and how to present work. Earlier works used web scraping and data analysis to reverse-engineer art world success metrics. He has a background in programming and studied at the Sandberg Instituut and Piet Zwart Institute. His methodology deliberately collapses the boundary between art-making and the systems that contextualize art."
+  },
+  "relevance_to_sense_room": {
+    "relevance_summary": "Lund's practice is the most literal example of governance-as-art: his creative decisions are determined by a distributed voting system. This directly models how a graph-curated exhibition might use collective intelligence and token-based governance to determine compositional choices.",
+    "art_as_substrate": "Partial -- the governance system (JLT) is a substrate that generates artistic output, but the outputs themselves (paintings, installations) are conventional art objects. The token system is the substrate; the art it produces is secondary.",
+    "relational_composition": "Yes -- the relationship between token holders and artistic output is a relational composition. Decisions about what to make are determined by the network of token-holder preferences, votes, and social dynamics. The art is literally composed by relational governance.",
+    "self_recomposing": "Yes -- the practice continuously evolves based on token holder votes. Each decision point (what to exhibit, what medium to use, what subject matter) is determined by the governance network, so the practice recomposes itself through collective input."
+  },
+  "key_works": {
+    "works": [
+      {
+        "title": "Jonas Lund Token (JLT)",
+        "year": 2018,
+        "description": "ERC-20 token on Ethereum that gives holders voting rights over Lund's artistic practice. 100,000 tokens were minted and distributed to art world figures. Token holders vote on decisions including what work to make, where to exhibit, and how to price work. Launched at NOME Gallery, Berlin.",
+        "relevance": "Paradigmatic governance-as-art: the token system IS the artwork. Directly models how distributed decision-making could structure a generative exhibition, with the graph of token-holder relationships determining artistic output."
+      },
+      {
+        "title": "The Top 100 Highest Ranked Curators in the World",
+        "year": 2013,
+        "description": "Data-driven installation that scraped art world databases to algorithmically rank curators by influence metrics. Presented the hidden power structures of the art world as a visible, quantified system.",
+        "relevance": "Demonstrates how data analysis can reveal the hidden graph structure of institutional power in the art world -- making invisible relational networks visible and quantifiable."
+      },
+      {
+        "title": "Operation Earnest Voice",
+        "year": 2019,
+        "description": "AI-generated paintings where machine learning algorithms analyze art market data and trends to determine what paintings should look like in order to be successful. The algorithm makes compositional and stylistic decisions based on market logic.",
+        "relevance": "Shows how algorithmic systems can drive artistic composition -- the 'curator' is a data-driven algorithm. Raises questions about whether market-optimized art is still art, directly relevant to how automated graph curation might work."
+      }
+    ]
+  },
+  "protocol_art_resonance": {
+    "protocol_art_summary": "Lund's practice is one of the most explicit examples of protocol art: he has literally encoded the governance of his artistic practice into a blockchain protocol. The rules for how decisions are made about his art -- who votes, how votes are counted, what can be decided -- are designed as artistic material. The protocol IS the artwork, and the art objects it produces are secondary outputs.",
+    "system_designed": "Jonas Lund Token (JLT) governance system: an ERC-20 token-based voting protocol for collective artistic decision-making. Also created various data-scraping and ranking systems that expose art world infrastructure, and AI systems that generate market-optimized paintings."
+  },
+  "commons_orientation": {
+    "licence_model": "hybrid",
+    "commons_summary": "The JLT system distributes governance power but retains market logic -- tokens were initially given to art world insiders and can be traded, potentially concentrating power. It is a commons experiment with capitalist characteristics. Lund's data-driven works often use publicly available data but the tools themselves are not released as commons resources. His practice critiques enclosure while also operating within market systems."
+  },
+  "governance_model": {
+    "governance_type": "audience-participatory",
+    "governance_detail": "JLT holders vote on major artistic decisions. 100,000 tokens were minted, with initial distribution to art world figures (curators, collectors, critics, artists). Tokens can be transferred or traded. Voting is on-chain. Lund has described tension between following token-holder votes and his own artistic judgment -- the governance friction is itself part of the artwork. Token holder meetings and votes are documented as part of the practice."
+  },
+  "consent_and_authorship": {
+    "consent_approach": "Token holders consent to participate by accepting and holding tokens. Lund consents to be governed by the collective, though the extent of his compliance is deliberately ambiguous -- the tension between artist autonomy and collective governance is artistic material.",
+    "authorship_model": "Distributed/collective -- authorship is formally shared between Lund (executor) and token holders (decision-makers). In practice, Lund retains significant interpretive authority in how he executes collective decisions. Machine co-authorship appears in algorithm-driven works like Operation Earnest Voice."
+  },
+  "liveness_and_duration": {
+    "temporal_type": "continuously-evolving",
+    "temporal_detail": "The JLT governance system is ongoing and open-ended -- the practice continues to evolve as token holders make new decisions. Each vote and decision point is a temporal event in the life of the artwork. The token economy itself evolves as tokens change hands and power dynamics shift."
+  },
+  "data_materiality": {
+    "data_sources": "Art market databases, gallery and museum exhibition records, art world social network data, blockchain transaction data (Ethereum), art auction data, web-scraped institutional data, AI training data for painting generation.",
+    "data_provenance": "Mixed -- art world data is scraped from public databases and institutional websites (non-consented but public). Blockchain data is public by design. AI training data provenance for painting works is not always specified. The ethical status of scraping art world data is part of the institutional critique."
+  },
+  "embedding_space_relevance": {
+    "embedding_summary": "Lund's AI-generated painting works (Operation Earnest Voice) engage with latent spaces in generative image models, navigating aesthetic spaces shaped by market data. The JLT governance system creates a kind of social embedding space where artistic decisions are positioned relative to collective preferences.",
+    "multimodal": "Yes in aggregate -- practice spans painting, installation, web platforms, blockchain, data visualization, and performance. Individual works tend to be single-medium."
+  },
+  "exhibition_modality": {
+    "modality": "hybrid",
+    "spatial_description": "JLT exists simultaneously as blockchain protocol (digital), physical token-holder meetings, and gallery exhibitions of the paintings/objects produced through governance votes. Data visualization works are typically screen-based or large-scale prints. Paintings from Operation Earnest Voice are presented as conventional gallery objects, with their algorithmic provenance creating conceptual tension with their physical presence."
+  },
+  "sensory_register": {
+    "senses": "visual, textual",
+    "dominant_register": "visual"
+  },
+  "interoperability": {
+    "composability": "Moderate -- JLT is an ERC-20 token on Ethereum, meaning it is inherently interoperable with the broader blockchain ecosystem (wallets, exchanges, DAOs, DeFi protocols). The governance outputs (artworks) are conventional objects that do not specifically enable further composition.",
+    "technical_openness": "Partially open -- blockchain contracts are public and verifiable. Data scraping tools and AI painting systems are not typically released as open-source."
+  },
+  "technical_approach": {
+    "stack": "Ethereum blockchain (Solidity smart contracts, ERC-20 tokens), Python, web scraping tools, machine learning (GANs, neural networks for painting generation), JavaScript, data visualization libraries, custom web platforms."
+  },
+  "network_position": {
+    "position_type": "bridge",
+    "scene_affiliation": "European digital art / post-internet scene; blockchain art community; Amsterdam and Berlin art scenes; institutional critique / net art tradition; Sandberg Instituut / Piet Zwart Institute alumni networks; NOME Gallery Berlin; Whitechapel Gallery; Ars Electronica; Steve Turner Gallery LA.",
+    "connections": "Harm van den Dorpel (blockchain art, post-internet); Simon Denny (institutional critique, blockchain art); Sarah Friend (blockchain art, commons governance); Rhizome (net art community); connected to broader crypto-art and DAO art discourse."
+  },
+  "potential_role_in_adai": {
+    "role": "conversation-partner",
+    "role_detail": "Lund's JLT is the most direct precedent for governance-as-art in the digital arts field. His experience with token-based collective decision-making -- including its failures, tensions, and unexpected dynamics -- is directly relevant to A(DAI)'s governance design. Could advise on how collective intelligence actually functions (or doesn't) when encoded in protocols, and the tension between artistic autonomy and distributed governance."
+  },
+  "temporal_status": {
+    "status": "ongoing-practice"
+  },
+  "uncertain": ["active_years", "location"]
+}

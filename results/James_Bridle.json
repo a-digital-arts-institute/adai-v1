@@ -1,0 +1,98 @@
+{
+  "basic_info": {
+    "name": "James Bridle",
+    "type": "theorist",
+    "active_years": "2006-present",
+    "location": "Athens, Greece",
+    "url": "https://jamesbridle.com"
+  },
+  "practice_description": {
+    "medium": "writing, art, technology, installation, web-based work",
+    "practice_summary": "Artist, writer, and technologist whose work explores the intersection of technology, culture, and politics, arguing for intelligence beyond the human — a more-than-human cognition distributed across ecological and technological systems that resists extractive epistemologies.",
+    "methodology": "Bridle works across art, writing, and technology in an unusually integrated practice. They combine investigative journalism techniques, artistic practice, and philosophical inquiry to make visible the hidden infrastructures of technology and power. Their methodology involves building things (websites, installations, autonomous vehicles) as a way of thinking through technological systems, combined with longform writing that synthesizes art, science, and politics. They draw on ecology, cybernetics, and indigenous knowledge systems."
+  },
+  "relevance_to_sense_room": {
+    "relevance_summary": "Bridle's concept of more-than-human intelligence and non-extractive knowledge systems provides both a philosophical and practical model for how A(DAI) can build collective intelligence infrastructure that is ecological rather than extractive, distributed rather than centralized.",
+    "art_as_substrate": "Yes — Bridle's artworks (Autonomous Trap, drone shadows, algorithmic citizenship projects) function as both standalone works and as demonstrations of systemic concepts. They could serve as substrate within a generative composition, embodying the tensions between technological systems and more-than-human ecologies.",
+    "relational_composition": "Bridle's practice is deeply relational — their work consistently maps connections between technology, ecology, politics, and culture. Their art often takes the form of revealing hidden networks and relationships.",
+    "self_recomposing": "Several of Bridle's works are responsive to real-time data or changing conditions. Their approach to technology is inherently about systems that evolve and adapt."
+  },
+  "key_works": {
+    "works": [
+      {
+        "title": "Ways of Being: Beyond Human Intelligence",
+        "year": 2022,
+        "description": "Book arguing for a radical expansion of what we consider intelligence — encompassing animal cognition, plant communication, ecological systems, and distributed computation. Proposes non-extractive approaches to knowledge and technology.",
+        "relevance": "Directly relevant to A(DAI)'s ambition to build intelligence infrastructure that is non-extractive. Provides the philosophical framework for understanding intelligence as distributed, ecological, and more-than-human."
+      },
+      {
+        "title": "New Dark Age: Technology and the End of the Future",
+        "year": 2018,
+        "description": "Book examining how the rise of computational thinking has not led to greater understanding but to new forms of opacity, conspiracy, and helplessness. Argues that we need new ways of thinking about and with technology.",
+        "relevance": "Critical diagnostic of why existing technological infrastructure fails as a knowledge system, and why alternatives like A(DAI) are needed. The 'new dark age' is what happens when intelligence infrastructure is extractive and opaque."
+      },
+      {
+        "title": "Autonomous Trap 001",
+        "year": 2017,
+        "description": "Artwork in which Bridle drew a circle of road markings on the ground to 'trap' a self-driving car, which could not cross the lines. A simple, powerful demonstration of algorithmic limitation.",
+        "relevance": "Exemplary work showing how art can reveal the logic and limits of autonomous systems — relevant to A(DAI)'s interest in art that interrogates and reconfigures technical infrastructure."
+      }
+    ]
+  },
+  "protocol_art_resonance": {
+    "protocol_art_summary": "Bridle's practice is deeply engaged with systems and infrastructure as creative medium. They build websites, autonomous systems, and investigative tools as art, treating protocol and infrastructure design as inherently aesthetic and political acts.",
+    "system_designed": "Multiple web-based investigative tools and platforms, including Citizen Ex (algorithmic citizenship project), drone shadow installations, and various web-based artworks that function as infrastructure critiques."
+  },
+  "commons_orientation": {
+    "licence_model": "hybrid",
+    "commons_summary": "Bridle is strongly oriented toward open and commons-based approaches. Their writing advocates for non-extractive knowledge systems and ecological approaches to technology. Many of their web-based works are openly accessible. They publish through trade presses but advocate for knowledge commons."
+  },
+  "governance_model": {
+    "governance_type": "solo",
+    "governance_detail": "Works primarily as an individual artist-writer-technologist, though collaborates with institutions, festivals, and research groups. Decision-making is solo but informed by ecological and more-than-human thinking that decenters individual authorship."
+  },
+  "consent_and_authorship": {
+    "consent_approach": "Bridle's work often engages with public data and visible infrastructure. Their ethical framework is grounded in transparency and making hidden systems visible rather than extracting from individuals.",
+    "authorship_model": "Solo authorship with collaborative elements. Their theoretical framework explicitly argues for decentering human authorship in favor of more-than-human intelligence."
+  },
+  "liveness_and_duration": {
+    "temporal_type": "responsive-to-input",
+    "temporal_detail": "Written works are fixed, but many artworks are responsive to real-time data, environmental conditions, or audience interaction. Web-based works evolve with the internet itself."
+  },
+  "data_materiality": {
+    "data_sources": "Satellite imagery, drone footage, government data, ecological data, network traffic, algorithmic outputs, public surveillance data",
+    "data_provenance": "Primarily public domain and self-generated data. Investigative approach means data is often gathered through FOIA requests, open-source intelligence, and direct observation."
+  },
+  "embedding_space_relevance": {
+    "embedding_summary": "Bridle's work does not directly engage with technical embedding spaces, but their concept of more-than-human intelligence suggests embedding spaces should encode ecological and non-human forms of knowledge alongside human cultural production.",
+    "multimodal": "Yes — their practice spans writing, visual art, web-based work, installation, and technology, operating across multiple modalities."
+  },
+  "exhibition_modality": {
+    "modality": "hybrid",
+    "spatial_description": "Work spans gallery installation, web-based projects, public interventions, and publishing. Installations often make invisible infrastructure visible in physical space. Web works create parallel digital spaces for investigation."
+  },
+  "sensory_register": {
+    "senses": "visual, textual",
+    "dominant_register": "visual"
+  },
+  "interoperability": {
+    "composability": "Bridle's web-based works expose data and systems in ways that could interface with other systems. Their conceptual frameworks are highly composable across different contexts.",
+    "technical_openness": "Hybrid — many web projects are openly accessible, some source code shared, writing published through trade channels."
+  },
+  "technical_approach": {
+    "stack": "Web technologies (HTML, CSS, JavaScript), satellite imagery tools, mapping platforms, machine learning (for autonomous vehicle work), custom software"
+  },
+  "network_position": {
+    "position_type": "bridge",
+    "scene_affiliation": "Art-technology crossover, investigative art, new aesthetics, ecological technology, transmediale, Serpentine Galleries, Barbican, critical technology studies",
+    "connections": "Kate Crawford (critical AI infrastructure), Matteo Pasquinelli (non-extractive intelligence), McKenzie Wark (political economy of information)"
+  },
+  "potential_role_in_adai": {
+    "role": "theoretical-reference",
+    "role_detail": "Bridle provides both the philosophical framework (more-than-human intelligence, non-extractive knowledge) and practical precedent (art that builds and interrogates infrastructure) for A(DAI). Their work bridges theory and practice in exactly the way A(DAI) aims to. Could serve as a conversation partner, advisory voice, or even contributor — their practice is closely aligned with A(DAI)'s mission."
+  },
+  "temporal_status": {
+    "status": "ongoing-practice"
+  },
+  "uncertain": ["location", "active_years"]
+}

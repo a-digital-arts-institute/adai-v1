@@ -1,0 +1,98 @@
+{
+  "basic_info": {
+    "name": "Casey Reas",
+    "type": "artist",
+    "active_years": "1999-present",
+    "location": "Los Angeles, USA",
+    "url": "https://reas.com"
+  },
+  "practice_description": {
+    "medium": "software, generative art, installation, print, drawing, machine learning",
+    "practice_summary": "Artist and educator who co-created the Processing programming language and co-founded Feral File. His practice explores art emerging from relational rules — defining systems rather than composing images — connecting 1960s conceptual art instruction-based practice to 21st-century generative computation.",
+    "methodology": "Reas writes code to define systems of autonomous elements whose interactions produce emergent visual forms. Inspired by Sol LeWitt's instructional wall drawings, he translates written scores into generative software where the artist's role is to define relational rules rather than compose pictures. His Process series (2005-ongoing) explores instruction-based visuals where possibilities for interaction between elements are outlined in code, and structures evolve through element actions within given parameters. Later work (Ultraconcentrated, In Silico, Compressed Cinema) extends into machine learning, using GANs to compress and transform existing media. He also curates and builds infrastructure for digital art through Feral File."
+  },
+  "relevance_to_sense_room": {
+    "relevance_summary": "Reas's practice is a foundational reference for relational composition in generative art — his Software Structures project explicitly demonstrated how art can emerge from defined relational rules rather than fixed compositions. His dual role as artist and infrastructure-builder (Processing, Feral File) directly models the art-first-yet-systemic approach A(DAI) pursues.",
+    "art_as_substrate": "Yes. His generative systems produce continuously varying visual outputs that function as living substrate layers. The Process series generates organic, cell-like visual fields that could serve as ground layers in a composed exhibition environment.",
+    "relational_composition": "Yes, centrally. His entire practice is built on relational composition — elements interact according to defined rules, and the artwork emerges from those relationships. Software Structures was explicitly about translating relational logic (from Sol LeWitt) into generative software.",
+    "self_recomposing": "Yes. His generative works run indefinitely producing endlessly variable imagery. The Process series creates structures that evolve continuously through element interactions within defined parameters. Once set in motion, the systems self-compose without artist intervention."
+  },
+  "key_works": {
+    "works": [
+      {
+        "title": "{Software} Structures",
+        "year": "2004",
+        "description": "Commissioned by the Whitney Museum's Artport. Three text-based structures translating Sol LeWitt's logic of written scores into generative software systems. Other artists were invited to interpret and implement the same structures.",
+        "relevance": "Foundational work demonstrating art-from-relational-rules. The open invitation for others to interpret the same structures prefigures commons-based creative infrastructure."
+      },
+      {
+        "title": "Process series",
+        "year": "2005-ongoing",
+        "description": "Ongoing suite of software artworks exploring instruction-based generative visuals. Autonomous elements interact within coded parameters, producing emergent organic forms.",
+        "relevance": "Demonstrates continuously self-recomposing relational composition — exactly the temporal behavior needed for a generative Sense Room."
+      },
+      {
+        "title": "Compressed Cinema",
+        "year": "2020",
+        "description": "Uses generative adversarial networks (GANs) to compress and transform cinematic imagery into new forms of collage, marking a shift from line-by-line coding to working with emergent algorithmic instruments.",
+        "relevance": "Shows evolution from rule-based to ML-driven generative practice, demonstrating how embedding spaces can produce new visual material."
+      }
+    ]
+  },
+  "protocol_art_resonance": {
+    "protocol_art_summary": "Reas treats tool-building and platform design as artistic practice. Processing is simultaneously a programming language, an educational tool, and an artwork — infrastructure designed to enable creative expression. Feral File extends this to market infrastructure, designing the protocol for how digital art is exhibited, collected, and distributed.",
+    "system_designed": "Processing (open-source creative coding language and environment, 2001); Processing Foundation (2012, supporting visual literacy and access to creative tools); Feral File (2020, online platform for exhibiting and collecting digital art using blockchain provenance)."
+  },
+  "commons_orientation": {
+    "licence_model": "open source",
+    "commons_summary": "Strong commons orientation. Processing is free and open-source, explicitly designed to democratize creative coding. The Processing Foundation supports visual literacy worldwide. Reas believes 'artists should be making their own tools and frameworks and all of them should be free and open source.' Feral File has a community model where every artist in a group exhibition receives an edition from every other artist."
+  },
+  "governance_model": {
+    "governance_type": "hybrid",
+    "governance_detail": "Solo artistic practice but institutional and community governance for tools. Processing Foundation is a nonprofit with community governance. Feral File is a platform co-founded with Bitmark, with editorial curation by Reas and collaborators. His artistic work is solo-authored but his infrastructure projects are collectively maintained."
+  },
+  "consent_and_authorship": {
+    "consent_approach": "In Software Structures, other artists were explicitly invited to interpret and implement shared instruction sets — a consensual collaborative framework. Feral File's blockchain provenance system documents artist and collector rights explicitly.",
+    "authorship_model": "Solo for artworks, but with strong collaborative and open-source dimensions. Processing is co-authored with Ben Fry. Software Structures invited distributed authorship. Feral File exhibitions are collectively curated."
+  },
+  "liveness_and_duration": {
+    "temporal_type": "generative-on-demand",
+    "temporal_detail": "Generative works run indefinitely once executed, producing endlessly variable output. The Process series creates continuously evolving visual structures. Each execution is unique and non-repeating. Prints and installations capture moments from these ongoing generative processes."
+  },
+  "data_materiality": {
+    "data_sources": "Algorithmic rules and parameters (Process series), television broadcasts, newspapers, social media (Ultraconcentrated), cinematic imagery (Compressed Cinema), GAN training data (In Silico).",
+    "data_provenance": "Self-generated algorithmic parameters for generative works. Found/scraped media for compression works (Ultraconcentrated, Compressed Cinema). ML training data sourced from existing media corpora."
+  },
+  "embedding_space_relevance": {
+    "embedding_summary": "Later works (In Silico, Compressed Cinema) directly engage with latent spaces of generative adversarial networks, navigating and transforming learned representations of visual media. The shift from explicit code to ML represents a move into embedding-space-based art production.",
+    "multimodal": "Primarily visual, but recent GAN work bridges between source media modalities (video, print, photography) through unified latent representations."
+  },
+  "exhibition_modality": {
+    "modality": "hybrid",
+    "spatial_description": "Works manifest as large-scale installations, screen-based generative displays, fine art prints, and online platforms. Process installations fill gallery walls with continuously evolving generative imagery. Feral File operates as a web-based exhibition space. Exhibited at Whitney Museum, LACMA, SFMOMA, Centre Pompidou, V&A, and others."
+  },
+  "sensory_register": {
+    "senses": "visual",
+    "dominant_register": "visual"
+  },
+  "interoperability": {
+    "composability": "High. Processing itself is designed for composability — its outputs (images, video, data) are standard formats. Software Structures explicitly invited others to implement shared instruction sets. Feral File uses blockchain for interoperable provenance.",
+    "technical_openness": "Open source (Processing), documented, forkable. Feral File moving toward decentralization."
+  },
+  "technical_approach": {
+    "stack": "Processing (Java-based), p5.js (JavaScript), custom generative software, GANs and machine learning frameworks (for In Silico, Compressed Cinema), Bitmark blockchain (Feral File), custom web platforms"
+  },
+  "network_position": {
+    "position_type": "hub",
+    "scene_affiliation": "Central figure in generative art, creative coding, and digital art infrastructure. Bridges academic (UCLA), museum (Whitney, V&A), open-source (Processing community), and market (Feral File) ecosystems. Connected to both historical computational art and contemporary blockchain/NFT art scenes.",
+    "connections": "Ben Fry (Processing co-creator), Sol LeWitt (conceptual lineage), Feral File artist community, Processing Foundation community, UCLA Design Media Arts, generative art scene (Le Random, Art Blocks ecosystem)"
+  },
+  "potential_role_in_adai": {
+    "role": "conversation-partner",
+    "role_detail": "Reas embodies the dual artist-infrastructure-builder role that A(DAI) values. His experience building Processing (open-source creative tools), the Processing Foundation (commons governance), and Feral File (art distribution infrastructure) provides direct operational knowledge for commons-first art infrastructure. His artistic practice demonstrates relational composition as medium. Could serve as advisory voice on tool-building as creative practice."
+  },
+  "temporal_status": {
+    "status": "ongoing-practice"
+  },
+  "uncertain": []
+}

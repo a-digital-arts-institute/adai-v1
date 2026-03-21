@@ -1,0 +1,98 @@
+{
+  "basic_info": {
+    "name": "0xSalon",
+    "type": "collective",
+    "active_years": "2019-present",
+    "location": "Berlin, Germany (distributed)",
+    "url": "https://0xsalon.pubpub.org"
+  },
+  "practice_description": {
+    "medium": "Writing, publishing, reading groups, smart contracts, knowledge graphs, events",
+    "practice_summary": "0xSalon is a research collective operating at the intersection of philosophy, blockchain technology, and contemporary art. They practice relational/graph thinking and knowledge commoning as artistic medium, building decentralized knowledge infrastructure.",
+    "methodology": "0xSalon works through reading groups, collaborative writing, publishing (via PubPub), and experimental smart contract design. Their methodology treats conversation and collective study as creative production. They build knowledge graphs and relational structures that map connections between philosophical concepts, technological protocols, and artistic practices. The salon format — sustained, recurring, collective inquiry — is itself the medium."
+  },
+  "relevance_to_sense_room": {
+    "relevance_summary": "0xSalon's practice of treating knowledge graphs and relational thinking as artistic medium is directly aligned with A(DAI)'s graph-curated exhibition concept. They model how collective intelligence infrastructure can itself be the artwork.",
+    "art_as_substrate": "Yes, but in an unusual sense. The knowledge produced — texts, graphs, relational mappings — functions as conceptual substrate that could be embedded in a generative composition as a semantic/textual layer.",
+    "relational_composition": "Strongly yes. Relational/graph-based thinking is the core of their practice. They explicitly work with connections between ideas, people, and practices as their primary material.",
+    "self_recomposing": "The collective's knowledge production is continuously evolving through ongoing reading groups and discussions. The relational mappings change as new connections are identified and old ones are recontextualized."
+  },
+  "key_works": {
+    "works": [
+      {
+        "title": "0xSalon Reading Groups and Publications",
+        "year": "2019-present",
+        "description": "Ongoing series of reading groups and collaborative publications on PubPub exploring blockchain philosophy, decentralized governance, knowledge commons, and art-technology intersections.",
+        "relevance": "Models collective knowledge production as creative practice. The relational structure of their inquiries mirrors A(DAI)'s graph-based intelligence approach."
+      },
+      {
+        "title": "Knowledge Graph Experiments",
+        "year": "2020-present [uncertain]",
+        "description": "Experiments in building decentralized knowledge graphs that map relationships between concepts, practitioners, and practices in the crypto-art and philosophy space.",
+        "relevance": "Directly models the kind of relational knowledge infrastructure A(DAI) is building. Their approach to graph-as-medium is a key reference."
+      },
+      {
+        "title": "Smart Contract as Cultural Object",
+        "year": "2020-present [uncertain]",
+        "description": "Explorations of smart contracts as cultural and artistic objects — not just financial instruments but carriers of social agreements and aesthetic propositions.",
+        "relevance": "Demonstrates protocol-art thinking where the design of systems and agreements is itself creative practice."
+      }
+    ]
+  },
+  "protocol_art_resonance": {
+    "protocol_art_summary": "0xSalon explicitly treats protocols — social, technical, and contractual — as artistic medium. Smart contracts are explored as cultural objects, and the salon format itself is a social protocol designed as creative infrastructure.",
+    "system_designed": "Knowledge commons infrastructure on PubPub, experimental smart contracts, reading group protocols, decentralized publishing workflows."
+  },
+  "commons_orientation": {
+    "licence_model": "Commons-based (open access publishing on PubPub)",
+    "commons_summary": "Fundamentally commons-oriented. All publishing is open access. The collective explicitly theorizes and builds knowledge commons. Their practice is a living experiment in non-extractive, collectively governed knowledge production."
+  },
+  "governance_model": {
+    "governance_type": "collective",
+    "governance_detail": "Collective governance with rotating facilitation of reading groups. Decision-making is consensus-based among members. The salon format distributes intellectual authority across participants. Experimental engagement with DAO-like governance models. [uncertain]"
+  },
+  "consent_and_authorship": {
+    "consent_approach": "Participation is voluntary and informed. The salon format inherently involves ongoing consent through presence and contribution.",
+    "authorship_model": "Collective authorship. Publications are collaboratively written. Individual contributions are acknowledged but the emphasis is on collective knowledge production."
+  },
+  "liveness_and_duration": {
+    "temporal_type": "continuously-evolving",
+    "temporal_detail": "The collective's knowledge production is ongoing and accretive. Reading groups meet regularly, publications accumulate, and the relational knowledge graph grows over time. There is no fixed endpoint."
+  },
+  "data_materiality": {
+    "data_sources": "Philosophical texts, blockchain data, art world publications, participant contributions, conversation transcripts. All material is collectively curated.",
+    "data_provenance": "Self-generated through collective inquiry, combined with referenced published works. Ethically sourced through open access and proper attribution."
+  },
+  "embedding_space_relevance": {
+    "embedding_summary": "Not directly engaged with computational embedding spaces, but the practice of building knowledge graphs is conceptually adjacent to semantic space navigation. Their relational mappings are hand-built rather than computationally derived.",
+    "multimodal": "Primarily textual, though events incorporate discussion (sonic) and visual presentation."
+  },
+  "exhibition_modality": {
+    "modality": "web | performative",
+    "spatial_description": "Primary encounter is through published texts on PubPub and participation in reading groups (in-person in Berlin or online). Some presence at art/tech conferences and exhibition contexts. The web publication is the persistent spatial form."
+  },
+  "sensory_register": {
+    "senses": "textual | sonic",
+    "dominant_register": "textual"
+  },
+  "interoperability": {
+    "composability": "Moderate. Published texts are openly accessible and citable. Knowledge graph structures could potentially be exported or integrated with other systems. PubPub platform supports some interoperability.",
+    "technical_openness": "Open access publishing, conceptually open and forkable"
+  },
+  "technical_approach": {
+    "stack": "PubPub (publishing), Ethereum/smart contracts, web technologies, collaborative document tools"
+  },
+  "network_position": {
+    "position_type": "bridge",
+    "scene_affiliation": "Berlin crypto-art scene, blockchain philosophy, decentralized web community, contemporary art theory. Bridges between philosophy, blockchain technology, and art practice.",
+    "connections": "Trust Berlin (shared Berlin knowledge commons scene), various blockchain art practitioners, Ethereum community, contemporary philosophy networks"
+  },
+  "potential_role_in_adai": {
+    "role": "conversation-partner | theoretical-reference | infrastructure-partner",
+    "role_detail": "0xSalon's practice of knowledge-graph-as-medium is deeply aligned with A(DAI)'s core concept. They could serve as conversation partners on how relational knowledge infrastructure functions as art. Their theorization of smart contracts as cultural objects informs how A(DAI) might think about its own protocols."
+  },
+  "temporal_status": {
+    "status": "ongoing-practice"
+  },
+  "uncertain": ["active_years", "governance_detail", "works[1].year", "works[2].year"]
+}

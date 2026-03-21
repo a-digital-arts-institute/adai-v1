@@ -1,0 +1,98 @@
+{
+  "basic_info": {
+    "name": "Harm van den Dorpel",
+    "type": "artist",
+    "active_years": "2006-present",
+    "location": "Berlin, Germany",
+    "url": "https://harm.work"
+  },
+  "practice_description": {
+    "medium": "Generative software, evolutionary algorithms, on-chain art, digital collage, web-based installation",
+    "practice_summary": "Harm van den Dorpel is a Dutch-born, Berlin-based artist who uses evolutionary algorithms, machine learning, and blockchain technology to create artworks that evolve, mutate, and curate themselves. His practice treats curation and aesthetic selection as computational processes.",
+    "methodology": "Van den Dorpel builds custom software systems that use evolutionary/genetic algorithms to generate and select visual compositions. His methodology involves defining fitness functions — aesthetic criteria encoded as algorithms — that guide generative processes toward outputs he finds interesting. He then intervenes as curator/selector within these evolutionary processes. His blockchain work extends this into on-chain curation, where provenance, ownership, and relational context are embedded in the artwork's technical substrate. He is deeply engaged with the intersection of aesthetics and computation."
+  },
+  "relevance_to_sense_room": {
+    "relevance_summary": "Van den Dorpel's practice of evolutionary, self-recomposing artworks guided by relational fitness criteria is one of the closest existing models for how art in a graph-curated generative exhibition could behave — art that changes based on its relational context.",
+    "art_as_substrate": "Strongly yes. His generative outputs are designed to function as substrate — Mutant Garden Seeder produces visual organisms that exist as composable elements. The on-chain works are explicitly designed as relational objects.",
+    "relational_composition": "Strongly yes. His evolutionary systems are inherently relational — offspring are determined by the relationships (breeding) between parent elements. On-chain curation embeds works in relational context through blockchain provenance and collection structures.",
+    "self_recomposing": "Core to the practice. Evolutionary algorithms produce continuously evolving populations. Mutant Garden Seeder generates organisms that mutate and breed. Works literally recompose themselves through algorithmic processes."
+  },
+  "key_works": {
+    "works": [
+      {
+        "title": "Mutant Garden Seeder",
+        "year": "2021",
+        "description": "A generative art system using evolutionary algorithms where digital organisms grow, mutate, and breed. Collectors can 'seed' new mutations from existing works, creating an expanding, evolving ecosystem of visual forms on the blockchain.",
+        "relevance": "Directly models art-as-evolving-ecosystem — works that recompose based on collector actions and algorithmic mutation. The relational breeding mechanism mirrors graph-based composition."
+      },
+      {
+        "title": "Mutant Garden",
+        "year": "2020",
+        "description": "An interactive web-based environment where users can breed and evolve digital organisms through an artificial life simulation with aesthetic selection. Precursor to the on-chain Seeder.",
+        "relevance": "Demonstrates participatory evolutionary aesthetics where the audience directly shapes the evolution of artworks through selection — a model for audience-participatory graph curation."
+      },
+      {
+        "title": "Left Gallery",
+        "year": "2015-2021",
+        "description": "An online gallery and publishing platform co-founded by van den Dorpel that exhibited and sold digital art, pioneering early models for digital art commerce and curation.",
+        "relevance": "Demonstrates protocol-art thinking — designing the infrastructure of art distribution and curation as creative practice. An early experiment in what on-chain curation would later become."
+      }
+    ]
+  },
+  "protocol_art_resonance": {
+    "protocol_art_summary": "Van den Dorpel treats curation systems, evolutionary algorithms, and blockchain protocols as artistic medium. Left Gallery was an artwork-as-infrastructure. Mutant Garden Seeder turns the smart contract into a creative engine. The protocol — how works relate, breed, and are collected — is the art.",
+    "system_designed": "Mutant Garden Seeder (on-chain evolutionary art system), Left Gallery (digital art distribution infrastructure), custom evolutionary algorithm frameworks for aesthetic generation."
+  },
+  "commons_orientation": {
+    "licence_model": "Hybrid — some open-source tools, proprietary artworks, blockchain-based ownership",
+    "commons_summary": "Complex relationship to commons. The evolutionary systems and some tools are shared openly, but the artworks are commodified through blockchain ownership. Left Gallery operated as a commercial platform. His work exists in the tension between open generative systems and blockchain-based scarcity/ownership."
+  },
+  "governance_model": {
+    "governance_type": "solo | algorithmic",
+    "governance_detail": "Solo artistic practice with algorithmic co-governance — the evolutionary algorithms make aesthetic decisions within parameters set by the artist. Mutant Garden Seeder distributes some creative agency to collectors who can seed new mutations. Left Gallery involved collaborative curatorial decisions."
+  },
+  "consent_and_authorship": {
+    "consent_approach": "Collectors of Mutant Garden Seeder consent to participate in the evolutionary system by purchasing/seeding. The system's rules are transparent and encoded in smart contracts.",
+    "authorship_model": "Hybrid — artist designs the system, algorithms generate the forms, collectors influence evolution through selection and seeding. Machine co-authorship is explicit and central."
+  },
+  "liveness_and_duration": {
+    "temporal_type": "continuously-evolving",
+    "temporal_detail": "Evolutionary works continuously evolve through algorithmic mutation and collector-driven selection. Each seeding event produces new generations. The population of works grows and diversifies over time, driven by both algorithmic processes and human choices."
+  },
+  "data_materiality": {
+    "data_sources": "Self-generated algorithmic data, evolutionary process parameters, collector interaction data (seeding choices), visual/aesthetic training data curated by the artist.",
+    "data_provenance": "Primarily self-generated through custom algorithms. On-chain data is transparent and verifiable. No external scraping or non-consensual data harvesting."
+  },
+  "embedding_space_relevance": {
+    "embedding_summary": "Engages with latent spaces through evolutionary algorithms — the 'gene space' of possible mutations is a kind of latent aesthetic space that the evolutionary process navigates. Some work involves ML-based aesthetic evaluation.",
+    "multimodal": "Primarily visual, though the blockchain/contractual layer adds a textual/data dimension."
+  },
+  "exhibition_modality": {
+    "modality": "web | screen | installation",
+    "spatial_description": "Works exist as web-based interactive experiences, screen-based generative outputs, and gallery installations. The blockchain layer means works also exist as persistent on-chain objects accessible through wallets and marketplaces."
+  },
+  "sensory_register": {
+    "senses": "visual | textual",
+    "dominant_register": "visual"
+  },
+  "interoperability": {
+    "composability": "High for on-chain works — blockchain interoperability means works can be referenced, composed with, and built upon by other smart contracts. Mutant Garden Seeder is explicitly composable — new works are seeded from existing ones.",
+    "technical_openness": "Hybrid — smart contracts are publicly verifiable on-chain, some tools open source, core artistic systems proprietary"
+  },
+  "technical_approach": {
+    "stack": "JavaScript, WebGL, evolutionary/genetic algorithms, Ethereum smart contracts (Solidity), custom fitness functions, machine learning for aesthetic evaluation, blockchain infrastructure"
+  },
+  "network_position": {
+    "position_type": "hub",
+    "scene_affiliation": "Berlin digital art, crypto/blockchain art (early adopter), generative art, artificial life art, post-internet art. Bridges between contemporary art world and blockchain/crypto art markets.",
+    "connections": "0xSalon (Berlin blockchain art scene overlap), various crypto art practitioners, generative art community, Feral File and other digital art platforms"
+  },
+  "potential_role_in_adai": {
+    "role": "artwork-in-graph | conversation-partner | advisory",
+    "role_detail": "Van den Dorpel's evolutionary, self-recomposing artworks are among the closest existing models for what art in A(DAI)'s Sense Room could be. Mutant Garden Seeder demonstrates art that evolves through relational graph structures. He could advise on how generative systems and blockchain provenance integrate, and his works could be directly exhibited within a graph-curated context."
+  },
+  "temporal_status": {
+    "status": "ongoing-practice"
+  },
+  "uncertain": ["active_years", "url"]
+}

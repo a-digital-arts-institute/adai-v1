@@ -1,0 +1,101 @@
+{
+  "basic_info": {
+    "name": "teamLab",
+    "type": "collective",
+    "active_years": "2001-present",
+    "location": "Tokyo, Japan (with permanent venues in Abu Dhabi, Jeddah, Macao, Osaka, Kyoto, and upcoming Hamburg)",
+    "url": "https://www.teamlab.art/"
+  },
+  "practice_description": {
+    "medium": "Immersive digital installation, projection mapping, real-time generative environments",
+    "practice_summary": "teamLab is an interdisciplinary collective of over 600 artists, programmers, engineers, CG animators, mathematicians, and architects who create large-scale immersive digital environments where artworks respond to visitors and to each other in real-time, dissolving boundaries between art, viewer, and space.",
+    "methodology": "All artworks are rendered in real-time by computer programs — nothing is pre-recorded. The collective develops custom software using advanced projection mapping, environmental sensors (light, movement, acoustics), and real-time rendering engines. Their spatial methodology draws on Japanese art history through what they call 'Ultra Subjective Space' — a logical structure that flattens 3D space following pre-modern Japanese pictorial conventions. Water simulations use hundreds of thousands of computed particles. The creative process is deeply collaborative: once a concept is set, specialized members (3D modelers, animators, software programmers, engineers, architects) assemble around the work. They use EPSON projection technology and custom sensor arrays for interactivity."
+  },
+  "relevance_to_sense_room": {
+    "relevance_summary": "teamLab's borderless environments — where artworks move between rooms, influence each other, and respond to human presence — are a direct precedent for a graph-curated generative exhibition where relational connections between art elements drive the experience.",
+    "art_as_substrate": "Yes. teamLab's artworks function as living substrates: flowers scatter when koi collide with visitors, seasonal cycles shift flora, and artworks from one room migrate into others. Each piece is designed to be a generative ground layer that other works and human presence can activate and transform.",
+    "relational_composition": "Yes, strongly. The core concept of 'Borderlessness' means artworks are not contained in discrete rooms but flow into each other, intermingle, and influence one another. Birds from one installation fly into adjacent rooms and transform to match the local aesthetic. The composition of any given moment is determined by the dynamic relationships between all active works and all present visitors.",
+    "self_recomposing": "Yes. Every installation continuously recomposes in real-time based on visitor presence, movement, time of day, season, and the state of adjacent artworks. No visual state ever repeats. The picture at any given moment can never be seen again."
+  },
+  "key_works": {
+    "works": [
+      {
+        "title": "teamLab Borderless",
+        "year": "2018 (Odaiba), 2024 (Azabudai Hills reopening)",
+        "description": "A museum without a map where artworks move out of rooms, communicate with and influence each other, and intermingle without boundaries. 1.55 million visitors in first anniversary year at new location. Selected by TIME as World's Greatest Places 2024.",
+        "relevance": "Direct precedent for graph-curated exhibition — artworks as nodes whose relationships determine the visitor experience. The absence of fixed boundaries between works mirrors graph-based relational composition."
+      },
+      {
+        "title": "teamLab Planets",
+        "year": "2018-present (expanded January 2025)",
+        "description": "A museum where visitors physically immerse themselves in artworks, walking through water with responsive projections. Guinness World Record as most visited museum by a single art group (2.51 million visitors in 2025).",
+        "relevance": "Demonstrates how bodily immersion and physical interaction (water, floor surfaces) can be primary material for generative art. The visitor's body becomes part of the artwork's computation."
+      },
+      {
+        "title": "Universe of Water Particles / Flowers and People",
+        "year": "Ongoing series",
+        "description": "Water simulated as hundreds of thousands of particles following physics-based computation; flowers bloom and scatter seasonally in response to visitor proximity. Real-time rendering means the visual state is always unique.",
+        "relevance": "Exemplifies art-as-substrate where natural phenomena are computationally modeled and human presence modulates the generative system. The seasonal cycle shows how temporal data feeds can drive artistic change."
+      }
+    ]
+  },
+  "protocol_art_resonance": {
+    "protocol_art_summary": "teamLab's practice implicitly treats the design of interaction protocols as creative medium — the rules governing how artworks communicate with each other and respond to visitors are the core artistic decisions. The 'borderless' protocol (artworks migrate, influence, and intermingle) is itself the artwork at a systems level.",
+    "system_designed": "A proprietary real-time rendering and sensor infrastructure that enables multiple artworks to communicate and influence each other across physical spaces. The 'borderless' system is a protocol for inter-artwork communication and visitor-responsive behavior at architectural scale."
+  },
+  "commons_orientation": {
+    "licence_model": "proprietary",
+    "commons_summary": "teamLab operates as a commercially successful proprietary enterprise represented by Pace Gallery. Their technology, creative process, and artworks are not open-source or commons-based. The experience is accessible through ticketed venues, but the infrastructure and code are closed. They do not appear to build commons infrastructure or release tools for others to use."
+  },
+  "governance_model": {
+    "governance_type": "collective",
+    "governance_detail": "Founded by Toshiyuki Inoko with co-founder Shunsuke Aoki and three engineering colleagues. Now over 600 members. The collective operates under shared creative direction with Inoko as a central visionary figure. Specialized teams assemble around each project based on required expertise. Represented commercially by Pace Gallery since 2014."
+  },
+  "consent_and_authorship": {
+    "consent_approach": "Visitors implicitly consent to participation by entering the space — their presence and movement become data inputs that alter artworks. No explicit consent mechanism for how visitor data (movement, presence) is used within the real-time rendering system. Visitor images are not captured or stored as part of the artwork [uncertain].",
+    "authorship_model": "Collective authorship. All works are credited to 'teamLab' rather than individual members. The collective model explicitly rejects individual artistic credit in favor of the group identity."
+  },
+  "liveness_and_duration": {
+    "temporal_type": "continuously-evolving",
+    "temporal_detail": "Artworks render continuously in real-time with no pre-recorded elements. Change is driven by: (1) visitor presence and movement detected by sensors, (2) time of day, (3) seasonal cycles programmed into the system, (4) inter-artwork communication where the state of one piece influences adjacent pieces. The permanent museums operate year-round, making the works durational-infinite in practice."
+  },
+  "data_materiality": {
+    "data_sources": "Real-time environmental sensor data (visitor movement, presence, proximity), time/calendar data (seasonal cycles), inter-artwork state data (communication between installations). The primary material is live human presence and movement rather than pre-existing datasets.",
+    "data_provenance": "Self-generated sensor data from visitor presence. No external datasets are scraped or harvested. The ethical status is relatively clean — visitors choose to enter the space and their physical presence generates the data, though explicit data consent frameworks are not publicly documented [uncertain]."
+  },
+  "embedding_space_relevance": {
+    "embedding_summary": "teamLab does not appear to engage directly with semantic or latent embedding spaces in the machine learning sense. Their generative systems are physics-based simulations and rule-based interactions rather than neural network latent space explorations.",
+    "multimodal": "Yes — works span visual (projection), spatial (architectural), haptic (water, floor surfaces), and occasionally sonic modalities, but these are not unified through a shared embedding space. They are coordinated through custom real-time rendering software."
+  },
+  "exhibition_modality": {
+    "modality": "architectural",
+    "spatial_description": "Artworks occupy entire rooms and overflow into corridors and adjacent spaces. Projection mapping covers walls, floors, ceilings, and structural elements to create seamless immersive environments. At Planets, visitors wade through water. The architecture itself becomes the canvas — spaces are designed so that the physical environment and the digital artwork are inseparable. Venues span thousands of square meters (the Kyoto museum exceeds 10,000 sqm)."
+  },
+  "sensory_register": {
+    "senses": "visual, haptic, proprioceptive",
+    "dominant_register": "visual"
+  },
+  "interoperability": {
+    "composability": "Within their own ecosystem, artworks are highly composable — they exchange state information and influence each other. However, this composability does not extend outside the teamLab system. There are no public APIs, standard formats, or outputs designed to serve as inputs for external works.",
+    "technical_openness": "Closed system. Proprietary software, no open-source components, no documented APIs or protocols for external integration."
+  },
+  "technical_approach": {
+    "stack": "Custom real-time rendering software, EPSON projection mapping technology, environmental sensor arrays (infrared, depth sensors for visitor tracking), physics-based particle simulation systems, 3D CG modeling and animation pipelines. The 'Ultra Subjective Space' methodology uses custom 3D-to-2D spatial flattening algorithms inspired by Japanese art history. Specific programming languages and frameworks are not publicly disclosed."
+  },
+  "network_position": {
+    "position_type": "hub",
+    "scene_affiliation": "Immersive/experiential art, new media art, digital art, art-entertainment crossover. Connected to the commercial gallery world through Pace Gallery. Bridges art world, technology industry (EPSON partnerships), and mass tourism/entertainment sectors. Strong presence in the Asian art and technology scene with global expansion.",
+    "connections": "Refik Anadol (shared territory of large-scale immersive data-driven installations, though with different approaches — teamLab is physics-simulation based, Anadol is ML/latent-space based). Both operate at architectural scale and attract mass audiences."
+  },
+  "potential_role_in_adai": {
+    "role": "theoretical-reference",
+    "role_detail": "teamLab's 'borderless' protocol — where artworks autonomously communicate, influence, and migrate between spaces — is a key precedent for A(DAI)'s graph-curated generative exhibition concept. Their work demonstrates at scale how relational composition between artworks can create emergent experiences. However, their closed proprietary model and commercial entertainment orientation make them more of a reference point than a direct collaborator. The contrast between their enclosed approach and A(DAI)'s commons-first philosophy is itself instructive."
+  },
+  "temporal_status": {
+    "status": "active-infrastructure"
+  },
+  "uncertain": [
+    "consent_approach",
+    "data_provenance"
+  ]
+}

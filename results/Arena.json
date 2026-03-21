@@ -1,0 +1,98 @@
+{
+  "basic_info": {
+    "name": "Are.na",
+    "type": "platform",
+    "active_years": "2011-present",
+    "location": "New York, NY, USA",
+    "url": "https://www.are.na/"
+  },
+  "practice_description": {
+    "medium": "Collaborative knowledge platform, visual research tool, social bookmarking for creative practitioners",
+    "practice_summary": "Are.na is an independent, ad-free platform for saving, organizing, and connecting digital content through blocks (individual content units) and channels (collections). It functions as a collaborative knowledge commons used primarily by artists, designers, and researchers for creative research and idea structuring.",
+    "methodology": "Users add blocks (images, text, links, PDFs, files) to channels, which can be public, private, or restricted. The core interaction is the 'Connect' button, which links blocks to channels and channels to each other, creating emergent navigational pathways. Metadata is automatically extracted for context. The platform avoids algorithmic feeds, advertising, and vanity metrics, relying instead on human-curated connections. A small core team (Charles Broskoski, Daniel Pianetti, Damon Zucconi, Meg Miller) maintains the platform, funded entirely by approximately 18,791 Premium subscribers."
+  },
+  "relevance_to_sense_room": {
+    "relevance_summary": "Are.na is the closest existing platform to A(DAI)'s knowledge commons vision, demonstrating that creative practitioners will organize knowledge collaboratively when given the right tool. However, Are.na lacks structured relations, field-level synthesis, and graph-based intelligence -- exactly what A(DAI) builds.",
+    "art_as_substrate": "Partially. Blocks contain art and cultural material that could serve as substrate, but Are.na treats content as reference material for research rather than as compositional substrate for generative output.",
+    "relational_composition": "Partially. The blocks-and-channels system creates user-curated connections, and users can link channels to other channels, forming a navigable network. However, these connections are flat (no typed relationships, no weighted edges, no semantic structure). The relational layer is implicit and human-maintained rather than computationally structured.",
+    "self_recomposing": "No. Channels are manually curated and do not recompose based on inputs or relational changes. The platform is a static container that users actively maintain rather than a dynamic system that evolves autonomously."
+  },
+  "key_works": {
+    "works": [
+      {
+        "title": "Are.na Annual",
+        "year": "2018-present",
+        "description": "A yearly printed publication compiling community essays, interviews, and reflections on knowledge organization and creative research practice.",
+        "relevance": "Demonstrates Are.na's role as a cultural community, not just a tool. The Annual reflects on how people organize knowledge -- directly relevant to A(DAI)'s interest in collective intelligence practices."
+      },
+      {
+        "title": "Chicago Architecture Biennial collaboration",
+        "year": 2019,
+        "description": "Are.na partnered with the Chicago Architecture Biennial to build out their blog alongside ArchDaily, Archinect, and Architizer, using channels as a curatorial research tool.",
+        "relevance": "Shows Are.na's integration into institutional curatorial processes -- a model for how A(DAI) might partner with cultural institutions for knowledge gathering."
+      },
+      {
+        "title": "Are.na API and developer ecosystem",
+        "year": "2014-present",
+        "description": "Public API and developer documentation enabling third-party integrations and community-built tools. Are.na is 'open source by default.'",
+        "relevance": "The API demonstrates technical openness that A(DAI) could learn from or integrate with. Community-built tools show how an open platform enables ecosystem development."
+      }
+    ]
+  },
+  "protocol_art_resonance": {
+    "protocol_art_summary": "Are.na's design decisions are themselves a form of protocol art: the deliberate absence of algorithms, ads, and vanity metrics; the flat connection model; the block-as-universal-unit. These constraints shape how knowledge is organized and shared. The platform's design philosophy (distraction-free, human-curated, no surveillance capitalism) is an implicit political and aesthetic statement about how knowledge infrastructure should work.",
+    "system_designed": "A collaborative knowledge commons platform based on blocks (content units) and channels (collections) with human-curated connections. The system is sustained entirely by member subscriptions, avoiding venture capital and advertising models."
+  },
+  "commons_orientation": {
+    "licence_model": "hybrid",
+    "commons_summary": "Are.na is independent and ad-free, sustained by Premium subscriptions (~18,791 members). It explicitly rejects surveillance capitalism -- users are the only customers. The platform is 'open source by default' with a public API. However, the platform itself is a proprietary product (not fully open-source codebase), and it operates as a private company rather than a cooperative or commons entity. Public channels are open; private channels require Premium."
+  },
+  "governance_model": {
+    "governance_type": "institutional",
+    "governance_detail": "Governed by a small founding team: Charles Broskoski (product/operations), Daniel Pianetti (product/operations), Damon Zucconi (engineering), Meg Miller (editorial). No formal community governance mechanisms, no DAO, no advisory board publicly disclosed. Decisions about platform direction are made by the core team. Community influence is informal through usage patterns and feedback."
+  },
+  "consent_and_authorship": {
+    "consent_approach": "Users voluntarily add content. Public channels are visible to all. Content added to Are.na often originates elsewhere (links, images from the web), raising questions about original creator consent that are inherent to any bookmarking/reference platform. Users control their own channels and can make them private.",
+    "authorship_model": "Collaborative and distributed. Channels can have multiple contributors. The act of collecting and connecting is treated as a form of authorship (curatorial authorship). Individual blocks retain attribution to whoever added them, but the original creator of linked content is not always surfaced."
+  },
+  "liveness_and_duration": {
+    "temporal_type": "static",
+    "temporal_detail": "Channels are manually curated and do not change unless users actively add, remove, or connect blocks. The platform itself is continuously available but content does not self-organize or evolve. Growth is driven entirely by human activity."
+  },
+  "data_materiality": {
+    "data_sources": "User-uploaded images, text, links, PDFs, and files. Automatically extracted metadata (source URLs, image dimensions, text excerpts, screenshots of web pages). User-created connections between blocks and channels.",
+    "data_provenance": "Mixed. User-generated content is self-authored. Linked and bookmarked content originates from across the web -- provenance varies. Are.na extracts metadata automatically but does not modify original content. No scraping; all content is user-initiated."
+  },
+  "embedding_space_relevance": {
+    "embedding_summary": "Are.na does not use embedding spaces or semantic search. Organization is entirely human-curated through manual connections. The platform's search is keyword-based. However, the existing network of blocks, channels, and connections constitutes a rich human-labeled dataset that could be embedded computationally to reveal latent structures.",
+    "multimodal": "Yes, in content: blocks can be images, text, links, video, audio, and PDFs. But these are not unified in a computational embedding space -- they coexist as separate media types within the same flat organizational structure."
+  },
+  "exhibition_modality": {
+    "modality": "web",
+    "spatial_description": "Entirely web-based. Channels display as grid or list views. Presentation mode allows channels to be displayed as slideshows. Table view offers structured data display. No spatial, immersive, or installation-based exhibition mode."
+  },
+  "sensory_register": {
+    "senses": "visual, textual",
+    "dominant_register": "visual"
+  },
+  "interoperability": {
+    "composability": "High. Public API with documented endpoints for reading and writing blocks and channels. Browser extension for content capture. Export options in PDF and HTML. Community-built tools and integrations exist. Blocks can be connected across channels, enabling cross-referential structures.",
+    "technical_openness": "Open API, documented, browser extension available. Platform philosophy is 'open source by default.' Core platform codebase is not fully open source, but the API enables significant third-party development."
+  },
+  "technical_approach": {
+    "stack": "Web application (Ruby on Rails backend, React frontend [uncertain]), REST API, browser extensions for Chrome and Firefox, metadata extraction pipeline, PostgreSQL database [uncertain]. Mobile apps for iOS and Android."
+  },
+  "network_position": {
+    "position_type": "hub",
+    "scene_affiliation": "Central tool for the creative research and new media art community. Widely used by designers, artists, writers, curators, and academics. Connected to New York art and design scenes, architecture (Chicago Architecture Biennial), New Museum / New Inc ecosystem, and the broader independent internet movement.",
+    "connections": "Rhizome (co-founder Broskoski worked for Rhizome's John Michael Boling; shared New York new media community), Metalabel (shared New Inc ecosystem; overlapping creative commons values), New Museum / New Inc (institutional partnership)"
+  },
+  "potential_role_in_adai": {
+    "role": "infrastructure-partner",
+    "role_detail": "Are.na is the most natural integration partner for A(DAI). Its user base of creative practitioners already organizes knowledge about the digital arts field in channels. A(DAI) could build the relational graph layer on top of Are.na's existing knowledge commons -- adding typed relationships, semantic structure, and field-level synthesis that Are.na lacks. The API makes technical integration feasible. Are.na channels could serve as intake sources for A(DAI)'s signal processing pipeline."
+  },
+  "temporal_status": {
+    "status": "active-infrastructure"
+  },
+  "uncertain": ["stack"]
+}
