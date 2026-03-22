@@ -1,0 +1,742 @@
+; server.shs — HTTP handlers and routing
+
+@include("server-base.shs" Once: true)
+
+; === HANDLER WIRES ===
+
+; --- GET / — home page ---
+@wire(handle-home {
+  [] | DB.Query("SELECT COUNT(*) as count FROM nodes WHERE type NOT IN ('related', 'concept', 'scene')" @adai-db)
+  Take("count") | ExpectSeq | Take(0) | ExpectInt | ToString = practitioner-count
+
+  [] | DB.Query("SELECT COUNT(*) as count FROM edges" @adai-db)
+  Take("count") | ExpectSeq | Take(0) | ExpectInt | ToString = edge-count
+
+  [] | DB.Query("SELECT COUNT(DISTINCT type) as count FROM nodes" @adai-db)
+  Take("count") | ExpectSeq | Take(0) | ExpectInt | ToString = type-count
+
+  ["<h2>Digital Arts Knowledge Commons</h2>"
+   "<p>A(DAI) maps practitioners, concepts, scenes, and their relationships "
+   "across the digital arts landscape. A living graph built through collective contribution.</p>"
+   "<div class='stats-grid'>"
+   "<div class='stat-box'><div class='num'>" practitioner-count "</div><div class='label'>practitioners</div></div>"
+   "<div class='stat-box'><div class='num'>" edge-count "</div><div class='label'>connections</div></div>"
+   "<div class='stat-box'><div class='num'>" type-count "</div><div class='label'>node types</div></div>"
+   "</div>"
+   "<h2>Recent Additions</h2>"] | String.Format >= body
+
+  [] | DB.Query("SELECT id, name, type, slug FROM nodes WHERE type NOT IN ('related', 'concept', 'scene') ORDER BY created_at DESC LIMIT 10" @adai-db)
+  = recent
+  recent | Take("name") | ExpectSeq = names
+  recent | Take("type") | ExpectSeq = types
+  recent | Take("slug") | ExpectSeq = slugs
+  names | Count = n-recent
+
+  0 >= idx
+  Repeat({
+    names | Take(idx) | ExpectString = rname
+    types | Take(idx) | ExpectString = rtype
+    slugs | Take(idx) | ExpectString = rslug
+    ["<div class='card'><h3><a href='/practitioner/" rslug "'>" rname "</a></h3><span class='tag'>" rtype "</span></div>"] | String.Format | AppendTo(body)
+    Inc(idx)
+  } Times: n-recent)
+
+  @html-page("Home" body) = page
+  page | Http.Response(200 Headers: @html-headers)
+  none | Stop
+})
+
+; --- GET /explore — list all practitioners ---
+@wire(handle-explore {
+  [] | DB.Query("SELECT id, name, type, slug FROM nodes WHERE type NOT IN ('related', 'concept', 'scene') ORDER BY name" @adai-db)
+  = result
+  result | Take("name") | ExpectSeq = names
+  result | Take("type") | ExpectSeq = types
+  result | Take("slug") | ExpectSeq = slugs
+  names | Count = n-nodes
+
+  "<h2>Explore</h2><p class='meta'>" >= body
+  [n-nodes | ToString " practitioners, collectives, platforms, and projects</p>"] | String.Format | AppendTo(body)
+
+  0 >= idx
+  Repeat({
+    names | Take(idx) | ExpectString = ename
+    types | Take(idx) | ExpectString = etype
+    slugs | Take(idx) | ExpectString = eslug
+    ["<div class='card'><h3><a href='/practitioner/" eslug "'>" ename "</a></h3><span class='tag'>" etype "</span></div>"] | String.Format | AppendTo(body)
+    Inc(idx)
+  } Times: n-nodes)
+
+  @html-page("Explore" body) = page
+  page | Http.Response(200 Headers: @html-headers)
+  none | Stop
+})
+
+; --- GET /practitioner/:slug — profile page ---
+@wire(handle-practitioner {
+  = slug
+
+  [slug] | DB.Query("SELECT id, name, type, slug, metadata FROM nodes WHERE slug = ?" @adai-db)
+  = node-result
+  node-result | Take("id") | ExpectSeq = ids
+
+  ids | Count | When(Is(0) {
+    @html-page("Not Found" "<h2>Not Found</h2><p>No practitioner with that slug.</p>") = page
+    page | Http.Response(404 Headers: @html-headers)
+    none | Stop
+  })
+
+  ids | Take(0) | ExpectString = node-id
+  node-result | Take("name") | ExpectSeq | Take(0) | ExpectString = node-name
+  node-result | Take("type") | ExpectSeq | Take(0) | ExpectString = node-type
+  node-result | Take("metadata") | ExpectSeq | Take(0) = raw-metadata
+
+  ["<h2>" node-name "</h2><span class='tag'>" node-type "</span>"] | String.Format >= body
+
+  ; parse metadata JSON if present
+  raw-metadata | When(IsString {
+    ExpectString | Await(FromJson) | ExpectTable = meta
+
+    meta | Take("basic_info") | When(IsTable {
+      ExpectTable = info
+      "<div style='margin:1rem 0'>" | AppendTo(body)
+      info | Take("location") | When(IsString {
+        ExpectString = loc
+        ["<p class='meta'>Location: " loc "</p>"] | String.Format | AppendTo(body)
+      })
+      info | Take("active_years") | When(IsString {
+        ExpectString = years
+        ["<p class='meta'>Active: " years "</p>"] | String.Format | AppendTo(body)
+      })
+      info | Take("url") | When(IsString {
+        ExpectString = url
+        ["<p class='meta'>Web: <a href='" url "'>" url "</a></p>"] | String.Format | AppendTo(body)
+      })
+      "</div>" | AppendTo(body)
+    })
+
+    meta | Take("practice_description") | When(IsTable {
+      ExpectTable = practice
+      practice | Take("practice_summary") | When(IsString {
+        ExpectString = summary
+        ["<h3>practice</h3><p>" summary "</p>"] | String.Format | AppendTo(body)
+      })
+      practice | Take("medium") | When(IsString {
+        ExpectString | String.Split(",") = media
+        "<div style='margin:0.5rem 0'>" | AppendTo(body)
+        media | ForEach({
+          String.Trim = m
+          ["<span class='tag'>" m "</span>"] | String.Format | AppendTo(body)
+        })
+        "</div>" | AppendTo(body)
+      })
+      practice | Take("methodology") | When(IsString {
+        ExpectString = meth
+        ["<h3>methodology</h3><p>" meth "</p>"] | String.Format | AppendTo(body)
+      })
+    })
+
+    meta | Take("key_works") | When(IsTable {
+      ExpectTable | Take("works") | When(IsSeq {
+        ExpectSeq = works
+        "<h3>key works</h3>" | AppendTo(body)
+        works | ForEach({
+          ExpectTable = work
+          work | Take("title") | ExpectString = wtitle
+          "<div class='card'>" | AppendTo(body)
+          ["<strong>" wtitle "</strong>"] | String.Format | AppendTo(body)
+          work | Take("year") | When(IsNotNone {
+            ToString = wyear
+            [" <span class='meta'>(" wyear ")</span>"] | String.Format | AppendTo(body)
+          })
+          work | Take("description") | When(IsString {
+            ExpectString = wdesc
+            ["<p style='margin-top:0.4rem'>" wdesc "</p>"] | String.Format | AppendTo(body)
+          })
+          "</div>" | AppendTo(body)
+        })
+      })
+    })
+
+    meta | Take("commons_orientation") | When(IsTable {
+      ExpectTable = commons
+      commons | Take("commons_summary") | When(IsString {
+        ExpectString = cs
+        ["<h3>commons orientation</h3><p>" cs "</p>"] | String.Format | AppendTo(body)
+      })
+    })
+
+    meta | Take("governance_model") | When(IsTable {
+      ExpectTable = gov
+      gov | Take("governance_detail") | When(IsString {
+        ExpectString = gd
+        ["<h3>governance</h3><p>" gd "</p>"] | String.Format | AppendTo(body)
+      })
+    })
+  })
+
+  ; approved community contributions
+  Maybe({
+    [node-id] | DB.Query("SELECT s.title, s.summary, s.content, s.source_url, s.submitted_by, s.created_at FROM signals s JOIN intake_queue iq ON iq.signal_id = s.id WHERE iq.target_node = ? AND iq.status = 'approved' ORDER BY s.created_at DESC" @adai-db)
+    = contrib-result
+    contrib-result | Take("title") | ExpectSeq = contrib-titles
+    contrib-titles | Count = n-contribs
+
+    When({n-contribs | IsMore(0)} {
+      ["<h3>community contributions (" n-contribs | ToString ")</h3>"] | String.Format | AppendTo(body)
+      contrib-result | Take("content") | ExpectSeq = contrib-contents
+      contrib-result | Take("submitted_by") | ExpectSeq = contrib-authors
+      contrib-result | Take("source_url") | ExpectSeq = contrib-urls
+
+      0 >= cidx
+      Repeat({
+        "<div class='card'>" | AppendTo(body)
+        contrib-titles | Take(cidx) | When(IsString {
+          ExpectString = ct
+          ["<strong>" ct "</strong>"] | String.Format | AppendTo(body)
+        })
+        contrib-contents | Take(cidx) | When(IsString {
+          ExpectString = cc
+          ["<p>" cc "</p>"] | String.Format | AppendTo(body)
+        })
+        contrib-urls | Take(cidx) | When(IsString {
+          ExpectString = cu
+          ["<p class='meta'>Source: <a href='" cu "'>" cu "</a></p>"] | String.Format | AppendTo(body)
+        })
+        contrib-authors | Take(cidx) | When(IsString {
+          ExpectString = ca
+          ["<p class='meta'>Contributed by: " ca "</p>"] | String.Format | AppendTo(body)
+        })
+        "</div>" | AppendTo(body)
+        Inc(cidx)
+      } Times: n-contribs)
+    })
+  })
+
+  ; edges
+  Maybe({
+    [node-id node-id] | DB.Query("SELECT e.id, e.source_id, e.target_id, e.edge_type, n1.name as source_name, n1.slug as source_slug, n2.name as target_name, n2.slug as target_slug FROM edges e LEFT JOIN nodes n1 ON e.source_id = n1.id LEFT JOIN nodes n2 ON e.target_id = n2.id WHERE e.source_id = ? OR e.target_id = ?" @adai-db)
+    = edges-result
+    edges-result | Take("edge_type") | ExpectSeq = edge-types
+    edge-types | Count = n-edges
+
+    When({n-edges | IsMore(0)} {
+      ["<h3>connections (" n-edges | ToString ")</h3><ul class='edge-list'>"] | String.Format | AppendTo(body)
+
+      edges-result | Take("source_id") | ExpectSeq = src-ids
+      edges-result | Take("target_id") | ExpectSeq = tgt-ids
+      edges-result | Take("source_name") | ExpectSeq = src-names
+      edges-result | Take("target_name") | ExpectSeq = tgt-names
+      edges-result | Take("source_slug") | ExpectSeq = src-slugs
+      edges-result | Take("target_slug") | ExpectSeq = tgt-slugs
+
+      "" >= other-name
+      "" >= other-slug
+      0 >= eidx
+
+      Repeat({
+        edge-types | Take(eidx) | ExpectString = etype
+        src-ids | Take(eidx) | ExpectString = src-id
+
+        src-id | If(Is(node-id) {
+            tgt-names | Take(eidx) | ToString > other-name
+            tgt-slugs | Take(eidx) | ToString > other-slug
+          } {
+            src-names | Take(eidx) | ToString > other-name
+            src-slugs | Take(eidx) | ToString > other-slug
+          }
+        )
+
+        ["<li><span class='edge-type'>" etype "</span> <a href='/practitioner/" other-slug "'>" other-name "</a></li>"] | String.Format | AppendTo(body)
+        Inc(eidx)
+      } Times: n-edges)
+
+      "</ul>" | AppendTo(body)
+    })
+  })
+
+  ; data export link
+  ["<p style='margin-top:2rem'><a href='/practitioner/" slug "/data' class='btn'>Export JSON</a></p>"] | String.Format | AppendTo(body)
+
+  @html-page(node-name body) = page
+  page | Http.Response(200 Headers: @html-headers)
+  none | Stop
+})
+
+; --- GET /practitioner/:slug/data — JSON data export ---
+@wire(handle-practitioner-data {
+  = slug
+
+  [slug] | DB.Query("SELECT id, name, type, slug, metadata, created_at, updated_by FROM nodes WHERE slug = ?" @adai-db)
+  = node-result
+  node-result | Take("id") | ExpectSeq = ids
+
+  ids | Count | When(Is(0) {
+    "{\"error\":\"not found\"}" | Http.Response(404 Headers: @json-headers)
+    none | Stop
+  })
+
+  ids | Take(0) | ExpectString = node-id
+  node-result | Take("name") | ExpectSeq | Take(0) | ExpectString = dname
+  node-result | Take("type") | ExpectSeq | Take(0) | ExpectString = dtype
+  node-result | Take("metadata") | ExpectSeq | Take(0) = dmeta
+  node-result | Take("created_at") | ExpectSeq | Take(0) | ToString = dcreated
+  node-result | Take("updated_by") | ExpectSeq | Take(0) | ToString = dupdated
+
+  ; build node JSON - embed metadata raw if it's a JSON string, otherwise null
+  "null" >= dmeta-json
+  dmeta | When(IsString {
+    ExpectString > dmeta-json
+  })
+
+  ["{\"node\":{\"id\":\"" node-id "\",\"name\":\"" dname "\",\"type\":\"" dtype
+   "\",\"slug\":\"" slug "\",\"created_at\":\"" dcreated "\",\"updated_by\":\"" dupdated
+   "\",\"metadata\":" dmeta-json "}"] | String.Format >= json-out
+
+  ; edges
+  ",\"edges\":[" | AppendTo(json-out)
+  0 >= de-count
+  Maybe({
+    [node-id node-id] | DB.Query("SELECT id, source_id, target_id, edge_type, signal_id, confidence, charge, created_at, created_by FROM edges WHERE source_id = ? OR target_id = ?" @adai-db)
+    = de-result
+    de-result | Take("id") | ExpectSeq = de-ids
+    de-ids | Count > de-count
+
+    0 >= di
+    Repeat({
+      When({di | IsMore(0)} { "," | AppendTo(json-out) })
+      ["{\"id\":\"" (de-ids | Take(di) | ExpectString)
+       "\",\"source_id\":\"" (de-result | Take("source_id") | ExpectSeq | Take(di) | ExpectString)
+       "\",\"target_id\":\"" (de-result | Take("target_id") | ExpectSeq | Take(di) | ExpectString)
+       "\",\"edge_type\":\"" (de-result | Take("edge_type") | ExpectSeq | Take(di) | ExpectString)
+       "\",\"confidence\":\"" (de-result | Take("confidence") | ExpectSeq | Take(di) | ToString)
+       "\"}"] | String.Format | AppendTo(json-out)
+      Inc(di)
+    } Times: de-count)
+  })
+
+  ; signals linked through intake
+  "],\"signals\":[" | AppendTo(json-out)
+  0 >= ds-count
+  Maybe({
+    [node-id] | DB.Query("SELECT s.id, s.title, s.source_url, s.summary, s.content, s.submitted_by, s.confidence, s.created_at FROM signals s JOIN intake_queue iq ON iq.signal_id = s.id WHERE iq.target_node = ? AND iq.status = 'approved'" @adai-db)
+    = ds-result
+    ds-result | Take("id") | ExpectSeq = ds-ids
+    ds-ids | Count > ds-count
+
+    0 >= si
+    Repeat({
+      When({si | IsMore(0)} { "," | AppendTo(json-out) })
+      ["{\"id\":\"" (ds-ids | Take(si) | ExpectString)
+       "\",\"title\":\"" (ds-result | Take("title") | ExpectSeq | Take(si) | ToString)
+       "\",\"submitted_by\":\"" (ds-result | Take("submitted_by") | ExpectSeq | Take(si) | ToString)
+       "\"}"] | String.Format | AppendTo(json-out)
+      Inc(si)
+    } Times: ds-count)
+  })
+
+  "]}" | AppendTo(json-out)
+
+  json-out | Http.Response(200 Headers: @json-headers)
+  none | Stop
+})
+
+; --- GET /api/stats — JSON stats ---
+@wire(handle-stats {
+  [] | DB.Query("SELECT COUNT(*) as count FROM nodes" @adai-db)
+  Take("count") | ExpectSeq | Take(0) | ExpectInt = total-nodes
+
+  [] | DB.Query("SELECT COUNT(*) as count FROM edges" @adai-db)
+  Take("count") | ExpectSeq | Take(0) | ExpectInt = total-edges
+
+  [] | DB.Query("SELECT COUNT(*) as count FROM signals" @adai-db)
+  Take("count") | ExpectSeq | Take(0) | ExpectInt = total-signals
+
+  [] | DB.Query("SELECT COUNT(*) as count FROM intake_queue WHERE status = 'pending'" @adai-db)
+  Take("count") | ExpectSeq | Take(0) | ExpectInt = pending-count
+
+  ["{\"total_nodes\":" total-nodes | ToString
+   ",\"total_edges\":" total-edges | ToString
+   ",\"total_signals\":" total-signals | ToString
+   ",\"pending_reviews\":" pending-count | ToString
+   "}"] | String.Format = stats-json
+
+  stats-json | Http.Response(200 Headers: @json-headers)
+  none | Stop
+})
+
+; --- GET /contribute — contribution form ---
+@wire(handle-contribute {
+  ; load practitioners for the dropdown
+  [] | DB.Query("SELECT id, name, slug FROM nodes WHERE type NOT IN ('related', 'concept', 'scene') ORDER BY name" @adai-db)
+  = prac-result
+  prac-result | Take("name") | ExpectSeq = prac-names
+  prac-result | Take("id") | ExpectSeq = prac-ids
+  prac-names | Count = prac-count
+
+  ; build option tags
+  "" >= options
+  0 >= pidx
+  Repeat({
+    prac-ids | Take(pidx) | ExpectString = pid
+    prac-names | Take(pidx) | ExpectString = pname
+    ["<option value='" pid "'>" pname "</option>"] | String.Format | AppendTo(options)
+    Inc(pidx)
+  } Times: prac-count)
+
+  ["<h2>Contribute a Signal</h2>"
+   "<p>Submit information about a practitioner. Contributions from new contributors go to the review queue.</p>"
+   "<form id='contribute-form'>"
+   "<label>About which practitioner</label>"
+   "<select name='target_node' required>" options "</select>"
+   "<label>Signal title</label>"
+   "<input type='text' name='title' placeholder='e.g. New exhibition at Serpentine' required>"
+   "<label>Content</label>"
+   "<textarea name='content' placeholder='Describe the signal...' required></textarea>"
+   "<label>Source URL (optional)</label>"
+   "<input type='text' name='source_url' placeholder='https://...'>"
+   "<label>Your name</label>"
+   "<input type='text' name='contributor_name' placeholder='Your name or handle' required>"
+   "<button type='submit' class='btn' style='margin-top:1rem'>Submit Signal</button>"
+   "</form>"
+   "<div id='result'></div>"
+   "<script>"
+   "document.getElementById('contribute-form').addEventListener('submit',function(e){"
+   "e.preventDefault();"
+   "var fd=new FormData(this);"
+   "var d={};"
+   "fd.forEach(function(v,k){d[k]=v;});"
+   "fetch('/api/contribute',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)})"
+   ".then(function(r){return r.text();})"
+   ".then(function(h){document.getElementById('result').innerHTML=h;document.getElementById('contribute-form').reset();});"
+   "});"
+   "</script>"] | String.Format = form-body
+
+  @html-page("Contribute" form-body) = page
+  page | Http.Response(200 Headers: @html-headers)
+  none | Stop
+})
+
+; --- POST /api/contribute — submit a signal ---
+@wire(handle-contribute-post {
+  = contrib-input
+
+  contrib-input | Take("target_node") | ExpectString = target-node
+  contrib-input | Take("title") | ExpectString = sig-title
+  contrib-input | Take("content") | ExpectString = sig-content
+  contrib-input | Take("contributor_name") | ExpectString = contributor-name
+
+  ; source_url is optional
+  "" >= source-url
+  contrib-input | Take("source_url") | When(IsString {
+    ExpectString > source-url
+  })
+
+  ; generate IDs
+  RandomBytes(8) | ToHex = sig-suffix
+  ["signal-" sig-suffix] | String.Format = signal-id
+  RandomBytes(8) | ToHex = intake-suffix
+  ["intake-" intake-suffix] | String.Format = intake-id
+
+  ; look up contributor trust tier, default to 'low'
+  "low" >= trust-tier
+  Maybe({
+    [contributor-name] | DB.Query("SELECT trust_tier FROM contributors WHERE name = ?" @adai-db)
+    Take("trust_tier") | ExpectSeq | Take(0) | ExpectString > trust-tier
+  })
+
+  ; insert signal
+  [signal-id sig-title source-url "contribution" none sig-content none contributor-name trust-tier 0]
+  DB.Query("INSERT INTO signals (id, title, source_url, source_type, cla_layer, summary, content, submitted_by, confidence, lived_experience) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" @adai-db)
+
+  ; determine intake status: auto-approve for high trust
+  "pending" >= intake-status
+  trust-tier | When(Is("high") {
+    "approved" > intake-status
+  })
+
+  ; insert intake queue entry
+  [intake-id signal-id target-node contributor-name trust-tier intake-status]
+  DB.Query("INSERT INTO intake_queue (id, signal_id, target_node, submitted_by, trust_tier, status) VALUES (?, ?, ?, ?, ?, ?)" @adai-db)
+
+  ; update or create contributor record
+  false >= contrib-exists
+  Maybe({
+    [contributor-name] | DB.Query("SELECT id FROM contributors WHERE name = ?" @adai-db)
+    Take("id") | ExpectSeq | Count | When(IsMore(0) {
+      true > contrib-exists
+    })
+  })
+  contrib-exists | If(IsFalse {
+      ; new contributor
+      RandomBytes(8) | ToHex = contrib-id-suffix
+      ["contributor-" contrib-id-suffix] | String.Format = contrib-id
+      [contrib-id contributor-name "contributor" "low" 1 0]
+      DB.Query("INSERT INTO contributors (id, name, type, trust_tier, contributions, approved_count) VALUES (?, ?, ?, ?, ?, ?)" @adai-db)
+    } {
+      ; existing — increment contribution count
+      [contributor-name] | DB.Query("UPDATE contributors SET contributions = contributions + 1 WHERE name = ?" @adai-db)
+    }
+  )
+
+  ; build response snippet
+  intake-status | If(Is("approved") {
+      "<div class='msg msg-ok'>Signal submitted and auto-approved (high trust). It is now live.</div>"
+    } {
+      "<div class='msg msg-ok'>Signal submitted successfully. It has been queued for review.</div>"
+    }
+  ) = response-html
+
+  response-html | Http.Response(200 Headers: @html-headers)
+  none | Stop
+})
+
+; --- GET /review — review queue ---
+@wire(handle-review {
+  ; load pending intake items — count first to avoid ExpectSeq on empty result
+  [] | DB.Query("SELECT COUNT(*) as count FROM intake_queue WHERE status = 'pending'" @adai-db)
+  Take("count") | ExpectSeq | Take(0) | ExpectInt = q-count
+
+  ["<h2>Review Queue</h2><p class='meta'>" q-count | ToString " pending signals</p>"] | String.Format >= body
+
+  When({q-count | Is(0)} {
+    "<p>No pending signals to review.</p>" | AppendTo(body)
+  })
+
+  When({q-count | IsMore(0)} {
+    [] | DB.Query("SELECT iq.id, iq.signal_id, iq.target_node, iq.submitted_by, iq.trust_tier, iq.created_at, s.title, s.content, s.source_url, n.name as target_name FROM intake_queue iq LEFT JOIN signals s ON iq.signal_id = s.id LEFT JOIN nodes n ON iq.target_node = n.id WHERE iq.status = 'pending' ORDER BY iq.created_at DESC" @adai-db)
+    = queue-result
+    queue-result | Take("id") | ExpectSeq = q-ids
+    queue-result | Take("signal_id") | ExpectSeq = q-sig-ids
+    queue-result | Take("submitted_by") | ExpectSeq = q-authors
+    queue-result | Take("trust_tier") | ExpectSeq = q-tiers
+    queue-result | Take("title") | ExpectSeq = q-titles
+    queue-result | Take("content") | ExpectSeq = q-contents
+    queue-result | Take("source_url") | ExpectSeq = q-urls
+    queue-result | Take("target_name") | ExpectSeq = q-targets
+    queue-result | Take("created_at") | ExpectSeq = q-dates
+
+    0 >= qi
+    Repeat({
+      q-ids | Take(qi) | ExpectString = qid
+      q-titles | Take(qi) | ToString = qtitle
+      q-contents | Take(qi) | ToString = qcontent
+      q-urls | Take(qi) | ToString = qurl
+      q-authors | Take(qi) | ToString = qauthor
+      q-tiers | Take(qi) | ToString = qtier
+      q-targets | Take(qi) | ToString = qtarget
+      q-dates | Take(qi) | ToString = qdate
+
+      ["<div class='card' id='item-" qid "'>"
+       "<h3>" qtitle "</h3>"
+       "<p class='meta'>About: <strong>" qtarget "</strong> · By: " qauthor
+       " · Trust: <span class='tag'>" qtier "</span> · " qdate "</p>"
+       "<p>" qcontent "</p>"] | String.Format | AppendTo(body)
+
+      qurl | WhenNot(Is("") {
+        ["<p class='meta'>Source: <a href='" qurl "'>" qurl "</a></p>"] | String.Format | AppendTo(body)
+      })
+
+      ["<div style='margin-top:0.5rem'>"
+       "<button class='btn btn-approve' onclick=\"reviewAction('" qid "','approve')\">Approve</button>"
+       "<button class='btn btn-reject' onclick=\"reviewAction('" qid "','reject')\">Reject</button>"
+       "<input type='text' id='reason-" qid "' placeholder='Rejection reason...' style='width:auto;display:inline-block;margin-left:0.5rem;padding:0.4rem'>"
+       "</div></div>"] | String.Format | AppendTo(body)
+      Inc(qi)
+    } Times: q-count)
+  })
+
+  ; also show recent approved/rejected
+  Maybe({
+    [] | DB.Query("SELECT iq.id, iq.status, iq.reviewed_at, s.title, n.name as target_name FROM intake_queue iq LEFT JOIN signals s ON iq.signal_id = s.id LEFT JOIN nodes n ON iq.target_node = n.id WHERE iq.status != 'pending' ORDER BY iq.reviewed_at DESC LIMIT 10" @adai-db)
+    = recent-result
+    recent-result | Take("id") | ExpectSeq = r-ids
+    r-ids | Count = r-count
+
+    When({r-count | IsMore(0)} {
+      "<h3>recent decisions</h3>" | AppendTo(body)
+      recent-result | Take("status") | ExpectSeq = r-statuses
+      recent-result | Take("title") | ExpectSeq = r-titles
+      recent-result | Take("target_name") | ExpectSeq = r-targets
+
+      0 >= ri
+      Repeat({
+        r-statuses | Take(ri) | ToString = rstatus
+        r-titles | Take(ri) | ToString = rtitle
+        r-targets | Take(ri) | ToString = rtarget
+        ["<div class='card'><span class='status-" rstatus "'>" rstatus "</span> "
+         rtitle " — " rtarget "</div>"] | String.Format | AppendTo(body)
+        Inc(ri)
+      } Times: r-count)
+    })
+  })
+
+  ; review action JS
+  ["<script>"
+   "function reviewAction(id,action){"
+   "var body={};"
+   "if(action==='reject'){"
+   "var r=document.getElementById('reason-'+id).value;"
+   "if(!r){alert('Please enter a rejection reason');return;}"
+   "body.reason=r;}"
+   "fetch('/api/review/'+id+'/'+action,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})"
+   ".then(function(r){return r.text();})"
+   ".then(function(){var el=document.getElementById('item-'+id);if(el){el.style.opacity='0.3';el.innerHTML+='<p class=\"meta\">'+action+'d</p>';}});"
+   "}"
+   "</script>"] | String.Format | AppendTo(body)
+
+  @html-page("Review Queue" body) = page
+  page | Http.Response(200 Headers: @html-headers)
+  none | Stop
+})
+
+; --- POST /api/review/:id/approve ---
+@wire(handle-review-approve {
+  = approve-id
+
+  ; check intake item exists and is pending
+  [approve-id] | DB.Query("SELECT id, signal_id, target_node FROM intake_queue WHERE id = ? AND status = 'pending'" @adai-db)
+  = iq-approve
+  iq-approve | Take("id") | ExpectSeq = iq-a-ids
+  iq-a-ids | Count | When(Is(0) {
+    "{\"error\":\"not found or already reviewed\"}" | Http.Response(404 Headers: @json-headers)
+    none | Stop
+  })
+
+  ; update intake status
+  [approve-id] | DB.Query("UPDATE intake_queue SET status = 'approved', reviewed_by = 'curator', reviewed_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = ?" @adai-db)
+
+  ; update contributor approved_count
+  [approve-id] | DB.Query("SELECT submitted_by FROM intake_queue WHERE id = ?" @adai-db)
+  Take("submitted_by") | ExpectSeq | Take(0) | ExpectString = a-contrib-name
+  [a-contrib-name] | DB.Query("UPDATE contributors SET approved_count = approved_count + 1 WHERE name = ?" @adai-db)
+
+  "<div class='msg msg-ok'>Signal approved and is now live.</div>" | Http.Response(200 Headers: @html-headers)
+  none | Stop
+})
+
+; --- POST /api/review/:id/reject ---
+@wire(handle-review-reject {
+  ExpectTable = reject-input
+  reject-input | Take("id") | ExpectString = reject-id
+  reject-input | Take("reason") | ExpectString = reject-reason
+
+  ; check intake item exists and is pending
+  [reject-id] | DB.Query("SELECT id FROM intake_queue WHERE id = ? AND status = 'pending'" @adai-db)
+  = iq-reject
+  iq-reject | Take("id") | ExpectSeq = iq-r-ids
+  iq-r-ids | Count | When(Is(0) {
+    "{\"error\":\"not found or already reviewed\"}" | Http.Response(404 Headers: @json-headers)
+    none | Stop
+  })
+
+  ; update intake status
+  [reject-reason reject-id] | DB.Query("UPDATE intake_queue SET status = 'rejected', rejection_reason = ?, reviewed_by = 'curator', reviewed_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = ?" @adai-db)
+
+  "<div class='msg msg-err'>Signal rejected.</div>" | Http.Response(200 Headers: @html-headers)
+  none | Stop
+})
+
+; === ROUTING ===
+
+@wire(server-handler {
+  Http.Read
+  {Take("method") = method}
+  {Take("target") = target | Log("Request")}
+  {Take("body") = raw-body}
+
+  method | Match([
+    "GET" {
+      target | Cond([
+        {Is("/")} {
+          Do(handle-home)
+        }
+        {Is("/explore")} {
+          Do(handle-explore)
+        }
+        {Is("/contribute")} {
+          Do(handle-contribute)
+        }
+        {Is("/review")} {
+          Do(handle-review)
+        }
+        {Is("/api/stats")} {
+          Do(handle-stats)
+        }
+        {String.Starts(With: "/practitioner/")} {
+          target | String.Split("/") = parts
+          ; /practitioner/:slug -> ["" "practitioner" slug]
+          ; /practitioner/:slug/data -> ["" "practitioner" slug "data"]
+          parts | Count | If(IsMoreEqual(4) {
+              parts | Take(3) | ExpectString | If(Is("data") {
+                  parts | Take(2) | ExpectString | Do(handle-practitioner-data)
+                } {
+                  parts | Take(2) | ExpectString | Do(handle-practitioner)
+                }
+              )
+            } {
+              parts | Take(2) | ExpectString | Do(handle-practitioner)
+            }
+          )
+        }
+        {true} {
+          @html-page("Not Found" "<h2>404</h2><p>Page not found.</p>") = page
+          page | Http.Response(404 Headers: @html-headers)
+          none | Stop
+        }
+      ] Passthrough: true)
+    }
+    "POST" {
+      raw-body | ExpectString | Await(FromJson) | ExpectTable = post-body
+
+      target | Cond([
+        {Is("/api/contribute")} {
+          post-body | Do(handle-contribute-post)
+        }
+        {String.Starts(With: "/api/review/")} {
+          target | String.Split("/") = parts
+          ; /api/review/:id/:action -> ["" "api" "review" id action]
+          parts | Take(3) | ExpectString = review-id
+          parts | Take(4) | ExpectString = review-action
+
+          review-action | Match([
+            "approve" {
+              review-id | Do(handle-review-approve)
+            }
+            "reject" {
+              {id: review-id reason: (post-body | Take("reason") | ExpectString)} | Do(handle-review-reject)
+            }
+            none {
+              "Bad Request" | Http.Response(400 Headers: @html-headers)
+              none | Stop
+            }
+          ] Passthrough: true)
+        }
+        {true} {
+          "Not Found" | Http.Response(404 Headers: @json-headers)
+          none | Stop
+        }
+      ] Passthrough: true)
+    }
+    none {
+      "Method Not Allowed" | Http.Response(405 Headers: @html-headers)
+      none | Stop
+    }
+  ] Passthrough: true)
+  none
+})
+
+@wire(safe-server-handler {
+  Maybe(
+    Do(server-handler)
+    {
+      "Internal Server Error" | Http.Response(500 Headers: @html-headers)
+      none | Stop
+    }
+  )
+  none
+} Looped: true)
+
+@wire(server {
+  Http.Server(Port: @http-port Handler: safe-server-handler)
+} Looped: true)

@@ -1,0 +1,28 @@
+; run.shs — entry point: init DB, start server
+
+@include("server.shs")
+
+@wire(setup {
+  Msg("Setting database path...")
+  @adai-db | Set(sqlite/database Global: true)
+
+  Msg("Loading CR-SQLite extension...")
+  DB.LoadExtension("crsqlite")
+
+  Msg("Running schema...")
+  Maybe({@read("db.sql") | DB.RawQuery} {
+    Msg("Schema already applied or no changes needed.")
+  })
+
+  Msg("Setup complete.")
+})
+
+@wire(run {
+  SwitchTo(setup)
+  ["A(DAI) server starting on port " @http-port | ToString] | String.Format | Log
+  SwitchTo(server)
+})
+
+@mesh(main)
+@schedule(main run)
+@run(main FPS: 15)
