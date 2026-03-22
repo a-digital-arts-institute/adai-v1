@@ -446,7 +446,7 @@
   })
 
   ; insert signal
-  [signal-id sig-title source-url "contribution" none sig-content none contributor-name trust-tier 0]
+  [signal-id sig-title source-url "contribution" none none sig-content contributor-name "low" 0]
   DB.Query("INSERT INTO signals (id, title, source_url, source_type, cla_layer, summary, content, submitted_by, confidence, lived_experience) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" @adai-db)
 
   ; determine intake status: auto-approve for high trust
