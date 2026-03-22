@@ -25,21 +25,23 @@
    "</div>"
    "<h2>Recent Additions</h2>"] | String.Format >= body
 
-  [] | DB.Query("SELECT id, name, type, slug FROM nodes WHERE type NOT IN ('related', 'concept', 'scene') ORDER BY created_at DESC LIMIT 10" @adai-db)
-  = recent
-  recent | Take("name") | ExpectSeq = names
-  recent | Take("type") | ExpectSeq = types
-  recent | Take("slug") | ExpectSeq = slugs
-  names | Count = n-recent
+  Maybe({
+    [] | DB.Query("SELECT id, name, type, slug FROM nodes WHERE type NOT IN ('related', 'concept', 'scene') ORDER BY created_at DESC LIMIT 10" @adai-db)
+    = recent
+    recent | Take("name") | ExpectSeq = names
+    recent | Take("type") | ExpectSeq = types
+    recent | Take("slug") | ExpectSeq = slugs
+    names | Count = n-recent
 
-  0 >= idx
-  Repeat({
-    names | Take(idx) | ExpectString = rname
-    types | Take(idx) | ExpectString = rtype
-    slugs | Take(idx) | ExpectString = rslug
-    ["<div class='card'><h3><a href='/practitioner/" rslug "'>" rname "</a></h3><span class='tag'>" rtype "</span></div>"] | String.Format | AppendTo(body)
-    Inc(idx)
-  } Times: n-recent)
+    0 >= idx
+    Repeat({
+      names | Take(idx) | ExpectString = rname
+      types | Take(idx) | ExpectString = rtype
+      slugs | Take(idx) | ExpectString = rslug
+      ["<div class='card'><h3><a href='/practitioner/" rslug "'>" rname "</a></h3><span class='tag'>" rtype "</span></div>"] | String.Format | AppendTo(body)
+      Inc(idx)
+    } Times: n-recent)
+  })
 
   @html-page("Home" body) = page
   page | Http.Response(200 Headers: @html-headers)
@@ -48,24 +50,28 @@
 
 ; --- GET /explore — list all practitioners ---
 @wire(handle-explore {
-  [] | DB.Query("SELECT id, name, type, slug FROM nodes WHERE type NOT IN ('related', 'concept', 'scene') ORDER BY name" @adai-db)
-  = result
-  result | Take("name") | ExpectSeq = names
-  result | Take("type") | ExpectSeq = types
-  result | Take("slug") | ExpectSeq = slugs
-  names | Count = n-nodes
+  "<h2>Explore</h2><p class='meta'>0 practitioners, collectives, platforms, and projects</p>" >= body
 
-  "<h2>Explore</h2><p class='meta'>" >= body
-  [n-nodes | ToString " practitioners, collectives, platforms, and projects</p>"] | String.Format | AppendTo(body)
+  Maybe({
+    [] | DB.Query("SELECT id, name, type, slug FROM nodes WHERE type NOT IN ('related', 'concept', 'scene') ORDER BY name" @adai-db)
+    = result
+    result | Take("name") | ExpectSeq = names
+    result | Take("type") | ExpectSeq = types
+    result | Take("slug") | ExpectSeq = slugs
+    names | Count = n-nodes
 
-  0 >= idx
-  Repeat({
-    names | Take(idx) | ExpectString = ename
-    types | Take(idx) | ExpectString = etype
-    slugs | Take(idx) | ExpectString = eslug
-    ["<div class='card'><h3><a href='/practitioner/" eslug "'>" ename "</a></h3><span class='tag'>" etype "</span></div>"] | String.Format | AppendTo(body)
-    Inc(idx)
-  } Times: n-nodes)
+    ; rebuild body with actual count
+    ["<h2>Explore</h2><p class='meta'>" n-nodes | ToString " practitioners, collectives, platforms, and projects</p>"] | String.Format > body
+
+    0 >= idx
+    Repeat({
+      names | Take(idx) | ExpectString = ename
+      types | Take(idx) | ExpectString = etype
+      slugs | Take(idx) | ExpectString = eslug
+      ["<div class='card'><h3><a href='/practitioner/" eslug "'>" ename "</a></h3><span class='tag'>" etype "</span></div>"] | String.Format | AppendTo(body)
+      Inc(idx)
+    } Times: n-nodes)
+  })
 
   @html-page("Explore" body) = page
   page | Http.Response(200 Headers: @html-headers)
@@ -76,15 +82,22 @@
 @wire(handle-practitioner {
   = slug
 
-  [slug] | DB.Query("SELECT id, name, type, slug, metadata FROM nodes WHERE slug = ?" @adai-db)
-  = node-result
-  node-result | Take("id") | ExpectSeq = ids
+  ; count first to avoid ExpectSeq on empty result
+  0 >= prac-node-count
+  Maybe({
+    [slug] | DB.Query("SELECT COUNT(*) as count FROM nodes WHERE slug = ?" @adai-db)
+    Take("count") | ExpectSeq | Take(0) | ExpectInt > prac-node-count
+  })
 
-  ids | Count | When(Is(0) {
+  prac-node-count | When(Is(0) {
     @html-page("Not Found" "<h2>Not Found</h2><p>No practitioner with that slug.</p>") = page
     page | Http.Response(404 Headers: @html-headers)
     none | Stop
   })
+
+  [slug] | DB.Query("SELECT id, name, type, slug, metadata FROM nodes WHERE slug = ?" @adai-db)
+  = node-result
+  node-result | Take("id") | ExpectSeq = ids
 
   ids | Take(0) | ExpectString = node-id
   node-result | Take("name") | ExpectSeq | Take(0) | ExpectString = node-name
@@ -192,19 +205,19 @@
       Repeat({
         "<div class='card'>" | AppendTo(body)
         contrib-titles | Take(cidx) | When(IsString {
-          ExpectString = ct
+          @html-escape(ExpectString) = ct
           ["<strong>" ct "</strong>"] | String.Format | AppendTo(body)
         })
         contrib-contents | Take(cidx) | When(IsString {
-          ExpectString = cc
+          @html-escape(ExpectString) = cc
           ["<p>" cc "</p>"] | String.Format | AppendTo(body)
         })
         contrib-urls | Take(cidx) | When(IsString {
-          ExpectString = cu
+          @html-escape(ExpectString) = cu
           ["<p class='meta'>Source: <a href='" cu "'>" cu "</a></p>"] | String.Format | AppendTo(body)
         })
         contrib-authors | Take(cidx) | When(IsString {
-          ExpectString = ca
+          @html-escape(ExpectString) = ca
           ["<p class='meta'>Contributed by: " ca "</p>"] | String.Format | AppendTo(body)
         })
         "</div>" | AppendTo(body)
@@ -267,14 +280,21 @@
 @wire(handle-practitioner-data {
   = slug
 
-  [slug] | DB.Query("SELECT id, name, type, slug, metadata, created_at, updated_by FROM nodes WHERE slug = ?" @adai-db)
-  = node-result
-  node-result | Take("id") | ExpectSeq = ids
+  ; count first to avoid ExpectSeq on empty result
+  0 >= data-node-count
+  Maybe({
+    [slug] | DB.Query("SELECT COUNT(*) as count FROM nodes WHERE slug = ?" @adai-db)
+    Take("count") | ExpectSeq | Take(0) | ExpectInt > data-node-count
+  })
 
-  ids | Count | When(Is(0) {
+  data-node-count | When(Is(0) {
     "{\"error\":\"not found\"}" | Http.Response(404 Headers: @json-headers)
     none | Stop
   })
+
+  [slug] | DB.Query("SELECT id, name, type, slug, metadata, created_at, updated_by FROM nodes WHERE slug = ?" @adai-db)
+  = node-result
+  node-result | Take("id") | ExpectSeq = ids
 
   ids | Take(0) | ExpectString = node-id
   node-result | Take("name") | ExpectSeq | Take(0) | ExpectString = dname
@@ -368,21 +388,23 @@
 ; --- GET /contribute — contribution form ---
 @wire(handle-contribute {
   ; load practitioners for the dropdown
-  [] | DB.Query("SELECT id, name, slug FROM nodes WHERE type NOT IN ('related', 'concept', 'scene') ORDER BY name" @adai-db)
-  = prac-result
-  prac-result | Take("name") | ExpectSeq = prac-names
-  prac-result | Take("id") | ExpectSeq = prac-ids
-  prac-names | Count = prac-count
-
-  ; build option tags
   "" >= options
-  0 >= pidx
-  Repeat({
-    prac-ids | Take(pidx) | ExpectString = pid
-    prac-names | Take(pidx) | ExpectString = pname
-    ["<option value='" pid "'>" pname "</option>"] | String.Format | AppendTo(options)
-    Inc(pidx)
-  } Times: prac-count)
+  Maybe({
+    [] | DB.Query("SELECT id, name, slug FROM nodes WHERE type NOT IN ('related', 'concept', 'scene') ORDER BY name" @adai-db)
+    = prac-result
+    prac-result | Take("name") | ExpectSeq = prac-names
+    prac-result | Take("id") | ExpectSeq = prac-ids
+    prac-names | Count = prac-count
+
+    ; build option tags
+    0 >= pidx
+    Repeat({
+      prac-ids | Take(pidx) | ExpectString = pid
+      prac-names | Take(pidx) | ExpectString = pname
+      ["<option value='" pid "'>" pname "</option>"] | String.Format | AppendTo(options)
+      Inc(pidx)
+    } Times: prac-count)
+  })
 
   ["<h2>Contribute a Signal</h2>"
    "<p>Submit information about a practitioner. Contributions from new contributors go to the review queue.</p>"
@@ -446,7 +468,7 @@
   })
 
   ; insert signal
-  [signal-id sig-title source-url "contribution" none none sig-content contributor-name "low" 0]
+  [signal-id sig-title source-url "contribution" none none sig-content contributor-name trust-tier 0]
   DB.Query("INSERT INTO signals (id, title, source_url, source_type, cla_layer, summary, content, submitted_by, confidence, lived_experience) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)" @adai-db)
 
   ; determine intake status: auto-approve for high trust
@@ -519,12 +541,12 @@
     0 >= qi
     Repeat({
       q-ids | Take(qi) | ExpectString = qid
-      q-titles | Take(qi) | ToString = qtitle
-      q-contents | Take(qi) | ToString = qcontent
-      q-urls | Take(qi) | ToString = qurl
-      q-authors | Take(qi) | ToString = qauthor
-      q-tiers | Take(qi) | ToString = qtier
-      q-targets | Take(qi) | ToString = qtarget
+      @html-escape((q-titles | Take(qi) | ToString)) = qtitle
+      @html-escape((q-contents | Take(qi) | ToString)) = qcontent
+      @html-escape((q-urls | Take(qi) | ToString)) = qurl
+      @html-escape((q-authors | Take(qi) | ToString)) = qauthor
+      @html-escape((q-tiers | Take(qi) | ToString)) = qtier
+      @html-escape((q-targets | Take(qi) | ToString)) = qtarget
       q-dates | Take(qi) | ToString = qdate
 
       ["<div class='card' id='item-" qid "'>"
@@ -691,9 +713,9 @@
     ; for default view: both endpoints must be non-meta
     ; for type filter: both endpoints must match the filter
     ; for _all: both non-related
-    ; NOTE: since practitioners don't directly connect to each other in this dataset
-    ; (they connect via concepts/scenes), the default view shows COLLABORATES_WITH only.
-    ; The JS handles loading cross-type edges when concept/scene checkboxes are toggled.
+    ; NOTE: the default view includes all edge types (PRACTICES, BELONGS_TO, RELATED_TO, etc.)
+    ; between non-related, non-scene nodes. Practitioners connect via shared concept nodes
+    ; through PRACTICES edges. The JS handles adding scene nodes/edges when toggled.
     type-filter | If(Is("") {
         ; default: edges between practitioners and concepts (PRACTICES edges create the connections)
         [] | DB.Query("SELECT e.source_id, e.target_id, e.edge_type, e.confidence FROM edges e WHERE e.source_id IN (SELECT id FROM nodes WHERE type NOT IN ('related','scene')) AND e.target_id IN (SELECT id FROM nodes WHERE type NOT IN ('related','scene'))" @adai-db)
@@ -734,14 +756,22 @@
 @wire(handle-api-graph-ego {
   = ego-slug
 
-  ; find the node
-  [ego-slug] | DB.Query("SELECT id, name, type, slug FROM nodes WHERE slug = ?" @adai-db)
-  = ego-node
-  ego-node | Take("id") | ExpectSeq = ego-ids
-  ego-ids | Count | When(Is(0) {
+  ; count first to avoid ExpectSeq on empty result
+  0 >= ego-node-count
+  Maybe({
+    [ego-slug] | DB.Query("SELECT COUNT(*) as count FROM nodes WHERE slug = ?" @adai-db)
+    Take("count") | ExpectSeq | Take(0) | ExpectInt > ego-node-count
+  })
+
+  ego-node-count | When(Is(0) {
     "{\"error\":\"not found\"}" | Http.Response(404 Headers: @json-headers)
     none | Stop
   })
+
+  ; find the node (safe now — we know it exists)
+  [ego-slug] | DB.Query("SELECT id, name, type, slug FROM nodes WHERE slug = ?" @adai-db)
+  = ego-node
+  ego-node | Take("id") | ExpectSeq = ego-ids
 
   ego-ids | Take(0) | ExpectString = ego-id
   ego-node | Take("name") | ExpectSeq | Take(0) | ExpectString = ego-name
@@ -750,12 +780,8 @@
   ; start with the center node
   ["{\"nodes\":[{\"id\":\"" ego-id "\",\"name\":\"" ego-name "\",\"type\":\"" ego-type "\",\"slug\":\"" ego-slug "\",\"center\":true}"] | String.Format >= ego-json
 
-  ; skip — use simpler approach below
-
-  ; simpler approach: get edges, then get connected node info separately
-  ; edges
-  "null" >= ego-edges-json ; placeholder
-  "null" >= ego-neighbors-json
+  ; get edges, then get connected node info separately
+  "" >= ego-edges-json
 
   Maybe({
     [ego-id ego-id] | DB.Query("SELECT source_id, target_id, edge_type, confidence FROM edges WHERE source_id = ? OR target_id = ?" @adai-db)
@@ -1119,7 +1145,16 @@ svg.on('click',function(e){if(e.target.tagName==='svg')closePanel();});
               review-id | Do(handle-review-approve)
             }
             "reject" {
-              {id: review-id reason: (post-body | Take("reason") | ExpectString)} | Do(handle-review-reject)
+              ; validate reason field exists
+              "" >= reject-reason-val
+              post-body | Take("reason") | When(IsString {
+                ExpectString > reject-reason-val
+              })
+              reject-reason-val | When(Is("") {
+                "{\"error\":\"reason is required\"}" | Http.Response(400 Headers: @json-headers)
+                none | Stop
+              })
+              {id: review-id reason: reject-reason-val} | Do(handle-review-reject)
             }
             none {
               "Bad Request" | Http.Response(400 Headers: @html-headers)
