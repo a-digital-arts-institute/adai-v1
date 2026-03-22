@@ -1,6 +1,6 @@
 ; seed.shs — reads ./results/*.json and populates the adai.db with nodes and edges
 
-@define(adai-db "adai.db")
+@define(adai-db "adai.db" IgnoreRedefined: true)
 
 ; --- slugify template: lowercase, replace spaces/underscores with hyphens, strip non-alnum ---
 @template(slugify [input] {

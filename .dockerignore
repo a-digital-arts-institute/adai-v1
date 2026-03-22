@@ -1,0 +1,10 @@
+.git
+*.db
+*.db-shm
+*.db-wal
+shards.db
+shards.log
+adai-digital-arts-report-research/
+DESIGN-BRIEF-v2.md
+fields.yaml
+outline.yaml
