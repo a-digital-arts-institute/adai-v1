@@ -1,7 +1,7 @@
 ; server-base.shs — shared defines, headers, HTML template, CSS
 
 @define(adai-db "adai.db" IgnoreRedefined: true)
-@define(http-port 8080 IgnoreRedefined: true)
+@define(http-port "8080" IgnoreRedefined: true)
 
 @define(html-headers {
   "Content-Type": "text/html; charset=utf-8"

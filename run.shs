@@ -19,7 +19,7 @@
 
 @wire(run {
   SwitchTo(setup)
-  ["A(DAI) server starting on port " @http-port | ToString] | String.Format | Log
+  ["A(DAI) server starting on port " @http-port] | String.Format | Log
   SwitchTo(server)
 })
 

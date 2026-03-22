@@ -1153,5 +1153,5 @@ svg.on('click',function(e){if(e.target.tagName==='svg')closePanel();});
 } Looped: true)
 
 @wire(server {
-  Http.Server(Port: @http-port Handler: safe-server-handler)
+  Http.Server(Port: #(@http-port | ToInt) Handler: safe-server-handler)
 } Looped: true)
