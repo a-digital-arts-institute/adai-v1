@@ -637,6 +637,405 @@
   none | Stop
 })
 
+; --- GET /api/graph — full graph as D3-compatible JSON ---
+; Supports ?type= filter to narrow node types
+@wire(handle-api-graph {
+  = query-target ; the full target URL for query param parsing
+
+  ; check for ?type= filter
+  "" >= type-filter
+  query-target | String.Split("?type=") = type-parts
+  type-parts | Count | When(IsMoreEqual(2) {
+    type-parts | Take(1) | ExpectString > type-filter
+  })
+
+  ; build nodes array
+  "{\"nodes\":[" >= graph-json
+  0 >= gn-count
+  Maybe({
+    type-filter | If(Is("") {
+        ; default: practitioners + concepts (concepts are what connect practitioners via PRACTICES edges)
+        [] | DB.Query("SELECT id, name, type, slug FROM nodes WHERE type NOT IN ('related', 'scene') ORDER BY name" @adai-db)
+      } {
+        type-filter | If(Is("_all") {
+            ; everything except 'related'
+            [] | DB.Query("SELECT id, name, type, slug FROM nodes WHERE type != 'related' ORDER BY name" @adai-db)
+          } {
+            [type-filter] | DB.Query("SELECT id, name, type, slug FROM nodes WHERE type = ? ORDER BY name" @adai-db)
+          }
+        )
+      }
+    ) = gn-result
+    gn-result | Take("id") | ExpectSeq = gn-ids
+    gn-ids | Count > gn-count
+    gn-result | Take("name") | ExpectSeq = gn-names
+    gn-result | Take("type") | ExpectSeq = gn-types
+    gn-result | Take("slug") | ExpectSeq = gn-slugs
+
+    0 >= gi
+    Repeat({
+      When({gi | IsMore(0)} { "," | AppendTo(graph-json) })
+      ["{\"id\":\"" (gn-ids | Take(gi) | ExpectString)
+       "\",\"name\":\"" (gn-names | Take(gi) | ExpectString)
+       "\",\"type\":\"" (gn-types | Take(gi) | ExpectString)
+       "\",\"slug\":\"" (gn-slugs | Take(gi) | ExpectString)
+       "\"}"] | String.Format | AppendTo(graph-json)
+      Inc(gi)
+    } Times: gn-count)
+  })
+
+  ; build edges array — only include edges where BOTH source and target are in the node set
+  "],\"edges\":[" | AppendTo(graph-json)
+  Maybe({
+    ; edges: include only edges where BOTH endpoints are in the returned node set
+    ; for default view: both endpoints must be non-meta
+    ; for type filter: both endpoints must match the filter
+    ; for _all: both non-related
+    ; NOTE: since practitioners don't directly connect to each other in this dataset
+    ; (they connect via concepts/scenes), the default view shows COLLABORATES_WITH only.
+    ; The JS handles loading cross-type edges when concept/scene checkboxes are toggled.
+    type-filter | If(Is("") {
+        ; default: edges between practitioners and concepts (PRACTICES edges create the connections)
+        [] | DB.Query("SELECT e.source_id, e.target_id, e.edge_type, e.confidence FROM edges e WHERE e.source_id IN (SELECT id FROM nodes WHERE type NOT IN ('related','scene')) AND e.target_id IN (SELECT id FROM nodes WHERE type NOT IN ('related','scene'))" @adai-db)
+      } {
+        type-filter | If(Is("_all") {
+            [] | DB.Query("SELECT e.source_id, e.target_id, e.edge_type, e.confidence FROM edges e WHERE e.source_id IN (SELECT id FROM nodes WHERE type != 'related') AND e.target_id IN (SELECT id FROM nodes WHERE type != 'related')" @adai-db)
+          } {
+            ; for single-type filter: edges between nodes of that type
+            [type-filter type-filter] | DB.Query("SELECT e.source_id, e.target_id, e.edge_type, e.confidence FROM edges e WHERE e.source_id IN (SELECT id FROM nodes WHERE type = ?) AND e.target_id IN (SELECT id FROM nodes WHERE type = ?)" @adai-db)
+          }
+        )
+      }
+    ) = ge-result
+    ge-result | Take("source_id") | ExpectSeq = ge-sources
+    ge-sources | Count = ge-count
+    ge-result | Take("target_id") | ExpectSeq = ge-targets
+    ge-result | Take("edge_type") | ExpectSeq = ge-types
+    ge-result | Take("confidence") | ExpectSeq = ge-confs
+
+    0 >= gei
+    Repeat({
+      When({gei | IsMore(0)} { "," | AppendTo(graph-json) })
+      ["{\"source\":\"" (ge-sources | Take(gei) | ExpectString)
+       "\",\"target\":\"" (ge-targets | Take(gei) | ExpectString)
+       "\",\"type\":\"" (ge-types | Take(gei) | ExpectString)
+       "\",\"confidence\":\"" (ge-confs | Take(gei) | ToString)
+       "\"}"] | String.Format | AppendTo(graph-json)
+      Inc(gei)
+    } Times: ge-count)
+  })
+
+  "]}" | AppendTo(graph-json)
+  graph-json | Http.Response(200 Headers: @json-headers)
+  none | Stop
+})
+
+; --- GET /api/graph/:slug — ego graph (1-hop from a node) ---
+@wire(handle-api-graph-ego {
+  = ego-slug
+
+  ; find the node
+  [ego-slug] | DB.Query("SELECT id, name, type, slug FROM nodes WHERE slug = ?" @adai-db)
+  = ego-node
+  ego-node | Take("id") | ExpectSeq = ego-ids
+  ego-ids | Count | When(Is(0) {
+    "{\"error\":\"not found\"}" | Http.Response(404 Headers: @json-headers)
+    none | Stop
+  })
+
+  ego-ids | Take(0) | ExpectString = ego-id
+  ego-node | Take("name") | ExpectSeq | Take(0) | ExpectString = ego-name
+  ego-node | Take("type") | ExpectSeq | Take(0) | ExpectString = ego-type
+
+  ; start with the center node
+  ["{\"nodes\":[{\"id\":\"" ego-id "\",\"name\":\"" ego-name "\",\"type\":\"" ego-type "\",\"slug\":\"" ego-slug "\",\"center\":true}"] | String.Format >= ego-json
+
+  ; skip — use simpler approach below
+
+  ; simpler approach: get edges, then get connected node info separately
+  ; edges
+  "null" >= ego-edges-json ; placeholder
+  "null" >= ego-neighbors-json
+
+  Maybe({
+    [ego-id ego-id] | DB.Query("SELECT source_id, target_id, edge_type, confidence FROM edges WHERE source_id = ? OR target_id = ?" @adai-db)
+    = ego-edges
+    ego-edges | Take("source_id") | ExpectSeq = ee-sources
+    ego-edges | Take("target_id") | ExpectSeq = ee-targets
+    ego-edges | Take("edge_type") | ExpectSeq = ee-types
+    ego-edges | Take("confidence") | ExpectSeq = ee-confs
+    ee-sources | Count = ee-count
+
+    ; collect neighbor node IDs and build edges JSON
+    "" >= edges-part
+    0 >= eei
+    Repeat({
+      When({eei | IsMore(0)} { "," | AppendTo(edges-part) })
+      ee-sources | Take(eei) | ExpectString = ee-src
+      ee-targets | Take(eei) | ExpectString = ee-tgt
+      ["{\"source\":\"" ee-src
+       "\",\"target\":\"" ee-tgt
+       "\",\"type\":\"" (ee-types | Take(eei) | ExpectString)
+       "\",\"confidence\":\"" (ee-confs | Take(eei) | ToString)
+       "\"}"] | String.Format | AppendTo(edges-part)
+
+      ; add the "other" node
+      ee-src | If(Is(ego-id) {
+          ee-tgt
+        } {
+          ee-src
+        }
+      ) = neighbor-id
+
+      ; query neighbor details
+      [neighbor-id] | DB.Query("SELECT id, name, type, slug FROM nodes WHERE id = ?" @adai-db)
+      = nb-result
+      Maybe({
+        nb-result | Take("id") | ExpectSeq | Take(0) | ExpectString = nb-id
+        nb-result | Take("name") | ExpectSeq | Take(0) | ExpectString = nb-name
+        nb-result | Take("type") | ExpectSeq | Take(0) | ExpectString = nb-type
+        nb-result | Take("slug") | ExpectSeq | Take(0) | ExpectString = nb-slug
+        [",{\"id\":\"" nb-id "\",\"name\":\"" nb-name "\",\"type\":\"" nb-type "\",\"slug\":\"" nb-slug "\"}"] | String.Format | AppendTo(ego-json)
+      })
+
+      Inc(eei)
+    } Times: ee-count)
+
+    edges-part > ego-edges-json
+  })
+
+  ; close nodes array, add edges
+  ["],\"edges\":[" ego-edges-json "]}"] | String.Format | AppendTo(ego-json)
+
+  ego-json | Http.Response(200 Headers: @json-headers)
+  none | Stop
+})
+
+; --- GET /graph — D3 force-directed visualization page ---
+@wire(handle-graph {
+  ; the entire D3 viz is inline — no external deps
+  """<div id='graph-container' style='position:relative'>
+<div id='controls' style='position:absolute;top:0;left:0;z-index:10;padding:0.5rem'>
+<select id='type-filter' style='background:#111;color:#d4d4d4;border:1px solid #333;padding:0.3rem;border-radius:3px;font-size:0.8rem'>
+<option value=''>Practitioners + Concepts</option>
+<option value='artist'>Artists only</option>
+<option value='collective'>Collectives only</option>
+<option value='platform'>Platforms only</option>
+<option value='theorist'>Theorists only</option>
+<option value='_all'>Everything</option>
+</select>
+<label style='margin-left:0.5rem;font-size:0.8rem;color:#666'><input type='checkbox' id='show-scenes'> + Scenes</label>
+<span id='node-count' style='margin-left:1rem;font-size:0.75rem;color:#555'></span>
+</div>
+<svg id='graph-svg'></svg>
+<div id='detail-panel' style='display:none;position:absolute;top:0;right:0;width:280px;background:#0f0f0f;border:1px solid #222;border-radius:4px;padding:1rem;max-height:80vh;overflow-y:auto;z-index:10'>
+<button onclick='closePanel()' style='float:right;background:none;border:none;color:#666;cursor:pointer;font-size:1.2rem'>×</button>
+<h3 id='detail-name' style='margin:0 0 0.3rem;color:#e8e8e8'></h3>
+<span id='detail-type' class='tag'></span>
+<div id='detail-connections' style='margin-top:0.8rem'></div>
+<a id='detail-link' href='#' style='display:block;margin-top:0.8rem;font-size:0.85rem'>View full profile →</a>
+</div>
+</div>
+<script src='https://d3js.org/d3.v7.min.js'></script>
+<script>
+var typeColors={
+  artist:'#7eb8da',collective:'#da7e7e',platform:'#7eda98',
+  theorist:'#dab87e',institution:'#b87eda',project:'#7edac4',
+  concept:'#555',scene:'#444',related:'#333',
+  'artist-collective':'#da7e7e','artist-project':'#7edac4',
+  'artist-writer':'#dab87e',artwork:'#b87eda',
+  'exhibition-publication':'#7eda98',gallery:'#da7e7e',
+  report:'#555',theoretical:'#dab87e'
+};
+var confidenceWidth={high:2.5,medium:1.5,low:0.8,unverified:0.4};
+var svg=d3.select('#graph-svg');
+var width,height;
+var simulation,link,node,label;
+var currentData={nodes:[],edges:[]};
+var selectedNode=null;
+
+function resize(){
+  width=window.innerWidth;
+  height=window.innerHeight-120;
+  svg.attr('width',width).attr('height',height);
+  if(simulation)simulation.force('center',d3.forceCenter(width/2,height/2)).alpha(0.3).restart();
+}
+resize();
+window.addEventListener('resize',resize);
+
+function loadGraph(url){
+  fetch(url).then(function(r){return r.json();}).then(function(data){
+    currentData=data;
+    document.getElementById('node-count').textContent=data.nodes.length+' nodes, '+data.edges.length+' edges';
+    render(data);
+  });
+}
+
+function render(data){
+  svg.selectAll('*').remove();
+  var g=svg.append('g');
+
+  // zoom
+  svg.call(d3.zoom().scaleExtent([0.1,8]).on('zoom',function(e){g.attr('transform',e.transform);}));
+
+  // build lookup
+  var nodeMap={};
+  data.nodes.forEach(function(n){nodeMap[n.id]=n;});
+  // filter edges to only those with both endpoints present
+  var validEdges=data.edges.filter(function(e){return nodeMap[e.source||e.source.id]&&nodeMap[e.target||e.target.id];});
+
+  simulation=d3.forceSimulation(data.nodes)
+    .force('link',d3.forceLink(validEdges).id(function(d){return d.id;}).distance(80))
+    .force('charge',d3.forceManyBody().strength(-120))
+    .force('center',d3.forceCenter(width/2,height/2))
+    .force('collision',d3.forceCollide(20));
+
+  link=g.append('g').selectAll('line').data(validEdges).enter().append('line')
+    .attr('stroke','#222')
+    .attr('stroke-width',function(d){return confidenceWidth[d.confidence]||1;})
+    .attr('stroke-opacity',0.6);
+
+  node=g.append('g').selectAll('circle').data(data.nodes).enter().append('circle')
+    .attr('r',function(d){return d.center?12:(d.type==='concept'||d.type==='scene')?4:8;})
+    .attr('fill',function(d){return typeColors[d.type]||'#555';})
+    .attr('stroke',function(d){return d.center?'#fff':'none';})
+    .attr('stroke-width',function(d){return d.center?2:0;})
+    .attr('cursor','pointer')
+    .call(d3.drag().on('start',dragStart).on('drag',dragging).on('end',dragEnd))
+    .on('click',function(e,d){selectNode(d);});
+
+  node.append('title').text(function(d){return d.name+' ('+d.type+')';});
+
+  label=g.append('g').selectAll('text').data(data.nodes).enter().append('text')
+    .text(function(d){return d.name;})
+    .attr('font-size','9px')
+    .attr('fill','#888')
+    .attr('dx',12)
+    .attr('dy',3)
+    .style('pointer-events','none');
+
+  simulation.on('tick',function(){
+    link.attr('x1',function(d){return d.source.x;}).attr('y1',function(d){return d.source.y;})
+        .attr('x2',function(d){return d.target.x;}).attr('y2',function(d){return d.target.y;});
+    node.attr('cx',function(d){return d.x;}).attr('cy',function(d){return d.y;});
+    label.attr('x',function(d){return d.x;}).attr('y',function(d){return d.y;});
+  });
+}
+
+function selectNode(d){
+  selectedNode=d;
+  // highlight
+  node.attr('opacity',function(n){
+    if(n.id===d.id)return 1;
+    var connected=currentData.edges.some(function(e){
+      var s=e.source.id||e.source,t=e.target.id||e.target;
+      return(s===d.id&&t===n.id)||(t===d.id&&s===n.id);
+    });
+    return connected?1:0.15;
+  });
+  link.attr('stroke',function(e){
+    var s=e.source.id||e.source,t=e.target.id||e.target;
+    return(s===d.id||t===d.id)?typeColors[d.type]||'#7eb8da':'#222';
+  }).attr('stroke-opacity',function(e){
+    var s=e.source.id||e.source,t=e.target.id||e.target;
+    return(s===d.id||t===d.id)?0.9:0.15;
+  });
+  label.attr('opacity',function(n){
+    if(n.id===d.id)return 1;
+    var connected=currentData.edges.some(function(e){
+      var s=e.source.id||e.source,t=e.target.id||e.target;
+      return(s===d.id&&t===n.id)||(t===d.id&&s===n.id);
+    });
+    return connected?0.8:0.05;
+  });
+
+  // detail panel
+  var panel=document.getElementById('detail-panel');
+  document.getElementById('detail-name').textContent=d.name;
+  document.getElementById('detail-type').textContent=d.type;
+  document.getElementById('detail-link').href='/practitioner/'+d.slug;
+
+  var conns=currentData.edges.filter(function(e){
+    var s=e.source.id||e.source,t=e.target.id||e.target;
+    return s===d.id||t===d.id;
+  });
+  var html='<p style="font-size:0.8rem;color:#666">'+conns.length+' connections</p><ul style="list-style:none;padding:0">';
+  conns.forEach(function(e){
+    var s=e.source.id||e.source,t=e.target.id||e.target;
+    var otherId=(s===d.id)?t:s;
+    var other=currentData.nodes.find(function(n){return n.id===otherId;});
+    if(other)html+='<li style="padding:0.2rem 0;font-size:0.8rem;border-bottom:1px solid #111"><span style="color:#555;font-family:monospace;font-size:0.7rem">'+e.type+'</span> '+other.name+'</li>';
+  });
+  html+='</ul>';
+  document.getElementById('detail-connections').innerHTML=html;
+  panel.style.display='block';
+}
+
+function closePanel(){
+  document.getElementById('detail-panel').style.display='none';
+  if(node){node.attr('opacity',1);link.attr('stroke','#222').attr('stroke-opacity',0.6);label.attr('opacity',1);}
+  selectedNode=null;
+}
+
+function dragStart(e,d){if(!e.active)simulation.alphaTarget(0.3).restart();d.fx=d.x;d.fy=d.y;}
+function dragging(e,d){d.fx=e.x;d.fy=e.y;}
+function dragEnd(e,d){if(!e.active)simulation.alphaTarget(0);d.fx=null;d.fy=null;}
+
+// filter controls
+function reloadGraph(){
+  var v=document.getElementById('type-filter').value;
+  var scenes=document.getElementById('show-scenes').checked;
+  var url='/api/graph';
+  if(v)url+='?type='+v;
+  // load base graph
+  fetch(url).then(function(r){return r.json();}).then(function(data){
+    if(scenes){
+      // also fetch scene nodes+edges and merge
+      fetch('/api/graph?type=scene').then(function(r){return r.json();}).then(function(sc){
+        data.nodes=data.nodes.concat(sc.nodes);
+        // get cross-type edges from _all
+        fetch('/api/graph?type=_all').then(function(r){return r.json();}).then(function(all){
+          var ids=new Set(data.nodes.map(function(n){return n.id;}));
+          all.edges.forEach(function(e){
+            if(ids.has(e.source)&&ids.has(e.target)){
+              var dup=data.edges.some(function(x){return x.source===e.source&&x.target===e.target&&x.type===e.type;});
+              if(!dup)data.edges.push(e);
+            }
+          });
+          currentData=data;
+          document.getElementById('node-count').textContent=data.nodes.length+' nodes, '+data.edges.length+' edges';
+          render(data);
+        });
+      });
+    } else {
+      currentData=data;
+      document.getElementById('node-count').textContent=data.nodes.length+' nodes, '+data.edges.length+' edges';
+      render(data);
+    }
+  });
+}
+document.getElementById('type-filter').addEventListener('change',reloadGraph);
+document.getElementById('show-scenes').addEventListener('change',reloadGraph);
+
+// initial load — practitioners only (59 nodes)
+loadGraph('/api/graph');
+
+// also support clicking svg background to deselect
+svg.on('click',function(e){if(e.target.tagName==='svg')closePanel();});
+</script>""" = graph-body
+
+  ; the graph page needs full-width, override .wrap
+  ["<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Graph — A(DAI)</title><style>"
+   @css
+   "#graph-container{margin:-2rem -1.5rem}#graph-svg{background:#0a0a0a;display:block}"
+   "</style></head><body><div class='wrap'><header><h1>A<span>(DAI)</span></h1><nav><a href='/'>Home</a><a href='/explore'>Explore</a><a href='/graph'>Graph</a><a href='/contribute'>Contribute</a><a href='/review'>Review</a><a href='/api/stats'>Stats</a></nav></header>"
+   graph-body
+   "<footer>A(DAI) — digital arts knowledge commons</footer></div></body></html>"] | String.Format = page
+
+  page | Http.Response(200 Headers: @html-headers)
+  none | Stop
+})
+
 ; === ROUTING ===
 
 @wire(server-handler {
@@ -662,6 +1061,22 @@
         }
         {Is("/api/stats")} {
           Do(handle-stats)
+        }
+        {Is("/graph")} {
+          Do(handle-graph)
+        }
+        {String.Starts(With: "/api/graph")} {
+          ; /api/graph or /api/graph?type=X or /api/graph/:slug
+          target | String.Split("?") | Take(0) | ExpectString = graph-path
+          graph-path | String.Split("/") = graph-parts
+          ; /api/graph -> ["" "api" "graph"]  (3 parts)
+          ; /api/graph/casey-reas -> ["" "api" "graph" "casey-reas"]  (4 parts)
+          graph-parts | Count | If(IsMoreEqual(4) {
+              graph-parts | Take(3) | ExpectString | Do(handle-api-graph-ego)
+            } {
+              target | Do(handle-api-graph)
+            }
+          )
         }
         {String.Starts(With: "/practitioner/")} {
           target | String.Split("/") = parts
