@@ -1,0 +1,247 @@
+{
+  "claim_summary": "A(DAI) explicitly rejects engagement metrics (views, clicks, time-on-site, likes) in favour of four alternative measures: relational density, edge diversity, provenance quality, and frontier signal accumulation. The brief states 'never build engagement metrics' as a design principle, positioning intention-driven participation against attention-driven platform design.",
+
+  "claim_strength": "moderate — The critique of engagement metrics is well-founded and supported by a decade of research and advocacy (Humane Technology, Time Well Spent, calm technology). However, the proposed alternative metrics are underspecified, and the brief does not address how a 10-year project sustains contributor participation without any feedback loops that serve as proxies for engagement. Rejecting engagement metrics is philosophically sound; the question is whether the proposed replacements are measurable, legible to contributors, and sufficient to drive the participation the project requires.",
+
+  "supporting_evidence": [
+    {
+      "point": "The anti-engagement design movement is mature and well-documented",
+      "detail": "The Center for Humane Technology (founded 2018 by Tristan Harris, Aza Raskin, and others) has built a substantial body of research demonstrating that engagement metrics optimise for compulsive use rather than user value. Their 'Ledger of Harms' documents how engagement-driven design produces addiction, polarisation, misinformation spread, and attention fragmentation. The Time Well Spent movement (Harris, 2016) catalysed a broader design ethics conversation that influenced Apple's Screen Time, Google's Digital Wellbeing, and Instagram's hidden-likes experiment. A(DAI)'s rejection of engagement metrics is aligned with this well-established critique."
+    },
+    {
+      "point": "Calm technology provides a theoretical foundation for non-engagement design",
+      "detail": "Amber Case's 'Calm Technology' (2015), building on Mark Weiser and John Seely Brown's 1995 Xerox PARC paper 'Designing Calm Technology,' articulates design principles for technology that respects human attention. The core principle — technology should require the minimum possible attention while providing the maximum useful information — directly supports A(DAI)'s 'intention over attention' stance. The calm tech framework has been applied in IoT, ambient computing, and notification design, demonstrating that non-engagement-driven design is technically feasible."
+    },
+    {
+      "point": "Knowledge commons historically succeed without engagement metrics",
+      "detail": "The most durable knowledge commons — Wikipedia, arXiv, the Internet Archive, Project Gutenberg — do not use engagement metrics to drive contribution. Wikipedia's contributor motivation research (Nov et al., 2007; Yang & Lai, 2010) consistently finds that intrinsic motivation (belief in the mission, desire to share knowledge, community belonging) dominates over extrinsic engagement signals. arXiv has operated since 1991 with essentially no engagement metrics, sustained entirely by the academic community's need for the service. This suggests that for mission-aligned communities, engagement metrics are not necessary for sustainability."
+    },
+    {
+      "point": "Relational density has precedent as a meaningful measure in network science",
+      "detail": "Relational density maps to well-established network science concepts. Graph density (ratio of actual to possible edges), clustering coefficient (tendency of nodes to cluster), and rich-club coefficient (tendency of high-degree nodes to connect) are all computable, meaningful, and have been used in bibliometric analysis, social network analysis, and knowledge graph evaluation. Barabasi's work on network science (2016) and Newman's 'Networks' (2018) provide rigorous frameworks for measuring the structural properties A(DAI) calls 'relational density.' The metric is measurable — the question is whether it is meaningful as a signal of knowledge quality."
+    },
+    {
+      "point": "Edge diversity maps to established information diversity measures",
+      "detail": "Edge diversity — measuring the variety of relationship types a node participates in — has precedent in ecological diversity measures (Shannon entropy, Simpson's index) applied to networks. In knowledge graph evaluation, type diversity of edges incident to a node has been used as a quality signal in Wikidata analysis and in biomedical knowledge graphs. A node connected through PRACTICES, INFLUENCES, COLLABORATES_WITH, and CRITIQUES edges is structurally richer than one connected only through BELONGS_TO edges. This is a legitimate and computable metric."
+    }
+  ],
+
+  "counter_evidence": [
+    {
+      "point": "Anti-engagement design has not solved the sustainability problem",
+      "detail": "Despite a decade of advocacy, no major anti-engagement platform has achieved sustainable scale without eventually reintroducing engagement-adjacent metrics. Ello (2014) launched as an anti-Facebook with no ads and no engagement optimisation — it collapsed into a niche art portfolio site by 2017. App.net (2012) rejected engagement metrics in favour of user-aligned design — it shut down in 2017. Cohost (2022) explicitly rejected engagement metrics — it shut down in 2024. Even Are.na, the closest cultural analogue to A(DAI), remains a very small platform sustained by subscriptions, not by demonstrated 'relational density.' The pattern is consistent: anti-engagement design attracts an early community of believers but struggles to sustain participation over time without feedback loops that engage contributors."
+    },
+    {
+      "point": "Provenance quality is a process metric, not an outcome metric",
+      "detail": "The brief lists 'provenance quality' as an alternative to engagement metrics, but provenance quality measures the integrity of the input process, not the value of the output. Knowing that a signal was well-sourced and properly attributed does not tell you whether it was useful, whether it generated new connections, or whether it advanced the field's understanding. Provenance quality is necessary for trust but is not a substitute for measures of knowledge impact. It is analogous to measuring academic citation formatting rather than citation impact."
+    },
+    {
+      "point": "Frontier signal accumulation is undefined and potentially unmeasurable",
+      "detail": "Of the four proposed metrics, 'frontier signal accumulation' is the most problematic. A frontier signal is defined as something the system cannot yet classify — but this means the metric would measure the rate at which unclassifiable inputs arrive. This conflates several distinct phenomena: genuinely novel knowledge, poor-quality signals that resist classification due to incoherence, signals from domains the system has not yet encountered, and errors in the processing pipeline. Without a mechanism to distinguish between these, 'frontier signal accumulation' is not a quality metric — it is a noise metric. High frontier signal rates could indicate either a thriving, boundary-pushing community or a broken classification system."
+    },
+    {
+      "point": "Contributors need feedback loops, even non-engagement ones",
+      "detail": "Research on contributor motivation in commons systems (Crowston & Fagnot, 2018; Benkler, 2006) consistently identifies feedback as a necessary condition for sustained participation. Contributors need to know that their contributions matter — that they were processed, that they connected to other knowledge, that they influenced the graph. The brief rejects engagement metrics but does not specify what feedback contributors receive. Without feedback, the contribution experience is equivalent to dropping signals into a void. Wikipedia's barnstars, edit counts, and user talk pages are technically engagement signals — they tell contributors 'your work mattered.' A(DAI) needs analogous mechanisms even if they are not called engagement metrics."
+    },
+    {
+      "point": "Institutional partners and funders will require legible impact metrics",
+      "detail": "The brief's Mode 2 (advisory services for capital actors) and the 10-year timeline imply external funding and institutional partnerships. Funders — whether grants, institutions, or advisory clients — universally require impact metrics. 'Relational density increased by 0.3' is not legible to a funder; 'the graph now connects 500 practitioners across 40 scenes' is. The brief's rejection of engagement metrics may be philosophically pure, but it creates a communication problem: how does A(DAI) demonstrate impact to stakeholders who do not speak network science? The Humane Technology movement itself discovered this — the Center for Humane Technology shifted from pure anti-engagement advocacy to developing 'humane design' metrics that are legible to business stakeholders."
+    },
+    {
+      "point": "Engagement metrics are not inherently extractive — the problem is optimisation targets",
+      "detail": "The anti-engagement critique conflates the metric with the optimisation. Measuring page views is not harmful; optimising for page views at the expense of user wellbeing is harmful. A(DAI) could measure contribution frequency, graph exploration patterns, and time-to-connection without optimising for these metrics. The distinction between 'metrics we track for understanding' and 'metrics we optimise for' is well-established in product analytics and in Goodhart's Law discourse. Rejecting all engagement measurement eliminates valuable diagnostic information about system health."
+    }
+  ],
+
+  "blind_spots": [
+    {
+      "point": "No contributor feedback mechanism is specified",
+      "detail": "The brief says what A(DAI) will not measure (engagement) but does not say what contributors will see as evidence that their participation matters. When a practitioner submits a signal through the contribute page or transcriber, what happens? Do they see it appear in the graph? Do they see new connections formed? Do they receive any indication that the system processed and valued their input? The absence of a contributor feedback design is the most significant gap in the anti-engagement stance. Rejecting engagement metrics does not mean rejecting all contributor-facing information about system activity."
+    },
+    {
+      "point": "The brief conflates platform engagement metrics with system health metrics",
+      "detail": "There is a meaningful distinction between: (1) engagement metrics designed to maximise user time-on-platform (the thing the brief rightly rejects), (2) activity metrics that measure whether the system is functioning (signal intake rate, processing latency, contributor retention), and (3) impact metrics that measure whether the system is achieving its goals (knowledge coverage, practitioner representation, scene completeness). The brief appears to reject all three categories when only the first is genuinely problematic. A 10-year project with no system health metrics is flying blind."
+    },
+    {
+      "point": "Anti-engagement design movements target consumer platforms, not knowledge commons",
+      "detail": "The Humane Technology, calm tech, and Time Well Spent movements were formulated in response to consumer social media and smartphone apps — contexts where users are passive consumers of an attention-harvesting system. A(DAI) is a knowledge commons where participants are active contributors. The dynamics are fundamentally different. Applying anti-engagement principles designed for consumer protection to a contributory knowledge system may be a category error. The relevant literature is not anti-engagement design but commons governance and contributor motivation research."
+    },
+    {
+      "point": "The 10-year timeline creates a compounding sustainability problem",
+      "detail": "A 10-year project without engagement metrics must sustain contributor participation through purely intrinsic motivation for a decade. Research on long-duration volunteer projects (Penner, 2002; Wilson, 2000) shows that intrinsic motivation alone sustains participation for 1-3 years in most individuals. Beyond that, contributors need either evolving roles (Wikipedia's admin hierarchy), visible impact (open-source contribution graphs), or social reinforcement (community events, recognition). The brief's Art Basel encounter targets 100 people, but the project needs sustained contribution from a subset of them for 10 years. Without any engagement-adjacent feedback, contributor attrition is highly likely."
+    },
+    {
+      "point": "Relational density as a metric privileges well-connected incumbents",
+      "detail": "If 'mass' accumulates from relational density and edge diversity, established practitioners with many connections will always have more mass than emerging ones. This creates a Matthew Effect (the rich get richer) that contradicts the brief's stated goal of surfacing frontier signals and emerging practices. The brief does not address how relational density as a primary metric interacts with its commitment to valuing what is new, unclassified, and peripheral. Frontier signals by definition have low relational density because they have not yet been connected to the existing graph."
+    }
+  ],
+
+  "closest_precedents": [
+    {
+      "name": "Center for Humane Technology / Time Well Spent",
+      "description": "Founded by former Google design ethicist Tristan Harris. Built the intellectual framework for anti-engagement design, influenced Apple and Google platform features, and produced 'The Social Dilemma' documentary. Achieved significant public awareness but struggled to translate anti-engagement principles into concrete alternative metrics. Eventually shifted toward policy advocacy rather than design alternatives.",
+      "relevance": "Directly relevant as the leading anti-engagement movement. Demonstrates that critique is easier than alternative measurement — CHT never produced a widely adopted alternative metric framework."
+    },
+    {
+      "name": "Are.na",
+      "description": "Knowledge curation platform for the arts/culture community. Explicitly rejects algorithmic feeds, engagement metrics, and advertising. Uses a subscription model. Has sustained a small, dedicated community (~50,000 users as of 2024) but has not grown significantly despite strong cultural alignment. No formal quality metrics beyond user-driven curation (connecting blocks to channels).",
+      "relevance": "Closest analogue in the arts/culture space for anti-engagement knowledge infrastructure. Demonstrates that the approach can sustain a niche community but struggles with growth and impact measurement."
+    },
+    {
+      "name": "Wikipedia's quality assessment system",
+      "description": "Wikipedia uses article quality grades (Stub, Start, C, B, GA, FA) based on structural criteria (sourcing, comprehensiveness, writing quality) rather than engagement metrics. This is the most successful non-engagement quality measurement system at scale. Quality grades drive WikiProject activity and editor motivation without optimising for page views.",
+      "relevance": "Best precedent for measuring knowledge quality without engagement metrics. Demonstrates that structural quality criteria can work at scale but require significant community labor to maintain assessment processes."
+    },
+    {
+      "name": "Scuttlebutt / Manyverse",
+      "description": "Peer-to-peer social protocol designed around calm technology principles. No engagement metrics, no algorithmic feed, no central server. Deliberately slow and non-optimised. Achieved a small community of ~10,000 users but never reached mainstream adoption. Developer Andre Staltz eventually acknowledged that the anti-engagement stance limited growth without providing clear alternative value signals.",
+      "relevance": "Demonstrates the extreme case of anti-engagement design — technically sound, philosophically aligned, but unable to sustain a community large enough to fulfil its mission."
+    },
+    {
+      "name": "Open Science Framework (OSF)",
+      "description": "Infrastructure for open research by the Center for Open Science. Measures research quality through structural criteria (pre-registration, open data, open materials) rather than citation counts or downloads. Has sustained institutional adoption since 2013 through grant requirements and institutional mandates rather than through engagement.",
+      "relevance": "Demonstrates that non-engagement infrastructure can sustain through institutional adoption rather than individual contributor engagement — relevant to A(DAI)'s Mode 2 advisory model."
+    }
+  ],
+
+  "lessons_from_failures": [
+    {
+      "lesson": "Ello and Cohost demonstrate that anti-engagement is not a sufficient value proposition",
+      "detail": "Both platforms launched with strong anti-engagement positioning — no ads, no algorithmic feeds, no engagement optimisation. Both attracted initial communities of users dissatisfied with mainstream platforms. Both failed because 'not being Facebook/Twitter' is a negative value proposition that does not generate sustained use. Users came for what the platform was not, but stayed only if there was a compelling positive reason to participate. A(DAI) must articulate what contributors gain from participation, not just what they avoid.",
+      "actionable_insight": "Define the positive value proposition for contributors in concrete terms: 'By contributing, you will see your practice positioned in relation to the broader field, discover unexpected connections, and gain visibility among a curated community of peers.' This is technically a form of engagement feedback — it tells contributors what they get — but it is aligned with the project's values."
+    },
+    {
+      "lesson": "The Humane Technology movement discovered that alternative metrics must be legible to non-specialists",
+      "detail": "CHT initially advocated for replacing engagement metrics with 'time well spent' measures but could not operationalise this at scale. They eventually shifted to policy advocacy because designing legible, computable alternative metrics proved harder than critiquing existing ones. The 'Humane Design Guide' (2020) provides principles but not metrics. This suggests that A(DAI) will face the same operationalisation challenge: 'relational density' is computable by the engineering team but not legible to a contributing practitioner or an advisory client.",
+      "actionable_insight": "Develop two layers of metrics: internal system health metrics (relational density, edge diversity, etc.) for the engineering team, and contributor-facing 'impact narratives' that translate structural metrics into human-readable stories ('your signal connected two previously unlinked scenes')."
+    },
+    {
+      "lesson": "Scuttlebutt shows that calm design without feedback produces contributor isolation",
+      "detail": "Scuttlebutt's peer-to-peer architecture meant that users often could not tell who had seen their posts, whether they had propagated through the network, or whether they had generated any response. This created a feeling of 'posting into the void' that drove contributor attrition despite strong philosophical alignment with the protocol's values. The lesson is that anti-engagement does not mean anti-feedback. Contributors need to know their contributions exist in a social context.",
+      "actionable_insight": "Design a 'contribution receipt' — when a signal is submitted, the contributor receives a structured response showing: (1) the signal was processed, (2) what entities were extracted, (3) what connections were formed in the graph, (4) where the signal sits in relation to existing knowledge. This is feedback, not engagement optimisation."
+    },
+    {
+      "lesson": "Academic metrics reform shows the difficulty of replacing entrenched measures",
+      "detail": "The San Francisco Declaration on Research Assessment (DORA, 2012) called for replacing journal impact factors with more nuanced research quality measures. More than a decade later, impact factors still dominate academic evaluation. Alternative metrics (altmetrics, citation diversity indices, open science indicators) exist but have not displaced the entrenched measures. This suggests that even when the critique of existing metrics is well-founded, replacement takes much longer than anticipated and requires institutional backing to gain traction.",
+      "actionable_insight": "Accept that A(DAI) will need to report some conventional metrics (number of practitioners mapped, number of scenes covered, number of signals processed) to external stakeholders, while using relational metrics internally. The alternative metrics can coexist with simple counts rather than replacing them entirely."
+    }
+  ],
+
+  "differentiation_assessment": "A(DAI)'s anti-engagement stance is philosophically well-grounded but operationally underspecified. The genuine differentiation is not the rejection of engagement metrics — many projects have attempted this — but the proposal of specific structural alternatives (relational density, edge diversity, provenance quality, frontier signal accumulation). Of these four, relational density and edge diversity are measurable using established network science methods. Provenance quality is a process metric that requires human assessment or proxy measures. Frontier signal accumulation is poorly defined and potentially counterproductive as a quality signal. The real novelty is the attempt to build a knowledge system where quality is measured by structural richness rather than popularity. This has precedent in bibliometrics (h-index variants, citation network analysis) but has not been applied to an arts knowledge commons. The risk is that the anti-engagement principle, stated as an absolute ('never build engagement metrics'), prevents the project from building the diagnostic and feedback infrastructure it needs to survive for 10 years.",
+
+  "implementation_risks": [
+    {
+      "risk": "No contributor feedback loop leads to participation attrition",
+      "detail": "Without any mechanism for contributors to see the impact of their participation, the project relies entirely on intrinsic motivation and social reinforcement from the founding team. Research on commons participation consistently shows that feedback loops — even simple ones like 'your contribution was processed' or 'you connected two previously unlinked concepts' — are necessary for sustained engagement. The anti-engagement principle, if interpreted strictly, prevents building these feedback loops.",
+      "severity": "high",
+      "mitigation": "Distinguish between 'engagement optimisation' (designing for compulsive use) and 'contribution feedback' (telling contributors what happened with their input). Build the latter while avoiding the former. A contribution receipt showing extracted entities and new graph connections serves contributor needs without optimising for engagement."
+    },
+    {
+      "risk": "Alternative metrics are not legible to stakeholders",
+      "detail": "Funders, institutional partners, and advisory clients (Mode 2) will ask 'what is A(DAI)'s impact?' Answering with 'relational density increased by 15%' is not legible. The project needs translation layers that convert structural metrics into human-readable impact narratives. Without these, the anti-engagement stance becomes a communication barrier that threatens funding and partnership.",
+      "severity": "high",
+      "mitigation": "Develop a 'metrics translation guide' that maps internal structural metrics to stakeholder-legible indicators. Example: relational density → 'average number of meaningful connections per practitioner'; edge diversity → 'percentage of practitioners connected across multiple practice areas'; frontier signal rate → 'new emerging practices identified per quarter.'"
+    },
+    {
+      "risk": "Relational density creates a Matthew Effect that contradicts frontier signal goals",
+      "detail": "If the primary quality signal is relational density (how connected a node is), established practitioners with many connections will always score higher than emerging ones. This directly contradicts the brief's commitment to valuing frontier signals and emerging practices. A system that measures quality by connectedness inherently undervalues what is new and peripheral.",
+      "severity": "medium",
+      "mitigation": "Weight frontier signals separately from relational density. A dual metric system: 'structural richness' (relational density, edge diversity) for established knowledge, and 'frontier vitality' (rate of new, unclassified signals; speed of integration into the graph) for emerging knowledge. These metrics should be presented as complementary, not competing."
+    },
+    {
+      "risk": "No system health diagnostics without activity metrics",
+      "detail": "A 10-year project needs to detect problems early: declining contribution rates, increasing processing errors, community fragmentation, ontological stagnation. These require activity metrics (contribution frequency, processing throughput, contributor retention, schema evolution rate) that are technically forms of engagement measurement. The categorical rejection of engagement metrics may prevent the team from building essential diagnostic infrastructure.",
+      "severity": "medium",
+      "mitigation": "Adopt a clear three-tier metric taxonomy: (1) engagement metrics (user-facing, attention-optimising) — never build; (2) system health metrics (internal, diagnostic) — build and monitor but do not expose to users; (3) impact metrics (structural, quality-oriented) — build, expose, and report."
+    }
+  ],
+
+  "dependency_assumptions": [
+    "Contributors are motivated by the mission and community sufficiently to sustain participation for years without engagement feedback — this requires a highly aligned community that may be smaller than the project needs",
+    "Relational density and edge diversity are meaningful proxies for knowledge quality in an arts context — this is assumed but not validated; network density in a knowledge graph may reflect data completeness rather than knowledge value",
+    "The founding team can maintain sufficient contribution volume during the bootstrap phase without any engagement-driving mechanisms — four people must generate enough initial content to demonstrate the graph's value before external contributors arrive",
+    "Institutional partners and advisory clients (Mode 2) will accept structural metrics as evidence of value — this requires either educating stakeholders or translating metrics, neither of which is addressed",
+    "Frontier signal accumulation is a measurable and meaningful metric — currently undefined to the level required for implementation",
+    "Anti-engagement design principles developed for consumer social media platforms transfer meaningfully to contributory knowledge commons — this is a category assumption that may not hold"
+  ],
+
+  "timeline_reality_check": "The anti-engagement metrics are achievable by Art Basel June 2026 in the sense that the team can compute relational density, edge diversity, and provenance quality scores from the graph. These are standard network analysis computations. However, validating whether these metrics actually correlate with knowledge quality requires a graph of sufficient size and maturity — likely 6-12 months of operation with active contributors. By Art Basel, the team can demonstrate the metrics; they cannot demonstrate that the metrics work. Recommendation: present the metrics framework at Art Basel as a 'measurement philosophy' rather than as proven alternatives, and plan a validation phase in the second half of 2026.",
+
+  "suggested_revisions": [
+    {
+      "revision": "Replace the absolute 'never build engagement metrics' with a nuanced metric taxonomy",
+      "detail": "Rewrite the design principle as: 'A(DAI) does not optimise for attention or engagement. We measure knowledge quality through structural metrics (relational density, edge diversity, provenance quality) and system health through activity diagnostics (contribution throughput, processing completeness, ontological coverage). We provide contributors with impact feedback (what their contributions connected, where they sit in the graph) without designing for compulsive use.' This preserves the anti-engagement philosophy while allowing necessary diagnostic and feedback infrastructure."
+    },
+    {
+      "revision": "Specify the four alternative metrics with operational definitions",
+      "detail": "Each proposed metric needs a computable definition: (1) Relational density — average weighted degree centrality across all nodes, weighted by edge type diversity; (2) Edge diversity — Shannon entropy of edge type distribution per node, averaged across the graph; (3) Provenance quality — percentage of signals with complete provenance chains (source, contributor, consent, confidence, processing log); (4) Frontier signal accumulation — rate of signals that create new concept nodes or new edge types not present in the existing ontology. These definitions make the metrics auditable and reproducible."
+    },
+    {
+      "revision": "Design a contributor feedback mechanism that is values-aligned",
+      "detail": "Add to the brief: 'When a contributor submits a signal, they receive a structured response showing: the entities extracted, the connections formed, and a visual snippet of where their contribution sits in the graph. This feedback is delivered once, at processing time, and is not designed to draw the contributor back to the platform. It serves contributor dignity (your work was valued) rather than platform engagement (come back and do more).' This addresses the feedback gap without compromising the anti-engagement stance."
+    },
+    {
+      "revision": "Address the Matthew Effect in relational density",
+      "detail": "Add to the brief: 'Relational density as a metric inherently privileges established knowledge over emerging knowledge. To counterbalance this, the graph weights frontier connections (edges to nodes less than N days old, edges of novel types, edges that bridge previously unconnected clusters) more heavily than established connections. This ensures that the measurement system values both structural richness and frontier vitality.'"
+    },
+    {
+      "revision": "Add a stakeholder communication strategy for alternative metrics",
+      "detail": "The brief should acknowledge that structural metrics require translation for external stakeholders. Add: 'For Mode 2 advisory clients and institutional partners, structural metrics are translated into domain-legible indicators: practitioner coverage (how many artists mapped), scene completeness (how thoroughly a geographic/conceptual scene is represented), connection discovery rate (new meaningful links identified per period), and frontier identification rate (emerging practices surfaced before mainstream recognition).'"
+    }
+  ],
+
+  "questions_for_team": [
+    "When a contributor submits a signal and it is processed, what do they see? Walk through the contributor experience from submission to graph integration. If the answer is 'nothing,' how do you expect sustained contribution?",
+    "How will you report A(DAI)'s impact to funders or institutional partners? If a foundation asks 'what did our grant achieve,' what numbers or narratives do you provide?",
+    "Is 'never build engagement metrics' an absolute constraint or a design heuristic? Would you build a simple contribution counter visible to contributors if research showed it sustained participation? Where exactly is the line?",
+    "How do you operationally define 'frontier signal accumulation'? If the processor encounters a signal it cannot classify, how do you distinguish between genuinely novel knowledge, poor-quality input, and a processing error?",
+    "How does relational density as a primary metric interact with the goal of valuing frontier signals? A genuinely frontier signal has, by definition, low relational density. How do you prevent the metric from systematically undervaluing what you claim is most important?",
+    "What happens in year 3 or year 5 when the founding team's intrinsic motivation may wane? Without any engagement feedback, what sustains the maintenance labor of running the pipeline, processing signals, and evolving the ontology?",
+    "Have you considered that some engagement signals (e.g., 'this practitioner's node is frequently explored in Query mode') could be valuable intelligence about the field's interests without being extractive? Is there a version of engagement measurement that serves the commons?"
+  ],
+
+  "key_sources": [
+    {
+      "title": "Harris, T. (2016). 'How Technology is Hijacking Your Mind.' Thrive Global / Center for Humane Technology.",
+      "url": "https://www.humanetech.com",
+      "relevance": "Foundational text of the anti-engagement design movement. Established the critique that A(DAI)'s design principle builds on."
+    },
+    {
+      "title": "Case, A. (2015). 'Calm Technology: Principles and Patterns for Non-Intrusive Design.' O'Reilly Media.",
+      "url": "https://calmtech.com",
+      "relevance": "Theoretical framework for non-engagement design. Provides principles but not metrics — illustrating the operationalisation gap A(DAI) faces."
+    },
+    {
+      "title": "Barabasi, A.-L. (2016). 'Network Science.' Cambridge University Press.",
+      "url": "http://networksciencebook.com",
+      "relevance": "Rigorous framework for computing and interpreting the structural metrics (density, centrality, clustering) that A(DAI) proposes as engagement alternatives."
+    },
+    {
+      "title": "Benkler, Y. (2006). 'The Wealth of Networks: How Social Production Transforms Markets and Freedom.' Yale University Press.",
+      "url": "https://yalebooks.yale.edu/book/9780300125771/the-wealth-of-networks/",
+      "relevance": "Foundational work on commons-based peer production. Addresses contributor motivation in non-market systems — directly relevant to whether anti-engagement commons can sustain participation."
+    },
+    {
+      "title": "Nov, O., Naaman, M., Ye, C. (2010). 'Analysis of Participation in an Online Photo-Sharing Community: A Multidimensional Perspective.' Journal of the American Society for Information Science and Technology, 61(3).",
+      "url": "https://doi.org/10.1002/asi.21278",
+      "relevance": "Research on contributor motivation in commons systems — demonstrates the role of feedback in sustaining participation."
+    },
+    {
+      "title": "Eghbal, N. (2020). 'Working in Public: The Making and Maintenance of Open Source Software.' Stripe Press.",
+      "url": "https://press.stripe.com/working-in-public",
+      "relevance": "Documents how open-source maintainer motivation and sustainability intersect with visibility and feedback mechanisms."
+    },
+    {
+      "title": "DORA — San Francisco Declaration on Research Assessment (2012).",
+      "url": "https://sfdora.org",
+      "relevance": "Parallel effort to replace entrenched quantitative metrics (journal impact factor) with quality-oriented alternatives in academia — demonstrates the difficulty of metric replacement."
+    },
+    {
+      "title": "Weiser, M. and Brown, J.S. (1995). 'Designing Calm Technology.' Xerox PARC.",
+      "url": "https://calmtech.com/papers.html",
+      "relevance": "Original articulation of calm technology principles. The theoretical ancestor of A(DAI)'s 'intention over attention' stance."
+    }
+  ],
+
+  "uncertain": []
+}

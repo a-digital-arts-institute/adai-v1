@@ -1,0 +1,231 @@
+topic: "Mycelium as concept framework for A(DAI) — extending gravitational pull and mass through emergence, embodiment, and decomposition"
+context: |
+  A(DAI) is a 10-year knowledge commons for digital arts using a gravitational model
+  where nodes accumulate mass through relational density. The brief identifies a core
+  tension: frontier signals score low on relational density by definition, risking burial
+  of the most valuable signals. Mycelium offers a complementary framework where underground
+  networks carry nutrients to where they're needed, decompose what's no longer serving,
+  and emerge unpredictably into multiple futures.
+
+  Three elements:
+  1. Emergence — how networks emerge into multiple futures, mycelial branching as model for non-linear field development
+  2. Embodiment — how distributed networks sense and respond to change in real-time, sensing across different conditions
+  3. Decomposition — remains objective, creates preferable conditions for ecosystem, focused on growth until it needs to focus energy on resilience and sufficiency
+
+items:
+  # === BIOLOGICAL FOUNDATIONS ===
+  - id: mycelial-networks
+    name: "Mycelial networks (mycorrhizal fungi)"
+    description: "How fungal networks connect plant roots, redistribute nutrients, and signal threats. The 'Wood Wide Web' as empirical grounding."
+    element_alignment: [emergence, embodiment]
+
+  - id: common-mycorrhizal-networks
+    name: "Common Mycorrhizal Networks (CMNs)"
+    description: "Mechanism where mature trees subsidise seedlings through shared fungal networks. Analogue to frontier signal nurturing."
+    element_alignment: [emergence, embodiment]
+
+  - id: simard-research
+    name: "Suzanne Simard — mother trees and forest communication"
+    description: "Foundational work on how established nodes support emerging ones through underground networks."
+    element_alignment: [emergence]
+
+  - id: karst-critique
+    name: "Karst, Jones & Hoeksema — 'Wood Wide Web' critique (2023)"
+    description: "Meta-review finding 50% of CMN citations misrepresent function. Forces distinction between metaphorical power and empirical evidence."
+    element_alignment: [decomposition]
+
+  - id: kiers-spun
+    name: "Toby Kiers / SPUN — travelling-wave strategy (2025)"
+    description: "24/7 imaging revealing mycorrhizal networks as self-regulating travelling waves with two-way traffic and adaptive congestion. Most empirically rigorous current work."
+    element_alignment: [embodiment]
+
+  - id: fungal-cognition
+    name: "Fungal cognition without a brain (Fukasawa et al., 2024)"
+    description: "Phanerochaete velutina recognizes patterns, remembers growth direction, organizes network pathways over 116 days. Intelligence without central processing."
+    element_alignment: [embodiment, emergence]
+
+  - id: week-long-oscillations
+    name: "Week-long electrical oscillations in fungi (2024)"
+    description: "Mycelia produce electrical oscillations with one-week period. Every part of hyphal body can act as temporal centre. Radically different temporal operation."
+    element_alignment: [embodiment]
+
+  - id: cross-kingdom-rna
+    name: "Cross-kingdom RNA communication (2024-2025)"
+    description: "Plants send RNAs via extracellular vesicles to fungi to manipulate gene expression. Mycelium as translator across fundamentally different kingdoms."
+    element_alignment: [embodiment, emergence]
+
+  - id: hyphal-retreat
+    name: "Hyphal retreat and cytoplasm retraction"
+    description: "Strategic biomass allocation via retraction from inefficient paths. Species show different strategies: repair vs. abandon. The biological basis for failure as design."
+    element_alignment: [decomposition]
+
+  - id: mycoremediation
+    name: "Mycoremediation"
+    description: "Fungi cleaning contaminated environments. Decomposition as healing, not just recycling."
+    element_alignment: [decomposition]
+
+  # === PHILOSOPHY & THEORY ===
+  - id: sheldrake-entangled-life
+    name: "Merlin Sheldrake / Entangled Life"
+    description: "Contemporary synthesis of fungal intelligence, decomposition as creative act, network epistemology."
+    element_alignment: [decomposition, emergence]
+
+  - id: stamets-mycelium-running
+    name: "Paul Stamets / Mycelium Running"
+    description: "Applied mycology, mycelium as 'Earth's natural internet.' Six ways fungi can save the world."
+    element_alignment: [emergence, embodiment]
+
+  - id: deleuze-rhizome
+    name: "Rhizome (Deleuze & Guattari)"
+    description: "Philosophical precedent for non-hierarchical thought. How mycelium extends the rhizome (mycelium decomposes; rhizomes don't)."
+    element_alignment: [emergence]
+
+  - id: haraway-sympoiesis
+    name: "Donna Haraway — sympoiesis / 'making-with'"
+    description: "Tentacular thinking, collaborative becoming. Mycelium as model for making-with rather than self-making."
+    element_alignment: [emergence, embodiment]
+
+  - id: tsing-mushroom
+    name: "Anna Tsing / The Mushroom at the End of the World"
+    description: "Matsutake as model for life in capitalist ruins. Emergence in damaged landscapes. Directly relevant to post-NFT field conditions."
+    element_alignment: [emergence, decomposition]
+
+  - id: morton-dark-ecology
+    name: "Timothy Morton — Dark Ecology & Hyperobjects"
+    description: "Ecological mesh, hyperobjects (viscous, nonlocal, phasing). Agrilogistics critique parallels gravitational accumulation."
+    element_alignment: [embodiment, decomposition]
+
+  - id: kimmerer-fungal-economies
+    name: "Robin Wall Kimmerer — fungal gift economies"
+    description: "Gift economy framing of mycorrhizal exchange. The forest's weights and measures are not the market's."
+    element_alignment: [embodiment, decomposition]
+
+  - id: kaishian-queer-mycology
+    name: "Patricia Kaishian — Queer Mycology (2020-2024)"
+    description: "Fungi as inherently nonbinary (23,000+ mating types). Classification resistance as feature. Mycology as queer discipline."
+    element_alignment: [emergence, decomposition]
+
+  - id: ihls-fungal-temporalities
+    name: "Julia Ihls — Mycological Metaphysics: Fungal Temporalities (ISEA 2024)"
+    description: "Fungi elude extractivist immediacy and linear temporality. Embodied creativity in 'pulsating interplay of unity and multiplicity.'"
+    element_alignment: [emergence, embodiment]
+
+  # === APPLIED FRAMEWORKS ===
+  - id: brown-emergent-strategy
+    name: "adrienne maree brown — Emergent Strategy"
+    description: "Biomimicry (including mycelium) applied to social justice organizing. 'Critical connections over critical mass.' Organizing without central control."
+    element_alignment: [emergence, embodiment]
+
+  - id: benyus-biomimicry
+    name: "Janine Benyus — Biomimicry framework"
+    description: "How biological patterns have been applied to information architecture, commons governance, and network design."
+    element_alignment: [emergence, embodiment, decomposition]
+
+  - id: panarchy-adaptive-cycle
+    name: "Panarchy / adaptive cycle (Holling)"
+    description: "Growth → conservation → release → reorganisation. Maps onto emergence/embodiment/decomposition. Resilience theory."
+    element_alignment: [emergence, embodiment, decomposition]
+
+  - id: stigmergy
+    name: "Stigmergy"
+    description: "Indirect coordination through environmental traces. Mycelium operates stigmergically. How agent signals accumulate."
+    element_alignment: [embodiment]
+
+  - id: slime-mold
+    name: "Slime mold intelligence (Physarum polycephalum)"
+    description: "Network optimisation without centralised control. Nakagaki's Tokyo railway experiment."
+    element_alignment: [emergence, embodiment]
+
+  # === GOVERNANCE & TECHNOLOGY ===
+  - id: mycofi
+    name: "MycoFi — Mycelial Design Patterns for Web3 (Emmett & Zartler, 2024)"
+    description: "Six fungal design patterns as crypto-economic structures: Network Infrastructure, Fractal Nature, Emergent Coordination, Dynamic Flow, Mutual Reciprocity, Polycentric Pluralism."
+    element_alignment: [emergence, embodiment]
+
+  - id: cybermycelium
+    name: "Cybermycelium Reference Architecture (2024)"
+    description: "Domain-driven distributed big data architecture modeled on mycelial network properties. Published in Frontiers in Big Data."
+    element_alignment: [emergence, embodiment]
+
+  - id: adamatzky-fungal-computing
+    name: "Andrew Adamatzky — Fungal Computing (2023-2025)"
+    description: "Mycelium as literal computing substrate — memristors, capacitors, sensors with neuron-like spiking. Not metaphor; mechanism."
+    element_alignment: [embodiment]
+
+  - id: zumbrunn-glocal
+    name: "Chris Zumbrunn — Mycelium Model of Glocal Governance"
+    description: "Governance that facilitates awareness of consensus rather than making decisions. Circle-shaped (dialogue) over triangle-shaped (authority)."
+    element_alignment: [embodiment, emergence]
+
+  - id: mycelial-law
+    name: "The Mycelial Law Manifesto (2025)"
+    description: "MycoFi's six principles applied to legal frameworks. Non-extractive, place-based, community-driven governance grounded in Earth law."
+    element_alignment: [embodiment, decomposition]
+
+  - id: myceloom
+    name: "Myceloom Protocol / Web4 Infrastructure (2024-2025)"
+    description: "'Fungal democracy' — macro-decisions emerging from micro-judgments without central authority."
+    element_alignment: [emergence, embodiment]
+
+  - id: dao-3
+    name: "DAO 3.0 / Regenerative Coordination (2025)"
+    description: "DAOs must evolve from code-only governance to living-systems design. Complex adaptive systems requiring continuous evolution."
+    element_alignment: [emergence, decomposition]
+
+  - id: ntari-internet
+    name: "NTARI — 'How We Grew the Internet Wrong' (2025)"
+    description: "Mycelium self-organizes into resilient webs vs. brittle hierarchies. Corrective model for digital infrastructure."
+    element_alignment: [emergence, embodiment]
+
+  # === ART & CULTURE ===
+  - id: ostendorf-fungal
+    name: "Yasmine Ostendorf-Rodriguez / Let's Become Fungal! (Valiz, 2023)"
+    description: "12 mycelium teachings as questions from Indigenous wisdom keepers, artists, curators. Both text and methodology (12 workshop formats)."
+    element_alignment: [emergence, embodiment, decomposition]
+
+  - id: becoming-mycelial
+    name: "'Becoming Mycelial' exhibition & network (2024-2025)"
+    description: "International art network (KH7 Artspace, Aarhus). Fungi as material and method. The active art-practice community."
+    element_alignment: [emergence]
+
+  - id: mycelium-design-metaphor
+    name: "Mycelium as design metaphor in distributed systems"
+    description: "Existing uses in decentralised tech, mesh networks, DAO governance frameworks."
+    element_alignment: [emergence, embodiment]
+
+  # === DESIGN METHODOLOGY ===
+  - id: decomposition-as-design
+    name: "'Decomposition as Design' (TEI '19, ACM)"
+    description: "Four design tactics from decomposition: fragmenting, aging, liberating, tracing. Decentering humans through natural decay."
+    element_alignment: [decomposition]
+
+  - id: davis-mycelial-leadership
+    name: "Renee Davis — Mycelial Leadership (2024)"
+    description: "Distributing meaning-making and decision-making to the front lines. Brainless intelligence applied to organizations."
+    element_alignment: [embodiment, emergence]
+
+  # === A(DAI)-SPECIFIC SYNTHESIS ===
+  - id: adai-emergence
+    name: "Emergence element — mycelial branching as non-linear field development"
+    description: "Hyphal tip growth explores unpredictably, branches at nutrients, abandons dead ends. How frontier signals should propagate in the graph."
+    element_alignment: [emergence]
+
+  - id: adai-embodiment
+    name: "Embodiment element — distributed sensing without central control"
+    description: "Chemical gradient response, moisture sensing. No brain, full intelligence. Model for commons-level field sensing."
+    element_alignment: [embodiment]
+
+  - id: adai-decomposition
+    name: "Decomposition element — objective breakdown creating conditions for growth"
+    description: "Saprotrophic fungi transform dead matter into bioavailable nutrients. Not destruction — transformation. Recycling outdated concepts into new field intelligence."
+    element_alignment: [decomposition]
+
+  - id: adai-redistribution-vs-gravity
+    name: "Mycelial redistribution vs. gravitational accumulation"
+    description: "Gravity concentrates mass at centres. Mycelium redistributes to scarcity. The complementary/corrective dynamic for A(DAI)'s gravitational model."
+    element_alignment: [emergence, embodiment, decomposition]
+
+execution:
+  batch_size: 5
+  items_per_agent: 8
+  output_dir: ./mycelium-framework/results

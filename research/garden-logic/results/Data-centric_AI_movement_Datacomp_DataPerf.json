@@ -1,0 +1,51 @@
+{
+  "identity": {
+    "name": "Data-centric AI movement (Datacomp, DataPerf)",
+    "type": "media-data",
+    "originator": "Andrew Ng (evangelist), MLCommons (DataPerf), LAION/academic consortium (DataComp), DMLR Working Group",
+    "year": "2021 (movement named), 2022 (DataPerf paper, DataComp launched)",
+    "key_text": "DataPerf: Benchmarks for Data-Centric AI Development (Mazumder et al., 2022); DataComp: In search of the next generation of multimodal datasets",
+    "key_url": "https://dmlr.ai/"
+  },
+  "conceptual": {
+    "core_claim": "The quality, curation, and composition of training data matters more than model architecture — shifting ML engineering focus from model-centric iteration to data-centric iteration.",
+    "relation_to_attention_economy": "Indirect but important. Data-centric AI does not critique attention, but by emphasizing data quality over data quantity, it implicitly challenges the attention economy's assumption that more engagement data equals better models. Quality curation requires editorial judgment, not engagement metrics.",
+    "relation_to_commons": "Mixed relationship. DataComp uses Common Crawl as its candidate pool (12.8B image-text pairs), inheriting all the commons-extraction tensions of web scraping. DataPerf benchmarks could be applied to ethically sourced datasets but the movement has not made commons governance a priority.",
+    "epistemological_stance": "Empirical-computational. Knowledge validity determined by benchmark performance — a dataset is 'good' if models trained on it perform well on standardized tasks. This is a pragmatic epistemology that does not question what counts as a valid task or benchmark."
+  },
+  "technical": {
+    "architecture_pattern": "Benchmark suite + competition platform. DataPerf provides standardized benchmarks for evaluating dataset quality. DataComp provides a fixed candidate pool where participants compete on filtering and curation strategies. The 'data ratchet' creates iterative improvement cycles.",
+    "data_model": "Evaluation-oriented: training sets, test sets, and metrics. DataPerf structures data-centric work into five benchmark types covering acquisition, debugging, curation, and prompting. DataComp uses image-text pairs filtered from Common Crawl with CLIP embeddings.",
+    "temporal_logic": "Cyclical through competition rounds. DataPerf runs multiple challenge rounds, enabling iterative improvement. But the underlying datasets are static — the temporal logic is in the evaluation cycle, not in the data itself.",
+    "absence_handling": "Implicit through benchmarking. If a dataset fails on specific demographic subgroups or task categories, the benchmark reveals the absence. DataPerf's bias evaluation benchmarks can detect underrepresentation. However, absence detection is a byproduct of evaluation, not a first-class design principle.",
+    "scalability_model": "Centralized benchmark platform with distributed participation. MLCommons maintains the infrastructure; researchers worldwide submit entries. Scales through community participation in competitions."
+  },
+  "garden_logic_comparative": {
+    "layer_mapping": "sensing-loop — Data-centric AI's emphasis on iterative data quality improvement maps to A(DAI)'s sensing loop, where signal quality determines everything downstream. The 'data ratchet' is structurally analogous to A(DAI)'s process → export → feedback cycle.",
+    "intention_vs_attention": "Technically neutral — data-centric AI optimizes for task performance, which could serve either intention or attention depending on the downstream application. However, the emphasis on curation quality over raw scale has structural affinity with intention. The movement asks 'what data should we use?' rather than 'how much data can we get?'",
+    "coherence_vs_consensus": "Consensus through benchmarking. The movement establishes shared metrics and competitions to reach consensus on what constitutes good data. This differs from A(DAI)'s coherence model, which tolerates multiple valid readings. Data-centric AI seeks a single leaderboard ranking.",
+    "contestability": "Moderate. Competition format allows alternative approaches to be compared. Losing entries are not suppressed — they contribute to understanding. But benchmark tasks themselves are not contestable; they are set by organizers.",
+    "forkability": "High at the methodology level — anyone can apply data-centric principles to their own datasets. Low at the platform level — DataPerf/DataComp infrastructure is centralized. The DMLR journal enables knowledge forking through publications.",
+    "tendency_axis_position": "Infrastructure-side on spectacle-infrastructure (focused on engineering methodology). Mixed on commons-capture (uses Common Crawl but promotes quality over extraction). Distributed on individual-distributed (community-driven competitions). Openness-side (open benchmarks, open publications).",
+    "what_adai_should_adopt": "The 'data ratchet' concept — using processed outputs to evaluate and improve intake quality. A(DAI)'s signal pipeline should include feedback loops where downstream graph quality informs upstream signal processing. Also adopt the principle that data curation is the primary engineering activity, not model or algorithm design.",
+    "what_adai_should_refuse": "The benchmark-as-truth epistemology. A(DAI) should not reduce signal quality to a leaderboard metric. Cultural intelligence cannot be benchmarked against a fixed test set. Also refuse the competition framing — A(DAI)'s signal processing is collaborative sensemaking, not a contest to find the best filter.",
+    "structural_tension": "Data-centric AI assumes that 'better data' can be objectively measured through task performance. A(DAI) operates in a domain where 'better' is contested — what counts as a valuable cultural signal depends on perspective, context, and the merge boundary's governance. The tension is between measurable quality and interpretive richness."
+  },
+  "critical": {
+    "limits": "Inherits ethical problems from its data sources (DataComp uses Common Crawl). Benchmark tasks may not capture real-world data quality dimensions like consent, provenance, or cultural sensitivity. The movement has been primarily model-performance-oriented, not ethics-oriented.",
+    "who_is_excluded": "[uncertain] Communities whose knowledge cannot be captured in benchmark-compatible formats. Oral traditions, embodied practices, and relational knowledge systems. The movement's computational epistemology excludes non-quantifiable quality dimensions. Non-English and non-Western knowledge underrepresented in benchmark design.",
+    "failure_under_attention": "[uncertain] If data-centric AI becomes primarily about optimizing engagement metrics, it collapses back into attention optimization. The movement could be co-opted to mean 'better data for better attention capture' rather than 'better data for better understanding.' The competition format already introduces attention dynamics (winning teams get citations, visibility)."
+  },
+  "governance": {
+    "governance_model": "Open protocol governance through MLCommons (industry consortium including Google, Meta, Intel, NVIDIA). Academic governance through DMLR journal and workshop committees. Hybrid corporate-academic governance with industry funding.",
+    "consent_architecture": "[uncertain] No consent architecture for the data being benchmarked. DataComp's candidate pool (Common Crawl) has no consent mechanism. The movement's focus on data quality has not yet extended to consent quality. This is a significant gap."
+  },
+  "materiality": {
+    "extraction_vector": "[uncertain] The movement itself does not directly extract — it creates evaluation frameworks. But it enables and legitimizes extraction by optimizing the pipelines that process extracted data. The extraction vector is indirect: better curation of extracted data makes extraction more valuable.",
+    "composability": "High. DataPerf benchmarks are modular and extensible. New benchmark tasks can be added. The DMLR journal publishes reusable methodologies. DataComp's filtering approaches are reproducible. Protocol-level composability.",
+    "liveness": "Actively maintained and growing. DMLR Working Group formed January 2024. ICML 2024 workshop was the fifth in the series. DMLR journal accepting submissions. MLCommons actively developing new benchmark rounds.",
+    "scale_of_operation": "Field-level. The movement spans the entire ML research community through conferences, journals, and competitions. DataComp operates at planetary data scale (12.8B image-text pairs). Impact extends to industry practice.",
+    "temporality": "Cyclical through competition rounds and workshop series. The movement has emerged over 2021-2025 with increasing institutional formalization. Forward-looking through benchmark design that anticipates future data challenges."
+  },
+  "uncertain": ["who_is_excluded", "failure_under_attention", "consent_architecture", "extraction_vector", "epistemological_stance"]
+}

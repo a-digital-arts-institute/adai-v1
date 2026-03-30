@@ -1,0 +1,84 @@
+{
+  "basic_identification": {
+    "name": "Cross-platform identity fragmentation",
+    "type": "gap",
+    "originator": "Structural condition arising from platform proliferation. No single actor created this — it is the emergent result of multiple platforms (Twitter/X, Instagram, Foundation, SuperRare, Art Blocks, Feral File, Objkt, Zora, personal websites, Are.na) each requiring separate profiles with no interoperability. Discussed extensively in digital identity discourse (DID/W3C standards community, ENS, Lens Protocol).",
+    "year": "Ongoing since ~2017 (platform proliferation in crypto art); acute since 2021 when artists needed presence on 5+ platforms simultaneously",
+    "key_url": "No primary URL. Related efforts: https://ens.domains/, https://www.w3.org/TR/did-core/, https://lens.xyz/, https://linktree.com/ (symptom, not solution)",
+    "geography": "Global — affects all digital art practitioners"
+  },
+  "core_ideas": {
+    "core_claim": "Digital artists are fragmented across multiple platforms with no unified presence or portable identity. Each platform holds a partial view — Twitter/X for discourse, Instagram for visual portfolio, Foundation/SuperRare for primary sales, Art Blocks for generative work, Feral File for curated exhibitions, personal websites for archives. No single place shows a practitioner's full relational context: who they've collaborated with, which movements they belong to, their complete exhibition history, their conceptual lineage.",
+    "medium_specificity": "This is unique to digitally native practice. Traditional artists have gallery representation as an identity anchor — a gallery aggregates and presents the artist's full practice. Digital artists have no equivalent. Furthermore, blockchain-based art introduces wallet addresses as pseudo-identities, creating additional fragmentation (one artist may have multiple wallets across Ethereum, Tezos, Solana). The problem compounds with pseudonymous practice — the same person may be known by different names on different platforms.",
+    "relation_to_attention_economy": "Identity fragmentation forces artists to maintain multiple platform presences, multiplying their attention labor. Each platform demands its own content strategy, engagement patterns, and community management. This attention tax falls hardest on artists who are also their own marketers, curators, and archivists — which in digital art is nearly everyone. Platforms benefit from fragmentation because it increases time-on-platform and creates switching costs.",
+    "relation_to_intention": "Fragmentation is attention-native by default — platforms fragment identity to capture attention within their walled gardens. An intention-native approach would create portable, artist-controlled identity that serves the practitioner's need for coherent self-presentation and the field's need for relational mapping."
+  },
+  "market_economics": {
+    "revenue_model": "Not applicable directly. However, fragmentation has economic costs: artists lose sales when collectors cannot find their full body of work, cannot verify their identity across platforms, or don't discover work on secondary platforms. Partial solutions (Linktree, personal websites) have revenue models (freemium subscription) but don't solve the underlying data portability problem.",
+    "market_position": "Infrastructure (absent). Identity sits at the foundation of all market activity — you cannot transact, collect, or curate without knowing who someone is.",
+    "price_range": "Not applicable",
+    "volume_trend_2024_2026": "Fragmentation is worsening as new platforms emerge (Zora, Rodeo, Highlight, Manifold, various L2 marketplaces) and existing platforms change (Twitter/X instability). Some consolidation around ENS as an identity anchor in crypto-native communities, but this excludes non-crypto digital artists. [uncertain]",
+    "collector_demographics": "Collectors face the mirror image of this problem — their collections are fragmented across wallets, platforms, and chains. No unified view of a collector's holdings or taste profile exists. This affects crypto-native, traditional, and institutional collectors alike, though crypto-native collectors are most accustomed to managing multi-platform identities.",
+    "sustainability": "The fragmentation is sustained by platform business models that benefit from walled gardens. Solutions require either: (1) platform cooperation on standards (unlikely without external pressure), (2) user-controlled identity infrastructure (DID, ENS — technically possible but adoption is slow), or (3) third-party aggregation (Artacle, Gallery.so — useful but creates new dependencies). No clear path to sustainability without commons-level identity infrastructure."
+  },
+  "practice_aesthetics": {
+    "toolchain": "Current partial tools: ENS (Ethereum Name Service — provides .eth identity anchor), Lens Protocol (decentralized social graph), DID/Verifiable Credentials (W3C standard — technically mature but low adoption in art world), Linktree/bio link tools (cosmetic, not structural), personal websites (artist-controlled but not machine-readable or interoperable), Gallery.so (aggregates NFT collections but limited to on-chain work).",
+    "relation_to_AI": "AI could assist with identity resolution (matching the same artist across platforms through stylistic analysis, metadata correlation, social graph analysis). However, AI-powered identity linking raises privacy concerns, especially for pseudonymous artists who deliberately maintain separate identities. The relationship between AI and identity fragmentation is fraught with consent issues.",
+    "liveness": "Not applicable — structural condition",
+    "aesthetic_vocabulary": "Identity fragmentation extends to aesthetic vocabulary: an artist may be described as 'generative' on Art Blocks, 'new media' in gallery contexts, 'crypto art' on SuperRare, and 'AI artist' on social media. No unified vocabulary connects these descriptions into a coherent practice profile.",
+    "tendency_axis_position": "The current state is: enclosure (platforms enclose identity data), capture (identity serves platform metrics not artist needs), individual burden (each artist must solve fragmentation themselves), spectacle (platform profiles optimize for presentation not structural truth). Solutions should move toward: openness, commons, collective infrastructure."
+  },
+  "infrastructure_governance": {
+    "openness": "Identity data is proprietary to each platform. Artists cannot export their follower relationships, exhibition history, sales records, or relational data from any major platform. ENS and DID are open standards but not yet widely adopted in art contexts.",
+    "governance_model": "Each platform governs identity unilaterally (can ban, shadow-ban, de-verify, or change profile requirements at will). No cross-platform governance exists. W3C DID standard is governed by open standards process. ENS is governed by ENS DAO.",
+    "data_sovereignty": "Artists have minimal data sovereignty. Platform ToS typically claim broad rights over user-generated content and data. Artists cannot move their identity (followers, reputation, exhibition history) from one platform to another. Wallet-based identity offers some sovereignty (you control your keys) but only for on-chain data.",
+    "interoperability": "Near zero. No standard exists for expressing a digital artist's identity, practice, exhibition history, or relationships in a portable, machine-readable format. Each platform uses proprietary schemas. OAuth/social login creates account linking but not data portability.",
+    "preservation_strategy": "Identity is not preserved. When platforms shut down (e.g., Hic et Nunc's turbulent history), artist profiles and relational context are lost unless community archives intervene. Personal websites offer some preservation but are not interoperable with any larger system.",
+    "consent_architecture": "Varies by platform. Generally binary (create account or don't). No granular consent for how identity data is used, shared, or aggregated. Pseudonymous artists have de facto consent control through identity separation, but this is a workaround, not designed consent infrastructure."
+  },
+  "field_position": {
+    "relation_to_traditional_art_world": "Traditional art manages identity through: gallery representation (gallery as identity anchor), CV/exhibition history (standardized format), art fair booths (physical presence), auction records (public), biographies in catalogs. These are imperfect but relatively stable. Digital art's identity infrastructure is far more fragmented and unstable.",
+    "what_it_enables": "The gap enables nothing positive. Its resolution would enable: unified artist profiles, portable reputation, cross-platform discovery, relational mapping (who collaborates with whom, which movements connect), collector due diligence, curatorial research, and institutional collection management.",
+    "what_it_lacks": "A portable, artist-controlled, machine-readable identity standard for digital art practitioners. Also lacks: cross-platform exhibition history aggregation, relational graph of collaborations and influences, unified provenance tracking across chains and platforms, and a mechanism for artists to control how their fragmented identities are linked.",
+    "who_is_excluded": "Artists on minor or non-English platforms; artists who cannot maintain presence on multiple platforms simultaneously (economic, time, or technical barriers); artists whose practice spans categories that different platforms handle separately; artists who value privacy and pseudonymity but still want discoverable practice profiles; artists in regions where certain platforms are blocked or inaccessible.",
+    "frontier_signal": "Emerging. DID standards are technically mature but not adopted in art. ENS provides partial solution for crypto-native community. Lens Protocol offers decentralized social graph. Some startups (Gallery.so, Artacle) attempt aggregation. But no comprehensive artist-identity infrastructure exists. Growing awareness that this is a blocking problem for field maturation."
+  },
+  "attention_intention": {
+    "discovery_mechanism": "Currently: each platform has its own discovery mechanism, none of which communicate. An artist discoverable on Art Blocks may be invisible on Instagram. No cross-platform discovery exists.",
+    "attention_dependency": "Identity fragmentation maximizes attention dependency because artists must maintain active presence on every platform to remain visible. The labor of managing multiple identities is itself an attention cost extracted by platforms.",
+    "intention_alignment": "Current identity infrastructure is entirely attention-native (serves platform engagement). Intention-native identity would be artist-controlled, portable, and serve the field's need for relational mapping rather than any platform's need for user lock-in.",
+    "commons_contribution": "Zero commons-level identity infrastructure exists for digital art. Each platform encloses identity data. Open standards (DID, ENS) contribute to commons but are not yet applied to art-specific identity needs."
+  },
+  "provenance_temporality": {
+    "provenance_type": "Ownership provenance exists on-chain (fragmented across chains). Meaning provenance (who influenced whom, what movements an artist belongs to, how practice evolved) is not tracked anywhere in structured form.",
+    "temporal_logic": "Each platform captures a temporal slice of an artist's practice. No system tracks the temporal evolution of an artist's identity, practice, or relationships across platforms and over time.",
+    "absence_handling": "Fragmentation means much of an artist's practice is absent from any single platform's view. No system detects or represents these absences — each platform presents its partial view as if complete."
+  },
+  "coherence": {
+    "coherence_vs_consensus": "Neither. Each platform imposes its own identity schema as a local consensus. No coherence across platforms exists — there is no shared frame within which multiple identity representations could coexist meaningfully.",
+    "contestability": "Limited. Artists can contest individual platform decisions (e.g., appeal a ban) but cannot contest the structural fragmentation itself. No mechanism to challenge how platforms represent or categorize an artist's identity.",
+    "forkability": "Platform identities cannot be forked. Wallet-based identity is theoretically forkable (you can use your keys anywhere) but practically limited by platform-specific reputation and relationships. DID-based identity is designed to be forkable but not yet adopted."
+  },
+  "adai_comparison": {
+    "layer_mapping": "substrate",
+    "what_adai_should_adopt": "A(DAI) should build practitioner profiles that aggregate cross-platform presence into coherent records. Study DID/W3C standards for portable identity. Study how Gallery.so aggregates wallet-based collections. Design identity records that are: artist-controlled (consent-first), cross-platform (pull from multiple sources), machine-readable (for graph integration), temporally aware (track how identity evolves), and relationally rich (capture collaborations, influences, movement memberships).",
+    "what_adai_should_refuse": "A(DAI) must refuse: (1) becoming another platform that fragments identity further — it must aggregate, not add another silo; (2) linking pseudonymous identities without explicit artist consent — privacy is a feature, not a bug; (3) creating a single canonical identity — some artists legitimately maintain multiple distinct practices under different names; (4) any identity system that cannot represent ambiguity, contested attribution, or collective authorship.",
+    "structural_tension": "The tension is between aggregation and consent. A(DAI) wants to see the whole artist (unified view across platforms) but must respect the artist's right to fragment their identity deliberately. The graph must be able to represent both linked identities (where artist consents) and deliberately separate identities (where artist maintains boundaries)."
+  },
+  "regulatory_legal": {
+    "regulatory_exposure": "GDPR directly applies — aggregating identity data across platforms constitutes personal data processing. Right to be forgotten applies. GDPR's data portability provisions (Article 20) theoretically support the right to export identity data from platforms, but enforcement in art contexts is untested. [uncertain]",
+    "ip_model": "Artist names and biographical facts are not copyrightable. However, profile content, artist statements, and images are. Any aggregation must respect original IP while enabling discovery and relational mapping.",
+    "opt_in_vs_opt_out": "Must be opt-in for any active identity linking across platforms. Passive aggregation of publicly available information (public profiles, on-chain data) exists in a gray area. A(DAI) should default to opt-in with granular controls for what is linked and what remains separate."
+  },
+  "ecosystem": {
+    "platform_dependency": "The fragmentation IS multi-platform dependency. Artists depend on 5-10 platforms simultaneously, each with different rules, algorithms, and risks. Single point of failure risk is distributed but overall fragility is high (any platform change disrupts practice).",
+    "network_effects": "Fragmentation prevents network effects from accumulating at field level. Each platform captures its own network effects. An artist's reputation on SuperRare does not transfer to Art Blocks or Instagram. The field as a whole cannot benefit from network effects because no shared identity layer exists.",
+    "post_crash_trajectory": "Post-crash, fragmentation has become more painful as some platforms have declined or shut down (e.g., various NFT marketplaces). Artists who concentrated on now-declining platforms lost accumulated reputation and visibility. This has increased interest in portable identity but practical solutions remain scarce. Some consolidation around Ethereum mainnet and a smaller number of platforms. [uncertain]"
+  },
+  "uncertain": [
+    "volume_trend_2024_2026",
+    "regulatory_exposure",
+    "post_crash_trajectory",
+    "collector_demographics"
+  ]
+}

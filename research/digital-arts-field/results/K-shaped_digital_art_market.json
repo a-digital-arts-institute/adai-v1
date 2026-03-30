@@ -1,0 +1,84 @@
+{
+  "basic_identification": {
+    "name": "K-shaped digital art market",
+    "type": "discourse",
+    "originator": "Analytical frame emerging from multiple sources: Art Tactic market reports, Nansen on-chain analytics, DappRadar NFT reports, Hiscox Online Art Trade Report, art market commentators including Kenny Schachter, Jason Bailey (Artnome), and Amy Whitaker. The K-shaped recovery concept borrowed from macroeconomic analysis (originally used to describe post-COVID economic divergence).",
+    "year": "2024",
+    "key_url": "https://dappradar.com/blog/nft-arts-shocking-collapse-from-2-9-billion-boom-to-23-8-million-bust-what-went-wrong",
+    "geography": "Global phenomenon, most visible in US and European markets. Top-tier digital art concentrated in New York, London, Berlin, and Los Angeles gallery/museum ecosystems."
+  },
+  "core_ideas": {
+    "core_claim": "The post-2022 digital art market split into a K-shape: the upper arm rising (established generative artists, institutionally validated work, blue-chip collections like CryptoPunks and Art Blocks Curated) and the lower arm declining toward zero (PFP collections, speculative mints, celebrity drops, undifferentiated generative projects). The K-shape frame argues that this is not a uniform market decline but a structural bifurcation where cultural weight and institutional legitimacy determine survival. Only art with genuine aesthetic, conceptual, or historical significance retains or grows value; everything else collapses.",
+    "medium_specificity": "Unique to the digital art/NFT market because of (1) the speed and scale of the boom-bust cycle, (2) the on-chain transparency that makes the bifurcation measurable in real time, (3) the infinite reproducibility problem that makes scarcity-based value fragile, and (4) the absence of institutional gatekeepers during the boom that allowed the lower arm of the K to grow unchecked. Traditional art markets also stratify, but not at this velocity or with this degree of data visibility.",
+    "relation_to_attention_economy": "The K-shape directly maps the attention economy's impact on art markets. The upper arm consists of work that built attention-independent value (institutional acquisition, critical recognition, community depth). The lower arm consists of work that was purely attention-dependent: PFP projects, influencer-promoted drops, and FOMO-driven mints that collapsed when social media attention shifted. The K-shape is the market's structural response to the withdrawal of attention-economy capital.",
+    "relation_to_intention": "The K-shape separates intention-aligned infrastructure (curated platforms, institutional programs, artist-led communities) from attention-aligned speculation. The upper arm represents work and infrastructure that served declared aesthetic and cultural needs. The lower arm represents infrastructure built to capture speculative attention. The analytical frame itself is intention-aligned: it provides structural understanding of market dynamics rather than trading signals."
+  },
+  "market_economics": {
+    "revenue_model": "N/A — this is an analytical framework, not a market actor. The K-shape describes revenue dynamics across the market: upper arm sustains through institutional acquisition budgets, curated primary sales (Feral File, Art Blocks), and stable secondary markets with committed collectors. Lower arm generates minimal revenue as liquidity evaporates and floor prices approach zero.",
+    "market_position": "Analytical/discourse layer. The K-shape frame positions itself across the entire market, providing a lens for understanding which segments are viable and which are structurally defunct.",
+    "price_range": "Upper arm: CryptoPunks floor ~$50-80K, Art Blocks Curated works $500-$50K, blue-chip 1/1 digital art $10K-$1M+. Lower arm: most PFP collections floor price below $10, many effectively $0. The gap between upper and lower arms continues to widen. [uncertain]",
+    "volume_trend_2024_2026": "Upper arm: stable to modestly growing, driven by institutional acquisitions and dedicated collector base. Lower arm: continuing decline, with many collections reaching zero liquidity. Overall market volume declined from $2.9B (2021 peak) to ~$23.8M (Q1 2025) but the distribution is highly asymmetric. Bitcoin Ordinals created a temporary alternative trajectory (896% price increase to $633 average in Q1 2025) but its sustainability is uncertain. [uncertain]",
+    "collector_demographics": "Upper arm: institutional collectors (museums, foundations), high-net-worth traditional collectors entering via curated channels, committed generative art community (often technically literate, aesthetically engaged). Lower arm: largely abandoned by speculative buyers, remaining holders unable to exit positions. 51% of HNW collectors surveyed by Art Basel/UBS in 2025 had purchased digital art, indicating the upper arm is reaching traditional collecting demographics. [uncertain]",
+    "sustainability": "Upper arm: potentially sustainable through non-speculative channels (institutional acquisition, curated primary sales, artist-collector relationships, grant-funded programs). Lower arm: not sustainable — projects surviving only on residual community loyalty or hopium. The K-shape frame itself is sustainable as an analytical tool because the structural dynamics it describes are persistent, not cyclical."
+  },
+  "practice_aesthetics": {
+    "toolchain": "The K-shape frame uses on-chain analytics tools (Nansen, DappRadar, NFTGo, Dune Analytics), art market data services (Art Tactic, Artnet Price Database), and institutional transaction records. The analysis depends on the unprecedented data transparency of blockchain markets.",
+    "relation_to_AI": "AI-generated art occupies an ambiguous position in the K-shape. Some AI art practitioners (Refik Anadol, Holly Herndon/Dryhurst) have achieved upper-arm status through institutional validation and conceptual depth. Mass-market AI-generated NFTs populate the lower arm. The AI discourse is itself K-shaped: serious AI art practice rises while undifferentiated AI generation collapses in market value.",
+    "liveness": "Static analytical frame applied to dynamic market data. The K-shape is an interpretive lens, not a live system. Its application requires ongoing monitoring of market and institutional data.",
+    "aesthetic_vocabulary": "The K-shape frame introduces vocabulary from economics (bifurcation, stratification, K-shaped recovery) into art market discourse. Key terms: cultural weight, institutional legitimacy, blue-chip digital art, floor price collapse, speculative residue, non-speculative value. The frame contributes to an emerging post-crash critical vocabulary that can distinguish structural value from speculative noise.",
+    "tendency_axis_position": "Commons-leaning (analytical framework freely available, no proprietary model). Infrastructure over spectacle (provides structural understanding rather than market excitement). The frame itself is neutral on openness/enclosure and individual/collective axes but tends to validate infrastructure-building approaches over spectacle-driven ones."
+  },
+  "infrastructure_governance": {
+    "openness": "Open. The K-shape analysis is publicly available through multiple publications and analysts. No proprietary framework or paywalled methodology. On-chain data underpinning the analysis is publicly accessible.",
+    "governance_model": "None. This is an emergent analytical consensus, not a governed institution. Multiple independent analysts and platforms contribute to the K-shape narrative without coordination.",
+    "data_sovereignty": "N/A as an analytical frame. The underlying data (on-chain transactions, auction records) has its own sovereignty dynamics. The analysis itself is public discourse.",
+    "interoperability": "High. The K-shape frame is compatible with any market analysis tool, on-chain analytics platform, or institutional reporting framework. It provides a shared analytical vocabulary that bridges crypto-native and traditional art market discourse.",
+    "preservation_strategy": "Not applicable as infrastructure. The analytical frame persists through publication and citation. On-chain data underpinning the analysis is permanently preserved on blockchain.",
+    "consent_architecture": "Not applicable. No consent mechanism needed for an analytical framework."
+  },
+  "field_position": {
+    "relation_to_traditional_art_world": "Integration. The K-shape frame is legible to traditional art market analysts because art markets have always stratified. The frame translates crypto-native market dynamics into traditional art market language (blue-chip vs. mid-market collapse). It helps traditional institutions understand which segments of the digital art market are worth engaging with.",
+    "what_it_enables": "Strategic decision-making for institutions, platforms, and collectors. The K-shape frame enables: identification of which infrastructure investments will survive, which artist careers have structural support, and which market segments are structurally dead. It provides an evidence-based alternative to both blanket NFT dismissal and speculative optimism.",
+    "what_it_lacks": "Predictive power for individual works or artists. The frame describes aggregate dynamics but cannot predict which specific projects will move from lower to upper arm. It also lacks analysis of non-market value (cultural significance of projects that are commercially dead but historically important). The frame is market-centric and does not account for digital art practices outside the NFT market.",
+    "who_is_excluded": "Artists in the lower arm who may have genuine artistic merit but lack institutional access or market positioning. Artists working outside the NFT market entirely (net art, interactive installation, software art). Artists in regions without access to the institutions and platforms that confer upper-arm status. The frame's market focus excludes non-commercial digital art practice.",
+    "frontier_signal": "Established as analytical frame, frontier in implications. The K-shape is now widely accepted. The frontier question is what infrastructure emerges to serve the upper arm specifically, and whether a viable mid-market can be rebuilt between the two arms."
+  },
+  "attention_intention": {
+    "discovery_mechanism": "Art market publications (Art Tactic reports, Hiscox), crypto analytics (DappRadar annual reports, Nansen), art media (The Art Newspaper, Artnet), social media discourse (crypto Twitter/X, art market commentators), conference presentations (Art Basel talks, CADAF).",
+    "attention_dependency": "Low. The K-shape analysis gains from media attention but does not depend on it. The structural dynamics it describes exist regardless of whether they are discussed. The frame would survive social media disappearance because it serves institutional and analytical needs.",
+    "intention_alignment": "Intention-aligned. The K-shape frame serves the declared need for honest market analysis and structural understanding. It resists speculative optimism and provides evidence-based field intelligence. It helps practitioners and institutions make informed decisions about resource allocation.",
+    "commons_contribution": "Strong. The K-shape frame contributes shared analytical vocabulary and structural understanding to the field. It is freely available, widely cited, and helps practitioners contextualize their own position within the market. It is a public good of field intelligence."
+  },
+  "provenance_temporality": {
+    "provenance_type": "Neither ownership nor meaning in the traditional sense. The K-shape tracks market provenance — the economic trajectory of different market segments over time.",
+    "temporal_logic": "Cyclical/tidal and archival. The K-shape describes the aftermath of a market cycle and provides archival documentation of how different market segments responded. It has an anticipatory dimension: predicting continued divergence rather than convergence.",
+    "absence_handling": "The K-shape explicitly addresses absence: the lower arm represents the disappearance of value, liquidity, and community. However, it does not deeply address what is lost when projects in the lower arm die — the cultural, social, and artistic value that evaporates alongside market value."
+  },
+  "coherence": {
+    "coherence_vs_consensus": "Approaching consensus. The K-shape bifurcation is widely accepted across crypto-native and traditional art market analysts. There is productive disagreement about where specific projects sit on the K and whether a third trajectory (mid-market stabilization) is possible.",
+    "contestability": "Moderate. The frame can be contested by presenting counter-examples (projects recovering from the lower arm) or by arguing that the bifurcation is temporary. However, the on-chain data supporting the K-shape is publicly verifiable and difficult to dispute at the aggregate level.",
+    "forkability": "Highly forkable as an analytical concept. Anyone can apply the K-shape frame to their own analysis, modify it, or extend it. No technical or social barriers to adoption or modification."
+  },
+  "adai_comparison": {
+    "layer_mapping": "sensing-loop",
+    "what_adai_should_adopt": "The K-shape as a signal-detection lens. A(DAI) should incorporate market stratification analysis as part of field intelligence. The frame's use of on-chain data for structural analysis is a model for evidence-based field mapping. The vocabulary (cultural weight, structural value, speculative residue) is useful for A(DAI)'s tendency classification.",
+    "what_adai_should_refuse": "The reduction of field health to market health. A(DAI) must track cultural significance, community vitality, and infrastructure development alongside market dynamics. Projects in the lower arm of the K may have cultural or historical significance that market analysis alone cannot capture. A(DAI) should refuse the implicit assumption that market survival equals field importance.",
+    "structural_tension": "A(DAI) maps the field as a knowledge system; the K-shape maps the market as an economic system. The productive tension is that market dynamics affect field health but do not fully determine it. A(DAI) must integrate K-shape market intelligence while maintaining independence from market-centric value judgments. The challenge is building a field intelligence system that acknowledges market realities without being captured by market logic."
+  },
+  "regulatory_legal": {
+    "regulatory_exposure": "The K-shape frame itself has no regulatory exposure. It describes dynamics affected by regulation: SEC scrutiny of NFTs as securities (contributing to lower-arm collapse), EU MiCA exemptions for genuine art NFTs (supporting upper-arm legitimacy), and AML/KYC requirements (creating compliance costs that favor larger, institutional players in the upper arm). [uncertain]",
+    "ip_model": "N/A. Public analytical framework with no IP restrictions.",
+    "opt_in_vs_opt_out": "N/A. Analytical framework, not a consent-requiring system."
+  },
+  "ecosystem": {
+    "platform_dependency": "The frame depends on data from blockchain networks (Ethereum, Bitcoin, Tezos), analytics platforms (DappRadar, Nansen), and art market data services (Art Tactic). No single platform dependency — the analysis can be reproduced from on-chain data alone.",
+    "network_effects": "The K-shape frame benefits from network effects as adoption grows: more analysts using the frame creates richer shared analysis and vocabulary. The frame itself does not create network effects in the market it describes.",
+    "post_crash_trajectory": "The K-shape IS the post-crash trajectory analysis. It emerged from the crash and describes the ongoing stratification. The frame's relevance grows as the divergence continues. If the market were to uniformly recover or uniformly collapse, the K-shape frame would become less useful. Current evidence suggests continued bifurcation through 2026."
+  },
+  "uncertain": [
+    "price_range",
+    "volume_trend_2024_2026",
+    "collector_demographics",
+    "regulatory_exposure"
+  ]
+}

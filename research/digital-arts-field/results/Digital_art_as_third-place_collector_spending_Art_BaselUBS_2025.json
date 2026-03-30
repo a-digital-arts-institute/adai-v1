@@ -1,0 +1,84 @@
+{
+  "basic_identification": {
+    "name": "Digital art as third-place collector spending (Art Basel/UBS 2025)",
+    "type": "discourse",
+    "originator": "Art Basel and UBS. Annual survey conducted by Arts Economics (Dr. Clare McAndrew). Published in the Art Basel and UBS Survey of Global Collecting 2025. Data gathered from high-net-worth (HNW) collectors globally.",
+    "year": "2025",
+    "key_url": "https://www.artbasel.com/survey",
+    "geography": "Global survey. Respondents from US, UK, Greater China, France, Germany, Italy, Japan, Singapore, Brazil, and other major collecting markets."
+  },
+  "core_ideas": {
+    "core_claim": "The 2025 Art Basel/UBS Survey of Global Collecting reported that 51% of HNW collectors had purchased digital art, and digital art's share in collections jumped from approximately 10% to 13% year-over-year — making it the third-largest category of collector spending after painting and sculpture. This represented a legitimacy threshold crossing: digital art moved from a marginal, crypto-native category to a mainstream collecting category recognized by the art market's most authoritative annual survey.",
+    "medium_specificity": "Entirely specific to digital art's institutional positioning. The survey measures attitudes and spending patterns toward 'digital art' as a distinct collecting category, separating it from photography, prints, and other traditional media. The 13% collection share and 51% purchase rate are meaningful only because they measure a medium-specific category that was virtually absent from such surveys before 2020.",
+    "relation_to_attention_economy": "The survey data transcends attention-economy dynamics by measuring actual spending rather than social media engagement. Unlike attention metrics (views, likes, followers), collector spending represents committed capital allocation. The 51% purchase rate suggests that digital art's legitimacy is not merely attentional (people know about it) but transactional (people invest in it). However, the survey itself generates attention and shapes market narrative.",
+    "relation_to_intention": "Intention-aligned as a data source. The survey provides structural intelligence about field health rather than hype metrics. The 13% share indicates that collector intention (deliberate allocation of collection budgets to digital art) has reached a meaningful threshold. This is not speculative trading volume but sustained collecting behavior — intention-native market activity."
+  },
+  "market_economics": {
+    "revenue_model": "N/A — this is a survey/research finding, not a market actor. The survey is funded by Art Basel (MCH Group) and UBS as part of their market intelligence and brand positioning. Arts Economics provides research services on a consulting basis.",
+    "market_position": "Analytical/discourse layer. The survey occupies the highest-authority position in art market intelligence. Its findings shape institutional strategy, gallery programming, and collector behavior.",
+    "price_range": "The survey covers HNW collectors (minimum $1M+ in collectible assets, though the specific threshold varies). Digital art purchases by these collectors span from $1K to $1M+. The survey does not provide detailed price breakdown for digital art specifically. [uncertain]",
+    "volume_trend_2024_2026": "Growing. The 3-percentage-point jump (10% to 13%) in collection share is significant given total HNW collection values. The 51% purchase rate represents a majority threshold. These figures suggest sustained growth despite the broader NFT market crash, indicating that upper-tier digital art collecting is decoupled from speculative NFT trading volumes.",
+    "collector_demographics": "HNW collectors (surveyed population): 51% have purchased digital art. Millennial and Gen-Z collectors show highest adoption rates. 35% of millennial collectors rely exclusively on social media for art discovery. Family offices and private wealth management clients increasingly allocating to digital art. The collector base is expanding beyond crypto-native to include traditional collecting demographics. [uncertain]",
+    "sustainability": "The survey suggests growing sustainability for the upper tier of digital art. A 13% collection share represents meaningful, institutionalized collecting behavior — not a speculative spike. If this share stabilizes or continues growing, it provides a durable demand base for digital art independent of crypto market cycles. However, the survey covers only HNW collectors; sustainability of the broader digital art market (mid-market, emerging artists) is not addressed."
+  },
+  "practice_aesthetics": {
+    "toolchain": "Survey methodology: online questionnaires distributed to qualified HNW collectors globally by Arts Economics. Statistical analysis and reporting. Published annually alongside Art Basel fairs. The survey itself uses standard social science research tools.",
+    "relation_to_AI": "The survey captures AI art as a subset of digital art purchases. Growing collector interest in AI-collaborative and AI-generated art is likely contributing to the 13% share, though the survey does not disaggregate AI from other digital art. The rise of major AI art exhibitions (Refik Anadol at MoMA, Serpentine) coincides with growing collector interest. [uncertain]",
+    "liveness": "Static annual report. The data provides a snapshot of collecting behavior at a given point. The survey is not a live monitoring system.",
+    "aesthetic_vocabulary": "The survey uses art market vocabulary: 'collecting,' 'allocation,' 'share of spending,' 'HNW collectors,' 'digital art,' 'new media.' It does not engage with medium-specific aesthetic vocabulary. The significance is that it applies traditional art market legitimating language to digital art, normalizing it within existing market discourse.",
+    "tendency_axis_position": "Mixed. The survey itself is a commons contribution (publicly accessible findings). The market dynamics it describes include both openness (digital art accessible to new collectors) and enclosure (HNW-focused data, luxury market framing). The survey validates infrastructure investment but through a market-centric rather than commons-centric lens."
+  },
+  "infrastructure_governance": {
+    "openness": "Partially open. Summary findings are publicly released and widely covered by media. Full survey data requires access through Art Basel/UBS. The methodology is documented but not fully transparent. Arts Economics' proprietary methods are not open-source.",
+    "governance_model": "Corporate. The survey is governed by Art Basel (MCH Group), UBS, and Arts Economics. Methodology decisions are made by the research team. No community input on survey design or question selection. The decision to include digital art as a distinct category was a governance decision that shaped field perception.",
+    "data_sovereignty": "Arts Economics and Art Basel/UBS control the data. Respondent data is anonymized. The findings are used by Art Basel and UBS for commercial purposes (brand positioning, client advisory). Researchers and institutions have limited access to raw data.",
+    "interoperability": "Moderate. Survey findings are widely cited and integrated into other market reports. The data is not available in machine-readable format for integration with other datasets. Comparison across years is possible but limited by methodology changes.",
+    "preservation_strategy": "Survey reports are published and archived. Historical data is maintained by Arts Economics. No specific preservation challenge — this is published research, not at-risk digital content.",
+    "consent_architecture": "Standard survey consent: respondents opt in to participation. Data is anonymized and aggregated. No consent issues beyond standard research ethics."
+  },
+  "field_position": {
+    "relation_to_traditional_art_world": "Deep integration. The Art Basel/UBS survey IS the traditional art world's primary market intelligence instrument. By including digital art as a distinct category and reporting it as third-place in spending, the survey performs an act of institutional validation. It tells the traditional art world that digital art is now a mainstream collecting category.",
+    "what_it_enables": "The survey enables: (1) evidence-based arguments for institutional investment in digital art infrastructure, (2) gallery and platform business plans supported by collector demand data, (3) museum acquisition justification (if 51% of HNW collectors are buying digital art, museums must collect it), (4) legitimization of digital art as a career path for artists, (5) investor confidence in digital art infrastructure companies.",
+    "what_it_lacks": "Granularity within digital art (what kinds of digital art are collectors buying: generative, AI, video, interactive?). Data on non-HNW collectors. Data on artist income (collector spending does not equal artist revenue). Analysis of whether collector spending translates to sustainable artist careers. Data on the gap between purchase rates and display/engagement with digital art.",
+    "who_is_excluded": "Collectors below the HNW threshold (most collectors). Artists whose work is not in the price range of HNW collectors. Regions underrepresented in the survey sample. Non-market digital art practices (net art, open-source, commons-based). The survey's HNW focus naturalizes a luxury-market framing that excludes most digital art practitioners and audiences.",
+    "frontier_signal": "Established as a data source, frontier as a signal. The 51% and 13% figures represent a frontier threshold for digital art legitimacy. The question is whether this data translates to infrastructure investment (galleries hiring digital art specialists, museums building digital conservation, platforms investing in preservation) or remains a statistic disconnected from structural change."
+  },
+  "attention_intention": {
+    "discovery_mechanism": "Art media (The Art Newspaper, Artnet, ArtReview), financial media (Financial Times, Bloomberg), social media, Art Basel fair programming, UBS wealth management advisors. The survey is the most widely reported annual data point in the art market.",
+    "attention_dependency": "Low for the data itself (collecting behavior occurs regardless of the survey). Moderate for the framing effect: the survey's publication generates attention that shapes market narrative and institutional behavior. The survey would continue to be influential even without social media amplification because of its institutional authority.",
+    "intention_alignment": "Intention-aligned as market intelligence. The survey provides evidence-based field intelligence that serves structural decision-making. However, its primary purpose is commercial (Art Basel and UBS brand positioning), which introduces attention-aligned motivations in how findings are framed and promoted.",
+    "commons_contribution": "Moderate. The publicly released findings contribute to shared field intelligence. However, full data access is restricted, limiting the commons contribution. The survey's annual publication creates a shared reference point for field discourse, which is a form of commons contribution."
+  },
+  "provenance_temporality": {
+    "provenance_type": "Neither ownership nor meaning in the traditional sense. The survey tracks market provenance — the economic behavior of collectors toward digital art as a category over time.",
+    "temporal_logic": "Annual/cyclical. The survey provides temporal snapshots that can be compared across years (3% to 13% growth trajectory). This temporal logic is useful for tracking structural change but may miss rapid shifts between survey periods.",
+    "absence_handling": "The survey addresses some absences (revealing that digital art is present in more collections than assumed) while creating others (excluding non-HNW collectors, non-market practices, and qualitative dimensions of collecting). It does not address what is absent from the digital art field — only what is present in collector behavior."
+  },
+  "coherence": {
+    "coherence_vs_consensus": "Approaching consensus. The 51% purchase rate and 13% collection share are widely cited and generally accepted. Some methodological critiques exist (self-reported data, definition of 'digital art,' sample bias toward Art Basel visitors) but the findings are not seriously contested.",
+    "contestability": "Methodologically contestable (as with any survey). The definition of 'digital art' in the survey may be broader or narrower than field practitioners use. Self-reporting bias may inflate purchase rates. Sample selection (HNW collectors engaged with Art Basel) may not represent the broader collector population. These contestations are standard social science methodological debates.",
+    "forkability": "The methodology could be replicated by other organizations. Arts Economics' specific proprietary methods and survey panel are not easily forked. Competing surveys exist (Hiscox Online Art Trade Report, Art Tactic) but none has the authority of the Art Basel/UBS survey."
+  },
+  "adai_comparison": {
+    "layer_mapping": "sensing-loop",
+    "what_adai_should_adopt": "The survey as a key signal source for A(DAI)'s market intelligence layer. The 51% and 13% figures should be tracked as legitimacy threshold indicators. A(DAI) should monitor whether collector adoption translates to infrastructure investment — the survey provides demand-side data that A(DAI) can correlate with supply-side infrastructure development. The annual temporal rhythm provides a useful benchmark cadence.",
+    "what_adai_should_refuse": "The reduction of field health to collector spending metrics. A(DAI) must refuse the equation of collector adoption with field maturity. 51% of HNW collectors purchasing digital art does not mean the field has adequate infrastructure, preservation, criticism, or artist support. Market legitimacy is necessary but not sufficient for field health. A(DAI) should also refuse the HNW-centric framing that excludes most practitioners and audiences.",
+    "structural_tension": "The survey validates digital art's market legitimacy while A(DAI) builds its knowledge infrastructure. The tension is that market legitimacy (measured by collector spending) and field health (measured by infrastructure quality, preservation, criticism, accessibility) are different dimensions. The survey tells us collectors are buying; A(DAI) must ask what infrastructure exists to support what they are buying. The risk is that market legitimacy outpaces infrastructure development — collectors owning art that may not survive."
+  },
+  "regulatory_legal": {
+    "regulatory_exposure": "The survey itself has no regulatory exposure. It documents market activity affected by regulation: EU MiCA (affecting NFT sales classification), AML/KYC requirements (affecting cross-border digital art purchases), and tax treatment of digital art (varying by jurisdiction). The survey data may be used by regulators as evidence of market size and activity. [uncertain]",
+    "ip_model": "Arts Economics and Art Basel/UBS hold copyright over the survey report and methodology. Summary findings are widely reproduced under fair use. No novel IP questions.",
+    "opt_in_vs_opt_out": "Opt-in survey participation. No broader consent implications."
+  },
+  "ecosystem": {
+    "platform_dependency": "The survey depends on Art Basel's institutional network for distribution and authority. Published alongside Art Basel fairs. UBS provides financial backing and client network access. Arts Economics provides research expertise. If Art Basel or UBS withdrew, the survey's authority would diminish significantly.",
+    "network_effects": "Strong. The survey benefits from network effects as more institutions, galleries, and collectors reference it: its authority grows with citation. It functions as a Schelling point for market intelligence — the single most cited source for art market data.",
+    "post_crash_trajectory": "The survey documents the post-crash trajectory of digital art collecting. The 2025 data shows that despite the NFT market crash, HNW collector adoption of digital art continued to grow. This is the most important counter-narrative to the 'NFT is dead' discourse: the upper tier of the market is expanding even as the speculative tier collapses."
+  },
+  "uncertain": [
+    "price_range",
+    "collector_demographics",
+    "relation_to_AI",
+    "regulatory_exposure"
+  ]
+}

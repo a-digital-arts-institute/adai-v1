@@ -1,0 +1,58 @@
+{
+  "identity": {
+    "name": "Schema.org",
+    "type": "ontology",
+    "originator": "Founded by Google, Microsoft, Yahoo, Yandex (2011). Now governed via W3C Schema.org Community Group. Key figures: Dan Brickley, R.V. Guha.",
+    "year": "2011",
+    "key_text": "Schema.org: Evolution of Structured Data on the Web (Guha, Brickley, Macbeth, 2016, Communications of the ACM)",
+    "key_url": "https://schema.org/"
+  },
+  "conceptual": {
+    "core_claim": "A lightweight, consensus-driven vocabulary for structured data on the web that can be extended without breaking existing consumers, enabling search engines and applications to understand web content semantically.",
+    "relation_to_attention_economy": "Schema.org is deeply embedded in the attention economy. Its primary consumers are search engines that use structured data for ranking, rich snippets, and knowledge panels. The vocabulary exists to make content more legible to attention-allocation algorithms. However, Schema.org itself is neutral infrastructure — it describes, it does not rank.",
+    "relation_to_commons": "A corporate-commons hybrid. Created by competing corporations for mutual benefit. Open specification, freely usable. Governed through a W3C Community Group (open participation). However, the founding companies have outsized influence. The vocabulary serves commercial web infrastructure first.",
+    "epistemological_stance": "Pragmatic-computational. Knowledge is what search engines can parse. Validity is determined by adoption — if major consumers (Google, Bing) support a type, it is effectively valid. This is a market epistemology disguised as a technical standard."
+  },
+  "technical": {
+    "architecture_pattern": "Flat vocabulary with type hierarchy. Types inherit properties from supertypes. Extension mechanisms: Pending types (staging area), external extensions (hosted independently), PropertyValue (arbitrary key-value pairs), Role (annotation wrapper). JSON-LD is the preferred serialization.",
+    "data_model": "Type-property-value triples embedded in web pages. Types form a hierarchy (Thing > CreativeWork > VisualArtwork). Properties are global across the vocabulary (a property like 'name' works everywhere). No formal constraints — any type can technically use any property.",
+    "temporal_logic": "Minimal. Date properties exist (dateCreated, dateModified, startDate, endDate) but no temporal reasoning. The vocabulary itself is versioned but consumers are encouraged to use unversioned URLs. Time is a data attribute, not a structural concern.",
+    "absence_handling": "No absence detection. The vocabulary describes what is present. Missing markup is simply invisible to consumers. The Pending mechanism is the closest thing to absence handling — it captures concepts that are recognized as needed but not yet stabilized.",
+    "scalability_model": "Distributed by design. Each website publishes its own markup independently. No central database. Scales through the web itself. Extension mechanism allows domain-specific vocabularies (GS1 for commerce, etc.) without central coordination."
+  },
+  "garden_logic_comparative": {
+    "layer_mapping": "substrate — Schema.org is pure data vocabulary infrastructure. It defines how things are described, not how they are sensed, diagnosed, or governed.",
+    "intention_vs_attention": "Serves the attention economy directly. Schema.org markup exists to help search engines allocate attention — rich snippets, knowledge panels, voice assistant answers all flow from Schema.org data. However, the vocabulary itself does not optimize for engagement; it optimizes for legibility. The distinction matters: A(DAI) also seeks legibility, but for intention (structural diagnosis) rather than attention (ranking/surfacing).",
+    "coherence_vs_consensus": "Consensus through pragmatic adoption. Schema.org resolves vocabulary disputes through what Google/Bing will actually consume. This is consensus-by-market-power rather than deliberative consensus. Coherence is not a goal — the vocabulary tolerates inconsistencies and overlapping types because its consumers are forgiving parsers, not formal reasoners.",
+    "contestability": "Low for core vocabulary, moderate for extensions. The W3C Community Group process allows proposals but the founding companies have effective veto power through selective implementation. External extensions provide a pressure valve — if Schema.org won't adopt a type, you can define it elsewhere and mix it in via JSON-LD.",
+    "forkability": "High in principle (open specification), low in practice. A fork would have zero value because Schema.org's utility comes from search engine consumption of a shared vocabulary. The external extension mechanism is the sanctioned alternative to forking.",
+    "tendency_axis_position": "openness: open specification, corporate governance | commons: corporate commons (open but commercially motivated) | spectacle: enables spectacle (search ranking) while being infrastructure | individual: benefits large publishers disproportionately",
+    "what_adai_should_adopt": "The Pending mechanism as a model for vocabulary proposals. Schema.org's staging area — where new types are proposed, discussed, and either promoted or abandoned — maps directly to A(DAI)'s /extend pattern for edge type and node type proposals. The backward-compatible extension pattern: new types can be added without breaking existing consumers. The global property principle: A(DAI) should consider whether some edge types (like 'influences' or 'critiques') should work across all node types without restriction.",
+    "what_adai_should_refuse": "The market epistemology. Schema.org's validity is determined by what Google will consume, not by what is true or useful for the field. A(DAI) must refuse this — its vocabulary's validity comes from whether it helps practitioners and researchers see the field more clearly. Also refuse: the flat property model that allows any property on any type. A(DAI)'s typed edges need semantic constraints. Also refuse: the absence of temporal depth — Schema.org treats time as metadata, not structure.",
+    "structural_tension": "[uncertain] The productive tension is around legibility-for-whom. Schema.org makes web content legible to machines (search engines, voice assistants, LLMs). A(DAI) makes cultural knowledge legible to humans (practitioners, curators, researchers). Both are legibility projects, but they optimize for different readers. The tension becomes acute when A(DAI) considers whether to publish graph data as Schema.org markup — doing so would make A(DAI) legible to the attention economy's infrastructure, which both increases reach and creates capture risk."
+  },
+  "critical": {
+    "limits": "Designed for breadth, not depth. The vocabulary covers many domains shallowly. Art and culture types (VisualArtwork, CreativeWork) are too generic for serious cultural analysis. No support for contested claims, provenance chains, or temporal reasoning. The 'anything goes' property model means markup quality varies wildly across the web.",
+    "who_is_excluded": "[uncertain] Small publishers who lack technical expertise to implement markup. Non-Western content categories that don't map to Schema.org's Western-centric type hierarchy. Practices, movements, and concepts that don't have stable enough names for type definition. Oral and embodied knowledge that resists itemization into type-property-value triples.",
+    "failure_under_attention": "[uncertain] Schema.org is already captured by the attention economy — that is its purpose. The failure mode is not capture but colonization: as LLMs increasingly consume Schema.org data, the vocabulary's categories become the implicit ontology of AI-generated content. What Schema.org can describe becomes 'real'; what it cannot describe becomes invisible to AI systems."
+  },
+  "governance": {
+    "governance_model": "Corporate consortium with open community layer. W3C Schema.org Community Group provides discussion forum. Founding companies (Google, Microsoft, Yahoo, Yandex) retain significant influence through implementation choices. Changes proposed via GitHub issues.",
+    "consent_architecture": "[uncertain] Opt-in at the publisher level (websites choose to add markup). No consent mechanism for subjects described by the markup. No machine-readable consent layer. Publishers consent to making their content machine-readable; subjects have no say."
+  },
+  "materiality": {
+    "extraction_vector": "[uncertain] Extracts publisher labor (implementing markup) for the benefit of search engines. Search engines extract structured data from publisher websites to power their own features (knowledge panels, rich snippets) — often reducing click-through to the original source. The vocabulary is free, but the labor of implementation is extracted by the consumers.",
+    "composability": "Highly composable. JSON-LD serialization allows mixing with any other vocabulary. External extensions are independently maintained. Can be embedded in any web page. Library-level and protocol-level composability.",
+    "liveness": "Actively maintained. Regular releases. 45+ million domains use it. Over 450 billion Schema.org objects on the web. Ongoing development through GitHub and W3C Community Group.",
+    "scale_of_operation": "Planetary. The most widely deployed structured data vocabulary on the web. Used by billions of web pages across millions of domains.",
+    "temporality": "Ahistorical. Schema.org describes the present state of things. Version history exists but is not emphasized. No deep time, no cyclical logic, no anticipatory capacity. The vocabulary evolves through accretion — new types are added, old types rarely removed."
+  },
+  "uncertain": [
+    "epistemological_stance",
+    "structural_tension",
+    "who_is_excluded",
+    "failure_under_attention",
+    "consent_architecture",
+    "extraction_vector"
+  ]
+}

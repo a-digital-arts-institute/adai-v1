@@ -1,0 +1,98 @@
+{
+  "basic_info": {
+    "name": "Serpentine FAE4: Art x Decentralised AI (2024)",
+    "type": "report",
+    "active_years": "2024",
+    "location": "London, UK (Serpentine Galleries / Serpentine Arts Technologies)",
+    "url": "https://www.serpentinegalleries.org/whats-on/future-art-ecosystems-4/"
+  },
+  "practice_description": {
+    "medium": "Strategic briefing, publication, policy document",
+    "practice_summary": "Fourth issue in Serpentine Arts Technologies' Future Art Ecosystems strategic briefing series, mapping the intersection of art and decentralised/public AI. Proposes frameworks for how artists and cultural institutions can shape AI development toward public benefit rather than corporate enclosure.",
+    "methodology": "Produced by Serpentine Arts Technologies in collaboration with Rival Strategy (Victoria Ivanova). The FAE series convenes practitioners, researchers, policymakers, and artists to produce strategic analysis. FAE4 draws on Serpentine's own commissioning experience (particularly The Call by Holly Herndon and Mat Dryhurst and its associated Data Trust experiment), academic research, and policy analysis to map the landscape of decentralised AI and art. The report combines case studies, conceptual frameworks, and policy recommendations."
+  },
+  "relevance_to_sense_room": {
+    "relevance_summary": "FAE4 directly maps the territory A(DAI) operates in -- the intersection of art, decentralised AI, and commons-based infrastructure. Its analysis of how art institutions can steward data and shape AI development provides both strategic framework and legitimacy for A(DAI)'s approach.",
+    "art_as_substrate": "The report analyses how artworks and artistic processes can function as substrate for AI development -- particularly through The Call's model of composed training data and Data Trust governance. It frames art not as output of AI but as input and governance layer.",
+    "relational_composition": "The report itself is a relational mapping -- connecting art practice, AI development, data governance, policy, and institutional infrastructure. It proposes that the relationships between these domains are the site of intervention.",
+    "self_recomposing": "As part of the FAE series (issues 1-5, 2020-2025), each briefing builds on and recomposes the frameworks of prior issues. FAE4 specifically builds on FAE3's work on art and decentralisation."
+  },
+  "key_works": {
+    "works": [
+      {
+        "title": "Future Art Ecosystems 4: Art x Public AI",
+        "year": 2024,
+        "description": "The full report, published as a downloadable PDF and web publication. Addresses how art and cultural institutions can engage with AI as public infrastructure rather than ceding the field to corporate actors. Includes analysis of Data Trusts, consented AI training, and the role of artists as data stewards.",
+        "relevance": "The single most relevant strategic document for A(DAI)'s positioning. Provides the conceptual and policy framework for commons-first AI infrastructure in the arts."
+      },
+      {
+        "title": "The Call Data Trust (case study within FAE4)",
+        "year": 2024,
+        "description": "Documentation of the Data Trust experiment developed alongside Holly Herndon and Mat Dryhurst's The Call at Serpentine, where 15 community choirs contributed vocal data governed by a trust structure rather than individual consent forms.",
+        "relevance": "Directly models the governance infrastructure A(DAI) needs -- collective data governance for artistic AI training."
+      },
+      {
+        "title": "FAE series (1-5)",
+        "year": "2020-2025",
+        "description": "The broader series: FAE1 (Art x Advanced Technologies), FAE2 (Art x Metaverse), FAE3 (Art x Decentralised Tech), FAE4 (Art x Public AI), FAE5 (Art x Creative R&D). Each issue maps a different dimension of art-technology infrastructure.",
+        "relevance": "The complete series provides the evolving strategic context for A(DAI), tracking how the art-technology landscape has developed year by year."
+      }
+    ]
+  },
+  "protocol_art_resonance": {
+    "protocol_art_summary": "FAE4 explicitly analyses protocol art -- the practice of building systems, infrastructure, and governance as creative work. It examines how Data Trusts, consented AI training pipelines, and institutional data stewardship function as creative-governance hybrids. The report itself is a form of protocol design -- proposing frameworks for how art institutions should engage with AI.",
+    "system_designed": "Proposed frameworks: Data Trust model for artistic AI training; institutional data stewardship protocols; artist-as-data-steward role; public AI infrastructure recommendations. Built on The Call's Data Trust prototype."
+  },
+  "commons_orientation": {
+    "licence_model": "commons-based",
+    "commons_summary": "FAE4 is published openly and freely accessible. The report explicitly advocates for commons-based approaches to AI: public data trusts, collective data governance, artist and institutional data stewardship, and resistance to corporate AI enclosure. It positions the cultural sector as a potential steward of public AI infrastructure."
+  },
+  "governance_model": {
+    "governance_type": "institutional",
+    "governance_detail": "Produced by Serpentine Arts Technologies team (Kay Watson, Eva Jager, Victoria Ivanova / Rival Strategy, and contributors) within Serpentine Galleries' institutional framework. Editorial decisions are made by the core team with input from consulted practitioners and researchers. The content advocates for distributed and trust-based governance models even though the report itself is institutionally authored."
+  },
+  "consent_and_authorship": {
+    "consent_approach": "The report analyses consent frameworks for AI training data, particularly the Data Trust model. Contributors and interviewees participate through standard institutional engagement. The report advocates for consent as foundational to ethical AI art practice.",
+    "authorship_model": "Institutional collective authorship. Credited to Serpentine Arts Technologies and Rival Strategy, with named contributors and interviewees. The FAE series is explicitly positioned as collaborative knowledge production rather than individual scholarship."
+  },
+  "liveness_and_duration": {
+    "temporal_type": "static",
+    "temporal_detail": "Published as a fixed document in 2024. However, it functions within the living FAE series (annually updated) and its recommendations are designed to be implemented over time. The frameworks it proposes are meant to evolve through practice."
+  },
+  "data_materiality": {
+    "data_sources": "Case studies from Serpentine commissions (The Call, prior Arts Technologies projects), academic research on AI governance and data trusts, policy documents, practitioner interviews, analysis of AI industry developments, historical analysis of art-technology relations.",
+    "data_provenance": "Institutional research. Case studies drawn from Serpentine's own programmes. Academic and policy sources are publicly available. Practitioner contributions are credited and consented."
+  },
+  "embedding_space_relevance": {
+    "embedding_summary": "FAE4 analyses how AI systems (including those using embedding spaces) can be governed for public benefit. It does not directly engage with embedding spaces technically but provides the governance and ethical framework for how embedding-based AI art should be developed and stewarded.",
+    "multimodal": "The report is primarily textual but analyses multimodal AI art practices (voice, image, video, interactive)."
+  },
+  "exhibition_modality": {
+    "modality": "web",
+    "spatial_description": "Published as a downloadable PDF and web-based publication on futureartecosystems.org and serpentinegalleries.org. Launched through events and presentations. Functions as a textual 'exhibition' of strategic thinking."
+  },
+  "sensory_register": {
+    "senses": "textual, visual",
+    "dominant_register": "textual"
+  },
+  "interoperability": {
+    "composability": "Highly composable. The frameworks and recommendations in FAE4 are designed to be adopted and adapted by other institutions. The Data Trust model is replicable. The report's analysis can be directly applied to A(DAI)'s own infrastructure design.",
+    "technical_openness": "Open. Freely published and accessible. Frameworks are designed for adoption."
+  },
+  "technical_approach": {
+    "stack": "PDF publication, web publishing, strategic analysis methodology, case study research, stakeholder consultation"
+  },
+  "network_position": {
+    "position_type": "hub",
+    "scene_affiliation": "UK cultural policy, art-technology institutional discourse, AI governance and ethics, Serpentine Galleries network, data trust and commons movement, European digital culture policy",
+    "connections": "Serpentine Arts Technologies (producer), Rival Strategy / Victoria Ivanova (co-producer), Holly Herndon & Mat Dryhurst (The Call case study), Kay Watson (lead), Eva Jager (contributor -- also connected to Fellowship.xyz), RadicalxChange (data trust methodology), King's College London (research partner), Open Data Institute [uncertain], DCMS / UK cultural policy"
+  },
+  "potential_role_in_adai": {
+    "role": "theoretical-reference",
+    "role_detail": "FAE4 is the single most relevant strategic document for A(DAI)'s positioning. It provides: (1) conceptual framework for art x public AI that directly aligns with A(DAI)'s vision; (2) Data Trust governance model applicable to A(DAI)'s collective intelligence infrastructure; (3) policy legitimacy for commons-first approaches; (4) mapping of the institutional landscape A(DAI) operates within; (5) direct connection to Serpentine's network of practitioners and policymakers."
+  },
+  "temporal_status": {
+    "status": "completed-project"
+  },
+  "uncertain": ["url", "Open Data Institute connection", "exact list of contributors and interviewees", "FAE3 subtitle - listed as Art x Decentralised Tech but may differ"]
+}

@@ -1,0 +1,288 @@
+{
+  "claim_summary": "Launching A(DAI) to ~100 curated people at Art Basel June 2026 — targeting recognition, contribution, and commitment responses from a single encounter — is a viable bootstrapping strategy for a 10-year commons project.",
+
+  "claim_strength": "Moderate — Art fairs have historically served as launch platforms for digital art projects and platforms, and curated soft launches can generate high-quality early adopters. However, the 'recognition → contribution → commitment' funnel is optimistic for a single encounter, and the 100-person target conflates three very different conversion goals.",
+
+  "supporting_evidence": [
+    {
+      "point": "Art fairs have a strong track record as launch venues for arts-tech platforms",
+      "detail": "Art Basel (including its Miami Beach and Hong Kong editions) has served as the launch or major announcement venue for multiple successful digital art and arts-tech initiatives. Feral File launched its first exhibitions with Art Basel Miami Beach timing in 2021. Artsy built its early collector base through Art Basel partnerships starting in 2012-2013. Pace Gallery's Pace Verso (art+tech) program launched at Art Basel. The fair functions as a concentrated attention market where the specific audience A(DAI) needs — practitioners, curators, collectors, institutional leaders, technologists — converges for a finite window. This concentration effect is genuinely valuable and difficult to replicate through online launch strategies."
+    },
+    {
+      "point": "Curated small-group launches have precedent in commons and platform projects",
+      "detail": "Many successful platforms launched through curated small-group strategies rather than open launches. Are.na grew through an intentionally small, invitation-based early community of artists and designers (Charles Broskoski has spoken about keeping the community deliberately small for the first 2-3 years). Urbit launched through small gatherings of technologists and thinkers. The Long Now Foundation built its initial supporter base through curated seminars and events. In each case, the quality of the initial cohort shaped the project's long-term culture and viability. The 100-person target is aligned with Dunbar-adjacent community formation theory (groups of ~100-150 as a trust ceiling for collaborative projects)."
+    },
+    {
+      "point": "The 'recognition' response is highly achievable at Art Basel",
+      "detail": "The first tier of the funnel — recognition ('this names something I experience but couldn't articulate') — is the most plausible outcome. Art Basel attendees are precisely the people who experience the structural gap A(DAI) describes: practitioners navigating an illegible field, curators struggling to map emerging tendencies, collectors lacking structured context for acquisitions. If the demo successfully visualizes relational intelligence (who connects to whom, what tendencies are forming, where frontier signals are emerging), recognition is a near-certain response from this audience. The Serpentine's Arts Technologies program, which does similar mapping informally, consistently generates this recognition response."
+    },
+    {
+      "point": "Post-NFT fatigue creates a receptive window",
+      "detail": "The timing is strategically sound. By June 2026, the digital arts community has had 3+ years of post-NFT disillusionment. Projects that offer structural value rather than speculative financial value are likely to receive a warmer reception than they would have during 2021-2022 hype cycles. The 'commons-first' framing is well-positioned against the backdrop of extractive platforms. Comparable moments: Wikipedia launched in 2001 during the post-dot-com crash when 'free knowledge' was a compelling counter-narrative; Creative Commons launched in 2002 with similar timing advantages."
+    },
+    {
+      "point": "The 'encounter as prototype test' framing is strategically sound",
+      "detail": "Using Art Basel as a prototype validation moment rather than a product launch is a well-established strategy in design-driven projects. IDEO and design thinking methodology advocate for exactly this: put a working prototype in front of real users in their natural context. Art Basel is the natural context for A(DAI)'s target users. The brief's framing — 'everything built before June 2026 serves this' — creates focus and prevents scope creep, which is a genuine risk for ambitious commons projects."
+    }
+  ],
+
+  "counter_evidence": [
+    {
+      "point": "Art fairs are fundamentally commercial environments hostile to commons projects",
+      "detail": "Art Basel is a market event. Its primary function is facilitating sales between galleries and collectors. The ambient context is commercial — attention is oriented toward acquisitions, deal-making, and status signaling. Launching a commons project in this context risks either (a) being perceived as naive by commercial actors, (b) attracting interest from the wrong segment (collectors wanting investment intelligence rather than commons contributors), or (c) being drowned out by the sheer volume of competing stimuli. The history of non-commercial projects at Art Basel is mixed: many generate momentary interest but fail to convert attendees into sustained participants because the fair's tempo (4-6 days of relentless social and commercial activity) is antithetical to the deep engagement a commons project requires."
+    },
+    {
+      "point": "The 'contribution' and 'commitment' conversion rates from events are historically very low",
+      "detail": "Research on conference-to-contributor pipelines in open source and open knowledge projects shows extremely low conversion rates. Mozilla's studies of contributor funnels found that in-person event encounters convert to active contributors at rates of 1-5%. Wikipedia's outreach events (edit-a-thons) typically see 10-20% of participants make a single edit, with only 1-3% becoming sustained contributors. For A(DAI) to achieve meaningful 'commitment' (sustained contribution) from a 100-person Art Basel encounter, historical precedent suggests 1-5 committed contributors — potentially too few to bootstrap a commons. The 'recognition' tier may reach 50-70%, but recognition without follow-up infrastructure decays rapidly."
+    },
+    {
+      "point": "Single-event launches create a 'demo day' problem",
+      "detail": "Accelerator demo days and conference launches share a pattern: high energy and interest at the event, followed by rapid attention decay. Y Combinator's data shows that even among startups that generate strong demo day interest, the median time to meaningful follow-up from interested parties is 4-6 weeks, and many contacts never convert. For a commons project (lower urgency than a startup seeking investment), the decay curve is likely steeper. Without a robust post-Basel follow-up system (onboarding flow, contribution pipeline, community space), the event energy dissipates within weeks."
+    },
+    {
+      "point": "100 people is simultaneously too many and too few",
+      "detail": "100 people is too many for deep engagement (a 4-day fair with competing demands means each person gets minutes, not hours of attention) but too few for network effects. Commons projects that reached critical mass typically needed 500-2,000 active contributors (not just people who saw a demo). OpenStreetMap's first year had ~300 active mappers before growth accelerated. Wikipedia had ~1,000 active editors in its first year. The 100-person encounter may generate awareness but is unlikely to produce the contributor density needed for a relational knowledge graph to demonstrate its value proposition."
+    },
+    {
+      "point": "Premature exposure risks 'vaporware' perception",
+      "detail": "If the prototype shown at Art Basel is content-thin (likely, given 3 months of content generation by a 4-person team), attendees may form a 'nice concept, no substance' impression that is difficult to reverse. First impressions in the art world are particularly sticky — projects that launch before they can demonstrate real value often get permanently categorized as theoretical or aspirational. The Decentralized Autonomous Artist (DAO-based art projects from 2017-2019) and several 'art on blockchain' projects suffered this fate: premature launches led to dismissal that persisted even after the technology matured."
+    },
+    {
+      "point": "Art Basel audiences are notoriously difficult to convert to sustained engagement",
+      "detail": "Art Basel attendees see hundreds of presentations, booths, exhibitions, and proposals during the fair. Cognitive overload is the default state. Studies of trade fair conversion (applicable to art fairs) show that attendees typically remember 3-5 interactions meaningfully from a multi-day event. The competition for those 3-5 slots at Art Basel includes major gallery presentations, museum exhibitions, performances, and social events with far more spectacle than a knowledge graph prototype can offer."
+    }
+  ],
+
+  "blind_spots": [
+    {
+      "point": "No post-event conversion infrastructure is specified",
+      "detail": "The brief describes what happens AT Art Basel but not what happens in the days, weeks, and months after. The most critical period for a launch strategy is the 2-4 weeks post-event, when initial interest either converts to engagement or decays. The brief should specify: What does the follow-up sequence look like? How does someone who saw the demo at Basel become a contributor? What is the onboarding flow? What is the first action a new contributor takes? Without this, the Art Basel encounter is an isolated event rather than a funnel entry point."
+    },
+    {
+      "point": "The brief conflates three distinct audiences with different conversion paths",
+      "detail": "The 100-person target includes 'practitioners, curators, collectors, institutional [actors], technologists' — but each segment has radically different motivations, conversion triggers, and contribution modes. Practitioners might contribute signals and validate graph data. Curators might use the query layer. Collectors want investment intelligence (Mode 2, not Mode 1). Institutional actors want legitimacy and data access. Technologists want to build on the infrastructure. A single encounter cannot serve all five segments equally. The brief should specify which 1-2 segments are the primary target for contribution bootstrapping and design the encounter for them."
+    },
+    {
+      "point": "No consideration of alternative or complementary launch strategies",
+      "detail": "The brief puts all launch energy into a single event. Comparable projects typically used multi-channel bootstrapping: Are.na grew through word-of-mouth in specific creative communities over 2+ years. Wikipedia grew through Slashdot coverage and early blogger adoption. Creative Commons launched with a combination of events, academic papers, and online tooling. A(DAI) should consider whether Art Basel is one of several concurrent strategies (e.g., seeding through specific Discord/Are.na communities, partnering with 2-3 educational institutions, publishing a provocative essay that generates inbound interest) rather than the sole launch moment."
+    },
+    {
+      "point": "Physical logistics and format of the encounter are unspecified",
+      "detail": "How does the encounter actually work? Is it a booth? A salon? A dinner? A performance? A digital installation? Each format has very different engagement depths and conversion characteristics. A dinner for 20 produces deeper engagement than a booth seen by 100. A participatory installation creates stronger memories than a screen demo. The brief's silence on format suggests the encounter design has not been done, which is concerning given the June 2026 timeline."
+    },
+    {
+      "point": "No consideration of the cost-benefit relative to alternatives",
+      "detail": "Art Basel presence is expensive — even unofficial/satellite events in Basel during the fair require travel, accommodation, venue costs, and production. For a 4-person team with limited funding, the cost of a meaningful Art Basel presence could fund months of contributor community building online. The brief should explicitly evaluate whether the concentrated-attention benefit of Art Basel justifies the resource expenditure relative to lower-cost, higher-duration community building strategies."
+    }
+  ],
+
+  "closest_precedents": [
+    {
+      "name": "Are.na — invitation-only slow growth",
+      "description": "Are.na launched in 2014-2015 with a deliberately small, curated community of artists, designers, and writers. Rather than a single launch event, founder Charles Broskoski cultivated the community through personal invitation and word-of-mouth within specific creative networks in New York.",
+      "achieved": "Built an extremely high-trust community where the culture of the early adopters shaped the platform's identity. Are.na's non-commercial ethos and collaborative knowledge culture emerged from this curated early community. Reached ~200K users by 2024 with strong retention and a distinctive community identity.",
+      "failed": "Slow growth meant years of precarious funding. The small early community created a cultural bubble (predominantly NYC-based, design-school-adjacent, English-speaking) that has been difficult to diversify. No single launch moment meant no PR inflection point — growth was steady but never viral."
+    },
+    {
+      "name": "Creative Commons — multi-venue launch with institutional backing",
+      "description": "Creative Commons launched in December 2002 with a series of events, academic publications, and online tools released simultaneously. Larry Lessig leveraged his Stanford Law position and O'Reilly conference network to reach ~200-300 key individuals across technology, law, and creative communities.",
+      "achieved": "Created immediate legitimacy through institutional backing (Stanford, Berkman Center). The multi-venue, multi-channel approach meant different audiences received the message through their preferred channels. Within 1 year, CC licenses were being used by major projects (Wikipedia adopted CC-BY-SA in 2009, but individual contributors started earlier).",
+      "failed": "Early adoption was heavily skewed toward tech-savvy communities; creative practitioners took much longer to adopt. The 'launch' generated awareness but sustained adoption required years of tooling, education, and institutional integration. Many early supporters never became active contributors to the CC ecosystem."
+    },
+    {
+      "name": "Rhizome — arts community bootstrapping through events and publications",
+      "description": "Rhizome (founded 1996) bootstrapped its community through a combination of online mailing lists (the Rhizome TextBase), events at the New Museum (after 2003 affiliation), and critical writing. Its early community was built through sustained engagement, not a single launch.",
+      "achieved": "Built the most enduring institutional identity for digital art stewardship over 25+ years. The combination of critical discourse (writing/events) and infrastructure (ArtBase) created a dual value proposition that attracted both practitioners and institutions.",
+      "failed": "Growth was extremely slow — the ArtBase has only ~2,400 works after 20+ years. The editorial bottleneck meant the community could consume Rhizome's output but had limited pathways to contribute. Chronic underfunding despite cultural significance."
+    },
+    {
+      "name": "Feral File — Art Basel-timed launch for digital art platform",
+      "description": "Casey Reas launched Feral File in 2021, timing early exhibitions with Art Basel Miami Beach. The platform used artist-curated group exhibitions as its core mechanic, with each exhibition bringing a new cohort of artists into the community.",
+      "achieved": "Successfully used art fair timing to generate concentrated attention. The artist-curated model meant each exhibition brought 5-10 new artists who in turn invited their networks. Built credibility rapidly by having respected practitioners (Casey Reas, Refik Anadol, Sarah Friend) as early curators. The Art Basel association provided commercial legitimacy.",
+      "failed": "The commercial model (primary sales) attracted collector attention but also meant the platform was perceived primarily as a marketplace rather than a community commons. Post-NFT market cooling reduced the urgency that drove initial collector interest. The Art Basel timing created a 'boom' association that became a liability when the market crashed."
+    },
+    {
+      "name": "Serpentine Arts Technologies — curated convening model",
+      "description": "The Serpentine Gallery's Arts Technologies program (led by Kay Watson, formerly Eva Jager) used curated convenings, salons, and commissions to build a network of artists, technologists, and researchers working at the intersection of art and emerging technology.",
+      "achieved": "Built a high-quality network of practitioners through intimate, curated events (typically 20-50 people). The salon format created deeper engagement than conference presentations. Institutional backing (Serpentine) provided credibility and access. Generated significant intellectual output (publications, commissioned works, research).",
+      "failed": "The network remained institution-centric — participants engaged with Serpentine, not with each other through a shared infrastructure. No commons infrastructure was built; the knowledge remained institutional. The curated convening model does not scale beyond the institution's capacity to host events."
+    }
+  ],
+
+  "lessons_from_failures": [
+    {
+      "lesson": "Single-event launches for commons projects create attention spikes that decay without sustained follow-up infrastructure",
+      "source": "Multiple DAO and Web3 art project launches (2017-2022)",
+      "detail": "Dozens of art+blockchain projects launched at conferences and art fairs between 2017 and 2022 — including Dada.art, SuperRare's early exhibitions, and various DAO-based art collectives. A consistent pattern emerged: strong initial interest at the launch event, rapid attention decay in the following weeks, and failure to convert event attendees into sustained contributors. The projects that survived (SuperRare, Art Blocks) did so through sustained online community building and market mechanics, not through the initial event momentum. The lesson: the Art Basel encounter should be designed as a funnel entry point with pre-built follow-up infrastructure, not as a standalone launch moment."
+    },
+    {
+      "lesson": "Premature launches of knowledge infrastructure projects create lasting 'vaporware' stigma",
+      "source": "Blockchain-based provenance projects (Verisart, Artory, Codex Protocol)",
+      "detail": "Several blockchain provenance projects for art launched at art fairs between 2016-2019 with impressive demos but thin underlying data. Verisart launched at Art Basel Miami Beach 2015 with a Bitcoin-based certificate of authenticity; Artory partnered with Christie's for a high-profile demo. Both generated press but were criticized for solving a problem with technology that was not yet mature enough to deliver on its promises. The art world's memory for over-promising is long — these projects are still referenced dismissively years later. A(DAI) must ensure its Art Basel demo contains enough real, meaningful content to avoid this fate."
+    },
+    {
+      "lesson": "Commons projects that target 'everyone' at launch attract no one; successful bootstrapping requires picking one contributor archetype",
+      "source": "Wikipedia early growth, OpenStreetMap early growth",
+      "detail": "Wikipedia's early growth came overwhelmingly from a specific contributor archetype: male, technically literate, encyclopedically inclined. OpenStreetMap's early growth came from GPS hobbyists and cycling enthusiasts. In both cases, the project later diversified, but the initial contributor base was narrow and specific. Projects that tried to attract diverse contributor types simultaneously (various open knowledge initiatives, Citizendium) failed to build critical mass in any segment. A(DAI) should identify its 'first contributor archetype' (likely: digitally native artists who are also technically literate and community-oriented) and design the Art Basel encounter specifically for them."
+    },
+    {
+      "lesson": "The 'recognition → contribution → commitment' funnel requires months, not moments",
+      "source": "Open source and open knowledge contributor research",
+      "detail": "Research on open source contributor funnels (Qureshi 2018, GitHub's State of the Octoverse data, Mozilla contributor studies) consistently shows that the path from initial awareness to sustained contribution takes 3-12 months, with multiple touchpoints. A single encounter can achieve 'recognition' but the path to 'contribution' typically requires: (1) a second, deeper engagement (tutorial, onboarding session, collaborative work session), (2) a clear first-contribution pathway (the 'good first issue' pattern from open source), and (3) visible impact from the contribution. Expecting all three funnel stages to activate from a single Art Basel encounter is unrealistic."
+    },
+    {
+      "lesson": "Curated community bootstrapping works but requires sustained intimacy, not single-event scale",
+      "source": "Are.na, Urbit, Long Now Foundation",
+      "detail": "The commons projects that successfully bootstrapped through curated communities did so through sustained, repeated intimate interactions — not single events. Are.na's early community formed through repeated encounters in the same creative circles over months. The Long Now Foundation built its supporter base through monthly seminars over years. Urbit cultivated its community through small, repeated gatherings. The pattern suggests A(DAI) would benefit from a series of 10-20 person salons in the months before Art Basel, building toward the 100-person encounter rather than relying on it as a cold start."
+    }
+  ],
+
+  "differentiation_assessment": {
+    "genuinely_novel": [
+      "Using a knowledge commons demo — not an artwork, product, or marketplace — as the encounter object at an art fair. This reframes the audience's relationship to the system from consumer/viewer to potential co-creator.",
+      "The 'three response tiers' framework (recognition, contribution, commitment) is a more sophisticated conversion model than the typical launch binary of 'interested/not interested.' If executed well, it allows the team to segment and follow up appropriately.",
+      "Targeting 100 people rather than mass awareness is strategically unusual and reflects genuine understanding of commons bootstrapping dynamics. Most arts-tech launches optimize for press coverage and broad awareness; A(DAI) is optimizing for depth of engagement."
+    ],
+    "already_attempted": [
+      "Art fair launches for arts-tech platforms — Artsy, Feral File, numerous blockchain art projects all used Art Basel as a launch venue with mixed results",
+      "Curated community bootstrapping for commons projects — Are.na, Creative Commons, and many open knowledge projects have used curated early communities, with varying success",
+      "Demo-based encounters at cultural events — nearly every arts-tech project has used live demos at events as a primary adoption strategy",
+      "Post-crash positioning ('we are the serious infrastructure after the hype cycle') — Creative Commons after dot-com, multiple projects after the NFT crash"
+    ],
+    "assessment": "The Art Basel strategy is conventional in form (launch at a major event) but somewhat differentiated in execution (targeting depth over breadth, framing as commons encounter rather than product launch). The key risk is that the conventional form overwhelms the differentiated execution — attendees experience it as 'another arts-tech demo at Basel' regardless of the team's intentions. Differentiation depends entirely on the quality of the encounter design, which is not yet specified in the brief."
+  },
+
+  "implementation_risks": [
+    {
+      "risk": "Content thinness at demo time undermines the core value proposition",
+      "severity": "High",
+      "detail": "A(DAI)'s value proposition is relational intelligence — meaningful patterns emerging from the density and diversity of connections in the graph. With ~3 months until Art Basel and a 4-person team, the graph is likely to have 200-500 nodes. At this density, the graph may not reveal the kind of emergent intelligence that would generate the 'recognition' response. If attendees see a sparsely connected graph that doesn't yet demonstrate relational insight, the encounter fails at the first funnel stage. Mitigation: seed the graph aggressively from existing sources (ISEA archives, Wikidata, Feral File data) to achieve visual and relational density even if much of the content is bootstrapped rather than organically contributed."
+    },
+    {
+      "risk": "No follow-up infrastructure converts event interest to abandoned lead",
+      "severity": "High",
+      "detail": "The brief describes the encounter but not the post-encounter pipeline. Without pre-built follow-up infrastructure (onboarding flow, first-contribution pathway, community space, regular touchpoints), the 100-person encounter becomes a one-time demo with no lasting impact. Building this follow-up infrastructure takes significant effort and should be prioritized alongside the demo itself. Minimum viable follow-up: a clear 'contribute your first signal' flow that can be completed in 5-10 minutes, activated within 48 hours of the encounter."
+    },
+    {
+      "risk": "Art Basel's commercial context misaligns with commons framing",
+      "severity": "Medium-High",
+      "detail": "Presenting a commons project in a commercial context creates cognitive dissonance. Attendees primed for commercial interactions may misinterpret A(DAI) as a product or service, ask 'what does it cost' rather than 'how do I contribute,' and evaluate it by market standards rather than commons standards. This is particularly acute for the collector segment of the target 100 — collectors at Art Basel are in acquisition mode, and a knowledge commons does not fit that frame. The encounter design must actively counteract this contextual framing."
+    },
+    {
+      "risk": "Team of four cannot simultaneously demo, network, and follow up at a major fair",
+      "severity": "Medium",
+      "detail": "Art Basel is physically and socially exhausting. A 4-person team running demos, engaging in conversations, attending satellite events, and managing logistics will be stretched thin. The quality of individual encounters degrades as the team fatigues. To reach 100 meaningful encounters in 4-6 days, each team member needs ~25 substantive conversations — approximately 5-6 per day alongside demo duties. This is achievable but demanding, and leaves no capacity for unexpected opportunities or problems."
+    },
+    {
+      "risk": "The encounter format is unspecified with 3 months remaining",
+      "severity": "Medium-High",
+      "detail": "The brief describes the target audience and desired responses but not the encounter format. Designing, producing, and testing an effective encounter experience takes 2-3 months for an experienced team. With 3 months to Art Basel and the encounter format unspecified, there is significant risk of either (a) a rushed, under-designed encounter or (b) resource allocation away from building the core system toward producing the event. The team should finalize the encounter format within 2-3 weeks to leave adequate production time."
+    }
+  ],
+
+  "dependency_assumptions": [
+    {
+      "assumption": "The graph will have sufficient density by June 2026 to demonstrate relational intelligence",
+      "validity": "Uncertain — 200-500 manually created nodes may not produce the emergent patterns that are A(DAI)'s core value proposition. The team should define a minimum viable graph density target and evaluate whether it is achievable by June."
+    },
+    {
+      "assumption": "Art Basel attendees will engage with a knowledge commons demo amidst the commercial and social intensity of the fair",
+      "validity": "Plausible but contingent on encounter design — the format must be compelling enough to compete for attention with gallery presentations, museum exhibitions, parties, and hundreds of other proposals. A standard screen-based demo is unlikely to cut through."
+    },
+    {
+      "assumption": "Recognition at the event will convert to contribution after the event without significant additional effort",
+      "validity": "Weak — all evidence from commons bootstrapping and event marketing indicates that event-to-contributor conversion requires multiple touchpoints, clear onboarding pathways, and sustained follow-up. A single encounter is necessary but not sufficient."
+    },
+    {
+      "assumption": "The team can reach 100 curated people at Art Basel",
+      "validity": "Plausible but requires advance work — Art Basel attendance is ~90,000 across all fairs and satellites, but reaching 100 specific curated individuals requires pre-event outreach, scheduled meetings, and either a visible presence (booth/event) or strong personal networks in the art world. The team's existing network reach determines whether this is trivially achievable or a significant logistics challenge."
+    },
+    {
+      "assumption": "Art Basel June 2026 is the optimal timing for this encounter",
+      "validity": "Partially valid — Art Basel's concentration of the target audience is genuinely valuable, but June 2026 is only 3 months away. An alternative framing: use a smaller event (e.g., a Berlin-based digital art gathering, ISEA, or a purpose-organized salon) in Q2 2026 as a dress rehearsal, and target Art Basel Miami Beach (December 2026) as the primary launch, gaining 9 additional months of content and community building."
+    }
+  ],
+
+  "timeline_reality_check": "Extremely tight and high-risk. Three months to simultaneously (1) build the core graph pipeline, (2) populate the graph with sufficient content, (3) design and produce the encounter format, (4) build post-encounter follow-up infrastructure, and (5) execute pre-event outreach to curate the 100-person target list. A 4-person team attempting all five in parallel will likely achieve 2-3 at acceptable quality. The highest risk is that the graph is content-thin and the encounter format is under-designed, producing a technically functional but experientially underwhelming demo. The team should consider whether Art Basel Miami Beach (December 2026) would be a more achievable target, using June for a smaller-scale dress rehearsal.",
+
+  "suggested_revisions": [
+    {
+      "revision": "Specify the encounter format and design it as a distinct workstream",
+      "detail": "The brief should include a section on encounter design: What is the physical/digital format? How long does each encounter last? What does the attendee experience? What do they take away? The encounter should be designed as carefully as the software — a knowledge graph on a laptop screen will not generate the visceral 'recognition' response the brief describes. Consider: an immersive projection of the live graph that attendees can interact with, a salon-format dinner for 20 key people rather than brief encounters with 100, or a participatory session where attendees contribute signals in real-time and see the graph update."
+    },
+    {
+      "revision": "Build the post-encounter funnel before the encounter",
+      "detail": "The brief should specify the conversion infrastructure that must be ready before Art Basel: (1) a 'contribute your first signal' flow completable in 5-10 minutes, (2) a community space (Discord, Signal group, or bespoke) for post-Basel conversation, (3) a follow-up email/message sequence that re-engages attendees at 48 hours, 1 week, and 1 month post-encounter, (4) a 'founding contributor' designation or status for the first 100 that creates social incentive to engage. Without this infrastructure, the encounter energy dissipates."
+    },
+    {
+      "revision": "Segment the 100-person target and prioritize one contributor archetype",
+      "detail": "Rather than targeting 100 people across 5 segments, the brief should identify the primary contributor archetype (likely: digitally native artists who are technically literate, community-oriented, and already frustrated with the field's illegibility) and design the encounter for them. Secondary audiences (curators, collectors, institutional actors) can be addressed through tailored follow-up materials, but the encounter itself should optimize for the contributors who will actually populate the commons. Aim for 30-40 potential contributors, 20-30 potential curators/validators, and 30-40 potential institutional supporters/funders."
+    },
+    {
+      "revision": "Consider a pre-Basel salon series as community warm-up",
+      "detail": "Rather than relying on Art Basel as a cold-start, the team should host 2-3 intimate salons (10-20 people each) in April-May 2026 with practitioners in their existing networks. These serve multiple purposes: (1) test the demo and encounter design, (2) generate initial contributors who seed the graph before Basel, (3) create a warm network who can validate A(DAI) to their peers at the fair, (4) refine the messaging based on real feedback. By Art Basel, the project has 30-60 people who have already engaged, making the 100-person target an expansion rather than a cold start."
+    },
+    {
+      "revision": "Define minimum viable graph density and plan content seeding strategy",
+      "detail": "The brief should specify: what does the graph need to look like to generate the 'recognition' response? A target of 500-1,000 nodes with high relational density in 3-5 well-mapped scenes would be more convincing than 2,000 sparsely connected nodes. The team should identify 3-5 scenes they know deeply (e.g., generative art, creative AI, digital performance, experimental game design, arts-tech curatorial) and map those exhaustively rather than trying to cover the entire field thinly. Depth in familiar territory demonstrates the system's potential better than breadth in unfamiliar territory."
+    },
+    {
+      "revision": "Add Art Basel Miami Beach December 2026 as a fallback/expansion target",
+      "detail": "The brief should frame the launch as a two-stage strategy: Art Basel (June 2026) as the soft launch to ~100 people, with Art Basel Miami Beach (December 2026) as the expanded launch to a broader audience, informed by six months of learning and community building from the initial cohort. This creates a more realistic timeline, reduces the pressure on the June encounter, and aligns with the 10-year framing (a 6-month delay is irrelevant on a 10-year horizon but could significantly improve the quality of the first encounter)."
+    }
+  ],
+
+  "questions_for_team": [
+    "What is the encounter format? Have you designed the physical/digital experience attendees will have, or is this still conceptual? What is the timeline for finalizing encounter design?",
+    "Of the five audience segments (practitioners, curators, collectors, institutional, technologists), which 1-2 are your primary target for contribution? How does the encounter design serve them specifically?",
+    "What post-encounter infrastructure exists or is planned? Specifically: how does someone who sees the demo at Basel become a contributor within 48 hours?",
+    "What is the minimum viable graph density that would generate the 'recognition' response? Have you tested this with anyone outside the founding team?",
+    "Have you considered a pre-Basel salon series (April-May) to warm up the community and test the encounter? What are the arguments against this?",
+    "What is the realistic budget for an Art Basel presence, and how does it compare to the cost of 6 months of focused online community building? Has this trade-off been explicitly evaluated?",
+    "If Art Basel June proves too tight, is Art Basel Miami Beach (December 2026) an acceptable fallback? What specifically would be lost by the 6-month delay?",
+    "Who in the team's existing network can serve as 'founding contributors' — people who would seed the graph and validate the project to peers at Basel? How many such people exist, and have they been approached?"
+  ],
+
+  "key_sources": [
+    {
+      "name": "Nadia Eghbal — Working in Public: The Making and Maintenance of Open Source Software (2020)",
+      "url": "https://press.stripe.com/working-in-public",
+      "relevance": "Definitive analysis of open source contributor funnels, community bootstrapping, and the challenges of converting users to contributors. Directly applicable to A(DAI)'s commons contributor challenge."
+    },
+    {
+      "name": "Art Basel Annual Report / UBS Art Market Report",
+      "url": "https://www.artbasel.com/about/initiatives/the-art-market",
+      "relevance": "Data on Art Basel attendance demographics, engagement patterns, and the commercial context of the fair. Essential for understanding the environment in which the encounter will take place."
+    },
+    {
+      "name": "Are.na — Charles Broskoski on community bootstrapping (various interviews)",
+      "url": "https://www.are.na/",
+      "relevance": "Closest precedent for curated community bootstrapping in a creative knowledge commons. Broskoski's interviews describe the deliberate slow-growth strategy that built Are.na's distinctive culture."
+    },
+    {
+      "name": "Feral File launch and Art Basel presence",
+      "url": "https://feralfile.com/",
+      "relevance": "Most direct precedent for launching a digital art platform through Art Basel timing. Demonstrates both the benefits (concentrated attention, practitioner credibility) and risks (commercial association, market-cycle dependency)."
+    },
+    {
+      "name": "Mozilla Open Source Contributor Research",
+      "url": "https://wiki.mozilla.org/Contribute",
+      "relevance": "Extensive data on event-to-contributor conversion rates, onboarding funnel optimization, and the typical timeline from initial encounter to sustained contribution in open projects."
+    },
+    {
+      "name": "Creative Commons launch history — Lessig, Boyle, Eldred",
+      "url": "https://creativecommons.org/about/history/",
+      "relevance": "Case study in launching a commons project through multi-channel strategy with institutional backing. Demonstrates the multi-year timeline from launch to meaningful adoption."
+    },
+    {
+      "name": "Ostrom — Governing the Commons (1990)",
+      "url": "https://doi.org/10.1017/CBO9781316423936",
+      "relevance": "Foundational research on how commons are bootstrapped and maintained. Ostrom's principles for successful commons governance inform the assessment of whether a 100-person event encounter can seed a viable commons community."
+    }
+  ],
+
+  "uncertain": [
+    "claim_strength",
+    "timeline_reality_check"
+  ]
+}

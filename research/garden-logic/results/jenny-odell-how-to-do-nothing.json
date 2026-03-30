@@ -1,0 +1,51 @@
+{
+  "identity": {
+    "name": "Jenny Odell — How to Do Nothing (2019)",
+    "type": "attention-critique",
+    "originator": "Jenny Odell",
+    "year": "2019",
+    "key_text": "How to Do Nothing: Resisting the Attention Economy (Melville House, 2019)",
+    "key_url": "https://www.jennyodell.com/writing.html"
+  },
+  "conceptual": {
+    "core_claim": "Attention refusal is a political act: 'doing nothing' from capitalism's standpoint means redirecting attention toward bioregional awareness, place-based community, and maintenance rather than productivity.",
+    "relation_to_attention_economy": "Direct refusal. Odell rejects the attention economy's frame of value-through-productivity, arguing that attention is the most precious and overdrawn resource we have, and that its capture by platforms constitutes a monoculture analogous to ecological destruction.",
+    "relation_to_commons": "Strongly commons-oriented. Odell advocates for 'third spaces' — parks, libraries, public squares — as commons that resist enclosure. Bioregionalism is presented as a commons epistemology: awareness of place as shared, living infrastructure rather than extractable resource.",
+    "epistemological_stance": "Hermeneutic and ecological. Knowledge emerges from sustained, place-based attention rather than information processing. Validity is determined by depth of engagement with local ecologies and communities, not by metrics or scalability."
+  },
+  "technical": {
+    "architecture_pattern": "No technical architecture — this is a philosophical/cultural text. The implicit pattern is a practice-based protocol: rhythms of refusal, cycles of disengagement and re-engagement with place.",
+    "data_model": "N/A — Odell works with attention as a qualitative, relational resource rather than a quantifiable data object. The closest analog is a phenomenological model of situated awareness.",
+    "temporal_logic": "Cyclical and seasonal. Odell's bioregional attention follows ecological time — tidal, migratory, seasonal — rather than real-time or archival logic. This directly parallels A(DAI)'s tidal cycles.",
+    "absence_handling": "Odell treats absence as generative. 'Doing nothing' IS the practice of absence — withdrawing from the attention economy to create space for perception. Silence and stillness are first-class modes of engagement.",
+    "scalability_model": "Deliberately non-scalable. Odell's model is rooted in place, embodied attention, and local community. It resists abstraction and scaling by design, which is both its strength and its limit."
+  },
+  "garden_logic_comparative": {
+    "layer_mapping": "Substrate layer. Odell's work provides the philosophical ground for why A(DAI)'s tidal rhythm exists. The refusal of real-time responsiveness is Odell's 'doing nothing' enacted as system architecture.",
+    "intention_vs_attention": "Firmly intention-oriented. Odell's entire project is a refusal of attention logic. However, she does not use the language of 'structural diagnosis' or 'gap detection' — her intention is more phenomenological (what deserves our awareness?) than diagnostic (what is structurally missing?). A(DAI) operationalizes what Odell philosophizes.",
+    "coherence_vs_consensus": "Coherence. Odell explicitly embraces multiple, coexisting readings of place and community. She does not seek consensus but rather a richer, more layered attention to what is already present. Her bioregionalism is about perceiving complexity, not resolving it.",
+    "contestability": "Implicitly contestable but not formalized. Odell's framework is open to different readings and practices of refusal, but she does not build mechanisms for structured disagreement or counter-signals.",
+    "forkability": "Highly forkable in spirit — Odell insists that attention practices must be local and place-specific, meaning every instantiation is already a 'fork.' However, there is no protocol or infrastructure to preserve provenance across forks.",
+    "tendency_axis_position": "Strongly openness, commons, infrastructure, distributed. Odell sits at the far commons end of every spectrum. She refuses spectacle (attention capture), advocates for distributed attention (bioregional), and frames infrastructure (parks, libraries, ecosystems) as the site of resistance.",
+    "what_adai_should_adopt": "The philosophical grounding that tidal rhythms and cyclical temporality are not merely design choices but political acts of refusal. Odell's framing of 'maintenance as productivity' validates A(DAI)'s emphasis on structural persistence over novelty. Her bioregional attention model provides language for why A(DAI)'s scene-level analysis matters — intelligence is always situated.",
+    "what_adai_should_refuse": "Odell's anti-scalability. A(DAI) needs to operate at field-level, not just local bioregional scale. Also refuse Odell's implicit individualism — while she gestures toward community, her practice of attention remains largely personal and contemplative. A(DAI) needs collective infrastructure, not individual practice.",
+    "structural_tension": "Odell's 'doing nothing' risks becoming a privilege position — only those with economic security can afford to refuse the attention economy. A(DAI) must build infrastructure that enables refusal structurally, not just philosophically. The tension is between Odell's embodied, anti-technological stance and A(DAI)'s need to build technical systems. Can you build a computational system that enacts 'doing nothing'? A(DAI)'s dream cycle attempts exactly this, but Odell might argue that any computational system is already captured."
+  },
+  "critical": {
+    "limits": "No institutional form. Odell offers practice and philosophy but no organizational model, governance structure, or technical infrastructure. Her framework is difficult to operationalize beyond individual attention practice. The bioregional model is geographically bounded in ways that limit application to distributed digital communities.",
+    "who_is_excluded": "[uncertain] Those who cannot afford to 'do nothing' — precarious workers, caregivers, people in crisis. Odell acknowledges this but does not resolve it structurally. Also excludes those whose primary communities are online rather than place-based, and those in the Global South where different attention economies operate.",
+    "failure_under_attention": "[uncertain] If 'doing nothing' becomes a branded lifestyle (wellness retreats, digital detox apps), it gets co-opted into the attention economy as a premium product. This has already begun — Odell's book itself circulates as an attention-economy commodity. The failure mode is aestheticization of refusal without structural change."
+  },
+  "governance": {
+    "governance_model": "No formal governance. Odell's model is anarchic in the philosophical sense — emergent, place-based, communal. She draws on bioregional governance traditions (indigenous land practices, Peter Berg's bioregionalism) but does not propose specific governance structures.",
+    "consent_architecture": "[uncertain] Implicit opt-in through practice. There is no formal consent mechanism. Engagement is voluntary and self-directed. The absence of consent architecture means the framework relies entirely on individual motivation."
+  },
+  "materiality": {
+    "extraction_vector": "[uncertain] Extracts nothing in principle — the framework is generative/mutualistic, proposing that attention directed at place and community generates value without extraction. However, the book itself operates within publishing's extraction economy, and 'doing nothing' practices can extract emotional labor from communities expected to provide the 'third space.'",
+    "composability": "Library-level. Odell's ideas are highly composable — they can be embedded in other frameworks, combined with different practices, and adapted to different contexts. But they are philosophical building blocks, not modular technical components.",
+    "liveness": "Actively maintained as a living discourse. Odell continues to write and speak (Saving Time, 2023). The ideas remain generative and are being extended by others.",
+    "scale_of_operation": "Individual to small group/scene. Odell's practice is inherently local and embodied, operating at the scale of a person in a place, extended to a neighborhood or bioregion at most.",
+    "temporality": "Cyclical recurrence and ecological time. Odell's temporal logic follows seasons, migrations, tides — patterns of natural recurrence rather than linear progress or real-time responsiveness."
+  },
+  "uncertain": ["epistemological_stance", "who_is_excluded", "failure_under_attention", "extraction_vector", "consent_architecture", "structural_tension"]
+}

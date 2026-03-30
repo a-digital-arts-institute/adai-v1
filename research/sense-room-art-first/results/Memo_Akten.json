@@ -1,0 +1,98 @@
+{
+  "basic_info": {
+    "name": "Memo Akten",
+    "type": "artist",
+    "active_years": "2004-present",
+    "location": "London, UK (born Istanbul, Turkey, 1975)",
+    "url": "https://www.memo.tv/"
+  },
+  "practice_description": {
+    "medium": "AI-driven installation, generative video, real-time interactive systems, creative coding, writing",
+    "practice_summary": "Memo Akten is an artist and researcher working at the intersection of computation, AI, and human perception. His practice explores how neural networks and machine learning systems see, dream, and hallucinate — using deep learning as both tool and subject to probe questions about consciousness, perception, and the nature of intelligence.",
+    "methodology": "Akten combines artistic practice with rigorous academic research (PhD from Goldsmiths, University of London on creative AI). He builds custom neural network architectures and training pipelines, often training models on specific curated datasets to create systems that generate visual, sonic, or textual output reflecting learned patterns. His methodology involves: (1) curating training data with intentionality — the dataset is an artistic choice, (2) designing or modifying neural network architectures to produce aesthetically and conceptually meaningful outputs, (3) developing real-time interactive systems that allow audiences to navigate or trigger AI-generated content, (4) rigorous conceptual framing through writing and talks. He has contributed to open-source creative coding tools (ofxMSAFluid, ofxMSAPhysics for openFrameworks) and published academic papers on creative AI."
+  },
+  "relevance_to_sense_room": {
+    "relevance_summary": "Akten's work treating embedding spaces as navigable artistic territory is directly relevant to A(DAI)'s Sense Room. His practice demonstrates how latent spaces trained on curated datasets can become immersive experiential environments — and his critical writing articulates why this matters as an artistic medium, not just a technical capability.",
+    "art_as_substrate": "Yes. Works like Deep Meditations create a continuous, evolving visual-sonic field generated from learned embedding spaces. The AI-generated content functions as an ambient substrate — a living, breathing visual ground layer that viewers can dwell within rather than a discrete artwork to contemplate.",
+    "relational_composition": "Partially. The internal structure of the neural networks discovers and encodes relationships between elements in the training data. Deep Meditations maps relationships between spiritual/contemplative imagery across traditions. However, the relational structure is implicit in the learned embedding space rather than explicitly graph-based.",
+    "self_recomposing": "Yes. Works like Deep Meditations continuously generate new imagery by traversing the latent space. Interactive installations respond to viewer input (body movement, gaze) to navigate different regions of the embedding space, producing endlessly varying compositions. The output is never fixed."
+  },
+  "key_works": {
+    "works": [
+      {
+        "title": "Deep Meditations",
+        "year": "2018-2019",
+        "description": "A series of AI-generated meditation videos created by training neural networks on thousands of images and videos related to spirituality, nature, cosmos, and consciousness across diverse cultural traditions. The system generates continuous, slowly morphing abstract imagery with ambient sound that evokes a contemplative state. Presented as both installation and online series.",
+        "relevance": "Demonstrates embedding space as artistic territory — the latent space trained on contemplative imagery from many traditions becomes a new kind of space to inhabit. Directly relevant to how A(DAI)'s graph of digital arts knowledge could become an experiential environment."
+      },
+      {
+        "title": "Learning to See",
+        "year": "2017",
+        "description": "Real-time interactive installation where a neural network trained on specific datasets (ocean waves, fire, flowers, clouds) continuously reinterprets a live camera feed of visitors and objects. Whatever you show the camera, the neural network 'sees' it as the domain it was trained on — holding up your hand becomes waves, flames, petals. Explores how perception is shaped by training/experience.",
+        "relevance": "Makes the concept of learned representation viscerally tangible — the audience directly experiences how a trained embedding space shapes perception. Powerful metaphor for how A(DAI)'s intelligence layer could reshape how we see connections between artworks and practices."
+      },
+      {
+        "title": "Distributed Consciousness",
+        "year": "2018-2020",
+        "description": "Large-scale immersive installation (shown at Barbican Centre and other venues) exploring AI perception and machine consciousness through multiple neural networks generating and interpreting imagery simultaneously. Multiple screens show how different networks perceive and hallucinate the same inputs differently.",
+        "relevance": "Explores distributed intelligence — multiple AI systems with different training perceiving the same world differently. Relevant to A(DAI)'s concept of multiple perspectives on the same field of knowledge."
+      }
+    ]
+  },
+  "protocol_art_resonance": {
+    "protocol_art_summary": "Akten's practice treats the design of training pipelines, dataset curation, and neural network architectures as creative acts — the protocol for training a model is an artistic decision. His open-source contributions (ofxMSA libraries) created shared infrastructure for the creative coding community. His academic writing articulates frameworks for understanding creative AI that serve as conceptual infrastructure.",
+    "system_designed": "ofxMSAFluid and ofxMSAPhysics — open-source fluid simulation and physics libraries for openFrameworks, widely used in the creative coding community. Various custom neural network training pipelines for artistic generation. Academic frameworks for evaluating creative AI."
+  },
+  "commons_orientation": {
+    "licence_model": "hybrid",
+    "commons_summary": "Strong open-source orientation in the creative coding dimension — Akten's openFrameworks addons (ofxMSA libraries) are freely available and widely used. Academic publications are shared openly. However, the specific trained models and installation software for artworks are not typically open-sourced. The practice balances open infrastructure contribution (tools, knowledge, frameworks) with proprietary artistic production."
+  },
+  "governance_model": {
+    "governance_type": "solo",
+    "governance_detail": "Akten works primarily as a solo artist-researcher, making creative and technical decisions independently. Collaborations with musicians, other artists, and institutions are project-specific. Academic work involves co-authors but Akten is typically lead."
+  },
+  "consent_and_authorship": {
+    "consent_approach": "Interactive installations involve visitors through presence and movement — participation is voluntary through entering the space. Training data for neural networks is curated from publicly available imagery. Akten has written and spoken about the ethics of AI training data.",
+    "authorship_model": "Primarily solo authorship. Machine co-authorship is a central conceptual concern — Akten explicitly engages with questions of what the neural network contributes versus what the artist contributes. The models are treated as creative collaborators with their own perceptual biases, not merely tools."
+  },
+  "liveness_and_duration": {
+    "temporal_type": "continuously-evolving",
+    "temporal_detail": "Interactive works like Learning to See respond in real-time to camera input, producing continuously new imagery. Generative works like Deep Meditations traverse latent space endlessly without repeating. The output is always live — generated in the moment rather than pre-rendered."
+  },
+  "data_materiality": {
+    "data_sources": "Curated image and video datasets specific to each project: contemplative/spiritual imagery across world traditions (Deep Meditations), nature footage — ocean, fire, flowers, clouds (Learning to See), diverse visual datasets for perception experiments. The curation of training data is treated as a primary artistic decision.",
+    "data_provenance": "Training data is typically curated from publicly available imagery — web sources, public domain collections, and self-collected material. Akten is thoughtful about data ethics but the specific provenance of training sets varies by project. Not all sources are fully documented publicly."
+  },
+  "embedding_space_relevance": {
+    "embedding_summary": "Central to the practice. Akten is one of the most articulate artists working with embedding/latent spaces as artistic medium. Deep Meditations explicitly treats the latent space of a trained neural network as a territory to be explored and inhabited. Learning to See demonstrates how learned representations shape perception. His academic writing theorises embedding spaces as new kinds of spaces with aesthetic and experiential properties.",
+    "multimodal": "Yes. Works combine visual generation with sound design. Deep Meditations integrates generated imagery with ambient audio. The conceptual framework spans visual, sonic, and textual modalities, though individual works tend to be primarily visual."
+  },
+  "exhibition_modality": {
+    "modality": "installation",
+    "spatial_description": "Works manifest as large-scale screen-based installations in darkened gallery spaces (Learning to See as a camera-interactive table/screen, Distributed Consciousness as multi-screen immersive room), as online generative videos (Deep Meditations series on YouTube/Vimeo), and as performative works. The spatial approach emphasises immersion and contemplation — audiences dwell in the generated visual field."
+  },
+  "sensory_register": {
+    "senses": "visual, sonic",
+    "dominant_register": "visual"
+  },
+  "interoperability": {
+    "composability": "The open-source libraries (ofxMSA) are inherently composable and designed as building blocks for other projects. Trained models and specific artworks are self-contained and not designed for external integration. Conceptual frameworks and academic writing serve as composable intellectual infrastructure.",
+    "technical_openness": "Hybrid. Open-source tools and academic papers are openly available. Specific artwork implementations and trained models are typically not released."
+  },
+  "technical_approach": {
+    "stack": "openFrameworks (C++), Python, TensorFlow/PyTorch for neural network training, custom GAN and VAE architectures, real-time GPU rendering, GLSL shaders, custom camera and sensor integration for interactive installations. Earlier work used ofxMSA physics and fluid libraries. Recent work involves large-scale neural network training."
+  },
+  "network_position": {
+    "position_type": "bridge",
+    "scene_affiliation": "Creative coding (openFrameworks community), AI art, academic creative AI research, new media art, contemplative/spiritual art intersection. Bridges the technical creative coding community, the academic AI research world, and the contemporary art/gallery circuit. Connected to Goldsmiths creative computing network.",
+    "connections": "Mario Klingemann (both early GAN/neural network art pioneers exploring latent space, but Akten is more academically rigorous and philosophically oriented while Klingemann is more aesthetically experimental). Refik Anadol (both use neural networks for large-scale generative visuals, but Akten's work is more conceptually focused on perception and consciousness rather than data spectacle). Allison Parrish (shared interest in embedding spaces as creative medium, Akten in visual domain, Parrish in linguistic/poetic domain)."
+  },
+  "potential_role_in_adai": {
+    "role": "conversation-partner",
+    "role_detail": "Akten brings both artistic practice and rigorous academic thinking about creative AI, embedding spaces, and machine perception. He could contribute: (1) conceptual frameworks for understanding how latent/embedding spaces function as artistic environments, (2) practical expertise in training neural networks on curated datasets for generative output, (3) critical perspective on AI authorship and ethics in creative AI. His articulation of embedding spaces as experiential territories is directly relevant to how A(DAI)'s knowledge graph could become a Sense Room experience."
+  },
+  "temporal_status": {
+    "status": "ongoing-practice"
+  },
+  "uncertain": ["active_years", "location"]
+}

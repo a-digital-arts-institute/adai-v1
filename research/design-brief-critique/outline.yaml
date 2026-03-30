@@ -1,0 +1,97 @@
+topic: "Critical Evaluation of A(DAI) Design Brief v1"
+
+items:
+  - name: "Knowledge Commons for Arts — Comparable Projects"
+    category: "Comparable Infrastructure"
+    description: >
+      Evaluate the claim that 'digital arts has no shared knowledge layer' by researching
+      existing knowledge commons, semantic graphs, and field intelligence systems in arts
+      and culture. Include: Rhizome ArtBase, Wikidata art ontologies, Art Genome Project (Artsy),
+      ISEA archives, creative AI databases, Feral File, Serpentine R&D Platform, cultural knowledge graphs.
+      Assess what they succeeded at, where they failed, and what gap (if any) remains.
+
+  - name: "Gravitational / Relational Graph Models in Practice"
+    category: "Technical Feasibility"
+    description: >
+      Assess the 'gravitational model' where artist nodes accumulate mass from relational density
+      rather than market value or institutional rank. Research graph-based reputation/influence systems:
+      PageRank variants, social network centrality measures, knowledge graph weighting schemes,
+      and whether relational density has been used as a proxy for cultural significance.
+      Identify technical risks and prior art.
+
+  - name: "Merge Boundary and Contestable Curation"
+    category: "Governance Design"
+    description: >
+      Evaluate the 'merge boundary' concept — a reviewed gate where curatorial parameters are
+      versioned, public, and contributor-challengeable. Research comparable governance mechanisms:
+      Wikipedia's editorial policies, OSS governance (RFCs, BEPs), DAO curation mechanisms,
+      CRDT-based collaborative editing, and contestable AI systems.
+      Assess whether 'non-enclosure' is achievable or if founder bias is structurally inevitable.
+
+  - name: "Frontier Signals and Unclassifiable Knowledge"
+    category: "Epistemological Claims"
+    description: >
+      The brief claims frontier signals (what the system can't classify) are the most valuable.
+      Research epistemological frameworks for handling unclassifiable knowledge: boundary objects
+      (Star & Griesemer), trading zones (Galison), liminal categories, edge-of-chaos theory,
+      weak signals in futures research. Assess whether first-class representation of the
+      unclassifiable is genuinely novel or has been attempted before, and what pitfalls exist.
+
+  - name: "Legibility Layer Before Governance — Sequencing Claim"
+    category: "Strategic Positioning"
+    description: >
+      The brief positions legibility as prior to governance, preservation, and markets.
+      Research the governance-first vs infrastructure-first debate in digital commons:
+      Ostrom's principles, Protocol Labs' approach, Ethereum governance evolution,
+      creative commons licensing infrastructure, and whether sequencing legibility first
+      has precedent or whether governance and legibility co-evolve.
+
+  - name: "Five Rooms as Interaction Design"
+    category: "Experience Design"
+    description: >
+      Evaluate the 'five rooms' (Sense, Query, Speculate, React, Experiment) as interaction
+      design for a knowledge commons. Research comparable multi-modal knowledge interfaces:
+      MIT Media Lab's work on tangible interfaces, exhibition interaction design (teamLab, Olafur Eliasson),
+      speculative design interfaces, participatory knowledge systems.
+      Assess whether 'temperature' as UX metaphor is novel and whether the rooms risk being
+      too conceptual to implement as real interactions.
+
+  - name: "CR-SQLite Matryoshka Architecture"
+    category: "Technical Feasibility"
+    description: >
+      The brief specifies CR-SQLite with a Matryoshka architecture (practitioner DBs nested in
+      scene DBs nested in field DB) with CRDT-based merging. Research CR-SQLite's current maturity,
+      CRDT limitations for semantic data, Matryoshka embedding models, and whether this architecture
+      can scale to the described use case. Include alternatives like Neo4j, Apache AGE, gun.js, Ceramic Network.
+
+  - name: "Art Basel as Launch Strategy — 100 Person Encounter"
+    category: "Strategic Risk"
+    description: >
+      Evaluate launching to ~100 curated people at Art Basel June 2026 as a strategy for a
+      10-year commons project. Research comparable soft-launch strategies in arts/culture tech,
+      the risks of premature exposure, how other commons projects bootstrapped their initial
+      contributor base, and whether the 'recognition → contribution → commitment' funnel is
+      realistic for a single event encounter.
+
+  - name: "Post-NFT Field Infrastructure — Market Context"
+    category: "Market Analysis"
+    description: >
+      The brief frames A(DAI) as a response to the NFT cycle's collapse, arguing it left
+      'no structural residue.' Research what actually survived: Tezos art ecosystem,
+      fxhash, Art Blocks, on-chain provenance systems, Zora, Foundation.
+      Assess whether the 'provenance of meaning vs ownership' distinction holds,
+      and whether the post-NFT landscape is as structurally empty as the brief claims.
+
+  - name: "Intention Over Attention — Anti-Engagement Metrics"
+    category: "Measurement Philosophy"
+    description: >
+      The brief rejects engagement metrics in favour of 'relational density, edge diversity,
+      provenance quality, frontier signal accumulation.' Research anti-engagement design movements:
+      Humane Technology, calm tech, Time Well Spent. Assess whether 'relational density' is
+      measurable, what proxy metrics exist, and whether rejecting engagement metrics
+      creates a sustainability problem for a 10-year project that needs contributors.
+
+execution:
+  batch_size: 5
+  items_per_agent: 1
+  output_dir: ./results

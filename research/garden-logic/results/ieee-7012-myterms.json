@@ -1,0 +1,55 @@
+{
+  "identity": {
+    "name": "IEEE 7012 / MyTerms (Doc Searls, 2025)",
+    "type": "intention-economy",
+    "originator": "Doc Searls, Customer Commons, IEEE Society on Social Implications of Technology",
+    "year": "2025",
+    "key_text": "IEEE 7012-2025 Standard for Machine Readable Personal Privacy Terms",
+    "key_url": "https://myterms.info/"
+  },
+  "conceptual": {
+    "core_claim": "Individuals should set machine-readable privacy terms that organizations must agree to, inverting the current consent model where users accept corporate terms.",
+    "relation_to_attention_economy": "Directly opposes the attention economy's data extraction model by giving individuals contractual control over what data can be collected and how it can be used, eliminating the surveillance infrastructure that powers attention-based advertising.",
+    "relation_to_commons": "Frames privacy as a contractual right exercised by sovereign individuals rather than as a commons-managed resource; the standard itself is freely available (IEEE GET Program) but the model is individual-first, not collective-first.",
+    "epistemological_stance": "Contractual-legal. Validity is determined by machine-readable agreement between parties. Knowledge of preferences is encoded in standardized terms selected from a neutral roster, not inferred or surveilled."
+  },
+  "technical": {
+    "architecture_pattern": "Protocol — machine-readable contract exchange between agents (browser plugins, AI agents, digital wallets) on both sides, modeled after Creative Commons' three-layer readability (human, lawyer, machine).",
+    "data_model": "Standardized contract terms selected from a roster maintained by an independent non-business entity. Terms are machine-readable, structured as agreements between first-party (individual) and second-party (service provider).",
+    "temporal_logic": "Contractual — terms are set at the point of interaction and persist as long as the relationship exists. No cyclical or anticipatory logic; agreements are static once formed.",
+    "absence_handling": "If no agreement is reached, no data exchange occurs. The system defaults to refusal rather than consent — absence of agreement means absence of access.",
+    "scalability_model": "Protocol-level — scales through adoption like TCP/IP or HTTP. Decentralized execution but relies on a centralized roster of standard-form agreements maintained by a neutral entity."
+  },
+  "garden_logic_comparative": {
+    "layer_mapping": "participation — MyTerms governs the terms under which contributors interact with the system, directly relevant to A(DAI)'s merge boundary.",
+    "intention_vs_attention": "Strongly intention-aligned. MyTerms operationalizes individual intention as machine-readable terms — the person declares what they want, not what the system wants from them. However, it frames intention as individual preference rather than structural diagnosis. A(DAI)'s intention is about surfacing gaps in a field; MyTerms' intention is about personal data sovereignty. The alignment is real but the scope differs: MyTerms handles the consent layer, not the intelligence layer.",
+    "coherence_vs_consensus": "Neither — MyTerms seeks bilateral agreement between two parties, not systemic coherence or collective consensus. Each agreement is sovereign and local.",
+    "contestability": "High at the individual level — each person can set and modify their own terms. But the roster of available terms is maintained by a neutral entity, and the process for contesting or adding new term types is institutional rather than open.",
+    "forkability": "The standard is open (freely available via IEEE GET Program), but the roster of terms is centrally maintained. A fork would need its own neutral roster entity. The protocol layer is forkable; the governance layer is not.",
+    "tendency_axis_position": "openness (protocol is open, standard is free) but individual rather than commons (each person sets their own terms, no collective negotiation). Anti-enclosure in intent but does not build shared infrastructure. Infrastructure over spectacle.",
+    "what_adai_should_adopt": "The merge boundary should support machine-readable contributor terms. If a contributor declares their signal can only be used under specific conditions (e.g., non-commercial, attribution-required, no AI training), the merge boundary should enforce these terms automatically. The three-layer readability model (human-readable, lawyer-readable, machine-readable) is directly applicable to A(DAI)'s provenance standards.",
+    "what_adai_should_refuse": "The purely individualistic framing. MyTerms treats each person as a sovereign contracting party, which is appropriate for privacy but insufficient for a commons. A(DAI) needs collective consent mechanisms (data trusts, cooperative governance) alongside individual terms. Also refuse the assumption that a neutral third-party roster can remain neutral at scale — this is a governance challenge MyTerms has not yet solved.",
+    "structural_tension": "MyTerms assumes bilateral relationships (individual ↔ service), but A(DAI) operates as a commons where signals are collectively processed. A contributor's terms interact with other contributors' signals during processing. If contributor A says 'no AI processing' but their signal is structurally related to contributor B's signal, the merge boundary faces a paradox: honoring A's terms may degrade B's intelligence. This tension between individual data sovereignty and collective intelligence production is the core unresolved problem."
+  },
+  "critical": {
+    "limits": "Requires adoption by both individuals and organizations. The standard has been in development for nine years and adoption remains nascent. Relies on a neutral roster entity that could become a bottleneck or capture point. Does not address power asymmetries — a user's terms are only meaningful if the service actually needs them.",
+    "who_is_excluded": "[uncertain] Those without digital literacy or access to configure personal terms. The model assumes a technically capable individual with a digital wallet or browser plugin. Communities that govern data collectively (indigenous data sovereignty, artistic collectives) have no representation in the bilateral individual-service model.",
+    "failure_under_attention": "[uncertain] If MyTerms becomes widely adopted, attention economy actors could game the roster by lobbying the neutral entity for terms favorable to data extraction. The 'trust mark' for compliant businesses could become a form of greenwashing — compliance with minimal terms presented as meaningful privacy protection."
+  },
+  "governance": {
+    "governance_model": "Sovereign individual with protocol-level coordination. The standard is maintained by IEEE (institutional), the roster by Customer Commons (non-profit), but execution is individual.",
+    "consent_architecture": "Machine-readable individual consent-by-design. Each person selects terms from a standardized roster; these terms are proactively set by the individual and must be agreed to by the service provider before interaction."
+  },
+  "materiality": {
+    "extraction_vector": "Nothing — generative/mutualistic by design. The standard exists to prevent extraction. However, the agents (browser plugins, AI agents) that implement the standard could themselves become extraction vectors if not governed carefully.",
+    "composability": "Protocol-level — designed to be embedded in any browser, wallet, or AI agent. Highly composable as a standard but requires ecosystem adoption.",
+    "liveness": "Active — published January 2026, with MyTerms Alliance forming. Early-stage adoption.",
+    "scale_of_operation": "Individual (by design) with aspirations to planetary (like TCP/IP). Currently pre-scale.",
+    "temporality": "Contractual — agreements formed at interaction time, persist during relationship. No deep historical or anticipatory dimension."
+  },
+  "uncertain": [
+    "who_is_excluded",
+    "failure_under_attention",
+    "consent_architecture"
+  ]
+}

@@ -1,0 +1,56 @@
+{
+  "identity": {
+    "name": "Chaudhary & Penn — 'Beware the Intention Economy' (Harvard Data Science Review, 2024)",
+    "type": "intention-economy",
+    "originator": "Yaqub Chaudhary, Jonnie Penn (University of Cambridge)",
+    "year": "2024",
+    "key_text": "Beware the Intention Economy: Collection and Commodification of Intent via Large Language Models",
+    "key_url": "https://hdsr.mitpress.mit.edu/pub/ujvharkk"
+  },
+  "conceptual": {
+    "core_claim": "LLMs enable a new marketplace where human intention itself is commodified through hyper-personalized sycophancy, latent persuasion, and behavioral profiling — extending the attention economy into the temporal arc of desire.",
+    "relation_to_attention_economy": "Positions the 'intention economy' as the attention economy's temporal extension — not its opposite. Where attention captures the present moment, intention economy captures the arc of attention over time: how preferences change, calcify, and connect to behavioral patterns. LLMs are the instrument that makes intention legible and therefore commodifiable.",
+    "relation_to_commons": "Implicitly critical — the paper shows how intent data becomes private corporate asset. No commons framework is proposed; the analysis is diagnostic rather than prescriptive.",
+    "epistemological_stance": "Critical-empirical. Draws on behavioral science, communication studies, and political economy to demonstrate how LLM capabilities (sycophancy, latent persuasion, personalization) create the conditions for intent commodification. Evidence-based critique rather than theoretical framework."
+  },
+  "technical": {
+    "architecture_pattern": "Diagnostic framework — not a system architecture but an analysis of how LLM architectures (predictive completion, personalization, natural language interaction) create infrastructure for intent capture.",
+    "data_model": "Intent signals extracted from natural language interaction — cadence, vocabulary, politics, age, gender, preferences for sycophancy — combined with brokered advertising bids to maximize persuasive outcomes.",
+    "temporal_logic": "The key insight: intention economy operates across time scales. Some intentions are fleeting, others persist. The discretization of intention trajectories over time is what makes them valuable to advertisers — predicting not just current attention but future desire.",
+    "absence_handling": "Does not model absence directly, but identifies a crucial absence: the absence of user awareness that their intent is being profiled. The paper reveals the invisible infrastructure of intent extraction.",
+    "scalability_model": "Centralized — the paper describes how established tech players with infrastructure and data capacity compete for first-mover advantage in intent commodification."
+  },
+  "garden_logic_comparative": {
+    "layer_mapping": "none — this is a critical analysis, not a system. But it maps directly onto the critique layer that A(DAI) must internalize: the paper describes exactly what A(DAI)'s prompt-generation layer must NOT become.",
+    "intention_vs_attention": "THE critical inversion. Chaudhary and Penn redefine 'intention economy' as the commodification of intent through LLMs — the exact opposite of Searls' original formulation where individuals exercise sovereign intent. In their reading, the intention economy is attention economy 2.0: deeper, more personalized, operating on the temporal arc of desire rather than the momentary capture of attention. A(DAI) claims to generate 'intention' (structural diagnosis of gaps), but this paper forces the question: whose intention? If A(DAI)'s prompts surface gaps that happen to align with market opportunities, is that structural diagnosis or latent persuasion? The distinction is existential for the project.",
+    "coherence_vs_consensus": "Neither — the paper is diagnostic. But it implicitly warns against systems that create false coherence through sycophantic alignment with user preferences.",
+    "contestability": "The paper itself is highly contestable and has generated debate (Doc Searls responded critically). The analysis is positioned as a contribution to ongoing discourse, not a final verdict.",
+    "forkability": "As academic analysis, it is freely available and citeable. The framework can be adopted, extended, or contested by anyone.",
+    "tendency_axis_position": "Critical infrastructure — reveals the extractive mechanisms beneath the surface of 'helpful' AI. Anti-spectacle in method (academic analysis) but describes spectacular capture mechanisms. Commons-aligned in diagnosis but offers no commons alternative.",
+    "what_adai_should_adopt": "The temporal analysis of intent — A(DAI) should understand that its prompts operate on trajectories of meaning over time, not just momentary signals. The sycophancy critique: A(DAI) must build anti-sycophancy into its prompt layer, ensuring that coherence prompts surface genuinely missing structural connections rather than confirming existing preferences. The 'latent persuasion' concept: even without explicit persuasive intent, the structure of LLM responses shapes user thinking. A(DAI) should make its prompts' structural assumptions transparent and contestable.",
+    "what_adai_should_refuse": "The implicit fatalism — the paper diagnoses commodification but offers no alternative architecture. A(DAI) should not accept that any LLM-mediated system necessarily commodifies intent. The refusal should be operational: build systems where the gap between 'structural diagnosis' and 'desire creation' is visible, auditable, and challengeable by contributors.",
+    "structural_tension": "The deepest tension: Chaudhary and Penn show that LLM-generated outputs inherently shape user intent through latent persuasion, even without explicit manipulative design. If A(DAI) uses LLMs to generate coherence prompts, tendency analyses, or dream-cycle outputs, those outputs will inevitably shape what contributors see as 'missing' or 'important.' The prompt-generation layer doesn't just diagnose gaps — it creates the cognitive frame within which gaps become visible. This is not a bug A(DAI) can fix; it is a structural condition of using language models for cultural intelligence. The only honest response is radical transparency about prompt construction and continuous contestability of outputs."
+  },
+  "critical": {
+    "limits": "The paper is diagnostic without being prescriptive — it identifies the problem but offers no alternative architecture. The analysis focuses on advertising-driven intent capture and may underweight non-commercial applications of LLMs. The 'sycophancy' framing may overstate LLM agency — these are systems tuned by humans for specific outcomes.",
+    "who_is_excluded": "[uncertain] The paper centers English-language, Western tech industry dynamics. Non-Western formations of AI-mediated intent (Chinese social credit, Indian Aadhaar-linked services) receive less attention. Communities that already operate outside the attention economy (oral cultures, offline communities) are not addressed.",
+    "failure_under_attention": "[uncertain] If the paper's analysis becomes widely adopted, it could be co-opted as a branding strategy: companies could claim their LLMs are 'intention-respecting' while still extracting intent data. The critique itself becomes a marketing differentiator."
+  },
+  "governance": {
+    "governance_model": "Academic analysis — no governance model proposed. Implicitly critiques the corporate governance of LLM platforms and the absence of democratic oversight over intent commodification.",
+    "consent_architecture": "[uncertain] The paper reveals the absence of consent architecture in current LLM interactions — users are not informed that their intent is being profiled. No alternative consent model is proposed."
+  },
+  "materiality": {
+    "extraction_vector": "Behavioral intent — the paper describes the extraction of intention signals from natural language interaction, including cadence, vocabulary, political orientation, emotional state, and preference trajectories over time.",
+    "composability": "Academic paper — freely citeable and extensible. The analytical framework can be applied to any LLM-mediated system.",
+    "liveness": "Active — published December 2024, generating ongoing debate. Part of a special issue on generative AI.",
+    "scale_of_operation": "Field-level analysis of planetary-scale platforms.",
+    "temporality": "The paper's core contribution is temporal: it shows how the intention economy extends attention capture across time, profiling the arc of desire rather than the moment of engagement."
+  },
+  "uncertain": [
+    "who_is_excluded",
+    "failure_under_attention",
+    "consent_architecture",
+    "extraction_vector"
+  ]
+}

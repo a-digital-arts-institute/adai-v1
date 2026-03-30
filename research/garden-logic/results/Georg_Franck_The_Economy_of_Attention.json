@@ -1,0 +1,51 @@
+{
+  "identity": {
+    "name": "Georg Franck — The Economy of Attention (1998)",
+    "type": "attention-critique",
+    "originator": "Georg Franck (Vienna University of Technology, Department of Digital Architecture and Planning)",
+    "year": "1998 (Okonomie der Aufmerksamkeit, Carl Hanser Verlag)",
+    "key_text": "Okonomie der Aufmerksamkeit. Ein Entwurf (The Economy of Attention: A Draft, Munich: Hanser, 1998); Mental Capitalism (2005); The Economy of Attention (English, Journal of Sociology, 2019)",
+    "key_url": "https://journals.sagepub.com/doi/abs/10.1177/1440783318811778"
+  },
+  "conceptual": {
+    "core_claim": "Attention functions as a scarce resource and a form of capital with dynamics parallel to money — it can be accumulated, invested, and exchanged — and contemporary society has entered an era of 'mental capitalism' where the struggle for attention has become the primary economic force.",
+    "relation_to_attention_economy": "THE theoretical foundation. Franck provides the most rigorous analysis of attention as economic capital. His four-part theory — the fundamental human desire for attention, the parallels between attention and money, the self-reproducing character of attention capital, and the emergence of mental capitalism — defines the theoretical target that A(DAI) is designed to negate.",
+    "relation_to_commons": "Attention is treated as a privatizable resource, not a commons. In Franck's framework, attention is scarce, rival, and accumulative — those who have it earn more of it (like compound interest). This is the anti-commons logic: attention is captured and hoarded, not shared or governed collectively.",
+    "epistemological_stance": "Economic-structural. Knowledge validity is determined by its ability to attract attention within academic or public discourse. Franck explicitly analyzes science as an attention economy where researchers invest attention to earn reputation. This is a reflexive epistemology that applies its own framework to knowledge production."
+  },
+  "technical": {
+    "architecture_pattern": "Theoretical framework, not a technical system. Franck provides analytical tools (attention capital, mental capitalism, vanity fair) for understanding how attention circulates and accumulates. The architecture is conceptual: flows of attention structured by media, institutions, and social hierarchies.",
+    "data_model": "Attention as measurable currency: circulation figures, viewing ratings, likes, visits, citations, follower counts. Reputation as accumulated attention capital. Celebrity as publicly traded attention stock. The data model is quantitative but Franck emphasizes that attention has qualitative dimensions that resist full quantification.",
+    "temporal_logic": "Accumulative and self-reinforcing. Attention capital earns 'interest' — those who are already known attract more attention. The temporal logic is compound-growth: reputation builds on reputation. This creates winner-take-all dynamics over time.",
+    "absence_handling": "Attention to absence is structurally impossible in Franck's framework. The economy of attention can only process what is attended to — what is not attended to does not exist in the system. This is the fundamental limitation that A(DAI) addresses: attention systems cannot see their own blind spots.",
+    "scalability_model": "Centralized through media concentration. Attention flows through mass media channels, social platforms, and institutional prestige hierarchies. Scaling means reaching larger audiences, which concentrates attention in fewer hands."
+  },
+  "garden_logic_comparative": {
+    "layer_mapping": "none — Franck's theory IS the system that Garden Logic is designed against. It does not map to any Garden Logic layer because it describes the architecture A(DAI) refuses. Understanding Franck is essential for understanding what A(DAI) must not become.",
+    "intention_vs_attention": "Pure attention theory. Franck's entire framework analyzes attention as an economic force. There is no concept of intention in his work — intent is reduced to the desire for attention. This is the theoretical target A(DAI) is designed to negate: replacing the attention-accumulation logic with structural-gap-detection logic.",
+    "coherence_vs_consensus": "Neither. Attention produces neither coherence nor consensus — it produces celebrity. The 'vanity fair' of attention capital trading does not seek structural consistency or democratic agreement. It produces popularity, which is a different kind of social ordering than either coherence or consensus.",
+    "contestability": "Attention is contestable only through counter-attention — you challenge someone's prominence by becoming more prominent yourself. This is not genuine contestability (challenging the logic of the system) but competition within the system. Franck's framework does not allow contestation of the attention logic itself from within the system.",
+    "forkability": "Not applicable. Attention systems are not forkable — they are gravitational. You cannot fork celebrity or fork a reputation hierarchy. The attention economy is anti-forkable by design: its value comes from concentration, not distribution.",
+    "tendency_axis_position": "The pole that defines the opposite end of all A(DAI) tendency axes. Capture-side (attention is captured and accumulated). Spectacle-side (media spectacle is the attention distribution system). Individual-side (attention accrues to individuals as reputation). Enclosure-side (attention capital is privately owned).",
+    "what_adai_should_adopt": "The analytical precision. Franck's framework is the best diagnostic tool for recognizing when attention logic leaks into A(DAI)'s systems. Adopt Franck's analysis as a detection mechanism: if any part of A(DAI) begins to optimize for engagement, accumulate individual reputation, or create winner-take-all dynamics, Franck's theory identifies the failure mode.",
+    "what_adai_should_refuse": "Everything about the attention-as-capital model as a design principle. Refuse the assumption that attention is the primary scarce resource in cultural intelligence. Refuse reputation-accumulation as a valid organizing principle. Refuse the 'vanity fair' of celebrity-style knowledge production. Refuse the self-reinforcing dynamics that concentrate visibility.",
+    "structural_tension": "Franck may be right that attention IS the fundamental currency of mental life — that humans cannot escape the desire for attention. If so, A(DAI)'s intention architecture must coexist with this reality rather than simply denying it. The tension: can a system designed around structural gap detection (intention) survive in a world where human motivation is fundamentally attention-seeking? A(DAI) must channel the desire for recognition into contribution to the commons rather than attempting to eliminate it."
+  },
+  "critical": {
+    "limits": "The theory is primarily descriptive, not prescriptive — Franck diagnoses mental capitalism but does not propose alternatives. The framework may overstate the parallel between attention and money (critics argue attention is not fungible or storable in the same way). The theory was developed before social media, and while it anticipates digital attention dynamics, it does not address algorithmic attention allocation.",
+    "who_is_excluded": "Those who do not participate in attention markets: communities that value privacy, contemplation, or collective anonymity. Non-Western cultures where attention dynamics may operate differently. People whose attention contributions are structurally invisible (care workers, maintainers, behind-the-scenes contributors).",
+    "failure_under_attention": "This IS the theory of failure under attention. Franck describes the system in which everything becomes a competition for attention, where truth is subordinated to visibility, and where the self-reinforcing dynamics of mental capitalism produce inequality of attention as severe as inequality of wealth."
+  },
+  "governance": {
+    "governance_model": "Franck's framework describes the governance model of media and academic institutions as attention markets. There is no prescriptive governance model — only descriptive analysis of how attention is currently governed (through media gatekeepers, prestige hierarchies, and now algorithmic feeds).",
+    "consent_architecture": "[uncertain] No consent architecture. In Franck's framework, attention is extracted without consent — you cannot opt out of being observed, rated, or ranked in attention markets. The absence of consent architecture is part of the system's extractive logic."
+  },
+  "materiality": {
+    "extraction_vector": "Attention itself IS the extraction. Franck describes a system that extracts human attention as raw material for reputation accumulation. The extraction is psychic (attention, focus, mental energy) rather than physical. Everyone who attends to media, celebrities, or academic prestige is having their attention extracted.",
+    "composability": "Theoretical-analytical composability. Franck's concepts (attention capital, mental capitalism, vanity fair) compose with other critical theories (Zuboff's surveillance capitalism, Citton's ecology of attention). The framework is analytically reusable but not technically modular.",
+    "liveness": "Historically significant, experiencing renewed relevance. The 1998 book was largely German-language; English translations and scholarly engagement (van Krieken, 2019) brought it to wider attention. The theory's relevance has increased with social media and AI, making Franck more cited now than at publication.",
+    "scale_of_operation": "Planetary in scope — Franck theorizes attention as a global economic force. The analysis applies from individual interactions to mass media to scientific prestige systems. Multi-scale analytical framework.",
+    "temporality": "Deep theoretical temporality. Franck traces attention economics from pre-modern prestige systems through industrial media to digital capitalism. The temporal logic is historical-structural: attention dynamics are not new, but their economic formalization is a modern development that accelerated with digital media."
+  },
+  "uncertain": ["consent_architecture", "who_is_excluded", "structural_tension"]
+}

@@ -1,0 +1,85 @@
+{
+  "basic_identification": {
+    "name": "Kirke",
+    "type": "market_platform",
+    "originator": "Valentina Todeschi (founder); Italy-based team; supported by NextGenerationEU Tech4You competition and Giffoni Innovation Hub",
+    "year": 2024,
+    "key_url": "https://kirke.social",
+    "geography": "Italy (founding); global user base; beta phase as of 2025"
+  },
+  "core_ideas": {
+    "core_claim": "A safe, invitation-only social network and commission marketplace for human-made art, explicitly excluding AI-generated content. Artists keep 100% of commission earnings (0% platform fee on sales; 5% purchase protection fee charged to buyers).",
+    "medium_specificity": "Digitally native as a social commission marketplace combining portfolio display, community building, and escrow-backed transactions. Built on the AT Protocol for decentralized content ownership, distinguishing it from centralized platforms. The anti-AI verification process (automated and manual detection) is specific to the digital art crisis of provenance and authenticity.",
+    "relation_to_attention_economy": "Actively resists attention-economy logic. No algorithmic feed optimization. Discovery is through searchable tags, artist directory, and community events rather than engagement-maximizing algorithms. The invite-only model deliberately limits growth in favor of community quality. However, it still relies on social media (TikTok, Instagram, Threads) for external discovery and onboarding, creating a tension between its anti-attention internal design and attention-dependent external growth strategy.",
+    "relation_to_intention": "Strongly intention-native. Serves the declared structural need for safe commission infrastructure where artists are not competing with AI-generated work. The escrow system and verification process are infrastructure choices that prioritize trust over engagement. However, the platform's sustainability depends on reaching sufficient scale, which may eventually require attention-economy tactics."
+  },
+  "market_economics": {
+    "revenue_model": "5% purchase protection fee charged to buyers on each commission. Artists pay 0% platform fees. Platform is free for fans. No subscription model disclosed. Won NextGenerationEU funding; built MVP without external VC funding.",
+    "market_position": "Primary market — direct artist-to-collector/fan commissions. No secondary market mechanism.",
+    "price_range": "Commission-based pricing set individually by artists; ranges from small digital illustrations to larger concept art pieces. Typical commission prices in the fandom/illustration space range from $20-$500+ depending on complexity. [uncertain]",
+    "volume_trend_2024_2026": "Growing from beta. Claims 4,000+ verified artists and 19,000+ community members on Instagram. Still early-stage with limited traffic compared to established platforms like Fiverr or DeviantArt. Trajectory is upward but from a very low base.",
+    "collector_demographics": "Fandom communities, individual fans seeking custom artwork. Categories include Vtuber, concept art, book covers, emotes, DnD, furry art. Primarily younger digital-native audience engaged in specific fandom subcultures. Not crypto-native; traditional payment methods.",
+    "sustainability": "Uncertain. The 5% buyer fee is a lean revenue model. Sustainability depends on achieving sufficient transaction volume. The anti-AI positioning could be a durable differentiator as AI-generated content floods other platforms, but the invite-only model constrains growth. No disclosed path to profitability. Grant funding (NextGenerationEU) provided initial runway but is not recurring."
+  },
+  "practice_aesthetics": {
+    "toolchain": "AT Protocol (decentralized social infrastructure); web-based platform; standard digital art tools on artist side (Procreate, Photoshop, Clip Studio Paint, etc.); integrated commission management, escrow payment system.",
+    "relation_to_AI": "Explicitly anti-AI. Zero-tolerance policy for AI-generated content. Uses automated and manual detection methods to enforce human-only art. This is the platform's core identity proposition — a counter-movement to the flood of AI-generated imagery on other platforms. AI is positioned as threat, not tool.",
+    "liveness": "Static artifacts (commissioned artworks). The social layer is dynamic (posts, community interaction) but the art objects are traditional digital commissions.",
+    "aesthetic_vocabulary": "Operates within established fandom and illustration vocabulary — character design, fan art, concept art. Does not introduce new aesthetic language. The critical vocabulary is around authenticity, human creativity, and anti-AI rather than formal aesthetic innovation.",
+    "tendency_axis_position": "Openness: semi-open (invite-only for artists, open for fans). Commons vs. capture: leans commons (AT Protocol, artist-retains-100%). Spectacle vs. infrastructure: infrastructure-focused (commission tools, escrow, verification). Individual vs. collective: individual artist empowerment within a collective community structure."
+  },
+  "infrastructure_governance": {
+    "openness": "Built on AT Protocol (open, decentralized). Platform itself is proprietary but the underlying social layer is decentralized. Artists own their content through AT Protocol's design. Invitation system creates controlled access.",
+    "governance_model": "Founding-team governance. Kirke team controls invitations, verification, content moderation, and platform development. No DAO or community governance mechanism disclosed. Artists can invite other artists, creating a peer-vouching layer.",
+    "data_sovereignty": "AT Protocol in principle allows content portability and user data ownership. Artists set their own pricing and terms. Payment data handled through Kirke's escrow system. Degree of actual data export/portability unclear in practice. [uncertain]",
+    "interoperability": "AT Protocol provides theoretical interoperability with other AT Protocol apps (like Bluesky). No API or integration with other art platforms disclosed. Commission workflow is self-contained within Kirke.",
+    "preservation_strategy": "No explicit preservation strategy. Digital commissions are delivered to buyers as files. Platform persistence depends on company survival. AT Protocol provides some decentralization hedge but art files are not on-chain or IPFS.",
+    "consent_architecture": "Binary: artists opt-in through invitation and verification. AI-generated content is excluded by policy. No granular consent mechanism for how art is used beyond commission terms. The anti-AI stance is enforced through platform rules rather than machine-readable consent."
+  },
+  "field_position": {
+    "relation_to_traditional_art_world": "Parallel. Operates entirely within fandom/illustration communities, not engaging with gallery/museum systems. More aligned with creative freelancing platforms (Fiverr, DeviantArt) than traditional art world infrastructure.",
+    "what_it_enables": "Safe commission transactions with escrow protection. AI-free creative community. Direct artist-fan relationships without platform taking artist revenue. Portfolio and commission sheet management in one place.",
+    "what_it_lacks": "Scale — still in beta with limited traffic. No secondary market. No provenance tracking beyond commission records. No support for editions, prints, or digital collectibles. No integration with broader art world infrastructure. Limited to commission-based transactions rather than supporting diverse economic models.",
+    "who_is_excluded": "Artists without existing portfolios or peer connections (invite-only barrier). Early-career artists explicitly told to wait. Non-fandom fine artists. Artists whose work involves any AI assistance (even as tool). Users without social media presence for discovery. Geographic barriers minimal but language/cultural barriers exist (primarily English-language fandom communities).",
+    "frontier_signal": "Emerging. Represents the anti-AI counter-movement in digital art platforms. Tests whether explicitly human-only platforms can sustain as a market category. The AT Protocol adoption is frontier for art platforms."
+  },
+  "attention_intention": {
+    "discovery_mechanism": "Social media (TikTok, Instagram, Threads, Tumblr, X) for external discovery. Internal discovery through trending posts, searchable tags, artist directory, and community events. Word of mouth through artist invitation chains.",
+    "attention_dependency": "Moderate external dependency on social media for growth and discovery. Internally designed to resist attention metrics. Would survive if Instagram disappeared (AT Protocol base, direct community) but growth would slow significantly. The invite-chain model provides organic growth independent of any single platform.",
+    "intention_alignment": "Intention-native. Addresses the structural need for AI-free commission infrastructure. The escrow system, verification process, and 0% artist fee are infrastructure decisions serving declared needs rather than optimizing for engagement.",
+    "commons_contribution": "Limited commons contribution. The AT Protocol choice contributes to decentralized social infrastructure. But the platform does not share data, vocabulary, or tools with the broader field. The anti-AI stance contributes to discourse but not to shared infrastructure."
+  },
+  "provenance_temporality": {
+    "provenance_type": "Ownership only — commission transaction records. No provenance of meaning, artistic process, or exhibition history.",
+    "temporal_logic": "None / transactional. Each commission is a discrete event. No archival layer, no temporal depth.",
+    "absence_handling": "Addresses one specific absence — safe, AI-free commission spaces. Does not detect or represent broader field absences."
+  },
+  "coherence": {
+    "coherence_vs_consensus": "Consensus-seeking within its community. The anti-AI policy is a binary position (human-made or not) rather than allowing multiple valid readings. The invite-only model enforces consensus on community values.",
+    "contestability": "Limited. Kirke team makes final decisions on AI detection and artist verification. No formal appeals process disclosed. The automated AI detection could produce false positives with no clear contestation mechanism.",
+    "forkability": "Moderate. Built on AT Protocol, so the social data layer is theoretically forkable. The commission/escrow infrastructure is proprietary. A competing platform could replicate the model but not the existing community and artist networks."
+  },
+  "adai_comparison": {
+    "layer_mapping": "participation",
+    "what_adai_should_adopt": "The principle that platform fees should not extract from artists. The escrow-based trust mechanism for transactions. The deliberate resistance to algorithmic attention optimization. The peer-vouching invitation model as a community quality mechanism.",
+    "what_adai_should_refuse": "The binary anti-AI stance — A(DAI) must hold space for AI as medium and tool, not just threat. The consensus-enforcing model that excludes nuanced positions on human-machine collaboration. The fandom-centric scope that ignores contemporary art discourse. The lack of provenance depth beyond transaction records.",
+    "structural_tension": "Kirke's binary human/AI distinction vs. A(DAI)'s interest in the merge boundary between human and machine creativity. Kirke draws a hard line; A(DAI) must map the gradient. Kirke's closed community model vs. A(DAI)'s commons-first approach. Both resist attention capture, but Kirke does so through exclusion while A(DAI) aims for structural alternatives."
+  },
+  "regulatory_legal": {
+    "regulatory_exposure": "GDPR applies (EU-based). Consumer protection laws apply to escrow/payment handling. The AI detection claims could face scrutiny under EU AI Act if classification errors affect artist livelihoods. No crypto/blockchain regulatory exposure (uses traditional payments).",
+    "ip_model": "All rights reserved by artists. Kirke does not claim ownership of artist work. Commission terms set between artist and buyer. No on-chain IP management.",
+    "opt_in_vs_opt_out": "Opt-in for artists (invitation + verification). Opt-in for fans (free registration). The anti-AI policy is opt-in at platform level — by joining, you agree to the human-only policy. No granular opt-in/out for specific uses."
+  },
+  "ecosystem": {
+    "platform_dependency": "Depends on AT Protocol infrastructure. Payment processing through third-party providers. Discovery dependent on external social media platforms (TikTok, Instagram). No single critical dependency due to AT Protocol decentralization, but the platform itself is a single point of failure for the commission/escrow layer.",
+    "network_effects": "Moderate positive network effects through invitation chains and artist-fan community growth. Each new verified artist brings their fan base. However, the invite-only model deliberately constrains network growth. Currently an isolate relative to broader art market infrastructure.",
+    "post_crash_trajectory": "Not applicable (launched post-crash). Kirke emerged in response to different pressures (AI proliferation) rather than the NFT/crypto crash. Growing from zero in a market environment where artists are actively seeking AI-free alternatives."
+  },
+  "uncertain": [
+    "price_range",
+    "data_sovereignty",
+    "collector_demographics",
+    "volume_trend_2024_2026",
+    "sustainability"
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "identity": {
+    "name": "Spawning AI / Have I Been Trained / Source.Plus",
+    "type": "media-data",
+    "originator": "Jordan Meyer, Mathew Dryhurst (Spawning AI)",
+    "year": "2022 (HIBT), 2024 (Source.Plus)",
+    "key_text": "Have I Been Trained search tool; Source.Plus ethical dataset platform; datadiligence Python library",
+    "key_url": "https://spawning.ai/"
+  },
+  "conceptual": {
+    "core_claim": "Consent infrastructure for AI training data must be built as a first-class technical layer, enabling creators to assert machine-readable opt-out/opt-in rights over their works.",
+    "relation_to_attention_economy": "Refuses attention logic entirely. While attention economy treats creative works as raw material for engagement optimization, Spawning treats them as sovereign property requiring explicit consent before any computational use.",
+    "relation_to_commons": "Navigates between commons and property: Source.Plus seeds with 40M public domain/CC0 images (commons-affirming), while Do Not Train registry protects individual property rights. Creates a consent-differentiated commons rather than an undifferentiated one.",
+    "epistemological_stance": "Empirical-legal. Knowledge validity determined by verifiable consent status and licensing metadata. A dataset is 'known good' only if provenance and consent can be computationally verified."
+  },
+  "technical": {
+    "architecture_pattern": "Registry + marketplace + library pipeline. Do Not Train registry stores machine-readable opt-out preferences. Source.Plus is a curated marketplace. datadiligence is a pipeline integration library that checks consent status at training time.",
+    "data_model": "Image-text pairs with licensing metadata, consent status flags, provenance records, and quality scores. Source.Plus enriches with captioning, safety scoring, and resolution metadata.",
+    "temporal_logic": "Dynamic consent: consent can change over time, and the datadiligence library is designed to check consent at training time rather than at dataset creation time. This addresses the temporal gap between static datasets and evolving creator preferences.",
+    "absence_handling": "Absence is the default state — if consent status is unknown or unverifiable, the work is excluded. The system operates on a precautionary principle where missing metadata means 'do not use.'",
+    "scalability_model": "Centralized registry with distributed integration. The Do Not Train registry is centralized, but datadiligence allows any ML pipeline to check against it. Source.Plus scales through marketplace dynamics."
+  },
+  "garden_logic_comparative": {
+    "layer_mapping": "substrate — Spawning operates at the consent and provenance infrastructure layer, which maps to A(DAI)'s substrate layer where signals enter the system with verifiable provenance.",
+    "intention_vs_attention": "Pure intention. Spawning's entire architecture is organized around creator intent (what they consent to) rather than engagement metrics. The Do Not Train registry is literally a declaration of intention. However, Source.Plus as a marketplace introduces some attention-adjacent dynamics — datasets that attract more buyers gain visibility.",
+    "coherence_vs_consensus": "Neither, strictly. Spawning operates on individual consent rather than collective coherence or consensus. Each creator's consent decision is sovereign. This differs from A(DAI)'s coherence model, which seeks structural consistency across multiple readings rather than individual opt-in/opt-out.",
+    "contestability": "Limited. Creator consent is binary (opt-in/opt-out) and not contestable by third parties. The system does not support counter-signals or alternative readings of consent status. A(DAI) requires richer contestability.",
+    "forkability": "Low for the registry (centralized), moderate for datasets. Source.Plus datasets can be filtered and recombined, but the Do Not Train registry itself cannot be forked — it represents a single source of truth about consent.",
+    "tendency_axis_position": "Strongly commons-side on the commons-capture axis. Infrastructure-side on spectacle-infrastructure. Individual-side on individual-distributed (consent is per-creator, not collective). Openness-enclosure is mixed: open infrastructure serving enclosure of individual rights.",
+    "what_adai_should_adopt": "The datadiligence pattern of checking provenance and consent at processing time rather than only at ingestion time. A(DAI)'s signal pipeline should verify provenance dynamically, not just when a signal first enters /inbox/. Also adopt Source.Plus's approach of seeding with verified public domain material before adding consented contributions.",
+    "what_adai_should_refuse": "The binary consent model. A(DAI) needs richer consent gradients — not just 'include/exclude' but 'include with attribution,' 'include for structural analysis only,' 'include but contestable.' Also refuse the marketplace framing: A(DAI)'s signals are contributions to a commons, not products for sale.",
+    "structural_tension": "Spawning solves consent at the individual level but does not address collective governance of shared cultural knowledge. A(DAI) must handle both: individual contributor consent AND collective governance of what the merged intelligence means. Spawning's model assumes creators are atomized rights-holders; A(DAI) assumes contributors are participants in a shared sensemaking process."
+  },
+  "critical": {
+    "limits": "Relies on creators actively registering opt-outs, creating an asymmetry where those unaware of AI training are unprotected. The registry is centralized and depends on Spawning's continued operation. Consent checking adds computational overhead to training pipelines, creating incentive to skip it.",
+    "who_is_excluded": "Creators who lack technical literacy to use the registry. Historical works whose creators are deceased or unreachable. Collective or communal creative works (e.g., folk traditions) that have no individual rights-holder to register consent. Non-Western creative traditions where individual copyright is a poor fit.",
+    "failure_under_attention": "[uncertain] If Source.Plus becomes the dominant ethical dataset marketplace, attention dynamics could concentrate curation power. Popular datasets get more visibility, creating winner-take-all dynamics. The marketplace model could evolve toward attention-optimized dataset recommendations rather than consent-first curation."
+  },
+  "governance": {
+    "governance_model": "Centralized platform governance by Spawning AI (venture-backed startup). Individual creator sovereignty over their own works. No collective governance mechanism for the registry as a whole.",
+    "consent_architecture": "Machine-readable opt-out via Do Not Train registry, integrated through robots.txt-style mechanisms and the datadiligence library. Opt-in for Source.Plus marketplace contributions. Consent is dynamic and revocable. However, enforcement depends on downstream actors voluntarily checking the registry."
+  },
+  "materiality": {
+    "extraction_vector": "Explicitly anti-extraction for the registry. Source.Plus extracts value from the gap between unverified and verified datasets — the premium on provenance. Spawning itself extracts venture capital funding on the promise of becoming consent infrastructure.",
+    "composability": "Library-level (datadiligence is a pip-installable Python package). API-first for registry lookups. Source.Plus datasets are downloadable and filterable. Moderate composability overall.",
+    "liveness": "Actively maintained and growing. Source.Plus launched in 2024. Have I Been Trained returned after CSAM-related hiatus. Active development on datadiligence library.",
+    "scale_of_operation": "Field-level for the registry (80M+ artworks opted out as of 2023, growing). Source.Plus operates at dataset scale (40M+ images). Individual creators interact at individual scale.",
+    "temporality": "[uncertain] Dynamic temporal logic with consent that evolves over time. The system must handle the gap between when a dataset was created and when consent status changes. No archival depth — focused on current consent state rather than historical record."
+  },
+  "uncertain": ["failure_under_attention", "temporality", "epistemological_stance", "extraction_vector"]
+}

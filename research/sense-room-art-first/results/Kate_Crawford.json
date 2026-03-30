@@ -1,0 +1,98 @@
+{
+  "basic_info": {
+    "name": "Kate Crawford",
+    "type": "theorist",
+    "active_years": "2005-present",
+    "location": "Los Angeles, USA / New York, USA",
+    "url": "https://katecrawford.net"
+  },
+  "practice_description": {
+    "medium": "writing, academic research, art-research collaboration, investigation",
+    "practice_summary": "Research professor and leading critical AI scholar whose work reveals the material, political, and environmental costs of artificial intelligence systems, arguing that AI is neither artificial nor intelligent but rather a regime of extracting value from human labor, natural resources, and data.",
+    "methodology": "Crawford combines empirical investigation, political economy, and cultural analysis to trace AI supply chains from lithium mines to data centers to classification systems. Her methodology is investigative and materialist, making visible the hidden infrastructure, labor, and environmental costs behind seemingly immaterial technologies. She collaborates extensively with artists (notably Vladan Joler and Trevor Paglen) to create works that make these systems legible. She is based at USC Annenberg and co-founded the AI Now Institute at NYU."
+  },
+  "relevance_to_sense_room": {
+    "relevance_summary": "Crawford's materialist analysis of AI infrastructure provides the critical framing necessary for A(DAI) to build responsible commons infrastructure — understanding the full cost of computation, data extraction, and classification systems that any intelligence infrastructure relies on.",
+    "art_as_substrate": "Crawford's collaborative art-research projects (with Vladan Joler and Trevor Paglen) produce visual works — maps, diagrams, installations — that function as both art and analytical tools. These could serve as substrate within a generative composition, making infrastructure visible.",
+    "relational_composition": "Her work, particularly Anatomy of an AI System, is fundamentally about mapping relations — supply chains, labor networks, data flows, and resource extraction chains. This is graph-based thinking applied to material infrastructure.",
+    "self_recomposing": "Her analytical works are generally fixed, but the systems she analyzes are continuously evolving. Her collaborative work with Joler (Anatomy of an AI System) is a map that could be updated as supply chains shift."
+  },
+  "key_works": {
+    "works": [
+      {
+        "title": "Atlas of AI: Power, Politics, and the Planetary Costs of Artificial Intelligence",
+        "year": 2021,
+        "description": "Book tracing AI's material infrastructure from lithium mines in Nevada to Amazon warehouses to facial recognition systems. Reveals AI as a technology of extraction — of resources, labor, and data — rather than a neutral tool.",
+        "relevance": "Essential text for understanding the material costs of building any intelligence infrastructure. Provides the critical framework for A(DAI) to ensure its commons infrastructure does not replicate extractive patterns."
+      },
+      {
+        "title": "Anatomy of an AI System (with Vladan Joler)",
+        "year": 2018,
+        "description": "Large-scale map and investigation tracing the full supply chain of an Amazon Echo device — from earth minerals to human labor to data extraction and back. Published as both a visual artwork and an academic text.",
+        "relevance": "Exemplary model of art-research collaboration that makes infrastructure visible. Demonstrates how graph-based mapping of relations can be both rigorous analysis and powerful art."
+      },
+      {
+        "title": "Excavating AI: The Politics of Images in Machine Learning Training Sets (with Trevor Paglen)",
+        "year": 2019,
+        "description": "Investigation and artwork examining how ImageNet and other training datasets encode racial, gender, and class biases through their labeling systems.",
+        "relevance": "Directly relevant to any system that classifies or categorizes cultural production. Warns against the politics of classification that A(DAI)'s graph must reckon with."
+      }
+    ]
+  },
+  "protocol_art_resonance": {
+    "protocol_art_summary": "Crawford's collaborative art-research projects treat investigation and infrastructure mapping as creative practice. The Anatomy of an AI System is protocol art in the sense that it maps and makes legible the protocols of extraction that underpin AI systems.",
+    "system_designed": "AI Now Institute (co-founded with Meredith Whittaker) — a research institute that functions as infrastructure for critical AI studies, producing policy recommendations, research, and public discourse."
+  },
+  "commons_orientation": {
+    "licence_model": "hybrid",
+    "commons_summary": "Crawford advocates for public oversight of AI systems and against corporate enclosure of data and intelligence. The AI Now Institute's research outputs are publicly available. Anatomy of an AI System is openly accessible. She pushes for regulatory frameworks that protect commons interests against corporate AI extraction."
+  },
+  "governance_model": {
+    "governance_type": "institutional",
+    "governance_detail": "Works within academic institutional structures (USC Annenberg, previously NYU) and co-founded AI Now Institute. Research governance is academic with public interest orientation. Solo authorship for books, collaborative governance for research institute."
+  },
+  "consent_and_authorship": {
+    "consent_approach": "Crawford's work explicitly addresses consent failures in AI systems — training data scraped without consent, workers surveilled without meaningful choice, communities affected without consultation. Her own practice involves investigative methods with public data.",
+    "authorship_model": "Solo authorship for books, collaborative for major art-research works. Credits co-investigators and research teams prominently."
+  },
+  "liveness_and_duration": {
+    "temporal_type": "static",
+    "temporal_detail": "Written works and art-research projects are fixed upon publication. The systems she analyzes evolve continuously, and her institutional work (AI Now) produces ongoing research."
+  },
+  "data_materiality": {
+    "data_sources": "Corporate supply chain data, labor records, environmental data, training datasets (ImageNet, etc.), patent filings, government records, corporate reports",
+    "data_provenance": "Investigative methods — public records, FOIA, academic research, direct observation, corporate disclosures"
+  },
+  "embedding_space_relevance": {
+    "embedding_summary": "Crawford's work critically examines what embedding spaces encode — her Excavating AI project revealed the biases and politics embedded in ImageNet's classification system. Her analysis is essential for understanding the political stakes of any embedding architecture.",
+    "multimodal": "Yes — her collaborative works span text, visual mapping, installation, and data visualization."
+  },
+  "exhibition_modality": {
+    "modality": "hybrid",
+    "spatial_description": "Art-research works exhibited in museums (MoMA, V&A, Fondazione Prada) and published online. Anatomy of an AI System functions as both a wall-sized installation and a web-based interactive map. Writing circulates through publishing and public lectures."
+  },
+  "sensory_register": {
+    "senses": "visual, textual",
+    "dominant_register": "textual"
+  },
+  "interoperability": {
+    "composability": "Her analytical frameworks and visual mapping methods are highly composable — they can be applied to map the infrastructure of any technological system, including A(DAI) itself.",
+    "technical_openness": "Open — research outputs publicly available, art-research works openly accessible online, AI Now reports freely distributed."
+  },
+  "technical_approach": {
+    "stack": "Investigative research methods, data visualization, large-scale mapping, collaboration with artists who use digital fabrication and web technologies"
+  },
+  "network_position": {
+    "position_type": "hub",
+    "scene_affiliation": "Critical AI studies, AI ethics, art-technology crossover, USC Annenberg, AI Now Institute, MoMA/V&A exhibition circuit, policy/regulation community",
+    "connections": "Matteo Pasquinelli (critical AI theory), James Bridle (technology criticism and art), Legacy Russell (critical technology and identity), McKenzie Wark (political economy of information), Vladan Joler (art-research collaborator), Trevor Paglen (art-research collaborator)"
+  },
+  "potential_role_in_adai": {
+    "role": "theoretical-reference",
+    "role_detail": "Crawford provides the materialist critical framework for ensuring A(DAI) builds responsible infrastructure. Her work on the politics of classification (Excavating AI) directly informs how the graph should handle categorization. Her supply chain analysis methodology could be applied to A(DAI)'s own infrastructure to ensure it is non-extractive. Could serve as advisory or critical friend."
+  },
+  "temporal_status": {
+    "status": "ongoing-practice"
+  },
+  "uncertain": ["url", "active_years", "location"]
+}

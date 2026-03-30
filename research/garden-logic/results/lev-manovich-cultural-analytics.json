@@ -1,0 +1,55 @@
+{
+  "identity": {
+    "name": "Lev Manovich — Cultural Analytics (2007-2025)",
+    "type": "provocation",
+    "originator": "Lev Manovich (CUNY Graduate Center, Cultural Analytics Lab)",
+    "year": "2007",
+    "key_text": "Cultural Analytics (MIT Press, 2020); Cultural Analytics Lab research output (2007-present)",
+    "key_url": "https://lab.culturalanalytics.info/"
+  },
+  "conceptual": {
+    "core_claim": "Computational methods — data visualization, machine learning, and statistical analysis — can reveal patterns in contemporary culture at scales impossible for traditional humanistic methods, while requiring critical reflection on what is lost when culture is represented as data.",
+    "relation_to_attention_economy": "Cultural Analytics does not directly critique the attention economy but operates within it — analyzing the same digital cultural artifacts (social media images, web content, digital art) that the attention economy produces and circulates. The methodology treats attention-economy outputs as cultural data to be analyzed rather than as systems to be critiqued.",
+    "relation_to_commons": "Positioned as open research — lab publications and some tools are publicly available. Collaborations with MoMA, Getty, and other institutions make cultural data analysis accessible. However, the methodology requires significant computational expertise, creating a de facto enclosure around who can produce cultural analytics.",
+    "epistemological_stance": "Computational-empirical with humanistic reflexivity. Culture can be meaningfully represented as data and analyzed computationally, but this requires constant critical reflection on what the computational frame includes and excludes. Manovich insists on seeing digital culture before theorizing it — data visualization as epistemological method."
+  },
+  "technical": {
+    "architecture_pattern": "Data science pipeline applied to cultural artifacts — collection, processing, visualization, and statistical analysis of large cultural datasets (images, films, texts, social media posts).",
+    "data_model": "Cultural artifacts represented as high-dimensional data — images as pixel arrays and feature vectors, texts as statistical distributions, temporal sequences as time series. Collections of millions of cultural artifacts analyzed simultaneously through dimensionality reduction and visualization.",
+    "temporal_logic": "Historical-comparative — cultural analytics tracks change over time by analyzing large collections across temporal spans (decades of magazine covers, years of Instagram posts). The temporal logic is one of quantitative comparison across periods rather than qualitative interpretation of moments.",
+    "absence_handling": "Cultural analytics can detect absence quantitatively — what is underrepresented in a collection, what visual patterns are missing from a period, what styles or subjects decline over time. However, the methodology is better at detecting statistical absence than interpreting structural absence (why something is missing).",
+    "scalability_model": "Centralized expertise — scales through computational power and dataset size but requires specialized knowledge (data science, programming, visualization design). Not easily distributed to non-technical practitioners."
+  },
+  "garden_logic_comparative": {
+    "layer_mapping": "sensing-loop — Cultural Analytics is the methodological ancestor of A(DAI)'s computational sensing of the cultural field. The key difference is that Cultural Analytics describes what is; A(DAI) aims to diagnose what is missing.",
+    "intention_vs_attention": "Cultural Analytics operates in a space between intention and attention. The methodology itself is intention-driven (researchers define what to analyze and how), but the cultural data it analyzes is often produced by attention-economy dynamics (what gets posted, shared, liked). Cultural Analytics is descriptive rather than diagnostic — it reveals patterns but does not evaluate them as gaps, coherence failures, or structural tensions. A(DAI) adds the intention layer by asking not just 'what patterns exist in the field?' but 'what patterns SHOULD exist but don't?' This diagnostic question is what distinguishes A(DAI) from its methodological ancestor.",
+    "coherence_vs_consensus": "Neither explicitly — Cultural Analytics reveals patterns without judging their coherence or seeking consensus about their meaning. The methodology produces evidence that can inform both coherence analysis and consensus-building but does not itself perform either function.",
+    "contestability": "Methodologically contestable — choices about what data to collect, how to represent it, what statistical methods to apply, and how to interpret results are all debatable. Manovich has been explicit about these limitations. However, the computational expertise required to meaningfully contest the analysis creates a barrier to contestation.",
+    "forkability": "The methodology is open and replicable. The specific tools and datasets vary in accessibility. The approach can be forked and applied to any cultural domain by anyone with the requisite technical skills.",
+    "tendency_axis_position": "Infrastructure (builds analytical tools and methods), empirical (data-driven rather than theory-driven), open (publications freely available) but expertise-enclosed (requires significant technical capacity). Positioned between individual (researcher-led) and institutional (museum collaborations).",
+    "what_adai_should_adopt": "The commitment to seeing culture computationally before theorizing it — A(DAI) should build its intelligence layer on empirical signal processing before generating theoretical claims. The multi-modal analysis approach: Cultural Analytics works with images, text, video, and time series simultaneously, which maps onto A(DAI)'s multimodal embedding architecture. The critical self-reflection: Manovich consistently asks what is lost when culture becomes data, and A(DAI) should maintain this reflexivity. The visualization methodology: Cultural Analytics' dimensionality reduction and visualization techniques could inform graph.html's approach to representing the field.",
+    "what_adai_should_refuse": "The descriptive neutrality — Cultural Analytics reveals patterns without evaluating them. A(DAI) must go further, diagnosing structural gaps and tendencies. Description without diagnosis is cultural analytics; diagnosis is cultural intelligence. Also refuse the centralized expertise model — A(DAI) should be accessible to practitioners, curators, and artists, not just data scientists. The computational frame should be transparent enough for non-technical contributors to contest.",
+    "structural_tension": "Cultural Analytics treats culture as data to be analyzed; A(DAI) treats culture as a living system to be sensed. The tension is between analysis (standing outside the system, measuring it) and sensing (being inside the system, participating in it). Cultural Analytics produces papers and visualizations; A(DAI) produces intelligence that feeds back into the field it senses. The recursive relationship between A(DAI) and its field (the sensing loop) creates complications that Cultural Analytics' more detached analytical stance avoids. A(DAI) must function as both Cultural Analytics (analyzing the field) and a participant in the field it analyzes."
+  },
+  "critical": {
+    "limits": "Requires significant computational infrastructure and expertise. The methodology is better at analyzing visual culture and digital artifacts than at capturing embodied, oral, or performative cultural practices. The quantitative approach can miss qualitative meanings that are obvious to cultural practitioners. Large-scale analysis tends to reveal dominant patterns while potentially missing marginal or emergent ones.",
+    "who_is_excluded": "Cultural practitioners without data science skills cannot produce or meaningfully contest cultural analytics. Cultures that do not produce digital artifacts (oral traditions, embodied practices, underground scenes) are structurally invisible to the methodology. The institutional collaborators (MoMA, Getty) skew the cultural scope toward established Western art institutions.",
+    "failure_under_attention": "[uncertain] If cultural analytics becomes a standard tool for cultural institutions, it could be used to optimize for attention metrics — analyzing what cultural content performs well and producing more of it. The descriptive methodology is neutral about whether patterns are good or bad, making it easily co-optable by attention-driven cultural production."
+  },
+  "governance": {
+    "governance_model": "Academic lab — governed by the research priorities of the lab director (Manovich) and institutional collaborators. No participatory governance of research agenda. Open publication of results but centralized decision-making about what to study.",
+    "consent_architecture": "Varies by project — museum collaborations involve institutional consent for collection analysis. Social media analysis raises consent questions about using public posts as research data. No systematic consent framework across the research program."
+  },
+  "materiality": {
+    "extraction_vector": "Cultural data — the methodology extracts quantitative representations from cultural artifacts, transforming them into computational objects. The extraction is analytical rather than economic, but it nonetheless converts cultural meaning into data points.",
+    "composability": "Methodology is highly composable — data science pipelines can be adapted to any cultural domain. Tools and techniques are reusable. The approach is modular: collection, processing, visualization, and analysis can be independently modified.",
+    "liveness": "Active — the Cultural Analytics Lab continues to produce research. Manovich is actively publishing and speaking. The field of cultural analytics has grown beyond the lab.",
+    "scale_of_operation": "Multi-scale — from individual artwork analysis to millions of Instagram posts. The methodology deliberately operates at scales that exceed human perceptual capacity.",
+    "temporality": "Historical-comparative — analyzes cultural change over time through quantitative comparison of large datasets across temporal periods. The temporal resolution depends on the data: daily (social media), yearly (magazine archives), decadal (art historical collections)."
+  },
+  "uncertain": [
+    "failure_under_attention",
+    "consent_architecture",
+    "who_is_excluded"
+  ]
+}

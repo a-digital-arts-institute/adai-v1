@@ -1,0 +1,51 @@
+{
+  "identity": {
+    "name": "Indigenous Data Sovereignty (CARE Principles)",
+    "type": "media-data",
+    "originator": "Global Indigenous Data Alliance (GIDA), International Indigenous Data Sovereignty Interest Group (within Research Data Alliance), Te Mana Raraunga, US Indigenous Data Sovereignty Network, Maiam nayri Wingara Collective",
+    "year": "2018 (drafted at RDA Plenary, Gaborone, Botswana), 2019 (published)",
+    "key_text": "The CARE Principles for Indigenous Data Governance (Carroll et al., Data Science Journal, 2020)",
+    "key_url": "https://www.gida-global.org/care"
+  },
+  "conceptual": {
+    "core_claim": "Data governance must center collective benefit, authority to control, responsibility, and ethics — particularly where colonial power asymmetries have historically stripped communities of sovereignty over their own knowledge, land, and identity data.",
+    "relation_to_attention_economy": "Radical refusal. CARE challenges the foundational assumption of the attention economy: that data about people and cultures is freely available for extraction and optimization. Indigenous data sovereignty asserts that some knowledge should not be made 'findable' or 'accessible' in the FAIR sense without community governance.",
+    "relation_to_commons": "Complexifies the commons concept fundamentally. CARE asks: whose commons? Commons governance that does not account for historical dispossession and ongoing power asymmetries reproduces extraction under a progressive label. The commons must be governed by those who are most affected by its use.",
+    "epistemological_stance": "[uncertain] Relational and situated. Knowledge is valid when it serves collective benefit and respects the authority of the community from which it originates. This is fundamentally different from computational or empirical epistemologies — validity is determined by relationship, not by measurement or frequency."
+  },
+  "technical": {
+    "architecture_pattern": "Governance framework (principles + protocols), not a technical system. CARE operates as a meta-protocol that constrains how technical systems should handle Indigenous data. Implementation varies by community — some use licenses (Traditional Knowledge labels), others use institutional policies.",
+    "data_model": "Not a data model per se, but constrains data models: data about Indigenous peoples must carry governance metadata including collective ownership, permitted uses, and community authority. The Local Contexts Hub provides machine-readable Traditional Knowledge (TK) and Biocultural (BC) labels.",
+    "temporal_logic": "Deep historical and intergenerational. CARE operates on timescales of colonial history and intergenerational knowledge transmission. Data governance decisions must account for past dispossession, present power dynamics, and future community benefit. This is fundamentally longer-horizon than any technical temporal logic.",
+    "absence_handling": "CARE makes absence visible by design. The absence of Indigenous voice in data governance is the central problem CARE addresses. The framework highlights what is structurally missing: community authority, collective benefit mechanisms, ethical oversight, and responsibility structures.",
+    "scalability_model": "Polycentric by design. Each Indigenous community develops its own governance protocols. CARE provides principles, not a universal implementation. Scales through adoption by institutions and communities, not through centralized infrastructure."
+  },
+  "garden_logic_comparative": {
+    "layer_mapping": "participation — CARE maps most directly to A(DAI)'s participation layer, where the question of who governs the merge boundary is paramount. CARE does not prescribe technical architecture but demands that participation structures center the communities most affected.",
+    "intention_vs_attention": "Intention, but a deeper form than A(DAI) currently articulates. CARE's intention is not just structural diagnosis (what gaps exist?) but relational accountability (who benefits? who decides?). This is intention grounded in historical responsibility, not just architectural analysis.",
+    "coherence_vs_consensus": "Neither in the Western sense. CARE operates through community protocols that may prioritize harmony, elder authority, or consensus processes specific to each Indigenous governance tradition. The relevant framework is self-determination, not coherence or consensus as A(DAI) defines them.",
+    "contestability": "High within community governance structures, but the right to contest is reserved for community members. External actors do not have the right to contest Indigenous data governance decisions. This challenges A(DAI)'s assumption that contestability should be universally available.",
+    "forkability": "Complicated. CARE asserts that some data should NOT be forkable without community consent. Fork rights as A(DAI) defines them could reproduce colonial extraction if applied to Indigenous knowledge without community governance. Forkability must be constrained by authority to control.",
+    "tendency_axis_position": "Radically commons-side, but a differentiated commons with clear governance boundaries. Anti-enclosure, but also anti-undifferentiated-openness. Infrastructure-side on spectacle-infrastructure. Distributed on individual-distributed (collective governance, not individual sovereignty).",
+    "what_adai_should_adopt": "The fundamental question: whose commons? A(DAI) must build governance mechanisms that prevent the merge boundary from reproducing existing power asymmetries in the digital arts field. Adopt CARE's insistence that data governance is inseparable from historical power analysis. Adopt the principle that some signals may require restricted circulation based on community authority.",
+    "what_adai_should_refuse": "Nothing should be refused from CARE itself — the question is what A(DAI) must refuse IN LIGHT OF CARE. Refuse the assumption that fork rights are sufficient for justice. Refuse the assumption that a commons is automatically equitable. Refuse the assumption that technical architecture can substitute for governance accountability.",
+    "structural_tension": "The deepest challenge to A(DAI). CARE reveals that A(DAI)'s commons model could reproduce extraction if the contributing community is not diverse and the governance is not genuinely polycentric. Fork rights are necessary but not sufficient if the forking population is homogeneous. A(DAI) must ask: does the digital arts field have its own dispossession dynamics (amateur vs. institutional, Global South vs. North, traditional vs. contemporary) that CARE-like governance should address?"
+  },
+  "critical": {
+    "limits": "Implementation varies widely — principles without technical enforcement can become performative. Institutional adoption may be superficial (adding a land acknowledgment without changing data practices). The framework does not provide technical tools, making implementation dependent on institutional will.",
+    "who_is_excluded": "[uncertain] Non-Indigenous communities facing similar data governance challenges (e.g., religious minorities, disability communities, migrant communities). CARE is specifically designed for Indigenous peoples, and its extension to other contexts requires careful adaptation to avoid diluting its decolonial specificity.",
+    "failure_under_attention": "[uncertain] If CARE becomes an attention-economy success (widely cited, frequently referenced), it risks becoming a legitimation device — institutions claim CARE compliance for visibility while maintaining extractive practices. The 2024 GIDA communiqué already warns against superficial uptake that does not center community protocols."
+  },
+  "governance": {
+    "governance_model": "Polycentric Indigenous governance. Each community maintains sovereignty over its own data governance protocols. GIDA provides coordination and principle-setting at the global level. The framework explicitly rejects universal top-down governance in favor of nested, community-led governance.",
+    "consent_architecture": "Collective consent governed by community protocols. Not individual opt-in/opt-out but community-level authority to control how data is collected, used, and shared. Consent is ongoing, relational, and governed by cultural protocols that may not be reducible to machine-readable formats."
+  },
+  "materiality": {
+    "extraction_vector": "Anti-extraction framework. CARE is designed specifically to prevent extraction of Indigenous knowledge, data, and cultural resources. The framework identifies and names extraction vectors: research without benefit-sharing, data collection without community authority, open access without ethical oversight.",
+    "composability": "Framework-level composability. CARE principles can be embedded in institutional policies, research ethics protocols, data management plans, and technical systems. The Local Contexts Hub provides composable labels. But CARE itself is not a modular technical component.",
+    "liveness": "Actively maintained and growing in institutional adoption. 2024 GIDA communiqué reaffirming original intent. Increasing integration with FAIR principles. Growing policy impact (UNESCO, AIATSIS). Five years of institutional uptake with ongoing refinement.",
+    "scale_of_operation": "Multi-scale. Principles operate at the global level (UN Declaration on the Rights of Indigenous Peoples). Implementation operates at community level (specific protocols for specific nations). Institutional adoption operates at organizational level. Genuinely polycentric.",
+    "temporality": "Intergenerational and historical. CARE operates on timescales of colonial history (centuries), knowledge transmission (generations), and community governance (ongoing). This temporal depth far exceeds any technical system's temporal logic."
+  },
+  "uncertain": ["epistemological_stance", "who_is_excluded", "failure_under_attention"]
+}

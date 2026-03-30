@@ -1,0 +1,56 @@
+{
+  "identity": {
+    "name": "NodeRAG (2025)",
+    "type": "neural-kg",
+    "originator": "Tianyang Xu, Haojie Zheng, Chengze Li, Haoxiang Chen, Yixin Liu, Ruoxi Chen, Lichao Sun. Columbia University, University of Pennsylvania, Lehigh University.",
+    "year": "2025 (arXiv:2504.11544, April 2025. First stable release v0.1.0, March 2025)",
+    "key_text": "NodeRAG: Structuring Graph-based RAG with Heterogeneous Nodes (Xu et al., 2025)",
+    "key_url": "https://arxiv.org/abs/2504.11544"
+  },
+  "conceptual": {
+    "core_claim": "A heterogeneous graph structure with multiple distinct node types enables richer, more precise retrieval-augmented generation by fully flattening information into a nodalized structure that integrates graph indexing, text indexing, and vector indexing simultaneously.",
+    "relation_to_attention_economy": "NodeRAG is an attention-allocation system — its entire design optimizes for surfacing the most relevant information in response to queries. The heterogeneous node types (document, entity, keyword, etc.) provide multiple entry points for attention, but the goal is still to answer questions (attention) rather than to diagnose structure (intention).",
+    "relation_to_commons": "Open source (GitHub). Academic research project. Available via PyPI. Serves private knowledge management. Not designed for commons governance or collective knowledge.",
+    "epistemological_stance": "Computational-structural. Knowledge is information that can be decomposed into heterogeneous node types and connected through typed relationships. Validity is measured by benchmark performance (MuSiQue, HotpotQA accuracy). The heterogeneous graph model implicitly recognizes that knowledge has multiple structural types — this is more epistemologically sophisticated than homogeneous graph approaches."
+  },
+  "technical": {
+    "architecture_pattern": "Heterogeneous graph (heterograph) with 7 node types. Two-stage pipeline: (1) Graph indexing: decomposition (chunking, entity/relationship extraction), augmentation (keyword, community detection, high-level summaries), enrichment (embeddings, metadata). (2) Graph searching: entry node identification via keyword/vector matching, shallow Personalized PageRank (PPR) for multi-hop retrieval, irrelevant node pruning.",
+    "data_model": "Heterograph with 7 node types: document nodes, entity nodes, relationship nodes, keyword nodes, community nodes, high-level summary nodes, and semantic unit nodes. Edges connect nodes across types. Triple indexing: graph index (structural traversal), text index (exact matching), vector index (embedding similarity). This achieves full nodalization — all information is represented as nodes, not just entities.",
+    "temporal_logic": "None native. The heterograph is a static index of a corpus. No temporal reasoning. However, the richer node structure means temporal metadata could be attached to individual node types (e.g., date nodes, event nodes) — the architecture is more extensible than simpler graph models.",
+    "absence_handling": "No explicit absence detection. However, the heterogeneous structure provides richer signals for gap identification than homogeneous graphs. If a community node has few entity nodes, or if keyword nodes are poorly connected to entity nodes, this reveals structural sparsity. The PPR-based retrieval naturally avoids sparse regions, which means gaps are not surfaced — they are navigated around.",
+    "scalability_model": "Centralized. Single-corpus deployment. More efficient than GraphRAG and LightRAG in indexing time, query time, and storage. The heterograph structure enables more targeted retrieval (fewer tokens retrieved for equivalent performance)."
+  },
+  "garden_logic_comparative": {
+    "layer_mapping": "substrate + sensing-loop — The heterograph architecture operates at the substrate level (defining how information is structured), while the PPR-based retrieval operates as a sensing mechanism (finding relevant patterns in the graph).",
+    "intention_vs_attention": "Attention, but with the richest structural foundation among RAG systems. NodeRAG's 7 node types provide a more nuanced view of information structure than GraphRAG's entity-relationship-community model or LightRAG's entity-relationship-theme model. A(DAI) has 17 node types — NodeRAG validates the design principle that heterogeneous typing enriches structural analysis. However, NodeRAG's heterogeneity serves retrieval precision (attention), not structural diagnosis (intention). The node types are chosen for retrieval utility, not for domain semantics. A(DAI)'s node types (practitioner, concept, scene, signal, etc.) are domain-semantic — they model the cultural field's actual structure.",
+    "coherence_vs_consensus": "Consensus-oriented. Like GraphRAG and LightRAG, NodeRAG produces single answers to queries. The heterograph could theoretically support multiple traversals revealing different perspectives, but the PPR-based retrieval converges to a single retrieval set. No mechanism for holding contested interpretations.",
+    "contestability": "Low. Same as other RAG systems — outputs are presented as authoritative retrievals. The heterograph's provenance (document nodes trace to source text) enables verification but not contestation. Users cannot challenge node typing or edge structure.",
+    "forkability": "Technically forkable (open source, PyPI). The heterograph is more complex than simpler graph models, making forks harder to maintain. No federation, no merge, no provenance across instances.",
+    "tendency_axis_position": "openness: open source, academic | commons: tool is open, serves private use | spectacle: infrastructure | individual: organizational scale",
+    "what_adai_should_adopt": "The heterogeneous graph architecture as validation for A(DAI)'s 17-node-type design. NodeRAG proves that richer node typing improves structural analysis (even if the analysis is retrieval-oriented). The full nodalization principle — representing relationships, keywords, and communities as first-class nodes rather than just edge properties — enables richer graph algorithms. The triple indexing pattern (graph + text + vector) for A(DAI)'s hybrid query needs. The PPR-based multi-hop retrieval for coherence prompts that trace connections across clusters.",
+    "what_adai_should_refuse": "The retrieval optimization as the primary design goal. A(DAI) should design its heterogeneous graph for structural diagnosis, not for answering questions. Also refuse: NodeRAG's generic node types (document, entity, keyword). A(DAI) needs domain-specific types (practitioner, concept, scene, tendency, signal). Also refuse: the pruning strategy that filters out 'irrelevant' nodes — in A(DAI), sparse or weakly-connected nodes may be the most important signals (frontier signals are by definition under-connected).",
+    "structural_tension": "The tension between retrieval-optimized and diagnosis-optimized heterogeneous graphs. NodeRAG's node types are chosen to improve retrieval precision. A(DAI)'s node types are chosen to model the cultural field. If A(DAI) adopts the heterograph pattern, it must resist the gravitational pull of retrieval optimization — the temptation to add node types that improve query answering rather than structural understanding. The 17-node-type design should be evaluated by whether it helps practitioners see the field, not by whether it helps answer questions about it."
+  },
+  "critical": {
+    "limits": "Relatively new (v0.1.0 March 2025, paper April 2025). Not yet battle-tested at scale. The 7 node types are generic — domain-specific applications may need different types. The heterograph complexity increases maintenance burden. Depends on LLM quality for entity extraction. PPR-based retrieval may miss globally important but locally disconnected information.",
+    "who_is_excluded": "[uncertain] Same as other RAG systems: entities not in the corpus are invisible. The keyword-based entry point may miss concepts that don't have standard keyword representations. Non-English content is less reliably processed. Communities detected by graph algorithms may not correspond to meaningful domain-level communities.",
+    "failure_under_attention": "[uncertain] If attention logic leaks in, NodeRAG's heterogeneous graph becomes a more sophisticated attention-allocation mechanism — surfacing well-connected, well-typed nodes at the expense of frontier signals. The PPR algorithm naturally favors high-degree nodes, amplifying the already-visible at the expense of the emerging."
+  },
+  "governance": {
+    "governance_model": "Academic open source. Small research team at Columbia/Penn/Lehigh. GitHub-based development. No governance of extracted knowledge.",
+    "consent_architecture": "[uncertain] No consent mechanism. Same as other RAG systems."
+  },
+  "materiality": {
+    "extraction_vector": "[uncertain] Extracts structure from corpora via LLM. More efficient extraction than GraphRAG (fewer tokens, faster processing). Academic publication extraction.",
+    "composability": "Moderately composable. Python package (pip). Triple indexing can potentially be used independently. However, the heterograph construction pipeline is tightly integrated. Library-level composability.",
+    "liveness": "Early-stage active development. v0.1.0 released March 2025. Paper April 2025. Growing GitHub community. Academic research pace.",
+    "scale_of_operation": "Research to organizational scale. Benchmarked on MuSiQue (46.29% accuracy) and HotpotQA (89.5%). Not yet proven at continuous field-level sensing.",
+    "temporality": "Snapshot-based. Static index of corpus. No incremental updates documented. No temporal reasoning."
+  },
+  "uncertain": [
+    "who_is_excluded",
+    "failure_under_attention",
+    "consent_architecture",
+    "extraction_vector"
+  ]
+}

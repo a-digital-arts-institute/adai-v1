@@ -1,0 +1,77 @@
+{
+  "name": "Prohibition",
+  "type": "market_platform",
+  "originator": "Founded by Chris Martz. Built on Art Blocks Engine on Arbitrum (Ethereum L2). Selective artist onboarding by curatorial team.",
+  "year": 2024,
+  "key_url": "https://prohibition.art",
+  "geography": "USA-based. Global artist and collector participation. Operates on Arbitrum (L2) to reduce transaction costs for global accessibility.",
+
+  "core_claim": "Curated generative art deserves a dedicated platform that prioritizes artistic quality over volume. By being selective about artist onboarding, Prohibition aims to maintain a high signal-to-noise ratio in a post-crash market where quality curation is the primary differentiator.",
+  "medium_specificity": "Digitally native generative art platform built on Art Blocks Engine. Art is generated on-chain via code scripts at the moment of minting, using the same hash-based generative mechanism as Art Blocks but deployed on Arbitrum L2 for lower gas costs. The medium-specificity is inherited from the Art Blocks Engine infrastructure.",
+  "relation_to_attention_economy": "Prohibition explicitly positions itself against attention-economy dynamics by curating a smaller, higher-quality catalog. Rather than competing on volume or viral drops, it uses selective onboarding to build a reputation-based discovery model. The lower price points on Arbitrum reduce speculative FOMO dynamics. However, discovery still depends significantly on generative art Twitter/X community and social media visibility.",
+  "relation_to_intention": "Intention-leaning. The selective curation model serves the declared structural need for quality filtering in a market flooded with low-effort generative projects. The choice to build on Arbitrum (lower costs) rather than Ethereum mainnet signals intention to serve artists and collectors rather than maximize per-transaction revenue. However, the platform still operates within market logic -- it needs sales to sustain itself.",
+
+  "revenue_model": "Primary sale commission on minting (percentage of mint price). Art Blocks Engine licensing fees paid to Art Blocks. Secondary royalties via EIP-2981 where honored. Lower price points than Art Blocks mainnet due to Arbitrum's reduced gas costs.",
+  "market_position": "Primary market platform. Positioned as a curated mid-tier generative art platform -- below Art Blocks Curated in prestige but above open/permissionless platforms in quality filtering. Niche positioning within the generative art ecosystem.",
+  "price_range": "Typically 0.005-0.1 ETH per mint. Significantly lower than Art Blocks mainnet curated drops. Accessible price points designed for post-crash market conditions. Secondary market prices generally modest. [uncertain]",
+  "volume_trend_2024_2026": "Growing from a small base. Launched into a difficult market but benefits from being purpose-built for post-crash conditions. Volume is modest compared to 2021-era platforms but shows steady growth as generative art collectors seek quality-curated alternatives. The Arbitrum ecosystem growth provides tailwinds. [uncertain]",
+  "collector_demographics": "Primarily crypto-native generative art collectors who are already familiar with Art Blocks and the broader on-chain generative art ecosystem. Skews toward knowledgeable collectors who value curation over speculation. Lower price points attract newer collectors who find Art Blocks mainnet prices prohibitive. [uncertain]",
+  "sustainability": "Moderate sustainability case. Lower operational costs on Arbitrum help. The Art Blocks Engine licensing model means Prohibition doesn't need to build core infrastructure from scratch. However, as a smaller curated platform, it depends on maintaining a steady flow of quality artists and collectors. Non-speculative sustainability requires building a loyal collector community that values the curatorial voice. Risk: the generative art market is small, and multiple curated platforms compete for a limited collector base.",
+
+  "toolchain": "Built on Art Blocks Engine deployed on Arbitrum (Ethereum L2). Artists use JavaScript-based creative coding frameworks (p5.js, three.js, custom JS). Art scripts stored on-chain. Standard Ethereum-compatible wallet infrastructure (MetaMask, etc.) with Arbitrum bridge.",
+  "relation_to_AI": "Not a primary focus. Like Art Blocks, Prohibition is rooted in the code-based generative art tradition where artists write algorithms rather than use AI prompts. AI-assisted coding may be used by some artists but is not the platform's identity. The curation model could theoretically filter for or against AI-generated work, but no explicit policy has been prominent. [uncertain]",
+  "liveness": "Generative at point of mint (one-time generation from transaction hash), then static artifact. Same model as Art Blocks -- the generative moment is the creative event, producing a permanent output.",
+  "aesthetic_vocabulary": "Inherits the generative art vocabulary established by Art Blocks and the broader creative coding community: long-form generative, hash-based, output space, feature distribution, algorithmic composition. Prohibition adds a curatorial editorial voice but has not yet established distinctive critical vocabulary of its own.",
+  "tendency_axis_position": "Openness <-> Enclosure: Enclosed (selective curation, invitation-based onboarding). | Commons <-> Capture: Leans capture (platform-mediated scarcity and curation). | Spectacle <-> Infrastructure: Infrastructure-leaning (builds on shared Art Blocks Engine, serves ecosystem needs for quality curation). | Individual <-> Collective: Individual artist expression within curated platform framework.",
+
+  "openness": "Proprietary platform with selective artist onboarding. Built on Art Blocks Engine (licensed, not open source). Art scripts stored on-chain (publicly readable). The curation process is enclosed -- artists must be invited or approved.",
+  "governance_model": "Founding-team led with curatorial selection process. Chris Martz and team make curatorial and platform decisions. No DAO governance or token-based decision-making. Community feedback through social channels but no formal governance mechanism.",
+  "data_sovereignty": "Similar to Art Blocks: art scripts on-chain (permanent, public) but deployed through platform contracts. Artists likely do not own their deployment contracts independently. Collectors have full on-chain token ownership. Arbitrum's relationship to Ethereum mainnet adds a layer of dependency. [uncertain]",
+  "interoperability": "Moderate. ERC-721 compatible on Arbitrum. Works with Ethereum ecosystem wallets and marketplaces that support Arbitrum. Art Blocks Engine compatibility means some standardization. However, Arbitrum-specific deployment may limit visibility on Ethereum-mainnet-focused platforms.",
+  "preservation_strategy": "Art scripts stored on Arbitrum (Ethereum L2). Arbitrum inherits Ethereum's security guarantees through rollup architecture. Scripts are permanent on-chain. However, L2 preservation is slightly less proven than Ethereum mainnet -- depends on Arbitrum's continued operation and settlement to Ethereum. IPFS for metadata where applicable.",
+  "consent_architecture": "Binary include/exclude for artists (curatorial selection). Standard marketplace consent for collectors (purchase = consent to terms). No granular consent mechanisms. No machine-readable consent protocols.",
+
+  "relation_to_traditional_art_world": "Minimal direct relationship. Operates primarily within the crypto-native generative art ecosystem. Does not have significant gallery or museum partnerships. Traditional art world recognition comes indirectly through the broader generative art movement's increasing institutional acceptance.",
+  "what_it_enables": "Provides a quality-curated venue for generative artists who may not make it into Art Blocks' closed AB500 program. Offers lower-cost entry to on-chain generative art for both artists and collectors via Arbitrum. Demonstrates that the Art Blocks Engine model can support a healthy ecosystem of curated satellite platforms.",
+  "what_it_lacks": "Limited brand recognition compared to Art Blocks. No physical presence or gallery. No formal artist governance or community decision-making. No tools for art criticism or contextual metadata. Limited secondary market infrastructure. No mechanism for representing what is absent from its curatorial selections. Dependent on Art Blocks Engine -- if Art Blocks Engine changes terms, Prohibition has limited recourse.",
+  "who_is_excluded": "Artists who do not pass curatorial selection. Artists without JavaScript coding skills. People unfamiliar with crypto wallets and Arbitrum bridging (though lower gas costs reduce economic barriers). Non-generative-art practitioners (painters, video artists, etc.) are structurally excluded by the platform's code-based orientation. Communities without reliable internet or crypto infrastructure.",
+  "frontier_signal": "Emerging. Represents a post-crash model for curated generative art platforms -- smaller, quality-focused, built on shared infrastructure (Art Blocks Engine) rather than building from scratch. Tests whether the 'boutique curated platform' model is viable in a contracted market.",
+
+  "discovery_mechanism": "Curation (primary), generative art Twitter/X community, word of mouth, Art Blocks ecosystem cross-pollination, Arbitrum ecosystem discovery.",
+  "attention_dependency": "Moderate to high. As a smaller platform, Prohibition depends heavily on social media visibility (particularly Twitter/X generative art community) for discovery. Would struggle significantly if social media channels disappeared. No institutional or museum partnerships provide alternative discovery paths. [uncertain]",
+  "intention_alignment": "Intention-leaning. The quality-first curation model and accessible pricing serve declared needs of the generative art field. However, the platform still operates within market logic and depends on collector demand.",
+  "commons_contribution": "Limited. On-chain scripts are a permanent public record (commons-positive). However, curatorial knowledge, market data, and platform decisions are not shared. Does not contribute open data, shared vocabulary, or public infrastructure beyond what Art Blocks Engine already provides.",
+
+  "provenance_type": "Ownership provenance only. On-chain record of minting and transfers. Hash-based generation provides unique creation provenance. No mechanism for tracking meaning, exhibition history, or critical reception.",
+  "temporal_logic": "Archival with generative moment. Each artwork has a definitive creation event (mint), then persists as permanent artifact. Platform itself is ongoing -- new drops continue, unlike Art Blocks' AB500 cap.",
+  "absence_handling": "Does not address absence. Curatorial selection creates implicit absences but does not acknowledge or represent them.",
+
+  "coherence_vs_consensus": "Seeks coherence through curation -- a consistent quality bar across diverse generative approaches. Does not seek consensus. The curatorial voice provides coherence without requiring agreement on what generative art should be.",
+  "contestability": "Limited. Curatorial decisions are not formally contestable. No appeals process. Community can voice opinions through social channels but has no formal mechanism to challenge decisions.",
+  "forkability": "Partially forkable. Art scripts are on-chain (readable). However, the curatorial reputation, artist relationships, and collector community are not forkable. Another party could deploy an Art Blocks Engine instance and create a competing curated platform, but rebuilding the curatorial authority is the real barrier.",
+
+  "layer_mapping": "substrate",
+  "what_adai_should_adopt": "Prohibition's post-crash quality-first positioning is a useful model: building for a smaller, more intentional market rather than chasing growth. The Art Blocks Engine dependency model shows how shared infrastructure reduces barriers to entry for new platforms -- A(DAI) should study this for its own infrastructure design. The accessible pricing on L2 demonstrates how to reduce economic barriers without sacrificing on-chain guarantees.",
+  "what_adai_should_refuse": "The opaque curatorial selection process with no contestability mechanism. The platform dependency on Art Blocks Engine (single infrastructure provider). The lack of any commons contribution beyond on-chain scripts. The absence of formal governance for artists or collectors. The binary include/exclude artist model.",
+  "structural_tension": "Prohibition demonstrates that quality curation can work at smaller scale in a post-crash market -- but through a traditional gatekeeper model (selective onboarding) rather than distributed or tendency-based approaches. A(DAI) faces a similar tension: how to signal quality without creating exclusive gates. Prohibition's answer (a small curatorial team decides) is the opposite of A(DAI)'s distributed intelligence ambition, yet it produces the quality coherence that A(DAI) also seeks.",
+
+  "regulatory_exposure": "Low to moderate. Operates on Arbitrum (Ethereum L2), subject to evolving NFT and crypto regulation. No governance token reduces securities risk. EU AI Act minimally relevant (code-based generative art, not AI-generated). Standard NFT copyright and IP considerations apply. Arbitrum's regulatory status as an L2 is still evolving. [uncertain]",
+  "ip_model": "Artists likely retain copyright with platform license for display and promotion. On-chain scripts are publicly readable but copyrighted. Standard NFT IP model: collectors own token, not underlying copyright. EIP-2981 for royalty specification. [uncertain]",
+  "opt_in_vs_opt_out": "Opt-in for artists (must apply/be invited). Opt-in for collectors (active purchase). No opt-out mechanisms for third-party display. Standard Web3 terms-of-service consent.",
+
+  "platform_dependency": "High dependency on Art Blocks Engine (infrastructure provider). Depends on Arbitrum L2 (which depends on Ethereum mainnet for security). Depends on web browsers for rendering. Depends on third-party marketplaces for secondary trading. Multiple dependency layers create compound risk.",
+  "network_effects": "Limited. Benefits from Art Blocks ecosystem network effects (shared collector base familiar with Engine platforms). Contributes to Arbitrum ecosystem growth. However, as a smaller platform, its own network effects are modest. Acts as a bridge between Art Blocks ecosystem and Arbitrum ecosystem.",
+  "post_crash_trajectory": "Growing from launch into post-crash market. Purpose-built for contracted market conditions (lower prices, curated quality, L2 costs). Trajectory is cautiously positive but from a small base. Success depends on whether the curated boutique model can sustain through prolonged market downturn. [uncertain]",
+
+  "uncertain": [
+    "price_range",
+    "volume_trend_2024_2026",
+    "collector_demographics",
+    "relation_to_AI",
+    "data_sovereignty",
+    "attention_dependency",
+    "regulatory_exposure",
+    "ip_model",
+    "post_crash_trajectory"
+  ]
+}

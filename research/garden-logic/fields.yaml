@@ -1,0 +1,141 @@
+topic: "Garden Logic Comparative Analysis"
+
+field_categories:
+
+  identity:
+    description: "Basic identification and classification"
+    fields:
+      name:
+        description: "Project, concept, framework, or thinker name"
+        detail_level: brief
+      type:
+        description: "Category: ontology | neural-kg | media-data | intention-economy | attention-critique | provocation | sensing"
+        detail_level: brief
+      originator:
+        description: "Key author(s), institution, or development team"
+        detail_level: brief
+      year:
+        description: "Year of origin, publication, or initial release"
+        detail_level: brief
+      key_text:
+        description: "Primary source text, paper, or project"
+        detail_level: brief
+      key_url:
+        description: "Primary URL reference"
+        detail_level: brief
+
+  conceptual:
+    description: "Core ideas and theoretical positioning"
+    fields:
+      core_claim:
+        description: "Central thesis or design principle in one sentence"
+        detail_level: moderate
+      relation_to_attention_economy:
+        description: "How it critiques, extends, participates in, or refuses attention logic"
+        detail_level: moderate
+      relation_to_commons:
+        description: "How it frames shared resources, collective governance, or common ownership"
+        detail_level: moderate
+      epistemological_stance:
+        description: "What counts as knowledge? How is validity determined? Empirical / structural / hermeneutic / computational"
+        detail_level: moderate
+
+  technical:
+    description: "Architecture, data models, and implementation patterns"
+    fields:
+      architecture_pattern:
+        description: "Key structural pattern: graph, protocol, embedding, ritual, CRDT, pipeline, etc."
+        detail_level: moderate
+      data_model:
+        description: "How information is structured: triples, embeddings, documents, signals, typed edges"
+        detail_level: moderate
+      temporal_logic:
+        description: "How the system handles time: real-time / cyclical / archival / anticipatory / tidal"
+        detail_level: moderate
+      absence_handling:
+        description: "How the system detects, represents, or responds to what's missing or unknown"
+        detail_level: moderate
+      scalability_model:
+        description: "How the system scales: centralized / federated / distributed / forkable"
+        detail_level: brief
+
+  garden_logic_comparative:
+    description: "Direct comparison against A(DAI)'s Garden Logic architecture"
+    fields:
+      layer_mapping:
+        description: "Which Garden Logic layer this maps to: substrate / sensing-loop / prompt-generation / participation / none"
+        detail_level: moderate
+      intention_vs_attention:
+        description: "Does this optimize for intention (structural diagnosis, gap detection, accountability) or attention (novelty, engagement, ranking)? Or something else?"
+        detail_level: detailed
+      coherence_vs_consensus:
+        description: "Does this system seek coherence (structural consistency, multiple readings) or consensus (single truth, resolved disagreements)?"
+        detail_level: detailed
+      contestability:
+        description: "Are the system's outputs contestable? Can diagnoses be challenged? Are counter-signals first-class?"
+        detail_level: moderate
+      forkability:
+        description: "Can the system be forked? Can sovereign instances diverge and re-merge? Is provenance preserved across forks?"
+        detail_level: moderate
+      tendency_axis_position:
+        description: "Position on A(DAI)'s tendency spectra: openness↔enclosure, commons↔capture, spectacle↔infrastructure, individual↔distributed"
+        detail_level: detailed
+      what_adai_should_adopt:
+        description: "Specific mechanisms, patterns, or insights A(DAI) should integrate from this item"
+        detail_level: detailed
+      what_adai_should_refuse:
+        description: "What A(DAI) should explicitly not adopt from this item, and why"
+        detail_level: detailed
+      structural_tension:
+        description: "Where this item conflicts with or challenges A(DAI)'s assumptions — productive tensions, not just criticisms"
+        detail_level: detailed
+
+  critical:
+    description: "Limitations, blind spots, and failure modes"
+    fields:
+      limits:
+        description: "Known weaknesses, blind spots, failure modes, or scaling problems"
+        detail_level: moderate
+      who_is_excluded:
+        description: "Who or what does this system structurally exclude, ignore, or underweight?"
+        detail_level: moderate
+      failure_under_attention:
+        description: "If the attention economy leaks in, how does this system fail? What would co-optation look like?"
+        detail_level: moderate
+
+  governance:
+    description: "Governance models and consent architectures"
+    fields:
+      governance_model:
+        description: "What governance structure: centralized platform, polycentric commons, cooperative, sovereign individual, extractive corporate, open protocol"
+        detail_level: moderate
+      consent_architecture:
+        description: "How consent is handled: opt-in, opt-out, no mechanism, machine-readable terms, collective consent, consent-by-design"
+        detail_level: moderate
+
+  materiality:
+    description: "Material and operational conditions"
+    fields:
+      extraction_vector:
+        description: "What the item extracts and from whom: attention, labor, data, minerals, creative output, behavioral intent, or nothing (generative/mutualistic)"
+        detail_level: moderate
+      composability:
+        description: "Can the item be forked, extended, embedded, recombined? Modular / monolithic / API-first / protocol-level / library-level"
+        detail_level: brief
+      liveness:
+        description: "Is the item actively maintained, historically significant but static, abandoned, or speculative/theoretical?"
+        detail_level: brief
+      scale_of_operation:
+        description: "At what scale: individual, small group/scene, institutional, field-level, planetary, multi-scale"
+        detail_level: brief
+      temporality:
+        description: "Temporal logic: historical depth, cyclical recurrence, emergence, decay, bi-temporal tracking, anticipatory, tidal"
+        detail_level: moderate
+
+uncertain:
+  - epistemological_stance
+  - failure_under_attention
+  - who_is_excluded
+  - structural_tension
+  - extraction_vector
+  - consent_architecture

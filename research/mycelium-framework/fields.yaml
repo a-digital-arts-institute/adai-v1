@@ -1,0 +1,216 @@
+topic: "Mycelium as concept framework for A(DAI)"
+
+categories:
+  core_identity:
+    description: "What the item is and where it comes from"
+    fields:
+      - name: name
+        description: "Item name"
+        detail_level: brief
+      - name: type
+        description: "Category: biological_research | philosophical_framework | design_pattern | governance_model | art_practice | adai_synthesis"
+        detail_level: brief
+      - name: source_domain
+        description: "Originating discipline: mycology | philosophy | systems_theory | governance | art | technology | indigenous_knowledge"
+        detail_level: brief
+
+  biological_mechanism:
+    description: "The actual biology — what happens, at what scale, under what conditions"
+    fields:
+      - name: organism
+        description: "Specific organism(s) involved, if applicable"
+        detail_level: brief
+      - name: process
+        description: "The biological process or mechanism"
+        detail_level: moderate
+      - name: scale
+        description: "Spatial scale: cellular | hyphal | network | ecosystem | planetary"
+        detail_level: brief
+      - name: conditions
+        description: "Under what conditions this process operates or changes behaviour"
+        detail_level: moderate
+
+  metaphorical_mapping:
+    description: "How the biological maps to A(DAI) — what translates, what breaks"
+    fields:
+      - name: target_domain
+        description: "What A(DAI) concept or system this maps to"
+        detail_level: brief
+      - name: mapping_logic
+        description: "How the source mechanism translates to the target domain"
+        detail_level: detailed
+      - name: limits_of_analogy
+        description: "Where the metaphor breaks down or misleads — critical for epistemic integrity"
+        detail_level: detailed
+
+  element_alignment:
+    description: "How each item maps to the three elements"
+    fields:
+      - name: emergence_relevance
+        description: "How it relates to emergence — non-linear development, branching into multiple futures, unpredictable exploration"
+        detail_level: moderate
+      - name: embodiment_relevance
+        description: "How it relates to embodiment — distributed sensing, real-time response, intelligence without central control"
+        detail_level: moderate
+      - name: decomposition_relevance
+        description: "How it relates to decomposition — objective breakdown, creating conditions for growth, shifting from growth to resilience/sufficiency"
+        detail_level: moderate
+
+  gravitational_extension:
+    description: "Relationship to A(DAI)'s existing gravitational model"
+    fields:
+      - name: complements_gravity
+        description: "How it extends or enriches the gravitational model without replacing it"
+        detail_level: moderate
+      - name: corrects_gravity
+        description: "What blind spots or failure modes of gravity it addresses — especially frontier signal burial and preferential attachment"
+        detail_level: detailed
+      - name: replaces_gravity
+        description: "Whether and how it suggests an alternative to gravitational accumulation"
+        detail_level: moderate
+
+  adai_application:
+    description: "Concrete implications for A(DAI) architecture, governance, rooms, and agents"
+    fields:
+      - name: graph_implication
+        description: "How this changes or extends the graph model — new edge types, weighting, node behaviour"
+        detail_level: detailed
+      - name: merge_boundary_implication
+        description: "How this affects the merge boundary — auto-merge rules, frontier handling, trust model"
+        detail_level: detailed
+      - name: room_implication
+        description: "How this maps to or changes the Five Rooms — especially Sense, Query, Experiment"
+        detail_level: moderate
+      - name: agent_implication
+        description: "How this informs agent design — scout behaviour, practitioner agents, trust progression"
+        detail_level: moderate
+
+  temporality_profile:
+    description: "How the item handles or challenges linear time — fungi operate on radically different timescales"
+    fields:
+      - name: temporal_scale
+        description: "Timescale of operation: seconds | hours | days | weeks | seasons | years | decades | centuries"
+        detail_level: brief
+      - name: temporal_mode
+        description: "How time is experienced: cyclical | pulsating | dormant | eruptive | persistent | anticipatory"
+        detail_level: moderate
+      - name: linearity_challenge
+        description: "How it disrupts linear progression — relevant to how A(DAI) handles signal aging and frontier lifecycles"
+        detail_level: detailed
+      - name: patience_pattern
+        description: "Relationship between underground persistence and surface emergence — the 'mycelium runs for years, mushroom appears overnight' pattern"
+        detail_level: moderate
+
+  failure_and_abandonment:
+    description: "How the item handles retreat, pruning, or strategic abandonment — the missing vocabulary in growth-oriented systems"
+    fields:
+      - name: retreat_mechanism
+        description: "How resources are withdrawn from unproductive paths"
+        detail_level: moderate
+      - name: repair_vs_abandon
+        description: "Whether the system repairs damage or regrows from elsewhere — different ecological strategies"
+        detail_level: moderate
+      - name: resource_recovery
+        description: "Whether abandoned material is recycled back into the network"
+        detail_level: brief
+      - name: graceful_degradation
+        description: "How the system behaves under partial failure — relevant to commons resilience"
+        detail_level: moderate
+
+  epistemic_integrity:
+    description: "How confident the metaphorical mapping is given current scientific evidence"
+    fields:
+      - name: evidence_status
+        description: "established | contested | speculative | debunked — per Karst et al. critique, many CMN claims are misrepresented"
+        detail_level: brief
+      - name: key_critiques
+        description: "Who challenges the claim and on what grounds"
+        detail_level: moderate
+      - name: metaphor_vs_mechanism
+        description: "Whether the mapping is poetic/generative or empirically grounded — both valid, but must be distinguished"
+        detail_level: moderate
+      - name: last_verified
+        description: "Date of last evidence check"
+        detail_level: brief
+
+  cross_kingdom_translation:
+    description: "How the item facilitates exchange across fundamentally different domains — mycelium connects different biological kingdoms"
+    fields:
+      - name: kingdoms_bridged
+        description: "Which distinct systems, disciplines, or knowledge traditions are connected"
+        detail_level: moderate
+      - name: translation_mechanism
+        description: "How meaning survives crossing between fundamentally different domains: chemical | electrical | RNA | economic | cultural"
+        detail_level: moderate
+      - name: signal_fidelity
+        description: "How well meaning survives translation — relevant to A(DAI)'s cross-scene edges"
+        detail_level: moderate
+      - name: asymmetry_handling
+        description: "How power and resource imbalances are managed in cross-domain exchange"
+        detail_level: moderate
+
+  governance_mode:
+    description: "How the item relates to collective decision-making without central authority"
+    fields:
+      - name: decision_mechanism
+        description: "How decisions emerge: consensus | stigmergic | gradient-following | market-based | threshold-triggered"
+        detail_level: moderate
+      - name: allocation_logic
+        description: "How resources flow to where they are needed — especially toward scarcity vs. toward density"
+        detail_level: detailed
+      - name: scale_behaviour
+        description: "How governance changes from local to global scale"
+        detail_level: moderate
+      - name: existing_framework_reference
+        description: "Relation to Ostrom principles, Holacracy, Sociocracy, or other governance frameworks"
+        detail_level: brief
+
+  queer_nonbinary_dimension:
+    description: "How the item challenges binary classifications, fixed categories, or stable identities"
+    fields:
+      - name: binaries_challenged
+        description: "Which either/or categories are disrupted"
+        detail_level: moderate
+      - name: fluidity_type
+        description: "Nature of the fluidity: morphological | taxonomic | temporal | relational | identity"
+        detail_level: brief
+      - name: classification_resistance
+        description: "How the item resists being pinned to a single category — relevant to frontier signals"
+        detail_level: moderate
+      - name: productive_confusion
+        description: "What new understanding emerges from the categorical disruption"
+        detail_level: moderate
+
+  key_sources:
+    description: "Primary source material"
+    fields:
+      - name: author
+        description: "Primary author(s)"
+        detail_level: brief
+      - name: work
+        description: "Title of key work"
+        detail_level: brief
+      - name: year
+        description: "Publication year"
+        detail_level: brief
+      - name: key_claim
+        description: "Central argument or finding in one sentence"
+        detail_level: moderate
+      - name: url
+        description: "Link to source"
+        detail_level: brief
+
+  design_tension:
+    description: "What tension the item surfaces and whether it proposes resolution"
+    fields:
+      - name: tension_identified
+        description: "The productive tension this item reveals"
+        detail_level: detailed
+      - name: resolution_proposed
+        description: "Whether and how resolution is suggested — or whether the tension is declared generative"
+        detail_level: moderate
+
+uncertain:
+  - epistemic_integrity.evidence_status  # many claims need verification against latest research
+  - cross_kingdom_translation.signal_fidelity  # hard to assess without empirical testing
+  - temporality_profile.patience_pattern  # often speculative when applied to knowledge systems

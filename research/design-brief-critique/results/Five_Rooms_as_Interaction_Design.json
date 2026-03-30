@@ -1,0 +1,279 @@
+{
+  "claim_summary": "The 'Five Rooms' (Sense, Query, Speculate, React, Experiment) represent five interaction modes — described as 'temperatures' — for engaging with the same underlying knowledge graph. Each room offers a distinct epistemic posture, from passive ambient sensing to active generative experimentation. The claim is that this multi-modal framework constitutes a viable interaction design for a knowledge commons.",
+
+  "claim_strength": "Moderate — The conceptual framework is sophisticated and draws on real precedents in exhibition design and speculative interaction. However, the mapping from poetic concept to implementable interface remains largely unspecified, and the 'temperature' metaphor, while evocative, has limited direct precedent as a UX organizing principle for knowledge systems.",
+
+  "supporting_evidence": [
+    {
+      "point": "Exhibition interaction design validates multi-modal engagement with shared content",
+      "detail": "teamLab's immersive installations (Borderless, Planets) demonstrate that the same underlying generative system can be experienced through radically different interaction modes — passive immersion, body-responsive interaction, collaborative participation — within a single exhibition. The 'rooms' metaphor maps directly to how immersive exhibition design already works: distinct spatial zones with different interaction contracts. teamLab's Tokyo Borderless museum (2018-2023, reopened 2024) processed 2.3 million visitors in its first year, proving that multi-modal experience design scales."
+    },
+    {
+      "point": "Olafur Eliasson's work establishes 'temperature' as a legitimate perceptual variable in experience design",
+      "detail": "Eliasson's installations explicitly manipulate ambient conditions — temperature, humidity, light color, fog density — as interaction variables. 'The Weather Project' (Tate Modern, 2003) and 'Ice Watch' (2014, 2018) use literal temperature as a meaning-making device. 'Your Rainbow Panorama' (ARoS, 2011) uses color temperature as a perceptual filter on the same view. This validates the brief's intuition that 'temperature' can function as an experiential metaphor, though Eliasson works with physical sensation, not data interfaces."
+    },
+    {
+      "point": "MIT Media Lab's tangible interfaces research supports multi-modal knowledge interaction",
+      "detail": "Hiroshi Ishii's Tangible Media Group at MIT has spent decades developing interfaces where the same data can be engaged through different physical modalities — the inFORM shape display (2013), musicBottles (2000), and Tangible Bits framework all argue that knowledge interaction benefits from multiple embodied entry points. The Tangible Bits vision paper (CHI 1997) explicitly argues that different interaction modes reveal different aspects of the same underlying information. This is precisely what the Five Rooms propose, applied to a knowledge graph."
+    },
+    {
+      "point": "The 'epistemic posture' framework has academic grounding",
+      "detail": "The five rooms map loosely to established epistemological frameworks: Sense aligns with phenomenological encounter, Query with analytical inquiry, Speculate with abductive reasoning, React with hermeneutic interpretation, Experiment with constructivist knowledge-making. This is not arbitrary — the rooms represent genuinely different ways of knowing, each of which produces different kinds of insight from the same data. Design research on 'research through design' (Frayling, 1993; Gaver, 2012) supports the idea that different epistemic postures yield different knowledge."
+    },
+    {
+      "point": "Speculative design practice validates rooms 3-5 as interaction paradigms",
+      "detail": "Dunne & Raby's speculative design framework (Speculative Everything, 2013) and the work of Superflux, Near Future Laboratory, and the Extrapolation Factory demonstrate that speculative and reactive engagement with information systems is a viable design practice. The Design Fiction methodology — creating artifacts from alternative presents/futures — maps directly to the Speculate room. These practices have been implemented as interactive exhibitions (e.g., Superflux's 'Mitigation of Shock' at the V&A, 2017) proving they can move from theory to experience."
+    }
+  ],
+
+  "counter_evidence": [
+    {
+      "point": "No comparable knowledge system has successfully implemented multi-modal interaction at this conceptual level",
+      "detail": "While exhibition design offers precedent for multi-modal physical experience, no knowledge commons or graph-based system has implemented the kind of interaction diversity the Five Rooms describe. Wikipedia has one mode (read/edit). Wikidata has one mode (query). Are.na has one mode (collect/connect). Even the most sophisticated data visualization platforms (Observable, Flourish, Tableau) offer variation in visualization type but not in epistemic posture. The Five Rooms demand building five fundamentally different interfaces to the same data — this is unprecedented for a small team and represents a massive design and engineering scope."
+    },
+    {
+      "point": "The rooms conflate spatial metaphor with interface design in ways that may not translate",
+      "detail": "Exhibition interaction design works because visitors physically move through space, and spatial transition naturally resets expectations and interaction contracts. A web-based or screen-based knowledge commons lacks this spatial scaffolding. The metaphor of 'rooms' must be translated into interface conventions (tabs? separate URLs? different visual treatments?) that carry far less perceptual weight than physical space. The risk is that the rooms collapse into what users experience as 'different pages of the same website' rather than genuinely different modes of engagement."
+    },
+    {
+      "point": "'Temperature' as UX metaphor has no established convention users can rely on",
+      "detail": "While temperature is evocative, it lacks the shared conventional meaning needed for intuitive interaction design. 'Hot' and 'cold' have contradictory associations in UX contexts — 'hot' could mean active/engaging or chaotic/unreliable; 'cold' could mean calm/trustworthy or dead/boring. Color temperature in photography/cinema (warm = orange, cool = blue) is the closest established convention, but it maps to emotional tone, not epistemic posture. Users would need to learn a novel metaphorical system, which adds cognitive overhead. Compare this to established information architecture metaphors (dashboard, feed, timeline, map) that users already understand."
+    },
+    {
+      "point": "Participatory knowledge systems consistently show that most users want one or two modes, not five",
+      "detail": "Usage data from participatory platforms shows extreme concentration in interaction patterns. Wikipedia's 90-9-1 rule (90% read, 9% minor edits, 1% active contributors) suggests most users settle into a single interaction mode. Stack Overflow data shows similar patterns — most users search and read, a minority answers, very few engage in meta-governance. Building five equally developed interaction modes means investing heavily in rooms that may see minimal use. A more pragmatic approach would be to build one or two rooms well and expand based on demonstrated demand."
+    },
+    {
+      "point": "The Experiment room (generative canvas in sparse embedding regions) is technically speculative",
+      "detail": "Room 5 — making sparse embedding regions 'habitable' as a generative canvas — is the most technically ambitious and least specified. It presupposes: (1) a working embedding space for the graph, (2) meaningful identification of sparse regions, (3) a generative interface that lets users create within those regions, and (4) that output from this generative process feeds back into the knowledge graph. Each of these is a significant research problem. No existing system offers a comparable interaction pattern. This room risks being permanently vaporware or a gimmick that undermines the credibility of the other four rooms."
+    }
+  ],
+
+  "blind_spots": [
+    {
+      "point": "No accessibility analysis for the rooms framework",
+      "detail": "The Five Rooms framework is described entirely in terms of visual and spatial metaphor — ambient graph visualization, narrative editing, stripped-down single-node views, generative canvases. There is no consideration of how these rooms function for users with visual impairments, cognitive disabilities, or different levels of technical literacy. Accessibility is not an add-on for a commons project — if the rooms cannot be experienced non-visually, the commons is structurally exclusionary. The brief should address how each room's epistemic posture can be achieved through multiple sensory channels."
+    },
+    {
+      "point": "The brief does not address how users transition between rooms or understand where they are",
+      "detail": "In physical exhibition design, spatial transitions (corridors, thresholds, light changes) signal mode shifts. In digital interfaces, wayfinding is a critical and often-failed design challenge. The brief does not specify how users move between rooms, whether rooms have persistent state, how insights from one room transfer to another, or how the system communicates which room a user is currently in. These interaction design fundamentals are missing."
+    },
+    {
+      "point": "The relationship between the rooms and contribution/intake is unspecified",
+      "detail": "The brief describes the rooms as interaction modes for engaging with the graph, but four of five rooms (Query, Speculate, React, Experiment) imply that users are not just consuming but creating — asking questions, writing narratives, reacting, generating. How does output from these rooms relate to the intake pipeline? Does a speculation become a signal? Does an experiment generate new nodes? If rooms are 'two-way' (as stated in the design principles), the feedback loop from room interaction to graph modification is a core architectural question left unanswered."
+    },
+    {
+      "point": "No consideration of how the rooms work at different graph scales",
+      "detail": "A graph with 200 nodes (Art Basel target) and a graph with 20,000 nodes require fundamentally different interaction designs. The Sense room (ambient graph visualization) will feel empty at 200 nodes and overwhelming at 20,000. The Query room's utility depends on sufficient density to surface non-obvious connections. The Speculate room needs enough conceptual vocabulary to enable meaningful narrative construction. The brief presents the rooms as scale-independent, but interaction design is deeply scale-dependent."
+    },
+    {
+      "point": "The rooms framework does not account for collaborative/social interaction",
+      "detail": "All five rooms are described as individual interaction modes — a single user sensing, querying, speculating, reacting, experimenting. There is no specification for shared experiences: can two people be in the same room seeing the same view? Can a group speculate collaboratively? Can reactions be compared across users? For a commons project, the absence of social/collaborative interaction design is a significant gap. The most successful knowledge commons (Wikipedia, Stack Overflow, Are.na) derive much of their value from visible social interaction around knowledge."
+    }
+  ],
+
+  "closest_precedents": [
+    {
+      "name": "teamLab Borderless / Planets",
+      "description": "Immersive digital art exhibitions that create distinct interaction zones within a continuous space. Different rooms offer different relationships to the same generative systems — passive immersion, body interaction, participatory creation.",
+      "achieved": "Proved that multi-modal experience design for the same underlying content works at massive scale (millions of visitors). Demonstrated that ambient/passive modes and active/participatory modes can coexist in one system. Showed that spatial transition between interaction modes feels natural.",
+      "failed": "Physical-space-dependent — the interaction design relies on embodied spatial experience that does not translate directly to screen-based interfaces. No persistent knowledge layer — experiences are ephemeral, not accumulative. Entertainment-oriented, not knowledge-oriented."
+    },
+    {
+      "name": "MIT Tangible Media Group / Hiroshi Ishii's interfaces",
+      "description": "Research program exploring tangible, multi-modal interfaces for interacting with digital information. Key projects: inFORM (shape-changing display), Tangible Bits (physical-digital coupling), CityScope (urban planning tangible interface).",
+      "achieved": "Demonstrated that multiple physical interaction modalities reveal different aspects of the same data. CityScope specifically showed that urban planners gain different insights through different interaction modes (direct manipulation vs. simulation vs. visualization). Published rigorous research on multi-modal knowledge interaction.",
+      "failed": "Remained research prototypes — none achieved production deployment at scale. Hardware dependencies limit accessibility. The gap between research demonstration and deployable product is consistently underestimated in tangible interface research."
+    },
+    {
+      "name": "Dunne & Raby / Speculative Design practice",
+      "description": "Design methodology that creates artifacts and experiences from alternative presents and futures. Implemented as exhibitions, publications, and interactive installations. Key works: 'United Micro Kingdoms' (Design Museum, 2013), 'Designs for an Overpopulated Planet' (2009).",
+      "achieved": "Established speculative engagement as a legitimate design interaction — users encountering designed provocations and generating responses. Proved that non-analytical, narrative-driven engagement with information produces genuine insight. Influenced a generation of design practice.",
+      "failed": "Remained primarily an exhibition/academic practice — never successfully translated into digital product interaction design. Speculative design interactions are typically one-off curated experiences, not persistent systems. The gap between a curated speculative encounter and a self-service speculative interface is substantial."
+    },
+    {
+      "name": "Observatory of Economic Complexity (OEC) / MIT",
+      "description": "Interactive visualization platform for international trade data. Offers multiple visualization modes (treemap, stacked, line, network, scatter, geo) for the same underlying economic data. Built by Cesar Hidalgo's group at MIT Media Lab.",
+      "achieved": "Successfully implemented multiple visualization/interaction modes for the same dataset in a web interface. Demonstrated that different views reveal different patterns — network view shows trade relationships, treemap shows composition, geo shows spatial distribution. Used by researchers, policymakers, and journalists.",
+      "failed": "Modes are all analytical/visual — no speculative, ambient, or generative modes. Interaction diversity is in visualization type, not epistemic posture. Still fundamentally a single-mode experience (look at data) with variation in rendering."
+    },
+    {
+      "name": "Figma / multiplayer design tools",
+      "description": "Collaborative design platform where multiple users interact with the same canvas simultaneously. Different users can be in different modes (editing, commenting, presenting, inspecting) on the same document.",
+      "achieved": "Demonstrated that multi-modal interaction with shared state works in production software at scale. Observation mode (watching others design) is genuinely different from editing mode. Proved that mode-switching in collaborative environments is natural for users.",
+      "failed": "Modes are functional (what you can do) not epistemic (how you know). The design is tool-oriented, not knowledge-oriented. Not a knowledge commons — a productivity tool with collaborative features."
+    }
+  ],
+
+  "lessons_from_failures": [
+    {
+      "lesson": "Multi-modal interfaces succeed when modes serve distinct user needs, not when they serve a conceptual framework",
+      "source": "Google Wave (2009), various experimental multi-view interfaces",
+      "detail": "Google Wave offered multiple interaction modes for communication (real-time editing, threaded discussion, embedded applications, playback) unified in one interface. It failed catastrophically because the modes served Google's conceptual vision of 'unified communication' rather than distinct user needs. Users could not determine which mode to use for which purpose. The Five Rooms risk a similar failure if each room is justified by its place in an epistemological framework rather than by a concrete user need it satisfies. Each room must answer: 'what question does a user have that only this room can answer?'"
+    },
+    {
+      "lesson": "Ambient/passive interfaces require extreme design discipline to avoid being perceived as decoration",
+      "source": "Ambient computing research, information art installations",
+      "detail": "The Sense room (graph at rest, ambient signal) maps to the 'ambient display' research tradition (Ishii's ambientROOM, 1998; Ambient Orb, 2002; various calm computing projects). This research consistently found that ambient information displays are either ignored (treated as decoration) or become anxiety-inducing (constant peripheral monitoring). The narrow band of successful ambient information design requires extreme precision in what is shown and how change is signaled. Most ambient information projects fail to find this band."
+    },
+    {
+      "lesson": "Generative/experimental interfaces in knowledge systems tend to produce noise, not signal",
+      "source": "Various participatory art/knowledge platforms",
+      "detail": "Room 5 (Experiment — generative canvas in sparse regions) presupposes that user-generated content in under-explored areas of the knowledge space will be valuable. Experience from participatory platforms suggests the opposite: open-ended generative tools in knowledge systems produce large volumes of low-quality content. Wikipedia's 'Articles for Creation' backlog, Wikidata's bot-generated noise, and countless 'collaborative canvas' experiments (Reddit Place being a notable exception that worked through extreme constraint) show that generative participation requires very tight design constraints to produce signal rather than noise."
+    },
+    {
+      "lesson": "Physical-to-digital translation of experience design consistently fails to preserve the experiential quality",
+      "source": "Museum digital strategies during COVID-19, virtual gallery platforms",
+      "detail": "The COVID-19 pandemic forced rapid translation of exhibition experiences to digital platforms. The results were almost universally disappointing — VR galleries, interactive web exhibitions, and digital 'rooms' failed to recreate the experiential quality of physical exhibition design. The lesson is not that digital experience design is impossible, but that translating spatial/physical interaction metaphors to screens is a distinct and difficult design problem. The Five Rooms should be designed as native digital interactions, not as translations of physical exhibition concepts."
+    },
+    {
+      "lesson": "Mode-switching in software must be near-instantaneous and reversible to feel natural",
+      "source": "Photoshop, Figma, video editing software",
+      "detail": "Successful multi-modal creative software (Photoshop, Figma, Final Cut) achieves fluid mode-switching through keyboard shortcuts, tool palettes, and instant preview. Mode switches take milliseconds and are always reversible. If the Five Rooms involve page loads, context switches, or loss of position/state when moving between rooms, the multi-modal design will feel fragmented rather than fluid. Technical implementation must prioritize transition speed and state preservation."
+    }
+  ],
+
+  "differentiation_assessment": {
+    "genuinely_novel": [
+      "The combination of 'epistemic posture' as the primary axis of interaction variation for a knowledge system — existing multi-view systems vary visualization type or tool function, not the user's relationship to knowledge itself",
+      "Temperature as a continuous metaphor linking interaction modes — most multi-modal systems treat modes as discrete categories; the temperature spectrum implies a continuous gradient that is conceptually interesting",
+      "Embedding speculative and generative modes as first-class interaction patterns within a knowledge commons — speculative design and knowledge commons have not been combined in this way",
+      "The React room (single node stripped of metadata, qualitative signal) inverts the standard knowledge system pattern of always adding context; deliberate decontextualization as a knowledge practice is unusual"
+    ],
+    "already_attempted": [
+      "Multi-view interfaces for the same dataset — Observatory of Economic Complexity, Tableau, D3 visualization suites all offer this",
+      "Ambient data visualization — calm computing, ambient displays, and data art installations have explored this extensively since the late 1990s",
+      "Participatory/generative knowledge platforms — wikis, Are.na, collaborative canvases, sandbox tools all implement user-generated content in knowledge contexts",
+      "Exhibition-as-interface metaphor — numerous virtual gallery and digital museum projects have used 'rooms' as an interaction metaphor, generally with poor results",
+      "Query interfaces for knowledge graphs — SPARQL endpoints, natural language query systems, faceted search all exist for graph databases"
+    ],
+    "assessment": "The Five Rooms framework is conceptually novel as a unified interaction design theory for knowledge commons. No existing system proposes five epistemic postures as its primary interaction architecture. However, each individual room has clear precedents, and the novelty lies entirely in the combination and the theoretical framing. The risk is that the theoretical novelty does not survive contact with implementation — when built, each room may end up resembling its less-novel precedent (Sense = dashboard, Query = search, Speculate = wiki editor, React = detail view, Experiment = sandbox). The temperature metaphor is genuinely interesting but untested as a UX convention."
+  },
+
+  "implementation_risks": [
+    {
+      "risk": "Scope of five distinct interaction modes is incompatible with team size and timeline",
+      "severity": "High",
+      "detail": "Each room is effectively a separate interface design and engineering project. Sense requires real-time graph visualization with ambient aesthetics. Query requires a structured query interface (possibly natural language). Speculate requires a collaborative narrative editor with graph integration. React requires a minimalist single-node interface with qualitative signal capture. Experiment requires a generative canvas with embedding space visualization. For a team of four, building even one of these well by June 2026 is ambitious. Building all five risks producing five half-finished interfaces that individually fail to deliver their intended experience."
+    },
+    {
+      "risk": "The rooms may not be distinguishable enough to justify their separation",
+      "severity": "Medium-High",
+      "detail": "In practice, users may not perceive a meaningful difference between rooms — especially between Sense (ambient graph) and Query (graph under tension), or between Speculate (narrative editing) and Experiment (generative canvas). If the rooms feel like arbitrary UI tabs rather than genuinely different modes of engagement, the framework undermines itself. The conceptual distinction between rooms must produce a felt experiential distinction, which requires exceptional interaction design craft."
+    },
+    {
+      "risk": "The temperature metaphor may confuse rather than orient users",
+      "severity": "Medium",
+      "detail": "Novel metaphors in UX are risky because they lack shared convention. Users encountering the system for the first time must learn what 'temperature' means in this context, what 'hot' and 'cold' imply for their interaction, and how to navigate between temperatures. This learning cost may deter casual users, and the Art Basel context (brief encounters, not sustained use) amplifies this risk. The metaphor must be either immediately intuitive (visual temperature cues like color warmth) or explicitly taught."
+    },
+    {
+      "risk": "State management across rooms creates technical complexity",
+      "severity": "Medium",
+      "detail": "If a user queries a node in the Query room, navigates to Sense to see it in ambient context, then moves to Speculate to write about it — the system must maintain continuity of context across fundamentally different interface paradigms. This cross-room state management is technically non-trivial, especially if rooms have different rendering engines (e.g., WebGL for Sense, rich text editor for Speculate, embedding space visualization for Experiment)."
+    },
+    {
+      "risk": "Art Basel demo context favors spectacle over knowledge interaction",
+      "severity": "Medium",
+      "detail": "At an Art Basel encounter, visitors spend minutes, not hours. The rooms that will 'demo well' (Sense with its ambient visualization, Experiment with its generative canvas) are not the rooms that demonstrate knowledge commons value (Query, Speculate). There is a risk that the Art Basel demo optimizes for visual spectacle, which validates A(DAI) as an art project but not as a knowledge infrastructure. The team must decide whether the Art Basel encounter demonstrates the system's knowledge utility or its experiential quality — optimizing for both simultaneously is extremely difficult."
+    }
+  ],
+
+  "dependency_assumptions": [
+    {
+      "assumption": "Users will understand and value the distinction between five interaction modes",
+      "validity": "Uncertain — user testing of multi-modal interfaces consistently shows that most users settle into one or two preferred modes. The conceptual sophistication of the Five Rooms framework may not survive contact with real user behavior."
+    },
+    {
+      "assumption": "The knowledge graph will have sufficient density to make all five rooms meaningful",
+      "validity": "Unlikely by Art Basel — Sense requires enough nodes for ambient pattern perception, Query requires enough edges for non-obvious connections, Speculate requires enough conceptual vocabulary for narrative construction. A 200-500 node graph may not support all five rooms simultaneously."
+    },
+    {
+      "assumption": "The temperature metaphor will be intuitive to the target audience (practitioners, curators, collectors, institutional actors, technologists)",
+      "validity": "Plausible for practitioners and curators who are accustomed to metaphorical and experiential framing; less plausible for collectors, institutional actors, and technologists who may expect conventional information architecture. The mixed audience at Art Basel makes universal intuitiveness unlikely."
+    },
+    {
+      "assumption": "Rooms can be built incrementally without losing the coherence of the framework",
+      "validity": "Partially valid — individual rooms can function standalone, but the value proposition of the Five Rooms is their relationship to each other. If only two rooms are built for Art Basel, the framework's claim of five epistemic postures cannot be demonstrated. The question is whether two rooms plus a conceptual explanation of the remaining three is compelling."
+    },
+    {
+      "assumption": "Screen-based digital interfaces can achieve the experiential quality implied by the rooms metaphor",
+      "validity": "Contested — the rooms metaphor implies spatial, embodied experience. Screen-based implementations may feel flat compared to the conceptual ambition. Physical installation at Art Basel (screens, projections, spatial layout) could partially address this but adds significant logistical and cost requirements."
+    }
+  ],
+
+  "timeline_reality_check": "Unrealistic to build all five rooms by Art Basel June 2026 (3 months). A pragmatic approach would build 1-2 rooms to production quality and present the remaining rooms as design concepts. Recommended priority: Query (demonstrates knowledge utility) and Sense (demonstrates experiential quality). Speculate, React, and Experiment could be presented as interactive prototypes or design mockups. Building all five as functional interfaces would require a team 3-5x larger or a timeline 12-18 months longer.",
+
+  "suggested_revisions": [
+    {
+      "revision": "Prioritize and sequence the rooms explicitly",
+      "detail": "The brief presents all five rooms as equally important. The team should explicitly rank which rooms are built first and why. Recommended sequence: (1) Query — proves the knowledge graph is useful, (2) Sense — proves the system is experientially compelling, (3) React — simplest to build and demonstrates the 'two-way' principle, (4) Speculate — requires the most content and editorial infrastructure, (5) Experiment — requires the most technical research. This sequencing should be in the brief as a build roadmap."
+    },
+    {
+      "revision": "Replace or supplement the temperature metaphor with more conventional UX affordances",
+      "detail": "Temperature can remain as conceptual framing for the team, but the user-facing interaction design should also use established UX patterns that users recognize. For example: Sense could be a 'landscape view' or 'observatory,' Query could be a 'search and explore' interface, Speculate could be a 'writing desk' or 'editorial space.' Layering familiar patterns under the novel conceptual framework reduces cognitive load while preserving the theoretical architecture."
+    },
+    {
+      "revision": "Specify the feedback loops from rooms to the knowledge graph",
+      "detail": "The brief says rooms are 'two-way' but does not specify the mechanism. For each room, define: what user actions generate data, how that data enters the intake pipeline, what merge boundary rules apply, and how the graph changes as a result. Without this specification, the rooms risk being read-only views with different visual treatments — which undermines the commons proposition."
+    },
+    {
+      "revision": "Add a section on rooms at different graph scales",
+      "detail": "Define how each room functions at three scales: (1) Art Basel demo (200-500 nodes), (2) year-one target (2,000-5,000 nodes), (3) mature system (20,000+ nodes). Some rooms may not be viable at small scale (Sense may feel empty, Experiment may lack meaningful sparse regions). Being explicit about scale-dependent viability prevents premature investment in rooms that will not demonstrate their value until the graph is larger."
+    },
+    {
+      "revision": "Design for the Art Basel encounter specifically, not abstractly",
+      "detail": "The brief should include a concrete scenario: a visitor at Art Basel has 5-10 minutes. What is their journey through the rooms? Which room do they enter first? What do they experience? What is the desired response? Designing backward from this encounter will force practical decisions about room priority, interaction complexity, and onboarding that the current abstract framework avoids."
+    }
+  ],
+
+  "questions_for_team": [
+    "Which single room, if only one could be built by Art Basel, would most convincingly demonstrate A(DAI)'s value proposition? Build that one first.",
+    "Have you tested the temperature metaphor with anyone outside the founding team? What did practitioners, curators, and technologists actually understand when you described it?",
+    "What is the concrete interaction for each room? Not the concept — the literal UI. What does a user see, click, type, and receive in each room?",
+    "How do the rooms work on a phone? The Art Basel context likely means people encountering the system on mobile devices or shared screens, not personal laptops.",
+    "If a visitor at Art Basel spends 7 minutes with the system, what is the intended journey? Which room first, which transitions, what takeaway?",
+    "What is the minimum graph density (node count, edge count) at which each room becomes meaningful? Can you test this with synthetic data before Art Basel?"
+  ],
+
+  "key_sources": [
+    {
+      "name": "teamLab Borderless / experiential design documentation",
+      "url": "https://borderless.teamlab.art/",
+      "relevance": "Most successful large-scale implementation of multi-modal interaction with shared generative content. Demonstrates spatial rooms as interaction modes."
+    },
+    {
+      "name": "Hiroshi Ishii — Tangible Bits: Towards Seamless Interfaces between People, Bits and Atoms (CHI 1997)",
+      "url": "https://doi.org/10.1145/258549.258715",
+      "relevance": "Foundational paper on multi-modal interfaces for digital information. Argues that different interaction modalities reveal different aspects of the same data."
+    },
+    {
+      "name": "Dunne & Raby — Speculative Everything: Design, Fiction, and Social Dreaming (2013)",
+      "url": "https://mitpress.mit.edu/9780262019842/speculative-everything/",
+      "relevance": "Establishes speculative design as interaction methodology. Directly relevant to Rooms 3-5."
+    },
+    {
+      "name": "Observatory of Economic Complexity (OEC)",
+      "url": "https://oec.world/",
+      "relevance": "Production multi-view interface for the same dataset. Demonstrates what multi-modal data interaction looks like in practice — and its limits."
+    },
+    {
+      "name": "Ishii et al. — ambientROOM: Integrating Ambient Media with Architectural Space (CHI 1998)",
+      "url": "https://doi.org/10.1145/286498.286652",
+      "relevance": "Seminal work on ambient information display. Directly relevant to the Sense room's 'graph at rest' concept and the challenges of ambient data perception."
+    },
+    {
+      "name": "Google Wave post-mortem analyses",
+      "url": "https://en.wikipedia.org/wiki/Google_Wave",
+      "relevance": "Cautionary precedent for multi-modal communication/knowledge systems that prioritized conceptual framework over user needs."
+    },
+    {
+      "name": "Olafur Eliasson — The Weather Project (Tate Modern, 2003)",
+      "url": "https://www.tate.org.uk/whats-on/tate-modern/olafur-eliasson-weather-project",
+      "relevance": "Landmark work using environmental conditions (temperature, light, atmosphere) as perceptual variables in experience design."
+    }
+  ],
+
+  "uncertain": [
+    "claim_strength"
+  ]
+}

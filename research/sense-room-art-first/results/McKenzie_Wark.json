@@ -1,0 +1,98 @@
+{
+  "basic_info": {
+    "name": "McKenzie Wark",
+    "type": "theorist",
+    "active_years": "1990-present",
+    "location": "New York, USA",
+    "url": "https://mckenziewark.net"
+  },
+  "practice_description": {
+    "medium": "writing, lectures, academic research, cultural criticism",
+    "practice_summary": "Media theorist and cultural critic whose work examines the political economy of information, arguing that a new class — the vectoralist class — has emerged to control the means of information production, and that the hacker class must organize to reclaim the commons of knowledge and culture.",
+    "methodology": "Wark works through a distinctive blend of Marxist political economy, situationist détournement, and media theory. Her methodology involves repurposing and updating critical theory for the information age, using accessible, often playful prose to make complex political economy legible. She teaches at The New School and publishes across academic and trade presses, frequently engaging in public intellectual debate."
+  },
+  "relevance_to_sense_room": {
+    "relevance_summary": "Wark's analysis of the vectoralist class — those who own the vectors along which information moves — provides the political economic framework for understanding why a commons-based intelligence infrastructure like A(DAI) is necessary as an alternative to platform capture.",
+    "art_as_substrate": "Wark's theoretical writing does not produce visual substrate, but her concepts (vectoralist class, hacker class, information commons) function as analytical substrate that can be embedded in the logic and governance layers of a generative system.",
+    "relational_composition": "Wark's analysis of vectors — the paths along which information flows — maps directly onto graph topology. Her work asks who controls the edges in a network, which is the fundamental question of graph-based composition.",
+    "self_recomposing": "Not directly applicable to her written outputs, though her framework describes information systems that continuously recompose through class struggle over control of vectors."
+  },
+  "key_works": {
+    "works": [
+      {
+        "title": "Capital is Dead: Is This Something Worse?",
+        "year": 2019,
+        "description": "Book arguing that we have moved beyond capitalism into something worse — a mode of production dominated by the vectoralist class that controls information flows. Proposes that the hacker class (those who produce new knowledge) must organize.",
+        "relevance": "Core text for understanding the political economy that A(DAI) operates within. The vectoralist class concept explains why platform-owned intelligence systems are structurally extractive, and why commons alternatives are needed."
+      },
+      {
+        "title": "A Hacker Manifesto",
+        "year": 2004,
+        "description": "Manifesto arguing that hackers — broadly defined as anyone who produces new knowledge or abstractions — constitute a class whose interests are opposed to those who commodify and enclose information.",
+        "relevance": "Provides the class-political framing for why artists, researchers, and communities should build their own intelligence infrastructure rather than relying on platforms owned by the vectoralist class."
+      },
+      {
+        "title": "Gamer Theory",
+        "year": 2007,
+        "description": "Book analyzing digital games as allegories of contemporary life under what Wark calls 'gamespace' — a world reorganized by the logic of competition and quantification.",
+        "relevance": "Relevant to understanding how quantification and gamification logics can colonize creative fields, and how A(DAI) should resist reducing art to metrics."
+      }
+    ]
+  },
+  "protocol_art_resonance": {
+    "protocol_art_summary": "Wark does not design protocols directly, but her theoretical work provides the political analysis needed to evaluate whether a given protocol serves the commons or the vectoralist class. Her work is a design brief for commons-oriented infrastructure.",
+    "system_designed": "No specific technical system, but conceptual frameworks that have influenced how critical technologists and artists think about information infrastructure and ownership."
+  },
+  "commons_orientation": {
+    "licence_model": "commons-based",
+    "commons_summary": "Wark's entire intellectual project is oriented toward the information commons. She argues that knowledge and culture are collectively produced and should not be enclosed by the vectoralist class. She has published through both traditional and experimental channels and advocates for open access to knowledge."
+  },
+  "governance_model": {
+    "governance_type": "solo",
+    "governance_detail": "Works primarily as an individual author and academic, though embedded in collaborative intellectual networks. Decision-making about her output is solo, but informed by extensive peer dialogue and public debate."
+  },
+  "consent_and_authorship": {
+    "consent_approach": "As a theorist working with published texts and cultural analysis, consent frameworks apply primarily to citation and intellectual credit, which Wark handles through academic norms.",
+    "authorship_model": "Solo authorship with occasional collaborative works. Known for crediting intellectual debts and engaging generously with interlocutors."
+  },
+  "liveness_and_duration": {
+    "temporal_type": "static",
+    "temporal_detail": "Primary outputs are books, essays, and lectures, fixed upon publication. Her frameworks are designed to be applied dynamically to evolving conditions."
+  },
+  "data_materiality": {
+    "data_sources": "Political economy texts, media theory, cultural criticism, digital culture, game studies, contemporary art discourse",
+    "data_provenance": "Published academic and cultural sources, public domain"
+  },
+  "embedding_space_relevance": {
+    "embedding_summary": "Wark's work does not directly engage with technical embedding spaces, but her analysis of information vectors is conceptually adjacent — she asks who controls the spaces through which meaning flows, which is the political question behind any embedding architecture.",
+    "multimodal": "No — primarily textual output, though her analysis spans multiple media forms."
+  },
+  "exhibition_modality": {
+    "modality": "performative",
+    "spatial_description": "Lectures, panel discussions, academic conferences, and public intellectual engagement. Her ideas circulate through publishing, social media, and public discourse."
+  },
+  "sensory_register": {
+    "senses": "textual",
+    "dominant_register": "textual"
+  },
+  "interoperability": {
+    "composability": "Her concepts (vectoralist class, hacker class, information commons) are highly portable and can be integrated into design briefs, governance frameworks, and curatorial rationales.",
+    "technical_openness": "Open — concepts freely reusable, published through accessible channels."
+  },
+  "technical_approach": {
+    "stack": "No specific technical stack. Engages critically with digital platforms, games, and information infrastructure as objects of analysis."
+  },
+  "network_position": {
+    "position_type": "hub",
+    "scene_affiliation": "Critical theory, media studies, The New School, Verso Books intellectual network, situationist-influenced media theory, digital culture criticism, e-flux discourse community",
+    "connections": "Matteo Pasquinelli (political economy of AI/information), Kate Crawford (critical technology studies), Legacy Russell (digital culture theory)"
+  },
+  "potential_role_in_adai": {
+    "role": "theoretical-reference",
+    "role_detail": "Wark's vectoralist class analysis provides the political economic rationale for A(DAI)'s existence. Her framework explains why commons-based intelligence infrastructure is necessary and what it is positioned against. Her concepts should be embedded in the project's political economy vocabulary. Could serve as a conversation partner or critical friend."
+  },
+  "temporal_status": {
+    "status": "ongoing-practice"
+  },
+  "uncertain": ["url", "active_years"]
+}

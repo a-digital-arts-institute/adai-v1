@@ -1,0 +1,98 @@
+{
+  "basic_info": {
+    "name": "Matteo Pasquinelli",
+    "type": "theorist",
+    "active_years": "2004-present",
+    "location": "Venice, Italy / Berlin, Germany",
+    "url": "https://matteopasquinelli.com"
+  },
+  "practice_description": {
+    "medium": "writing, lectures, academic research",
+    "practice_summary": "Media theorist and philosopher of AI whose work traces the political economy of machine intelligence, arguing that AI is built on the extraction and abstraction of collective labor and knowledge rather than genuine autonomous cognition.",
+    "methodology": "Pasquinelli combines political economy, philosophy of science, and media archaeology to analyze how machine learning systems encode and extract value from human labor. His approach is genealogical, tracing concepts like the 'master algorithm' back through the history of automation and the division of labor, drawing on Marx, Babbage, and cybernetics. He works through academic publishing, public lectures, and collaborative research networks."
+  },
+  "relevance_to_sense_room": {
+    "relevance_summary": "Pasquinelli provides the critical theoretical vocabulary for distinguishing commons-based intelligence from extractive intelligence, which is foundational to A(DAI)'s mission of building a non-extractive collective intelligence infrastructure for the digital arts.",
+    "art_as_substrate": "His work does not produce visual or material artworks, but his theoretical frameworks function as conceptual substrate for any system attempting to build collective intelligence without extraction. His ideas can inform the logic layer of a generative composition.",
+    "relational_composition": "His analysis of how knowledge is relationally produced through labor networks and then abstracted into algorithms maps directly onto graph-based models of collective intelligence.",
+    "self_recomposing": "Not directly applicable to his written outputs, though his theoretical framework describes systems that continuously recompose knowledge through cycles of extraction and abstraction."
+  },
+  "key_works": {
+    "works": [
+      {
+        "title": "The Eye of the Master: A Social History of Artificial Intelligence",
+        "year": 2023,
+        "description": "Book tracing AI's origins not in logic or computation but in the automation of labor and the division of knowledge. Argues that neural networks encode collective intelligence extracted from workers.",
+        "relevance": "Core text for understanding what 'commons intelligence' means versus extractive intelligence. Directly informs A(DAI)'s positioning against Big Tech AI models that extract from creative commons."
+      },
+      {
+        "title": "How a Machine Learns and Fails: A Grammar of Error for Artificial Intelligence",
+        "year": 2019,
+        "description": "Essay exploring how machine learning encodes bias and error, examining the epistemological limits of statistical learning.",
+        "relevance": "Relevant to understanding failure modes and biases in any AI-assisted curation or intelligence system."
+      },
+      {
+        "title": "Animal Spirits: A Bestiary of the Commons",
+        "year": 2008,
+        "description": "Book examining the concept of the commons through the lens of network culture, parasitism, and creative sabotage.",
+        "relevance": "Early work connecting commons theory to network culture, prefiguring the commons-first orientation of A(DAI)."
+      }
+    ]
+  },
+  "protocol_art_resonance": {
+    "protocol_art_summary": "Pasquinelli does not practice protocol art directly, but his theoretical work provides the critical framework for evaluating whether a given protocol or infrastructure is extractive or commons-oriented. His concepts serve as design criteria for protocol artists.",
+    "system_designed": "No specific protocol or software system, but his theoretical frameworks have influenced how critical AI labs and commons-oriented projects conceptualize their architectures."
+  },
+  "commons_orientation": {
+    "licence_model": "commons-based",
+    "commons_summary": "Pasquinelli is fundamentally oriented toward the commons. His entire intellectual project argues that intelligence is collectively produced and should not be enclosed. He has been associated with open-access publishing and commons-oriented research networks since his early work on network culture."
+  },
+  "governance_model": {
+    "governance_type": "solo",
+    "governance_detail": "Works primarily as an individual academic author and lecturer, though embedded in collaborative research networks and editorial collectives. Decision-making about his intellectual output is solo, but informed by peer dialogue."
+  },
+  "consent_and_authorship": {
+    "consent_approach": "As a theorist working with published texts and historical analysis, consent frameworks are not directly applicable in the same way as for data-driven art. His work advocates for labor recognition and consent in AI training data.",
+    "authorship_model": "Solo authorship with frequent collaborative essays and edited volumes. Credits intellectual debts explicitly."
+  },
+  "liveness_and_duration": {
+    "temporal_type": "static",
+    "temporal_detail": "Primary outputs are books, essays, and lectures, which are fixed upon publication. However, his theoretical framework is designed to be applied dynamically to evolving technological conditions."
+  },
+  "data_materiality": {
+    "data_sources": "Historical archives, technical literature on AI and machine learning, political economy texts, labor history",
+    "data_provenance": "Published academic and historical sources, public domain and institutional archives"
+  },
+  "embedding_space_relevance": {
+    "embedding_summary": "Pasquinelli's work critically analyzes embedding and latent spaces as sites of labor extraction. He examines how training data encodes collective knowledge into vector spaces, making his analysis directly relevant to understanding what embedding spaces represent politically.",
+    "multimodal": "No — his output is primarily textual, though his analysis spans multimodal AI systems."
+  },
+  "exhibition_modality": {
+    "modality": "performative",
+    "spatial_description": "Lectures, panel discussions, and academic conferences. His ideas circulate through publishing and public intellectual engagement rather than gallery exhibition."
+  },
+  "sensory_register": {
+    "senses": "textual",
+    "dominant_register": "textual"
+  },
+  "interoperability": {
+    "composability": "His theoretical concepts (extractive intelligence, eye of the master, social history of AI) function as portable conceptual tools that can be integrated into curatorial frameworks, design briefs, and system architectures.",
+    "technical_openness": "Open — published through academic and open-access channels, concepts freely reusable."
+  },
+  "technical_approach": {
+    "stack": "Academic publishing, public lectures, no specific technical stack. Engages critically with ML frameworks, neural network architectures, and training pipelines as objects of analysis."
+  },
+  "network_position": {
+    "position_type": "hub",
+    "scene_affiliation": "Critical AI studies, Italian operaismo-influenced media theory, post-digital theory, network culture commons movement. Connected to institutions like KW Institute for Contemporary Art, transmediale, and various European art-theory crossover scenes.",
+    "connections": "Kate Crawford (shared critical AI territory), McKenzie Wark (political economy of information), James Bridle (non-extractive knowledge systems)"
+  },
+  "potential_role_in_adai": {
+    "role": "theoretical-reference",
+    "role_detail": "Pasquinelli's framework provides the foundational distinction between extractive and commons intelligence that underpins A(DAI)'s entire proposition. His concepts should be embedded in the project's vocabulary and referenced in the design brief. Could also serve as a conversation partner or advisory voice."
+  },
+  "temporal_status": {
+    "status": "ongoing-practice"
+  },
+  "uncertain": ["active_years", "url", "location"]
+}

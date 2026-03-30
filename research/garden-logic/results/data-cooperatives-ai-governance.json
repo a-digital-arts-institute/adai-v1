@@ -1,0 +1,56 @@
+{
+  "identity": {
+    "name": "Data Cooperatives as AI Governance (Harvard Ash Center, 2024)",
+    "type": "intention-economy",
+    "originator": "Danielle Allen, Sarah Hubbard, Harvard Ash Center / Allen Lab for Democracy Renovation",
+    "year": "2024",
+    "key_text": "Cooperative Paradigms for Artificial Intelligence (essay collection and conference proceedings)",
+    "key_url": "https://ash.harvard.edu/resources/cooperative-paradigms-for-artificial-intelligence/"
+  },
+  "conceptual": {
+    "core_claim": "Cooperative ownership structures — at the cloud, data, and governance layers of the AI stack — provide a democratic alternative to concentrated corporate control of AI development.",
+    "relation_to_attention_economy": "Opposes the attention economy indirectly by proposing alternative ownership structures that would prevent the concentration of data and compute power that enables attention-driven business models. If data is cooperatively owned, it cannot be unilaterally monetized through surveillance advertising.",
+    "relation_to_commons": "Directly commons-aligned. Data cooperatives enable collective ownership and governance of data as a shared resource. The model draws on cooperative traditions (worker-owned, consumer-owned) applied to digital assets. Frames data as a collective resource requiring collective governance rather than individual property or corporate asset.",
+    "epistemological_stance": "Political-economic. Knowledge of how AI should be governed is derived from democratic theory, cooperative economics, and institutional analysis. Validity comes from alignment with democratic values and empirical evidence of cooperative effectiveness."
+  },
+  "technical": {
+    "architecture_pattern": "Cooperative governance layered onto the AI stack — cloud cooperatives, data cooperatives, and governance cooperatives operating at different levels. Polycentric rather than monolithic.",
+    "data_model": "Pooled data governed by cooperative members. Members contribute data and collectively decide how it is used, who can access it, and under what terms. Bargaining power derives from aggregation.",
+    "temporal_logic": "Institutional — cooperatives are durable structures designed for long-term collective governance. Decisions accumulate over time through democratic processes. No real-time or anticipatory logic.",
+    "absence_handling": "Cooperatives address the absence of democratic voice in AI governance by creating structures for collective decision-making. The model identifies the structural gap between individual data subjects and corporate AI developers and fills it with cooperative intermediaries.",
+    "scalability_model": "Federated — cooperatives can form at multiple scales and federate upward. Individual data cooperatives can join regional or sectoral federations. The model is explicitly designed to scale through federation rather than centralization."
+  },
+  "garden_logic_comparative": {
+    "layer_mapping": "participation — directly relevant to how A(DAI)'s contributor community governs the merge boundary and the intelligence commons.",
+    "intention_vs_attention": "Intention-aligned in governance structure — cooperative members collectively determine their intentions for data use rather than having their attention extracted. However, the model is about governance of data, not about what intelligence is produced from it. A cooperative could still produce attention-optimized outputs if its members chose to. The intention alignment is structural (who decides) rather than epistemic (what is produced).",
+    "coherence_vs_consensus": "Consensus-oriented — cooperatives typically operate through democratic voting, one-member-one-vote. This seeks agreement on governance decisions rather than structural coherence across multiple interpretations. The consensus model may suppress minority positions or frontier signals that challenge majority assumptions.",
+    "contestability": "Formally high — cooperative governance includes voice, vote, and exit mechanisms. But in practice, cooperatives can develop internal oligarchies, and the democratic process may disadvantage members without time or expertise to participate.",
+    "forkability": "Cooperatives can split (as any organization can), but data cooperatives face unique challenges: if the data pool is the asset, forking means either duplicating the pool (legally complex) or splitting it (reducing value). Forkability is structurally constrained by the nature of pooled data.",
+    "tendency_axis_position": "commons over capture (by design), distributed over individual (cooperative governance), infrastructure over spectacle (institutional rather than platform). But cooperatives can become enclosures themselves — a cooperative that controls access to a critical data pool is a monopoly with democratic governance, not an open commons.",
+    "what_adai_should_adopt": "The cooperative governance model for the merge boundary — rather than founding-team control, A(DAI) could transition merge boundary parameters to cooperative governance where contributors vote on processing rules. The federated structure: scene-level cooperatives that federate into a field-level commons maps directly onto A(DAI)'s CR-SQLite Matryoshka architecture (practitioner DBs ← scene DBs ← field DB). The concept of 'data as collective bargaining asset' could inform how A(DAI) negotiates Mode 2 advisory relationships.",
+    "what_adai_should_refuse": "Pure consensus governance — A(DAI) needs to preserve space for frontier signals and minority positions that a majority might vote to suppress. Democratic governance of the merge boundary should not extend to democratic governance of what counts as valid intelligence. Also refuse the assumption that cooperative governance automatically produces commons outcomes — cooperatives can become exclusionary clubs. A(DAI) needs explicit mechanisms for openness that override cooperative self-interest.",
+    "structural_tension": "The fundamental tension: A(DAI) is currently governed by a founding team with specific curatorial judgment about what constitutes valid intelligence. The cooperative model would democratize this judgment, which could either enrich it (more diverse perspectives) or dilute it (lowest-common-denominator consensus). The deeper tension is between cooperative governance (one-member-one-vote consensus) and A(DAI)'s coherence model (structural diagnosis that may challenge what members believe). If the cooperative votes to suppress a coherence prompt that surfaces uncomfortable structural gaps, has the system failed or succeeded?"
+  },
+  "critical": {
+    "limits": "Cooperatives require significant institutional infrastructure — legal frameworks, governance processes, member engagement mechanisms. They can be slow to form and slow to adapt. Data cooperatives specifically face unresolved questions about data valuation, member contribution accounting, and exit rights. The model assumes members have aligned interests, but in practice AI governance involves deeply contested values.",
+    "who_is_excluded": "[uncertain] Those without the institutional literacy or time to participate in cooperative governance. The model privileges organized, literate, digitally connected participants. Informal communities, oral cultures, and those in authoritarian contexts where cooperative organization is restricted are structurally excluded.",
+    "failure_under_attention": "[uncertain] If a data cooperative's pooled data becomes sufficiently valuable, corporate actors could attempt to acquire the cooperative, install friendly leadership, or create competing cooperatives that offer members better short-term returns in exchange for weaker governance protections. The cooperative form is not immune to capture — it merely changes the mechanism."
+  },
+  "governance": {
+    "governance_model": "Polycentric commons — cooperative ownership at multiple layers (cloud, data, governance) with democratic decision-making. Draws on Ostrom's commons governance principles applied to digital resources.",
+    "consent_architecture": "Collective consent — members consent to cooperative governance terms upon joining, and then participate in ongoing democratic decision-making about data use. Consent is continuous and collective rather than one-time and individual."
+  },
+  "materiality": {
+    "extraction_vector": "Nothing (by design) — cooperatives exist to prevent extraction by redistributing value to members. But cooperatives extract labor from members (governance participation, data contribution) in exchange for collective benefits.",
+    "composability": "Institutional — cooperatives are legally constituted entities that can be composed through federation but are not technically modular. Interoperability depends on legal agreements between cooperatives rather than protocol-level composability.",
+    "liveness": "Active — the Ash Center work was published in 2024 with ongoing conference proceedings and policy development. The broader data cooperative movement is growing but still early-stage.",
+    "scale_of_operation": "Multi-scale — designed to operate from small group (local data cooperative) through institutional (sector-specific cooperatives) to field-level (federated cooperatives).",
+    "temporality": "Institutional — cooperatives operate on governance timescales (annual meetings, election cycles, strategic planning periods). Deep historical roots in cooperative movement (19th century onward) but no anticipatory or tidal temporal logic."
+  },
+  "uncertain": [
+    "who_is_excluded",
+    "failure_under_attention",
+    "extraction_vector",
+    "consent_architecture"
+  ]
+}

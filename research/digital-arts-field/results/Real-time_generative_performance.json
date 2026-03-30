@@ -1,0 +1,83 @@
+{
+  "basic_identification": {
+    "name": "Real-time generative performance",
+    "type": "practice",
+    "originator": "Alex McLean (Algorave/TidalCycles), Nick Collins, TOPLAP collective (founded 2004), Slub, 404.zero, Gray Area Foundation",
+    "year": 2004,
+    "key_url": "https://toplap.org/",
+    "geography": "Global, concentrated in UK (London, Sheffield, Leeds), Europe, Latin America (Mexico, Argentina), Japan, North America"
+  },
+  "core_ideas": {
+    "core_claim": "Code is a live, performative, improvisatory medium. The creative process should be visible, shared, and embodied in real time. Programming is not merely a production tool but an expressive instrument for live art.",
+    "medium_specificity": "Entirely digitally native: the performance medium is code itself executing in real time. The liveness depends on computational processes — audio synthesis, visual rendering, sensor data processing — that have no analogue equivalent. The projection of code-as-process is unique to digital performance.",
+    "relation_to_attention_economy": "Actively resists attention economy logics. Algorave culture foregrounds process over product, community over virality. Code projection demystifies the creative act rather than packaging it for consumption. Events are local, embodied, and ephemeral — poorly suited to platform metrics. However, documentation circulates on YouTube and social media, creating a secondary attention layer that the community tolerates but does not optimize for.",
+    "relation_to_intention": "Strongly intention-native. The practice serves declared structural needs: open-source tool development, skill sharing, community building, and artistic expression. It emerged from academic and hacker communities with explicit commitments to openness. The TOPLAP manifesto ('Show us your screens') is a statement of intent, not engagement optimization."
+  },
+  "market_economics": {
+    "revenue_model": "Primarily ticket sales at live events, artist fees, festival commissions, academic positions, and grants. Some tool developers receive donations or grant funding. No significant secondary market. Educational workshops and courses (e.g., Gray Area's 12-week TouchDesigner 101) provide additional revenue streams.",
+    "market_position": "Outside primary and secondary art markets. Operates in live performance, festival, and educational circuits. Infrastructure contributor through open-source tool development.",
+    "price_range": "Event tickets typically 5-25 EUR/USD. Festival commissions variable. No art object sales in the traditional sense.",
+    "volume_trend_2024_2026": "Stable to growing. 70+ algoraves in 2019, 80+ cities worldwide by 2023. TouchDesigner adoption expanding rapidly in commercial and artistic contexts. Gray Area and similar organizations scaling education programs. The practice is growing but not in a speculative/hype cycle.",
+    "collector_demographics": "No traditional collectors. Audience is a mix of programmers, electronic music enthusiasts, academic researchers, and art-tech communities. Increasingly diverse through programs like (Algo|Afro) Futures (2021) targeting early-career Black artists. [uncertain]",
+    "sustainability": "High sustainability. The practice does not depend on speculative markets or hype cycles. Revenue comes from live performance (an ancient and durable model), education, and grants. Open-source tools reduce costs. Academic positions provide stability for key practitioners. The main risk is venue access and festival funding, not market collapse."
+  },
+  "practice_aesthetics": {
+    "toolchain": "TidalCycles, SuperCollider, Sonic Pi, FoxDot (audio); TouchDesigner, Hydra, Processing, p5.js, OpenFrameworks, Vuo (visuals); MIDI/OSC for controller integration; Ableton Live for hybrid setups; custom sensors and hardware. All core tools are open-source or have free tiers.",
+    "relation_to_AI": "Ambivalent. The practice emphasizes human-coded improvisation as distinct from AI-generated output. Algorave culture values transparency of process — you see the code being written. AI integration is emerging (AI-assisted pattern generation, neural audio synthesis) but treated cautiously. The community distinguishes between human agency in real-time coding and delegation to AI systems. Some practitioners use ML models as one instrument among many, but the ethos resists black-box generation.",
+    "liveness": "Maximally live. Real-time, performative, improvisatory. Code is written and executed during the performance. Errors are part of the aesthetic. The audience witnesses the creative process as it happens.",
+    "aesthetic_vocabulary": "Well-developed within its community but poorly integrated with mainstream art criticism. Terms include: live coding, algorave, creative coding, generative, procedural, audio-reactive, real-time, glitch (as aesthetic), error-as-expression. The community has its own critical discourse through TOPLAP, academic papers (NIME, ICMC conferences), and artist writings. Mainstream art criticism lacks adequate vocabulary for evaluating code-as-performance, often defaulting to music criticism or new media art frameworks.",
+    "tendency_axis_position": "Strongly open, commons-oriented, infrastructure-building, and collective. The TOPLAP manifesto mandates visible process. Tools are open-source. Knowledge sharing is cultural norm. Events are community-organized. The practice sits firmly on the openness, commons, infrastructure, and collective ends of all four axes."
+  },
+  "infrastructure_governance": {
+    "openness": "Radically open-source. TidalCycles, SuperCollider, Hydra, and most core tools are free/open-source. The TOPLAP manifesto requires showing code. Knowledge sharing through workshops, tutorials, and documentation is a cultural norm. TouchDesigner is proprietary but has a free non-commercial license.",
+    "governance_model": "Community-governed with loose coordination. TOPLAP serves as a network hub but not a hierarchical authority. Event organization is decentralized and local. Tool development follows open-source governance (maintainers, contributors, GitHub issues). No formal institutional governance structure.",
+    "data_sovereignty": "Artists fully own their code and outputs. Open-source licenses (typically GPL, MIT, or Creative Commons) govern tool sharing. No platform lock-in for core tools. Performance recordings belong to artists. No centralized data collection.",
+    "interoperability": "High. OSC and MIDI protocols enable cross-tool communication. Code can be shared as text files. TouchDesigner integrates with most audio/visual tools. The ecosystem is built on open standards and protocols. No walled gardens.",
+    "preservation_strategy": "Mixed. Code is inherently preservable as text. Video documentation is standard but loses the liveness that defines the practice. Academic papers archive the discourse. GitHub repositories preserve tools. However, live performance is ephemeral by nature, and the experiential dimension resists preservation. Some works exist as documented performances on YouTube/Vimeo.",
+    "consent_architecture": "Minimal formal consent architecture. Open-source licenses provide clear terms. Performance attendance implies basic consent. No complex data collection requiring consent frameworks. The community operates on trust and shared values rather than formal consent mechanisms."
+  },
+  "field_position": {
+    "relation_to_traditional_art_world": "Parallel with occasional integration. Live coding performances appear at art festivals (MUTEK, Ars Electronica, Transmediale) and museums (LACMA, V&A) but the primary circuit is clubs, DIY spaces, and dedicated events. The practice resists gallery commodification — there is no object to sell. Academic recognition is growing through conferences and university programs.",
+    "what_it_enables": "Real-time artistic expression through code. Transparent creative process where audience sees the work being made. A performance practice that bridges music, visual art, and programming. Community-built tools that lower barriers to entry. A model for artistic practice that is inherently open and shareable.",
+    "what_it_lacks": "Critical integration with contemporary art discourse. Adequate documentation and preservation strategies for live works. Sustainable funding models beyond grants and academic positions. Diversity — the community skews toward technically educated, English-speaking participants despite active inclusion efforts. Recognition within visual art criticism (still primarily seen through music/technology lenses).",
+    "who_is_excluded": "Those without programming literacy face high barriers, despite efforts to lower them (Sonic Pi, visual programming tools). Geographic exclusion: events concentrated in cities with active scenes. Economic barriers to attending workshops and festivals. Language barriers (most tools and documentation are English-first). Disability access at live events varies. The culture can feel intimidating to non-technical artists. [uncertain]",
+    "frontier_signal": "Established practice (20+ years) with frontier applications. The core practice is mature, but frontiers include: AI-assisted live coding, biosensor integration, networked multi-location performances, VR/AR live coding environments, and integration with physical installations. The practice challenges the category of 'visual art' by insisting on temporal, processual, and performative dimensions."
+  },
+  "attention_intention": {
+    "discovery_mechanism": "Word of mouth, community networks (TOPLAP mailing list, Discord servers, academic conferences), social media (YouTube documentation, Twitter/X threads), festival programming, university courses. Not algorithm-driven.",
+    "attention_dependency": "Low. The practice would survive platform disappearance. Core discovery happens through community networks, live events, and academic channels. Social media amplifies but is not essential. The practice predates and does not depend on any specific platform.",
+    "intention_alignment": "Strongly intention-native. Serves the structural needs of artistic community: tool building, knowledge sharing, live expression, critical discourse. Not optimized for engagement metrics. The TOPLAP manifesto is explicitly about serving the practice, not capturing attention.",
+    "commons_contribution": "Exceptional commons contributor. Open-source tools (TidalCycles, SuperCollider, Hydra), shared educational resources, public performances, academic publications, community documentation. The practice is built on and continually feeds shared infrastructure."
+  },
+  "provenance_temporality": {
+    "provenance_type": "Neither traditional ownership provenance nor blockchain provenance. Provenance tracks authorship of code and performance, but works are not commodified objects. Attribution is through community recognition, academic citation, and performance credits.",
+    "temporal_logic": "Real-time and ephemeral. The work exists in the moment of performance. Documentation captures traces but not the work itself. Some generative installations have durational temporality. The practice is fundamentally present-tense.",
+    "absence_handling": "The practice implicitly addresses absences: the absence of visible process in most digital art (countered by code projection), the absence of liveness in gallery-based digital art, the absence of embodiment in screen-based work. However, it does not systematically document or theorize what is missing from the broader field."
+  },
+  "coherence": {
+    "coherence_vs_consensus": "Coherence. The community maintains shared values (openness, liveness, process visibility) while accommodating diverse aesthetic approaches — from minimal ambient to intense algorave, from pure audio to multimedia. There is no single correct way to live code. Multiple valid readings and practices coexist under shared principles.",
+    "contestability": "High informal contestability. Aesthetic judgments are debated in community forums, conferences, and post-performance discussions. Tool design decisions are contested through open-source governance (issues, pull requests, forks). No formal contestation mechanism exists, but the culture of open critique is strong.",
+    "forkability": "Extremely forkable. All core tools are open-source and can be forked. The practice itself can be adapted to any context — a club, a gallery, a classroom, a living room. No institutional barriers to starting a local algorave scene. The only requirement is technical knowledge and community energy."
+  },
+  "adai_comparison": {
+    "layer_mapping": "participation",
+    "what_adai_should_adopt": "The radical commitment to process visibility and open-source tooling. The community governance model that maintains coherence without centralized authority. The liveness principle — that intelligence and art should be experienced in real time, not just as static outputs. The 'poeticize error' ethos from Sougwen Chung's practice (borrowed into this space) — that system imperfections are generative, not failures to be hidden.",
+    "what_adai_should_refuse": "The technical barrier to entry that limits participation despite good intentions. The tendency to privilege code literacy as the primary creative modality. The sometimes insular community dynamics that can make the space feel unwelcoming to non-programmers. The underdeveloped critical vocabulary that makes it difficult to evaluate work by non-specialist criteria.",
+    "structural_tension": "Real-time generative performance insists on liveness and ephemerality, while A(DAI) needs to build durable, archival infrastructure. The tension between the transient (performance) and the persistent (knowledge graph) is productive: A(DAI) can learn from live coding's process transparency while providing the archival and critical infrastructure the practice currently lacks."
+  },
+  "regulatory_legal": {
+    "regulatory_exposure": "Minimal direct regulatory exposure. Open-source tools avoid most IP complications. Live performances face standard venue regulations. AI integration may bring EU AI Act considerations in future. No significant copyright opt-out issues since the practice generates original work in real time. Environmental impact is low (computational, not physical).",
+    "ip_model": "Predominantly open-source (GPL, MIT, Creative Commons). Code is shared freely. Performance recordings are typically artist-owned with permissive sharing. The culture strongly favors open licensing. Some commercial tools (TouchDesigner) use proprietary licenses with free non-commercial tiers.",
+    "opt_in_vs_opt_out": "Opt-in by nature. Participation in events, tool use, and community engagement are all voluntary. No data collection requiring consent frameworks. Open-source contributions are explicitly opt-in through license acceptance."
+  },
+  "ecosystem": {
+    "platform_dependency": "Very low. Core tools are open-source and locally installed. No dependency on any single platform, blockchain, or cloud service. GitHub hosts code repositories but alternatives exist. Performance venues are interchangeable. The ecosystem is deliberately decentralized and resilient.",
+    "network_effects": "Moderate positive network effects. More practitioners create more tools, more events, and more educational resources, attracting more practitioners. TOPLAP serves as a network hub. But the practice does not require critical mass to function — a single person with a laptop can perform.",
+    "post_crash_trajectory": "Not directly affected by the 2022-2023 crypto/NFT crash since the practice never depended on speculative markets. Steady organic growth continues. TouchDesigner adoption accelerating in commercial contexts (live events, installations). Educational programs expanding. The practice's independence from market speculation is a structural advantage."
+  },
+  "uncertain": [
+    "collector_demographics",
+    "who_is_excluded",
+    "price_range"
+  ]
+}

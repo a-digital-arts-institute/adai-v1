@@ -1,0 +1,98 @@
+{
+  "basic_info": {
+    "name": "Mat Dryhurst",
+    "type": "artist",
+    "active_years": "2013-present",
+    "location": "Berlin, Germany",
+    "url": "https://matdryhurst.com"
+  },
+  "practice_description": {
+    "medium": "Systems design, software, installation, sound, AI models, policy infrastructure",
+    "practice_summary": "British artist and technological researcher whose practice treats systems, infrastructure, and governance as creative medium. Co-creator of Spawn, Holly+, and Spawning AI. Advances 'interdependence' as a framework for understanding relational structures in art and technology.",
+    "methodology": "Dryhurst works at the intersection of art, technology, and policy. He designs technical systems that produce creative output -- the systems themselves are artworks. Collaborates primarily with Holly Herndon on voice AI and consent infrastructure. Co-founded Spawning AI to build industry-scale consent tools. Teaches at NYU. Approaches crypto, blockchain, DAOs, and ML not as tools but as artistic media for exploring collective ownership, consent, and distributed creative identity. Each project establishes precedent-setting protocols that others can adopt."
+  },
+  "relevance_to_sense_room": {
+    "relevance_summary": "Dryhurst is the primary theorist-practitioner of 'art as systems design' relevant to A(DAI). His work directly models how infrastructure and governance can be artistic medium, and his interdependence framework maps the relational structures a graph-curated exhibition would need to navigate.",
+    "art_as_substrate": "Yes, but at a meta-level -- Dryhurst designs the systems that enable art-as-substrate. Spawning AI provides consent infrastructure that other artists build on. Holly+ DAO provides governance substrate for collective creative identity. His contribution is the protocol layer beneath creative output.",
+    "relational_composition": "Central to his practice. The interdependence framework explicitly maps how art, technology, and culture are relationally determined. Every project involves designing relationships between participants: between voice contributors and AI model users, between artists and AI training datasets, between DAO members and creative outputs.",
+    "self_recomposing": "Yes -- the systems Dryhurst designs are inherently self-recomposing. Holly+ generates new outputs from new inputs indefinitely. Spawning AI's consent layer evolves as artists opt in/out. The Call's data trust creates ongoing relationships that change over time."
+  },
+  "key_works": {
+    "works": [
+      {
+        "title": "Spawning AI / HaveIBeenTrained / Source.Plus",
+        "year": 2022,
+        "description": "Co-founded with Jordan Meyer and Patrick Hoepner. Industry-scale consent infrastructure for AI training data. HaveIBeenTrained allowed artists to search LAION-5B (5.8B images) and opt out, with 1B+ opt-outs. Source.Plus is a marketplace for consented training data. Developed the ai.txt protocol.",
+        "relevance": "The most ambitious protocol art project in the AI ethics space -- building consent infrastructure as creative practice. Directly demonstrates how artists can shape industry-level systems."
+      },
+      {
+        "title": "The Call (Serpentine, with Holly Herndon)",
+        "year": 2024,
+        "description": "Immersive installation with AI choral models trained on 15 UK community choirs under a data trust. Custom songbook, multi-channel recording protocol, spatial audio installation with interactive visitor participation.",
+        "relevance": "Complete integration of systems design and art: composed training data, consent framework, data trust, AI models, architectural objects, and participatory experience as unified artwork."
+      },
+      {
+        "title": "xHairyMutantx (Whitney Biennial, with Holly Herndon)",
+        "year": 2024,
+        "description": "AI image model trained exclusively on images of Herndon, deployed as web chatbot at Whitney Museum. Visitors could prompt the model; large-format prints of AI-generated outputs were displayed. Explored 'spawning' as creation of consistent AI characters.",
+        "relevance": "Demonstrates how a constrained, consented dataset (one person's images) becomes substrate for open-ended generative output, governed by the artists."
+      }
+    ]
+  },
+  "protocol_art_resonance": {
+    "protocol_art_summary": "Dryhurst is arguably the leading practitioner of protocol art -- the idea that 'the technical systems that underwrite creative output are artworks unto themselves.' His practice has shifted art from artifact-centric to system-centric, where artists focus on models, training data, and intervention in larger systems. He designs governance structures, consent protocols, data trusts, and economic models as creative works.",
+    "system_designed": "Spawning AI (industry consent layer for AI training); ai.txt protocol (website-level AI permissions); Holly+ DAO (governance of creative digital identity); The Call data trust (choral AI model co-ownership); HaveIBeenTrained (artist opt-out infrastructure); Source.Plus (consented training data marketplace)."
+  },
+  "commons_orientation": {
+    "licence_model": "Hybrid -- commons-oriented with consent mechanisms. Spawning tools are partly open-source. ai.txt is a public protocol. Holly+ voice is freely usable with DAO governance for commercial use.",
+    "commons_summary": "Dryhurst builds commons infrastructure at every scale. His philosophy: 'more will ultimately opt in than out, but first we have to establish a common respect.' Spawning AI creates public goods (HaveIBeenTrained, ai.txt) while also building market infrastructure (Source.Plus) so artists can monetize consented use. Opposes both unconsented extraction and total enclosure."
+  },
+  "governance_model": {
+    "governance_type": "hybrid",
+    "governance_detail": "Projects use different governance models depending on context: Holly+ uses DAO with ERC-20 tokens and community voting; The Call uses a data trust with power distributed between data contributors and model users; Spawning AI operates as a startup (seed-funded by True Ventures) but builds public-good protocols. Dryhurst designs governance as artistic medium -- each project experiments with a different model."
+  },
+  "consent_and_authorship": {
+    "consent_approach": "Consent is the central ethical and aesthetic commitment. Spawning AI's entire purpose is building consent infrastructure. Every project involves explicit, informed consent from participants -- training ceremonies, choir data trusts, opt-in/opt-out tools. Dryhurst frames consent not as restriction but as enabling richer collaboration.",
+    "authorship_model": "Distributed and systems-oriented. Dryhurst designs systems where authorship is shared across many participants: voice contributors, DAO token holders, choir members, AI models. He positions the artist as systems designer rather than sole author -- creating conditions for collective creativity rather than individual expression."
+  },
+  "liveness_and_duration": {
+    "temporal_type": "continuously-evolving",
+    "temporal_detail": "All major projects are ongoing systems rather than finished works. Spawning AI's consent layer evolves as the industry changes. Holly+ DAO persists indefinitely (designed to outlive its creators). The interdependence framework grows with each podcast episode and collaboration. Dryhurst's practice is fundamentally durational and open-ended."
+  },
+  "data_materiality": {
+    "data_sources": "Consented vocal recordings (Herndon's voice, ensemble voices, 15 UK choirs, 50,000+ Spawn contributors); AI training datasets (LAION-5B as object of critical intervention via HaveIBeenTrained); image datasets (Herndon's photos for xHairyMutantx); public domain collections (Sacred Harp hymns).",
+    "data_provenance": "Consented and self-generated across all artistic projects. For Spawning AI, the entire mission is establishing provenance and consent for data used in AI training. Data provenance is both ethical commitment and aesthetic principle."
+  },
+  "embedding_space_relevance": {
+    "embedding_summary": "Dryhurst works with latent spaces through voice models (vocal latent space for Holly+), image generation models (xHairyMutantx), and choral AI models (The Call). His interest is less in the technical embedding space itself and more in who controls it, who contributed to it, and how its outputs are governed.",
+    "multimodal": "Yes -- practice spans audio (voice AI, choral models, spatial sound), visual (AI image generation, physical installations), text (ai.txt protocol, podcast), and participatory/performative modes."
+  },
+  "exhibition_modality": {
+    "modality": "hybrid",
+    "spatial_description": "The Call transformed Serpentine North into immersive spatial audio environment with custom architectural objects by studio sub. xHairyMutantx included large-format prints and web-based AI chatbot. KW Berlin Starmirror exhibition. Dryhurst's work occupies both physical gallery space and digital/infrastructural space (websites, protocols, DAOs)."
+  },
+  "sensory_register": {
+    "senses": "sonic, visual, textual",
+    "dominant_register": "sonic"
+  },
+  "interoperability": {
+    "composability": "Very high -- Dryhurst explicitly designs composable systems. Spawning's API and ai.txt are interoperable standards adopted by Hugging Face, Stability AI, and others. Holly+ produces outputs that serve as inputs for others. The interdependence framework itself is a composable intellectual tool.",
+    "technical_openness": "Partially open -- Spawning has open-source Python packages and public APIs. ai.txt is an open protocol. Holly+ instruments are freely accessible. Some infrastructure is proprietary (Source.Plus marketplace)."
+  },
+  "technical_approach": {
+    "stack": "Deep neural networks for voice synthesis and image generation; Ethereum blockchain (ERC-20 tokens for DAO governance); ai.txt protocol (web standard for AI permissions); custom APIs for consent management; multi-channel audio recording protocols; collaboration with Voctro Labs, Never Before Heard Sounds, studio sub (architecture)."
+  },
+  "network_position": {
+    "position_type": "hub",
+    "scene_affiliation": "AI art and ethics (TIME 100 most influential voices in AI, 2023); Berlin experimental art and music; Web3/DAO art community; AI policy (EU text and data mining policy influence); Serpentine Arts Technologies; Ars Electronica (STARTS Prize 2022); NYU teaching; crypto art community; Austrian Digital Human Rights Award 2024; Kairos Prize 2025.",
+    "connections": "Holly Herndon (partner, co-creator); Spawning AI / Source.Plus (co-founded); Holly+ (co-created); Interdependence podcast (co-host); Jordan Meyer and Patrick Hoepner (Spawning co-founders); Hans Ulrich Obrist; Serpentine Galleries; Jules LaPlace; Never Before Heard Sounds."
+  },
+  "potential_role_in_adai": {
+    "role": "conversation-partner",
+    "role_detail": "Dryhurst is perhaps the single most relevant conversation partner for A(DAI)'s systems-design approach. His interdependence framework directly parallels A(DAI)'s collective intelligence vision. His experience building consent infrastructure, DAOs, data trusts, and protocol art provides practical precedent for A(DAI)'s architecture. Could serve as advisory on governance models, or as a theoretical reference for art-as-infrastructure."
+  },
+  "temporal_status": {
+    "status": "active-infrastructure"
+  },
+  "uncertain": ["url"]
+}

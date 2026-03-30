@@ -1,0 +1,98 @@
+{
+  "basic_info": {
+    "name": "Holly+",
+    "type": "project",
+    "active_years": "2021-present",
+    "location": "Berlin, Germany (Herndon Dryhurst Studio); NYC (Never Before Heard Sounds); Barcelona (Voctro Labs)",
+    "url": "https://holly.plus"
+  },
+  "practice_description": {
+    "medium": "AI voice model, web instrument, DAO governance, blockchain",
+    "practice_summary": "DAO-governed AI voice instrument that transforms any uploaded audio into Holly Herndon's voice. Anyone can submit audio and receive it sung in Holly's voice; a community of token-holding stewards governs commercial use and the evolution of the project.",
+    "methodology": "Herndon trained a deep neural network on extensive recordings of her singing and speaking voice (covering the full range of English phonemes via TIMIT scripts). The model performs audio style transfer -- mapping source audio characteristics onto Holly's learned vocal representation. Multiple instruments have been developed: upload-and-transform (web), real-time voice conversion (premiered at Sonar 2021), and score-to-voice. Governance is handled by a DAO with ERC-20 VOICE tokens on Ethereum. Revenue from approved commercial uses splits 50% creator / 40% DAO / 10% Holly. DAO treasury funds new instrument development."
+  },
+  "relevance_to_sense_room": {
+    "relevance_summary": "Holly+ is the clearest existing example of art-as-substrate with collective governance -- a voice model that anyone can compose with, governed by a distributed community. It directly models how creative identity can function as raw material in a relational, graph-curated system.",
+    "art_as_substrate": "Yes -- this is the defining example. Holly's voice model is literally substrate: raw material that others build upon. Upload any audio, and the model transforms it. The voice is not a finished artwork but an instrument/medium for generating new works. The substrate layer (voice model) is distinct from the works created with it.",
+    "relational_composition": "Yes -- the relationship between the voice model, its contributors, the DAO stewards, and the creators using the instrument forms a relational web. Commercial use requires DAO approval, creating a governance graph. The provenance chain from voice model to derivative work to DAO verification is inherently relational.",
+    "self_recomposing": "Yes -- Holly+ continuously generates new outputs as users submit new audio. The voice model is persistent and productive. The DAO can fund new instruments, expanding the system's capabilities. The project's identity evolves through the collective decisions of its stewards."
+  },
+  "key_works": {
+    "works": [
+      {
+        "title": "Holly+ Web Instrument (Upload and Transform)",
+        "year": 2021,
+        "description": "First Holly+ instrument: a website where anyone uploads polyphonic audio and receives a version sung in Holly Herndon's AI voice within minutes. The voice model performs audio style transfer using a deep neural network trained on Herndon's vocal recordings.",
+        "relevance": "Core demonstration of art-as-substrate: a voice becomes a publicly accessible instrument. Anyone can compose with it, creating an open-ended generative system."
+      },
+      {
+        "title": "Holly+ Real-Time Voice Conversion (Sonar 2021)",
+        "year": 2021,
+        "description": "Live performance instrument that converts a performer's voice into Holly's voice in real time. Premiered at Sonar festival. Developed with Voctro Labs.",
+        "relevance": "Extends the substrate concept to live performance: the voice model becomes a real-time instrument for embodied, improvisational use."
+      },
+      {
+        "title": "Holly+ DAO",
+        "year": 2021,
+        "description": "Decentralized autonomous organization governing the Holly+ voice model. ERC-20 VOICE tokens on Ethereum. Hundreds of stewards vote on commercial uses. Revenue split: 50% creator, 40% DAO treasury, 10% Holly. DAO treasury funds new instrument development. Designed to outlive Herndon.",
+        "relevance": "Governance-as-artwork: the DAO structure is itself a creative work that determines how a creative identity is collectively managed. Models how A(DAI) might govern creative commons."
+      }
+    ]
+  },
+  "protocol_art_resonance": {
+    "protocol_art_summary": "Holly+ is protocol art par excellence. The project is not a single artwork but a protocol: a set of rules, governance structures, economic models, and technical systems that enable ongoing creative production. The DAO governance, revenue split, verification system, and instrument development pipeline are all designed artifacts. Herndon calls this approach 'Identity Play' -- leaning into the idea that public personas have lives of their own and designing systems to govern them.",
+    "system_designed": "Holly+ voice model (AI instrument); Holly+ DAO (governance via ERC-20 VOICE tokens on Ethereum); revenue distribution protocol (50/40/10 split); provenance verification system (tracing outputs back to DAO identity); instrument development pipeline (DAO treasury funds new instruments); legacy protocol (distributed ownership outliving the creator)."
+  },
+  "commons_orientation": {
+    "licence_model": "Commons-based with governance -- the voice model is freely usable by anyone for non-commercial purposes. Commercial use requires DAO approval. Revenue from approved commercial works is shared between creator, DAO, and Holly.",
+    "commons_summary": "Holly+ treats creative identity as a commons resource. The voice is made available as a public instrument, but commercial use is governed collectively rather than by a single rights holder. This is neither fully open (no commercial free-for-all) nor fully enclosed (anyone can use the voice). It models a third way: governed commons where a community of stewards manages the resource for collective benefit. DAO treasury creates a virtuous cycle funding more commons instruments."
+  },
+  "governance_model": {
+    "governance_type": "DAO",
+    "governance_detail": "ERC-20 VOICE tokens on Ethereum blockchain. Hundreds of token holders govern the project. Stewards vote on whether works created with Holly+ can be commercialized. Approved works are cryptographically verified by tracing provenance back to the DAO identity. Offensive or uncharacteristic media can be dismissed unless approved by stewards. Herndon has explicitly stated she prefers this distributed ownership model over traditional inheritance for her voice rights after death."
+  },
+  "consent_and_authorship": {
+    "consent_approach": "Holly Herndon consented to the creation of her own voice model -- she is the primary data subject. Users of Holly+ consent to the governance framework when they use the instruments. The DAO stewards collectively consent to (or reject) commercial uses. The project reframes consent from a binary (yes/no) to a governed, ongoing, collective process.",
+    "authorship_model": "Distributed -- Herndon is the voice source, but authorship of works made with Holly+ belongs to their creators. The DAO collectively determines what counts as 'official' Holly+ output. This creates a layered authorship model: Herndon (voice/substrate), creator (composition), DAO (validation/governance). Machine co-authorship is implicit in the AI model's transformation of input."
+  },
+  "liveness_and_duration": {
+    "temporal_type": "durational-infinite",
+    "temporal_detail": "Holly+ is designed to persist indefinitely. The voice model is a permanent instrument. The DAO is designed to outlive Herndon. New instruments are funded from DAO treasury, expanding capabilities over time. Each user interaction generates a new output, making the system continuously productive. The project has no planned end date."
+  },
+  "data_materiality": {
+    "data_sources": "Holly Herndon's singing and speaking voice -- extensive recordings covering the full range of English phonemes (TIMIT scripts), plus diverse vocal performances. The voice model can sing in multiple languages despite being trained primarily on English.",
+    "data_provenance": "Fully self-generated and consented. Herndon recorded all training data herself. This is the most ethically clean provenance possible for a voice model -- the data subject created, consented to, and governs the use of her own vocal data."
+  },
+  "embedding_space_relevance": {
+    "embedding_summary": "Holly+ operates in a learned vocal latent space. The deep neural network encodes vocal characteristics into a representation that enables audio style transfer -- mapping any source audio's content onto Holly's timbral identity. This is direct engagement with embedding/latent space as creative medium: the model learns a compressed representation of Holly's voice that can be navigated and applied to arbitrary inputs.",
+    "multimodal": "Primarily audio, but the project extends to visual (AI-generated imagery, NFTs) and textual (DAO governance documents, songbook compositions). The voice model itself is unimodal (audio)."
+  },
+  "exhibition_modality": {
+    "modality": "hybrid",
+    "spatial_description": "Holly+ operates across multiple modalities: web instrument (upload audio online), live performance (real-time voice conversion at festivals and galleries), installation (as component of larger works like The Call), and blockchain (DAO governance on Ethereum). It is primarily web-accessible but has been featured in physical exhibitions at Ars Electronica, Sonar, and as part of Serpentine installations."
+  },
+  "sensory_register": {
+    "senses": "sonic",
+    "dominant_register": "sonic"
+  },
+  "interoperability": {
+    "composability": "Very high -- designed explicitly as a composable instrument. Any audio input produces a Holly+ output. Outputs can serve as inputs for further creative work. The DAO creates a verification layer for derivative works. Multiple instruments (web upload, real-time conversion, score-to-voice) provide different composition interfaces.",
+    "technical_openness": "Partially open -- the voice instruments are freely accessible online. The DAO operates on public Ethereum blockchain. The underlying voice model is not fully open-source but is accessible through the provided instruments. Revenue model is transparent."
+  },
+  "technical_approach": {
+    "stack": "Deep neural network for voice synthesis and audio style transfer (developed with Voctro Labs, spin-off of UPF Music Technology Group with VOCALOID heritage, and Never Before Heard Sounds); Ethereum blockchain for DAO governance (ERC-20 VOICE tokens); web platform for audio upload and transformation; real-time voice conversion for live performance; TIMIT phoneme scripts for comprehensive voice training."
+  },
+  "network_position": {
+    "position_type": "hub",
+    "scene_affiliation": "AI art and music; Web3/DAO art and governance; digital identity and deepfake discourse; electronic music (Sonar); European digital arts (Ars Electronica STARTS Prize 2022); AI ethics; voice technology.",
+    "connections": "Holly Herndon (creator, voice source); Mat Dryhurst (co-creator, systems designer); Spawning AI / Source.Plus (evolved from Holly+ experiments); Interdependence (conceptual framework); Never Before Heard Sounds (NYC, technical collaboration); Voctro Labs (Barcelona, voice synthesis technology); Ars Electronica; Serpentine Galleries."
+  },
+  "potential_role_in_adai": {
+    "role": "artwork-in-graph",
+    "role_detail": "Holly+ could function as a node in A(DAI)'s graph -- a voice instrument that other nodes compose with. Its DAO governance model is a direct precedent for how A(DAI) might govern creative commons. As artwork-in-graph, it demonstrates how a single creative identity can become substrate for a generative ecosystem. Its governance model, consent framework, and revenue distribution could inform A(DAI)'s own protocol design."
+  },
+  "temporal_status": {
+    "status": "active-infrastructure"
+  },
+  "uncertain": []
+}

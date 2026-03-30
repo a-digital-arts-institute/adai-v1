@@ -1,0 +1,51 @@
+{
+  "identity": {
+    "name": "Holly Herndon + Mat Dryhurst + Spawning",
+    "type": "provocation",
+    "originator": "Holly Herndon, Mat Dryhurst",
+    "year": "2019-2022",
+    "key_text": "Spawning / Have I Been Trained? platform; Holly+ voice protocol (2021); PROTO album (2019)",
+    "key_url": "https://spawning.ai/"
+  },
+  "conceptual": {
+    "core_claim": "Artists can and should build the consent infrastructure for AI — protocol design is itself an artistic practice, and the 'spawning' of new works from training data demands new frameworks for consent, attribution, and collective ownership.",
+    "relation_to_attention_economy": "Side-steps attention logic entirely. Herndon/Dryhurst focus on the infrastructure layer beneath the attention economy — the training data, consent protocols, and attribution systems that determine who benefits from AI-generated content. They shift the conversation from 'who gets attention' to 'who consented to their data being used.'",
+    "relation_to_commons": "Directly commons-building. Spawning's tools (Have I Been Trained?, Source.Plus) create infrastructure for collective data governance. The PD12M public-domain dataset is an explicit commons resource. Holly+ — an AI voice clone available for anyone to use — proposes a new model of creative commons where the artist's voice becomes a shared instrument.",
+    "epistemological_stance": "Pragmatist-infrastructural. Knowledge is validated through what you can build. Herndon/Dryhurst do not theorize consent abstractly — they build tools that operationalize it. Validity comes from adoption, legal impact (EU AI Act), and community use."
+  },
+  "technical": {
+    "architecture_pattern": "Protocol-based consent infrastructure. Spawning builds machine-readable consent signals — opt-in/opt-out mechanisms that can be read by AI training pipelines. This is closer to web standards (robots.txt for AI) than to traditional art practice. The architecture is a consent layer that sits between data sources and AI training systems.",
+    "data_model": "Dataset-centric. Spawning's primary data objects are training datasets (LAION-5B, PD12M) and the images/works within them. Each work has associated consent metadata: who created it, whether they consent to AI training, under what conditions. This is a provenance-rich data model with consent as a first-class property.",
+    "temporal_logic": "Real-time consent management. Spawning's tools allow creators to update their consent preferences dynamically — opt in, opt out, or set conditions at any time. This is a living consent system rather than a one-time agreement.",
+    "absence_handling": "Absence of consent is treated as a positive signal — if a creator has not opted in, the default position is that their work should not be used for training. This 'consent by default' approach treats absence as protective rather than permissive.",
+    "scalability_model": "Protocol-level scaling. Spawning's consent infrastructure is designed to scale through standardization — if major AI companies adopt the protocol, it scales automatically. Have I Been Trained? already works with 5.8 billion images. This is standards-based scaling."
+  },
+  "garden_logic_comparative": {
+    "layer_mapping": "Substrate and participation layers. Spawning's consent infrastructure operates at the substrate level — it defines the foundational rules for how data flows through AI systems. Holly+ and The Call operate at the participation layer — they create new modes of collective creative engagement.",
+    "intention_vs_attention": "Strongly intention-oriented. Spawning replaces 'who gets the most attention?' with 'who consented and who benefits?' This is structural diagnosis applied to AI training: the system reveals whose labor is extracted without consent. Holly+ proposes an intention model where the artist's voice is shared not for attention but for collective creative use.",
+    "coherence_vs_consensus": "Both, strategically. Spawning seeks industry consensus on consent standards (working with the EU AI Act, engaging major AI companies) while maintaining coherence with artistic values (consent, attribution, collective benefit). They build consensus on protocols while preserving space for divergent creative uses.",
+    "contestability": "Moderate. Spawning's consent tools allow individual contestation — each creator can opt out. But the overall protocol design is relatively centralized (Spawning decides the architecture). The system is contestable at the individual level but less so at the protocol level.",
+    "forkability": "Moderately forkable. The open-source tools can be forked. PD12M is a public dataset that can be used by anyone. However, the consent protocol's value depends on industry adoption, which creates network effects that resist forking.",
+    "tendency_axis_position": "Strong openness (open-source tools, public datasets), strong commons (collective consent infrastructure), infrastructure (protocol design as practice), distributed (individual consent aggregated into collective standards). Herndon/Dryhurst sit at the commons-infrastructure intersection.",
+    "what_adai_should_adopt": "The practitioner-as-institution-builder model. Herndon/Dryhurst demonstrate that artists can build infrastructure, not just critique it. A(DAI) should study their trajectory as a case study in how artistic practice can produce institutional form. Adopt the consent-by-design principle: A(DAI)'s provenance system should treat consent as a first-class property of every signal and node. Also adopt the protocol-as-artwork concept — A(DAI)'s architecture IS its artistic contribution, just as Spawning's consent protocol is theirs.",
+    "what_adai_should_refuse": "The dependency on industry adoption. Spawning's impact depends on major AI companies respecting their consent signals. A(DAI) should not build infrastructure that requires cooperation from the platforms it critiques. Also refuse the binary opt-in/opt-out model — A(DAI)'s consent architecture should support more nuanced, graduated, and contextual consent than a simple toggle.",
+    "structural_tension": "[uncertain] Herndon/Dryhurst operate at the intersection of art practice and tech industry. Their success depends on being taken seriously by both worlds, which creates a dual accountability that can be productive but also constraining. A(DAI) faces a similar tension: it must be legible as both cultural infrastructure and artistic practice. The deeper tension is whether consent infrastructure can remain commons-oriented when it depends on industry adoption for its effectiveness."
+  },
+  "critical": {
+    "limits": "Spawning's impact depends on voluntary adoption by AI companies. Without regulatory enforcement, consent signals can be ignored. The consent model also faces the problem of retroactive training — works already used to train existing models cannot be 'un-trained.' The focus on visual art and music may not translate to other domains.",
+    "who_is_excluded": "[uncertain] Creators who are not aware of Spawning's tools, those who lack the technical literacy to use them, and those whose creative traditions do not map onto Western intellectual property frameworks. The opt-in/opt-out model presupposes individual authorship, which may not apply to collective, oral, or traditional knowledge systems.",
+    "failure_under_attention": "[uncertain] If consent infrastructure becomes a checkbox exercise (like cookie consent banners), it could create the appearance of ethical AI without meaningful change. The attention economy could co-opt consent signals as a legitimacy mechanism — 'we used only consented data' — while continuing extractive practices through loopholes."
+  },
+  "governance": {
+    "governance_model": "Hybrid: cooperative ethos with startup execution. Spawning operates as a company but with commons-oriented goals. The governance is centralized in the founding team but the outputs (datasets, tools) are designed for collective benefit. This hybrid model is pragmatic but creates tensions around accountability.",
+    "consent_architecture": "Consent-by-design. Spawning's entire purpose is building consent architecture. Machine-readable consent signals, opt-in/opt-out mechanisms, and provenance tracking are the core technical outputs. This is the most developed consent architecture in this research set."
+  },
+  "materiality": {
+    "extraction_vector": "Anti-extractive by design. Spawning's tools are explicitly designed to prevent unauthorized extraction of creative labor. However, the tools themselves require data about creators and their works, which creates a secondary data-about-data extraction vector. The mutualistic intention is clear but the operational reality involves data collection.",
+    "composability": "Protocol-level and API-first. Spawning's tools are designed to be embedded in other systems — AI training pipelines, image databases, creative platforms. The consent protocol is maximally composable by design.",
+    "liveness": "Actively maintained and rapidly evolving. Spawning continues to develop new tools, expand partnerships, and engage with regulatory processes. The project is at peak liveness.",
+    "scale_of_operation": "Field-level to planetary. Have I Been Trained? operates at the scale of billions of images. The EU AI Act influence is planetary. But individual creator engagement is at the individual/small-group level.",
+    "temporality": "Real-time consent with historical awareness. Spawning tracks both current consent preferences and the history of data usage. The system is forward-looking (preventing future extraction) while acknowledging historical extraction that cannot be undone."
+  },
+  "uncertain": ["epistemological_stance", "who_is_excluded", "failure_under_attention", "structural_tension", "extraction_vector", "consent_architecture"]
+}

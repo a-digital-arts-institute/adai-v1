@@ -1,0 +1,85 @@
+{
+  "basic_identification": {
+    "name": "Criticism infrastructure deficit",
+    "type": "gap",
+    "originator": "Systemic gap. Partial responses from Right Click Save (Alex Estorick), Flash Art (technology coverage), Le Random (editorials), Outland, Feral File journal. Gallery publications (Gagosian Quarterly, Ursula) fill the void with market-aligned content.",
+    "year": "Ongoing since digital art's emergence. Acutely visible since 2021 NFT boom when market coverage overwhelmed critical discourse",
+    "key_url": "https://www.rightclicksave.com/",
+    "geography": "English-language criticism concentrated in US and UK. Near-zero sustained critical publications in non-English languages for digital art specifically. German-language coverage via ZKM/Karlsruhe ecosystem. Some French coverage via Le Monde, Libération arts sections."
+  },
+  "core_ideas": {
+    "core_claim": "The digital art field lacks independent critical infrastructure. Most coverage is promotional, market-oriented, or PR-driven. There is no equivalent of Artforum, October, or Frieze dedicated to sustained, rigorous criticism of digital art. Right Click Save is the closest approximation but operates with limited resources. The field cannot develop critical vocabulary, canonical frameworks, or historical perspective without dedicated critical publications.",
+    "medium_specificity": "Digital art requires critics who understand both art history and technical systems — code, algorithms, blockchain architecture, AI models. This dual literacy is rare. Traditional art critics lack technical knowledge; tech journalists lack aesthetic and art-historical frameworks. The gap is not just about publications but about the absence of a critically trained cohort capable of writing about the work.",
+    "relation_to_attention_economy": "The criticism deficit directly serves the attention economy. Without independent critical voices, market narratives dominate. Gallery press releases, marketplace rankings, and social media virality become the default filters for value and significance. Criticism that challenges market narratives — questioning hype, identifying derivative work, contextualizing practice historically — is structurally undersupported.",
+    "relation_to_intention": "Criticism is intention-aligned infrastructure. It serves the field's need for self-understanding, historical perspective, and qualitative evaluation. The deficit means the field cannot distinguish between significant and trivial work except through market signals (price, volume, social media engagement), collapsing intention into attention by default."
+  },
+  "market_economics": {
+    "revenue_model": "Critical publications have weak revenue models. Right Click Save operates on a mix of advertising, sponsored content, and community support. Traditional art magazines (Artforum, Frieze) sustain through gallery advertising — a model that compromises editorial independence. Digital art publications face an even harder version of this: their potential advertisers (NFT platforms, marketplaces) are the subjects they should critically evaluate.",
+    "market_position": "Infrastructure — outside the market value chain but essential to its functioning. Criticism creates the interpretive framework within which market value is assigned. Without criticism, market value defaults to speculative momentum.",
+    "price_range": "Not applicable as a product. Right Click Save published a book (352 pages, Vetro Editions, February 2024) representing an attempt to monetize critical content in book form.",
+    "volume_trend_2024_2026": "Flat to slightly declining. The post-crash period reduced market-funded content. Right Click Save continues but with reduced output compared to peak NFT era. Le Random publishes editorials consistently. Flash Art maintains technology coverage. But no new major critical publications have launched. The 2025 A-Z of Digital Art published by Right Click Save noted it was a transition year.",
+    "collector_demographics": "Not directly applicable. However, the absence of criticism affects collector behavior — without critical frameworks, collectors rely on social signals and market data rather than aesthetic or historical evaluation.",
+    "sustainability": "Very weak. No digital art critical publication has achieved financial sustainability. Advertising-funded models compromise independence. Subscription models have not been tested at scale. The criticism infrastructure depends on the passion and precarity of a small number of writers and editors."
+  },
+  "practice_aesthetics": {
+    "toolchain": "Publication platforms: web CMS (WordPress, custom), newsletter tools (Substack, Mailchimp), podcast platforms, social media distribution. No specialized tools for digital art criticism. The toolchain is identical to general media publishing.",
+    "relation_to_AI": "AI is both subject and challenge for criticism. Critics must evaluate AI-generated art without established aesthetic frameworks. AI writing tools could potentially increase critical output but risk homogenizing voice and perspective. No publication has articulated a clear editorial position on AI-assisted criticism.",
+    "liveness": "Criticism operates in multiple temporal modes: real-time commentary (social media, newsletters), periodic review (magazine cycles), and long-form historical analysis (books, academic journals). The deficit is most acute in the middle register — sustained, regular critical review of current practice.",
+    "aesthetic_vocabulary": "This is the core deficit. The field lacks: standardized terminology for evaluating generative systems, critical frameworks for assessing AI art beyond novelty, vocabulary for discussing on-chain aesthetics, language for the relationship between code and visual output, and historical frameworks connecting digital art to broader art history. Right Click Save and Le Random editorials are developing vocabulary but it remains fragmented and community-specific.",
+    "tendency_axis_position": "Commons over capture (criticism is a public good). Infrastructure over spectacle (critical frameworks enable understanding). Openness over enclosure (criticism should be publicly accessible). Individual authorship but collective benefit."
+  },
+  "infrastructure_governance": {
+    "openness": "Mixed. Right Click Save content is freely accessible online. Academic criticism is often paywalled (Cambridge Core, JSTOR). Gallery-published criticism is free but editorially compromised. No open-access journal dedicated to digital art criticism exists.",
+    "governance_model": "Editorial — traditional editor-driven publication models. Right Click Save is editor-led (Alex Estorick). Le Random editorials are curated by Peter Bauman. No community governance, peer review, or distributed editorial models have been attempted for digital art criticism.",
+    "data_sovereignty": "Writers retain copyright in most cases. Published criticism exists on publication platforms — if a publication closes, its archive may be lost. No systematic archiving of digital art criticism. Right Click Save's 2024 book represents a preservation-through-print strategy.",
+    "interoperability": "Very low. Critical texts are published as isolated articles with no structured metadata, tagging, or linking to the works discussed. No API connects critical writing to artwork records, marketplace listings, or institutional databases. Criticism exists in a separate information silo from the works it discusses.",
+    "preservation_strategy": "Weak. Web-based publications are vulnerable to link rot and platform closure. The Wayback Machine provides some fallback. Academic publications are more durably archived but less accessible. No dedicated preservation strategy for digital art criticism as a body of knowledge.",
+    "consent_architecture": "Not applicable in traditional sense. However, the relationship between critics and subjects (artists, platforms) lacks clear ethical frameworks. No standards for disclosure of conflicts of interest specific to the digital art ecosystem (e.g., critics who hold NFTs by artists they review)."
+  },
+  "field_position": {
+    "relation_to_traditional_art_world": "Subordinate. Traditional art publications (Artforum, Frieze, Art in America) cover digital art occasionally but not systematically. Digital art criticism exists in a parallel track with lower prestige, less institutional support, and fewer career pathways for critics.",
+    "what_it_enables": "When functional, criticism enables: canonical formation (which works matter and why), aesthetic vocabulary development, historical contextualization, quality differentiation independent of market signals, career development for artists through critical attention, and public understanding of the field.",
+    "what_it_lacks": "Financial sustainability models. A cohort of trained critics with dual art/technology literacy. Institutional support (university programs, fellowship programs for critics). Long-form critical formats (sustained essay, monograph). Non-English-language criticism. Critical engagement with technical dimensions of work (code review as art criticism). Independence from market interests.",
+    "who_is_excluded": "Non-English-speaking critics and audiences. Critics without crypto/blockchain literacy (cannot evaluate on-chain work). Artists working outside the NFT/generative art mainstream (interactive, performance-based, bioart, sound art). Readers who cannot navigate the fragmented publication landscape to find criticism.",
+    "frontier_signal": "Declining from its 2021-2022 peak when NFT market excitement funded content production. Currently stable at a low level. The emergence of AI art creates new demand for critical frameworks but no new publications have risen to meet it. Right Click Save's 2024 book and continued operation represents resilience rather than growth."
+  },
+  "attention_intention": {
+    "discovery_mechanism": "Social media (Twitter/X), newsletters, word of mouth within practitioner communities. No centralized index of digital art criticism. Academic criticism is discoverable through Google Scholar and institutional databases but disconnected from practitioner communities.",
+    "attention_dependency": "Paradoxically high. Critical publications depend on social media distribution for readership, which subjects them to algorithmic attention dynamics. A thoughtful 3,000-word essay competes with meme-format market updates in the same social media feeds. The attention economy structurally disadvantages long-form criticism.",
+    "intention_alignment": "Strongly intention-aligned. Criticism serves the field's declared need for self-understanding, quality evaluation, and historical perspective. The deficit is a failure of intention — the field recognizes the need but has not built the infrastructure to meet it.",
+    "commons_contribution": "Potentially very high. Critical writing creates shared interpretive frameworks, vocabulary, and evaluative standards that benefit the entire field. But current output is too fragmented and insufficiently funded to achieve this commons-building function at scale."
+  },
+  "provenance_temporality": {
+    "provenance_type": "Criticism tracks meaning provenance — the interpretive, contextual, and evaluative history of artworks. This is precisely the provenance type that on-chain records do not capture. The criticism deficit means meaning provenance is not being created for most digital artworks.",
+    "temporal_logic": "Criticism operates across temporal registers: real-time response, periodic review, and historical reappraisal. The deficit is particularly acute in the long-term register — no institution is doing sustained historical reappraisal of digital art's development.",
+    "absence_handling": "Criticism is the primary mechanism for detecting and articulating what is missing from the field. Without criticism, absences go unnamedd. The criticism deficit is therefore a meta-absence: the absence of the mechanism that would identify other absences."
+  },
+  "coherence": {
+    "coherence_vs_consensus": "Healthy criticism should produce coherence (multiple valid critical perspectives coexisting) rather than consensus (single authoritative view). The current deficit produces neither — fragmented individual opinions without the sustained discourse that would build coherent critical frameworks.",
+    "contestability": "In principle, criticism is highly contestable — critics disagree, publish responses, and debate. In practice, the small scale of digital art criticism limits productive contestation. There are too few critics publishing regularly to sustain meaningful critical debate.",
+    "forkability": "High. Anyone can start a publication. The barrier is economic sustainability, not technical. Substack and similar platforms have lowered publishing costs to near zero. But sustaining quality criticism requires paid writers, editorial infrastructure, and dedicated time — these remain scarce resources."
+  },
+  "adai_comparison": {
+    "layer_mapping": "sensing-loop",
+    "what_adai_should_adopt": "A(DAI) should treat critical writing as a primary signal source — criticism contains some of the highest-quality field intelligence available. A(DAI) should index, tag, and integrate critical texts into its knowledge graph. It should also learn from Right Click Save's model of combining practitioner community access with editorial rigor. A(DAI) should build structured links between artworks and the critical texts that discuss them, creating the meaning provenance layer that is currently missing.",
+    "what_adai_should_refuse": "A(DAI) should refuse to treat market commentary as criticism. Price analysis, collection rankings, and trend reports are not criticism. A(DAI) should maintain a clear distinction between market intelligence and critical evaluation. It should also refuse to auto-generate criticism through AI — critical voice requires human judgment, aesthetic sensitivity, and accountability.",
+    "structural_tension": "A(DAI) aggregates and structures knowledge; criticism produces individual interpretive voices. The tension is between systematization and authorial perspective. A(DAI) can host and connect critical texts without flattening them into data points — preserving the voice and argument of criticism while making it navigable and relational."
+  },
+  "regulatory_legal": {
+    "regulatory_exposure": "Criticism is protected by freedom of expression in most jurisdictions. Fair use (US) and fair dealing (UK, EU) doctrines protect critical quotation. However, the line between criticism and promotion is often blurred in digital art coverage, raising questions about advertising disclosure requirements. No specific regulation addresses the conflict-of-interest issues unique to crypto-art criticism (critics who hold tokens or NFTs).",
+    "ip_model": "Critical texts are typically copyrighted by authors or publications. Fair use permits quotation and reproduction for critical purposes. Some publications use Creative Commons licenses. No standardized approach across the sector.",
+    "opt_in_vs_opt_out": "Not applicable in traditional sense. Artists cannot opt out of criticism (public works are fair game for critical review). However, the small scale of the digital art criticism ecosystem means that most works simply receive no critical attention at all — the default is not opt-out but invisibility."
+  },
+  "ecosystem": {
+    "platform_dependency": "High. Critical publications depend on web hosting, social media distribution (Twitter/X, Instagram), newsletter platforms (Substack, Mailchimp), and search engines for discovery. Changes to any of these platforms affect the reach and sustainability of criticism.",
+    "network_effects": "Weak positive effects. A robust critical ecosystem would create compounding value: critics build on each other's frameworks, readers develop literacy, artists engage with criticism productively. But the current ecosystem is too small for these network effects to materialize.",
+    "post_crash_trajectory": "Post-2022 crash: market-funded content production collapsed. Many writers who covered NFTs during the boom moved on. Right Click Save survived and consolidated its position. Le Random maintained editorial output. The crash revealed that most NFT-era content was promotional rather than critical. Post-crash trajectory: stable at low level, with Right Click Save as the most significant dedicated publication."
+  },
+  "uncertain": [
+    "volume_trend_2024_2026",
+    "collector_demographics",
+    "sustainability",
+    "who_is_excluded",
+    "price_range"
+  ]
+}

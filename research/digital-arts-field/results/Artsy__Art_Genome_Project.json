@@ -1,0 +1,86 @@
+{
+  "basic_identification": {
+    "name": "Artsy / Art Genome Project",
+    "type": "market_platform",
+    "originator": "Carter Cleveland (founder), Art Genome Project team (~20 art historians). Artsy Inc. Genome Project developed in consultation with Pandora's Joe Kennedy.",
+    "year": 2012,
+    "key_url": "https://www.artsy.net/",
+    "geography": "New York City HQ, offices in London, Berlin, Hong Kong, Los Angeles. Global reach: 1M+ artworks, 100K+ artists, partnerships with galleries and auction houses worldwide."
+  },
+  "core_ideas": {
+    "core_claim": "Art discovery through a structured genome of 1,300+ characteristics (genes) that map artworks, artists, and movements across history. The Art Genome Project is the most extensive digital art taxonomy, powering algorithmic discovery and recommendation across the entire art market.",
+    "medium_specificity": "Digitally native in its discovery mechanism -- the gene-based recommendation system could only work computationally. The 0-100 weighted gene values (not binary tags) enable nuanced similarity mapping impossible in physical cataloging. However, the art itself spans all media; Artsy is not specific to digital art.",
+    "relation_to_attention_economy": "Artsy operates within the attention economy through algorithmic recommendation (the Art Genome Project feeds a Pandora-like recommendation engine). However, it optimizes for discovery and sales conversion rather than pure engagement metrics. The 48% increase in Alerts usage (2024) suggests growing attention capture through notification mechanics. It balances editorial curation with algorithmic surfacing.",
+    "relation_to_intention": "Mixed. The Art Genome Project itself serves an intention-native function: structured knowledge about art. But Artsy as a platform primarily serves market function (sales, auctions, gallery subscriptions). The taxonomy enables discovery but is enclosed within a commercial platform, making it attention-to-sales infrastructure rather than pure knowledge commons."
+  },
+  "market_economics": {
+    "revenue_model": "Gallery subscriptions (~$450/month), transaction commissions (~15% on sales), auction partnerships, institutional collaboration fees. Total funding: $100M+ raised through multiple rounds. Average total sales per gallery up 15% YoY in 2024 despite 12% decline in global art market.",
+    "market_position": "Primary and secondary market infrastructure. Artsy operates as both marketplace and data/discovery layer. Largest online art marketplace by volume of listed works.",
+    "price_range": "Broad: from emerging artist works at a few hundred dollars to blue-chip pieces in the millions. The platform spans the entire market spectrum through gallery and auction house partnerships.",
+    "volume_trend_2024_2026": "Growing modestly within a declining overall art market. 15% YoY increase in per-gallery sales in 2024. 59% of collectors purchased online in 2024. Artsy outperforming the broader market but facing headwinds from economic uncertainty and changing collector behavior.",
+    "collector_demographics": "Mixed: traditional art collectors moving online, younger digitally-native collectors, institutional buyers. 43% of galleries plan to increase digital activity (2025). Collector satisfaction is low: only 17% feel the market meets their needs. Softening demand from top-tier collectors.",
+    "sustainability": "Viable but challenged. The subscription + commission model provides recurring revenue. The Art Genome Project is a defensible moat. However, 75% of galleries cite economic uncertainty as a major challenge. Artsy's long-term sustainability depends on maintaining gallery partnerships and growing online transaction volume against competitors (1stDibs, Artnet)."
+  },
+  "practice_aesthetics": {
+    "toolchain": "Proprietary Art Genome Project classification system. Web platform and mobile apps. Gallery CMS for inventory management. Auction integration tools. Data analytics for market intelligence.",
+    "relation_to_AI": "The Art Genome Project is a human-curated taxonomy (20 art historians), not AI-driven. However, it feeds recommendation algorithms. Artsy has been cautious about AI integration. The taxonomy could theoretically be used to train AI systems but remains proprietary. Generative AI art is listed on the platform but Artsy has not positioned itself as an AI-art-specific platform.",
+    "liveness": "Static marketplace with dynamic recommendation. The Art Genome Project is continuously updated by human editors. Listed artworks are static representations. No real-time or generative components.",
+    "aesthetic_vocabulary": "The Art Genome Project represents the most extensive structured aesthetic vocabulary in the digital art ecosystem: 1,300+ genes covering movements, subject matter, formal qualities, geographic origin, techniques. Genes are weighted 0-100 for nuance. The vocabulary is curated by art historians and constantly evolving. However, the vocabulary is primarily art-historical rather than addressing digital-native aesthetics specifically.",
+    "tendency_axis_position": "Enclosure-leaning: proprietary taxonomy within a commercial platform. Capture over commons: the genome's value accrues to Artsy shareholders, not the field. Spectacle-light: functional marketplace rather than spectacle. Individual focus: serves individual galleries and collectors, not collective knowledge production."
+  },
+  "infrastructure_governance": {
+    "openness": "Hybrid. The Art Genome Project gene names and definitions are published on GitHub under CC-BY-4.0, available for the GLAM community. However, the weighted gene values, the recommendation algorithms, and the full dataset remain proprietary. The taxonomy structure is open; the applied intelligence is enclosed.",
+    "governance_model": "Corporate. Art Genome Project taxonomy decisions are made by Artsy's internal team of ~20 art historians. No external governance, no community input mechanism on gene definitions or additions. Platform decisions driven by corporate strategy and investor expectations.",
+    "data_sovereignty": "Artsy controls all data. Gallery inventory data is managed through Artsy's CMS. Artists do not own their genome profiles or the relational data. Data portability is limited -- galleries can export basic inventory but not the genome mappings or recommendation data. The taxonomy itself is open but the applied dataset is not.",
+    "interoperability": "Limited. Artsy provides an API but the Art Genome Project data is not fully accessible through it. No support for linked data standards, RDF, or graph interoperability protocols. The taxonomy exists as a proprietary silo despite the CC-BY-4.0 gene list. Not graph-ready for external integration.",
+    "preservation_strategy": "Institutional (corporate). No blockchain or decentralized preservation. Artsy's data persists as long as the company operates. The CC-BY-4.0 gene list on GitHub provides some preservation of the vocabulary independent of the platform.",
+    "consent_architecture": "Absent for artists. Artists and artworks are genomed by Artsy's team without explicit artist consent for specific gene assignments. No mechanism for artists to contest or modify their genome classification. Galleries consent to list inventory but do not control how the genome classifies their artists."
+  },
+  "field_position": {
+    "relation_to_traditional_art_world": "Deep integration. Artsy partners with 4,000+ galleries and auction houses globally. The Art Genome Project bridges online discovery with traditional gallery sales. Major institutional partnerships. Functions as a digital extension of the existing art market rather than an alternative to it.",
+    "what_it_enables": "Discovery of art across the entire market through structured taxonomy. Galleries can reach global audiences. Collectors can find works through gene-based exploration rather than brand recognition alone. The taxonomy enables cross-historical, cross-geographic, cross-medium connections impossible in physical gallery visiting.",
+    "what_it_lacks": "Open access to the full genome dataset. Community governance of the taxonomy. Digital-art-specific genes are underrepresented relative to traditional art categories. No provenance tracking beyond ownership. No interoperability with blockchain-based or decentralized systems. No mechanism for the field to collectively evolve the taxonomy.",
+    "who_is_excluded": "Artists not represented by galleries on Artsy. The subscription cost excludes smaller galleries. The art-historical framing of the genome may not adequately capture non-Western, indigenous, or digitally-native practices. Collectors priced out of the market. Self-taught artists without gallery representation.",
+    "frontier_signal": "Established but evolving. The Art Genome Project was frontier when launched but is now an established institution. The frontier question is whether Artsy will open the genome or whether alternatives (open knowledge graphs) will supersede it."
+  },
+  "attention_intention": {
+    "discovery_mechanism": "Algorithm (Art Genome recommendation engine), editorial curation (Artsy editorial team), search, social sharing. The Alerts feature (up 48% in 2024) adds notification-based discovery.",
+    "attention_dependency": "Moderate. Artsy depends on web traffic and collector engagement for revenue. It would survive without Twitter/Instagram but would lose significant collector acquisition channels. The Art Genome Project provides durable structural value independent of attention platforms.",
+    "intention_alignment": "Mixed. The Art Genome Project is intention-native (structured knowledge for discovery). The marketplace is attention-to-sales (converting browsing to purchases). The editorial layer adds intention-aligned content but serves the commercial goal.",
+    "commons_contribution": "Partial. The CC-BY-4.0 gene list is a genuine commons contribution. But the full applied dataset, the weighted relationships, and the recommendation intelligence remain proprietary. Artsy's market reports contribute field knowledge but primarily serve marketing purposes."
+  },
+  "provenance_temporality": {
+    "provenance_type": "Ownership primarily, through auction records and gallery transaction history. The genome tracks characteristics and relationships but not provenance of meaning or exhibition history in a structured way.",
+    "temporal_logic": "Archival with some real-time market data. Historical taxonomy mapping. No cyclical or anticipatory temporal features.",
+    "absence_handling": "The Art Genome Project implicitly addresses absence through what it chooses not to gene. Recent additions (post-internet art, computer-aided design) acknowledge previously absent categories. But there is no structured mechanism for surfacing what the taxonomy fails to capture."
+  },
+  "coherence": {
+    "coherence_vs_consensus": "Consensus-seeking within its own taxonomy. The Art Genome Project aims for a single consistent classification system. Gene definitions are authoritative (decided by the internal team). Multiple valid readings are not supported -- each artist/artwork gets definitive gene assignments.",
+    "contestability": "Very limited. Artists cannot contest their gene assignments. The internal team has sole authority over the taxonomy. Public feedback is possible through GitHub but there is no formal contestation mechanism. The closed editorial process mirrors traditional encyclopedic authority.",
+    "forkability": "Partially forkable. The gene list and definitions (CC-BY-4.0) can be forked and used independently. However, the applied dataset (which artworks have which genes at which weights) cannot be forked -- it is proprietary. Building an alternative would require regenerating the entire classification from scratch."
+  },
+  "adai_comparison": {
+    "layer_mapping": "sensing-loop",
+    "what_adai_should_adopt": "The weighted gene model (0-100 rather than binary tags) is a powerful pattern for nuanced classification. The scale of the taxonomy (1,300+ characteristics) shows the ambition needed. The CC-BY-4.0 open vocabulary is a good precedent. The art-historian-in-the-loop approach to taxonomy curation ensures quality that pure AI classification cannot match.",
+    "what_adai_should_refuse": "The proprietary enclosure of the applied dataset. The consensus-seeking single-authority taxonomy model (A(DAI) should enable coherence without consensus). The absence of artist agency over their own classification. The lack of interoperability with external systems. The market-serving orientation that subordinates knowledge to sales conversion.",
+    "structural_tension": "The Art Genome Project proves that structured art taxonomy at scale is possible and valuable. But it proves it within a proprietary commercial enclosure. A(DAI) must demonstrate that an open, commons-governed alternative can achieve comparable quality and coverage while remaining non-extractive. The tension is between editorial authority (which ensures quality) and commons governance (which ensures legitimacy)."
+  },
+  "regulatory_legal": {
+    "regulatory_exposure": "Standard e-commerce regulations. GDPR compliance for European operations. No direct AI Act exposure since the genome is human-curated. Art market regulations (anti-money-laundering) apply to sales. No specific digital art regulatory exposure.",
+    "ip_model": "Proprietary platform with CC-BY-4.0 gene vocabulary. Artist IP remains with artists/galleries. The genome classification applied to artworks is Artsy's proprietary data. Market data and analytics are proprietary.",
+    "opt_in_vs_opt_out": "Opt-in for galleries (subscription). Implicit for artists (genomed without explicit consent when galleries list their work). Collectors opt-in by creating accounts. No opt-out mechanism for genome classification."
+  },
+  "ecosystem": {
+    "platform_dependency": "Self-hosted web platform. Depends on gallery partnerships for inventory. Depends on auction house integrations for secondary market. No blockchain dependency. Standard web infrastructure with cloud hosting.",
+    "network_effects": "Strong two-sided network effects: more galleries attract more collectors, more collectors attract more galleries. The Art Genome Project becomes more valuable as more artworks are classified. However, competitor marketplaces (Artnet, 1stDibs) limit winner-take-all dynamics.",
+    "post_crash_trajectory": "Artsy navigated the NFT crash relatively unscathed as it was never primarily an NFT platform. The traditional art market downturn (-12% in 2024) is a more relevant challenge. Artsy is outperforming the market (15% per-gallery sales growth) by deepening online engagement and expanding collector tools. Positioning as thought leader with market reports."
+  },
+  "uncertain": [
+    "revenue_model",
+    "collector_demographics",
+    "sustainability",
+    "volume_trend_2024_2026",
+    "consent_architecture",
+    "who_is_excluded"
+  ]
+}

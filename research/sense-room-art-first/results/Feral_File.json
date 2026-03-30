@@ -1,0 +1,98 @@
+{
+  "basic_info": {
+    "name": "Feral File",
+    "type": "platform",
+    "active_years": "2020-present",
+    "location": "Online (founded by Casey Reas, US-based; Bitmark, Taiwan-based)",
+    "url": "https://feralfile.com"
+  },
+  "practice_description": {
+    "medium": "Online exhibition platform, digital art marketplace, hardware (FF1 Art Computer), publishing",
+    "practice_summary": "Artist-curated digital art exhibition platform co-founded by Casey Reas and Bitmark's Sean Moss-Pultz, pioneering code-based and software artwork exhibitions with blockchain provenance, large editions at accessible prices, and a distinctive artist-trading model where all exhibiting artists receive one edition of each other's work.",
+    "methodology": "Feral File operates through group exhibitions with commissioned curators who define themes and invite artists. All exhibitions are group shows with large editions (e.g., 75 editions at $75) to keep collecting accessible. A key innovation is the artist-trading system: artists create editions and trade with each other, so every artist in an exhibition receives one edition from every other artist. The platform uses blockchain for provenance and rights management, building on Bitmark's property rights technology. Inspired by the 2019 a2p (Artist-to-Peer) project where 75 artists swapped blockchain-based editions."
+  },
+  "relevance_to_sense_room": {
+    "relevance_summary": "Feral File demonstrates how digital art can be exhibited, collected, and circulated through artist-designed infrastructure. Its artist-trading model creates relational networks between practitioners, and its commitment to software-as-medium directly supports art that is generative and composable.",
+    "art_as_substrate": "Yes. Feral File was the first platform to support code-based artwork, meaning the exhibited works are executable software that generates outputs -- art as living substrate rather than static artifact.",
+    "relational_composition": "Yes. The artist-trading model creates a relational web: every exhibition generates a network where each artist holds work by every other artist. This builds collector-artist and artist-artist relationships structurally through the platform's design.",
+    "self_recomposing": "The platform hosts generative and software-based artworks that produce different outputs each time they run. The FF1 Art Computer is specifically designed to display living, generative art in domestic settings."
+  },
+  "key_works": {
+    "works": [
+      {
+        "title": "Social Codes (Inaugural Exhibition)",
+        "year": 2021,
+        "description": "First Feral File exhibition featuring software-based artworks in editions of 75 at $75 each. Established the platform's model of accessible editions, artist trading, and code-as-medium.",
+        "relevance": "Set the template for how digital/generative art can be exhibited and collected through artist-designed infrastructure."
+      },
+      {
+        "title": "SOUND MACHINES (with MoMA)",
+        "year": 2024,
+        "description": "Online exhibition co-organized with The Museum of Modern Art focusing on sound and technology, featuring Holly Herndon & Mat Dryhurst, Yoko Ono, and others. Herndon/Dryhurst contributed Play from Memory -- 16 new ML models producing orchestral/choral sounds and imagery.",
+        "relevance": "Demonstrates Feral File's capacity to partner with major institutions and feature A(DAI)-relevant practitioners. Bridges institutional legitimacy with artist-led digital infrastructure."
+      },
+      {
+        "title": "FF1 Art Computer",
+        "year": 2025,
+        "description": "Open-source hardware device (5x5x2 inch black aluminum) designed specifically for displaying generative art, images, GIFs, and video at home. Not a sales platform but a tool for living with computational art.",
+        "relevance": "Physical infrastructure for experiencing digital art. Open-source hardware design aligns with commons principles. Addresses the display problem for generative work."
+      }
+    ]
+  },
+  "protocol_art_resonance": {
+    "protocol_art_summary": "Feral File treats the exhibition platform itself as a design object. The artist-trading protocol, the Artist and Collector Rights agreement, the edition model, and the blockchain provenance system are all designed artifacts that shape how art circulates. Casey Reas explicitly approaches the platform as an artwork extending from his decades of work with Processing and generative art.",
+    "system_designed": "The Feral File platform with its artist-trading model, Artist and Collector Rights agreement (extending Siegelaub/Projansky's 1971 agreement), cross-chain blockchain provenance system (Bitmark chain, Tezos, Ethereum), FF1 open-source art computer, and exhibition format (curated group shows with large editions)."
+  },
+  "commons_orientation": {
+    "licence_model": "hybrid",
+    "commons_summary": "Mixed orientation. Feral File operates commercially but with strong artist-empowerment principles. The FF1 Art Computer is open-source. The Artist and Collector Rights agreement ensures artist royalties on secondary sales and protects artist copyright. The platform was specifically designed to keep art accessible (large editions, low prices). However, it operates as a commercial marketplace. The artist-trading model creates a form of mutual aid within exhibitions."
+  },
+  "governance_model": {
+    "governance_type": "hybrid",
+    "governance_detail": "Platform governed by Casey Reas and Bitmark team. Individual exhibitions are curated by invited guest curators who select artists and define themes. Artists retain copyright and receive secondary sale royalties. The Artist and Collector Rights agreement defines the governance framework for each artwork's lifecycle. The artist-trading model gives artists structural participation beyond simple consignment."
+  },
+  "consent_and_authorship": {
+    "consent_approach": "Artists are invited by curators and consent to the Artist and Collector Rights agreement. Blockchain records ensure transparent provenance. Artists retain original copyright. Collectors receive clearly defined rights (display, loan, lease, resell, transfer).",
+    "authorship_model": "Individual artist authorship within curated group contexts. Artists retain copyright. The curator role is credited and visible. The platform credits all participants (artist, curator, collector) as stakeholders."
+  },
+  "liveness_and_duration": {
+    "temporal_type": "generative-on-demand",
+    "temporal_detail": "Many exhibited works are software-based and generate different outputs each time they execute. The FF1 Art Computer enables continuous generative display. The platform itself accumulates exhibitions over time (33+ exhibitions since 2020)."
+  },
+  "data_materiality": {
+    "data_sources": "Artist-created software, code, video, images, sound works. Blockchain transaction and provenance data. Curatorial metadata and exhibition descriptions.",
+    "data_provenance": "Artist-generated. Each work is created by invited artists. Blockchain provides immutable provenance records. The platform was specifically designed to establish clear digital property rights."
+  },
+  "embedding_space_relevance": {
+    "embedding_summary": "Individual artworks on Feral File may engage with AI embedding spaces (e.g., Herndon/Dryhurst's Play from Memory uses ML models), but the platform itself does not operate in embedding space. The focus is on code execution and software display.",
+    "multimodal": "Yes. The platform supports software, video, images, GIFs, sound, and 3D files across exhibitions."
+  },
+  "exhibition_modality": {
+    "modality": "web",
+    "spatial_description": "Primarily online exhibitions at feralfile.com. The FF1 Art Computer extends exhibition into domestic physical space. The MoMA collaboration (SOUND MACHINES) connected to institutional physical presence. Peer to Peer exhibition at Buffalo AKG Art Museum demonstrated physical gallery integration."
+  },
+  "sensory_register": {
+    "senses": ["visual", "sonic"],
+    "dominant_register": "visual"
+  },
+  "interoperability": {
+    "composability": "High. The platform uses blockchain for interoperable provenance records that work across marketplaces and chains. Cross-chain support (Bitmark, Tezos, Ethereum) ensures artworks are not locked to one ecosystem. The FF1 is open-source hardware. The Feral File app is open-source (github.com/bitmark-inc/feralfile-app).",
+    "technical_openness": "Open. The Feral File app is open-source on GitHub. The FF1 Art Computer is open-source. Cross-chain blockchain ensures portability. The Artist and Collector Rights agreement is publicly documented."
+  },
+  "technical_approach": {
+    "stack": "Bitmark blockchain (property rights), Tezos and Ethereum (cross-chain support), Ethereum Bridge, smart contracts for secondary sale royalties, open-source Feral File app (GitHub), FF1 Art Computer (open-source hardware), web exhibition platform"
+  },
+  "network_position": {
+    "position_type": "hub",
+    "scene_affiliation": "Generative art, software art, Processing community (Casey Reas co-created Processing), NFT/Web3 art market, institutional digital art (MoMA partnership), computational art",
+    "connections": "Holly Herndon & Mat Dryhurst (exhibited artists, SOUND MACHINES with MoMA), MoMA (SOUND MACHINES collaboration), Fellowship.xyz (parallel platform in digital art space), Casey Reas / Processing (founder's broader practice), Buffalo AKG Art Museum (Peer to Peer exhibition), Refik Anadol, Tyler Hobbs, LaTurbo Avedon, Auriea Harvey, Lu Yang (exhibited artists), Serpentine Arts Technologies (shared practitioner networks)"
+  },
+  "potential_role_in_adai": {
+    "role": "infrastructure-partner",
+    "role_detail": "Feral File is a natural interoperability partner for A(DAI). Their open-source infrastructure (app, FF1), cross-chain blockchain provenance, and Artist and Collector Rights framework provide tested models for how A(DAI) might handle artwork circulation and rights. The platform's artist network overlaps significantly with A(DAI)'s field of interest. Partnership could enable A(DAI) graph outputs to be exhibited or collected through Feral File's infrastructure, and the FF1 could serve as a physical display device for A(DAI) Sense Room outputs."
+  },
+  "temporal_status": {
+    "status": "active-infrastructure"
+  },
+  "uncertain": ["FF1 release year - may be 2024 or 2025"]
+}

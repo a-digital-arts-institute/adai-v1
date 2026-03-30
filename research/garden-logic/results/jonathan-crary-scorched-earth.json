@@ -1,0 +1,51 @@
+{
+  "identity": {
+    "name": "Jonathan Crary — Scorched Earth (2022)",
+    "type": "attention-critique",
+    "originator": "Jonathan Crary",
+    "year": "2022",
+    "key_text": "Scorched Earth: Beyond the Digital Age to a Post-Capitalist World (Verso, 2022)",
+    "key_url": "https://www.versobooks.com/products/214-scorched-earth"
+  },
+  "conceptual": {
+    "core_claim": "The 'internet complex' is inseparable from 24/7 capitalism and ecologically incompatible with a habitable earth — attention enclosure and ecological collapse are structurally linked, not merely coincident.",
+    "relation_to_attention_economy": "Total rejection. Crary argues the attention economy is not a distortion of an otherwise neutral technology but the fundamental purpose of the internet complex. Social media cannot be reformed; it must be abandoned. Attention capture is the mechanism by which capitalism completes its enclosure of all human experience.",
+    "relation_to_commons": "Crary argues that global capitalism systematically destroys the resources communities need for self-sufficient subsistence and self-governance — a 'scorched earth' strategy against the commons. He calls for eco-socialism or no-growth post-capitalism as the only viable commons framework.",
+    "epistemological_stance": "[uncertain] Critical-materialist. Crary draws on Marx, Debord, Arendt, and Deleuze/Guattari. Knowledge is understood through political economy and ideology critique. Validity comes from structural analysis of power relations, not empirical measurement or individual experience."
+  },
+  "technical": {
+    "architecture_pattern": "No technical architecture — Crary is explicitly anti-technical. His argument is that any computational architecture is complicit in the internet complex. The implicit pattern is negation: the architecture of refusal is offline community.",
+    "data_model": "N/A — Crary rejects data models as instruments of capture. The internet complex turns all human activity into data for extraction. Any data model is already part of the problem.",
+    "temporal_logic": "Anti-temporal in the computational sense. Crary's earlier work (24/7, 2013) argued that capitalism attacks sleep — the last refuge from productivity. His temporal logic is the recovery of non-productive time: rest, embodied presence, seasonal rhythms.",
+    "absence_handling": "Crary does not handle absence within a system — he advocates for absence FROM the system. The internet complex makes absence impossible (always-on, 24/7), so structural absence requires breaking the connection entirely.",
+    "scalability_model": "Anti-scalable. Crary advocates for local, small-scale democratic processes and physical interactions. Scalability is itself a capitalist logic."
+  },
+  "garden_logic_comparative": {
+    "layer_mapping": "None directly — Crary would likely reject A(DAI) as still operating within the internet complex. However, his critique maps to the substrate layer as a warning: any infrastructure built on computation risks reproducing the enclosure it claims to resist.",
+    "intention_vs_attention": "Crary provides the most radical critique of attention logic. His argument implies that intention-economies are necessary but insufficient — even intention can be captured if it operates within computational infrastructure. A(DAI)'s intention economy is an ecological necessity IF it can avoid becoming another layer of the internet complex.",
+    "coherence_vs_consensus": "Neither, in Crary's framework. He is not interested in building systems at all. His critique suggests that both coherence and consensus are system-level operations that presuppose the infrastructure he wants to abandon. The tension for A(DAI) is real: can you build coherence without reproducing enclosure?",
+    "contestability": "Crary's work is contestable as critique but offers no internal mechanism for contestation. His position is absolutist — the internet complex must be abandoned, not reformed. This leaves no room for gradual transformation or hybrid approaches.",
+    "forkability": "Not applicable. Crary's framework is not designed to be instantiated, so it cannot be forked. It functions as a warning system, not a protocol.",
+    "tendency_axis_position": "Extreme openness (anti-enclosure), extreme commons (anti-capture), extreme infrastructure (anti-spectacle in the Debordian sense), distributed (anti-centralization). But also anti-computational, which places him outside the spectrum A(DAI) operates within.",
+    "what_adai_should_adopt": "The structural link between attention enclosure and ecological collapse. If Crary is right, then A(DAI)'s intention-economy is not merely a design preference but an ecological necessity. Adopt the urgency: this is not an aesthetic choice but a survival imperative. Also adopt Crary's critique of reformism — the attention economy cannot be fixed, only replaced.",
+    "what_adai_should_refuse": "Crary's absolutism about computation. His position that all digital infrastructure is inherently extractive leaves no room for the kind of commons-first computational infrastructure A(DAI) is building. Refuse the counsel of despair. Also refuse the implicit Eurocentrism of Crary's critique, which centers Western capitalism without adequate attention to Global South alternatives.",
+    "structural_tension": "[uncertain] The deepest tension: Crary argues that computational infrastructure IS the enclosure. A(DAI) argues that computation can be designed for intention rather than attention. This is not a disagreement that can be resolved theoretically — it can only be tested through practice. If A(DAI) succeeds, it disproves Crary. If A(DAI) gets co-opted, it proves him right. The dream cycle's tidal rhythm is A(DAI)'s strongest response to Crary — it introduces non-productive time into computation itself."
+  },
+  "critical": {
+    "limits": "Crary's absolutism makes his framework practically useless for building alternatives. He offers no path from here to there. The critique is powerful but paralyzing. He also underestimates the diversity of digital practices globally, treating the internet as a monolithic Western capitalist project.",
+    "who_is_excluded": "[uncertain] Anyone who relies on digital infrastructure for survival, community, or political organizing — disabled communities, diasporic communities, activists in authoritarian states. Crary's 'go offline' prescription is a privilege position that ignores those for whom the internet is a lifeline.",
+    "failure_under_attention": "[uncertain] Crary's work itself circulates through the attention economy (Verso Books, academic conferences, social media discourse). The critique of the internet complex is disseminated through the internet complex. This performative contradiction does not invalidate the argument but reveals its limits as a practical guide."
+  },
+  "governance": {
+    "governance_model": "Eco-socialist. Crary advocates for local, small-scale democratic processes, mutual cooperation, and physical interactions. The governance model is prefigurative — building post-capitalist forms of life through practice rather than policy.",
+    "consent_architecture": "[uncertain] No formal consent mechanism. Crary's framework implies collective consent through democratic assembly, but provides no specific architecture for how this would work. The absence of consent architecture is consistent with his rejection of computational systems."
+  },
+  "materiality": {
+    "extraction_vector": "[uncertain] Extracts nothing — Crary's framework is entirely critical/diagnostic. However, the academic and publishing apparatus through which it circulates does extract attention and economic value. The framework itself is anti-extractive but cannot escape the extraction economy it critiques.",
+    "composability": "Monolithic. Crary's argument does not modularize well — it is an all-or-nothing critique. You cannot adopt 'some' of Crary's framework without diluting its force. This is both its intellectual strength and its practical weakness.",
+    "liveness": "Historically significant and actively cited. Crary continues to publish and lecture. The framework is alive as critique but static as a program for action.",
+    "scale_of_operation": "Planetary in critique, local in prescription. Crary diagnoses a planetary-scale problem but prescribes local-scale solutions. This scalar mismatch is a known weakness.",
+    "temporality": "Historical depth and anticipatory. Crary traces the present crisis through deep historical analysis (from Debord through neoliberalism) and projects forward to ecological collapse. His temporality is linear-catastrophic rather than cyclical."
+  },
+  "uncertain": ["epistemological_stance", "who_is_excluded", "failure_under_attention", "structural_tension", "extraction_vector", "consent_architecture"]
+}

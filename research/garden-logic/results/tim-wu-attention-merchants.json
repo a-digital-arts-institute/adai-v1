@@ -1,0 +1,51 @@
+{
+  "identity": {
+    "name": "Tim Wu — The Attention Merchants (2016)",
+    "type": "attention-critique",
+    "originator": "Tim Wu",
+    "year": "2016",
+    "key_text": "The Attention Merchants: The Epic Scramble to Get Inside Our Heads (Knopf, 2016)",
+    "key_url": "https://scholarship.law.columbia.edu/books/64/"
+  },
+  "conceptual": {
+    "core_claim": "Attention capture is a 200-year industrial pattern: from the penny press to social media, the business model of harvesting human attention for resale to advertisers has been the dominant commercial logic, with each new medium repeating the same cycle of capture, revolt, and re-capture.",
+    "relation_to_attention_economy": "Historicizes it. Wu does not simply critique the attention economy — he genealogizes it, showing that attention capture is not a recent aberration but a deeply embedded industrial logic dating to the 1830s. This historical depth reveals the pattern as structural, not contingent.",
+    "relation_to_commons": "Implicit. Wu treats attention as a common resource that has been progressively enclosed by industrial interests. His framework suggests that attention was once part of a shared public life and has been privatized through increasingly sophisticated capture mechanisms. However, he does not explicitly develop a commons framework.",
+    "epistemological_stance": "[uncertain] Empirical-historical. Wu works as a legal scholar and historian, building his case through documented evidence, case studies, and narrative history. Validity comes from historical documentation and pattern recognition rather than theoretical frameworks."
+  },
+  "technical": {
+    "architecture_pattern": "Historical pattern analysis — Wu identifies a recurring cycle: a new medium emerges, attention merchants discover its capture potential, audiences revolt, and merchants adapt with new techniques. This is closer to a systems-dynamics model than a technical architecture.",
+    "data_model": "Historical narrative. Wu organizes information chronologically and by medium (press, radio, television, internet), tracking the attention-merchant business model across technological eras. No formal data structure.",
+    "temporal_logic": "Historical-cyclical. Wu's central insight is that attention capture follows a repeating historical pattern. Each new medium triggers the same cycle: innovation, capture, saturation, revolt, adaptation. This cyclical pattern over 200 years is the temporal core of his argument.",
+    "absence_handling": "Wu tracks 'revolts' — moments when audiences refuse capture — as absence events. The remote control, ad-blocking, FDA regulations, and counter-cultural movements all represent moments of refusal. However, Wu notes that these absences are always temporary; the attention merchants always find new vectors.",
+    "scalability_model": "Wu documents how attention capture has scaled from local (penny press) to national (radio/TV) to planetary (internet). The scalability model is historically determined by medium, with each new technology enabling capture at greater scale."
+  },
+  "garden_logic_comparative": {
+    "layer_mapping": "Sensing loop. Wu's historical analysis functions as context for A(DAI)'s sensing apparatus — it provides the deep pattern recognition that makes current attention-capture strategies legible as instances of a 200-year structural dynamic.",
+    "intention_vs_attention": "Wu documents the attention side comprehensively but does not theorize intention as an alternative. His work is diagnostic, not prescriptive. He shows what A(DAI) refuses but does not map what A(DAI) builds. His call to 'reclaim attention' remains within an attention framework rather than proposing an intention alternative.",
+    "coherence_vs_consensus": "Neither explicitly. Wu is a historian, not a system designer. His work contributes to coherence by providing historical depth that makes the present legible, but he does not build systems for either coherence or consensus.",
+    "contestability": "Wu's historical claims are contestable through standard academic methods, but his work does not build contestability as a system property. The historical pattern he identifies (capture-revolt-recapture) is itself a thesis that can be challenged.",
+    "forkability": "The historical framework is inherently forkable — different historians can tell different stories about the same period, emphasizing different actors and dynamics. However, Wu provides no mechanism for managing divergent interpretations.",
+    "tendency_axis_position": "Moderate openness (documents enclosure without necessarily proposing openness), implicit commons (treats attention as a common resource being enclosed), infrastructure-oriented (focuses on structural patterns rather than spectacle), multi-scale (traces patterns from individual to planetary).",
+    "what_adai_should_adopt": "The 200-year pattern as diagnostic context. A(DAI) should embed Wu's historical depth into its sensing apparatus: current attention-capture strategies are not new but iterations of a deep industrial pattern. This historical grounding prevents A(DAI) from treating each new platform or technology as unprecedented. Also adopt Wu's concept of 'revolts' — moments of refusal are structural features of the attention economy, not exceptions.",
+    "what_adai_should_refuse": "Wu's implicit reform orientation. He suggests we can 'reclaim' attention within existing systems, which underestimates the structural depth of the pattern he himself documents. If attention capture is a 200-year industrial logic, it cannot be reformed through individual choice. Also refuse Wu's Americentrism — his history is overwhelmingly US-centric, missing attention economies in other cultural contexts.",
+    "structural_tension": "Wu's historical pattern (capture-revolt-recapture) suggests that ALL alternatives to the attention economy will eventually be captured. This is a fundamental challenge to A(DAI): is the intention economy just another moment of revolt that will be recaptured? A(DAI)'s response must be architectural — the system must be designed to resist capture structurally, not just philosophically. The 90-day signal lifecycle and the dream cycle are A(DAI)'s architectural response to Wu's historical pattern."
+  },
+  "critical": {
+    "limits": "Wu's framework is diagnostic, not generative — he documents the problem comprehensively but offers limited tools for building alternatives. His historical lens, while valuable, can produce fatalism: if capture always recaptures, what is the point of resistance? His legal-reform orientation may be insufficient for structural change.",
+    "who_is_excluded": "[uncertain] Wu's history is predominantly American and anglophone, excluding attention economies in East Asia, the Global South, and non-capitalist contexts. He also underweights labor — the attention merchants' employees, content moderators, and platform workers are largely invisible in his account.",
+    "failure_under_attention": "[uncertain] Wu's work is itself a successful attention-economy product (bestseller, major press coverage). The historical critique circulates through the very capture mechanisms it documents. More fundamentally, Wu's pattern (capture-revolt-recapture) predicts its own co-optation: criticism of the attention economy becomes content for the attention economy."
+  },
+  "governance": {
+    "governance_model": "Implicit regulatory/legal. Wu, as a legal scholar and former policy advisor, tends toward governance through regulation — FTC oversight, privacy law, antitrust action. This is a centralized, state-based governance model.",
+    "consent_architecture": "[uncertain] Wu's framework implies that the attention economy operates through manufactured consent — users 'agree' to terms they do not read for services they cannot refuse. His work exposes the inadequacy of existing consent mechanisms but does not propose alternatives."
+  },
+  "materiality": {
+    "extraction_vector": "[uncertain] Wu documents attention extraction comprehensively. The attention merchants extract attention from individuals and resell it to advertisers. Wu himself does not extract — his work is analytic — but the publishing and media apparatus through which it circulates participates in the attention economy.",
+    "composability": "Library-level. Wu's historical framework is highly composable — it can be used as context for other analyses, combined with different theoretical frameworks, and applied to new media. His concepts (attention merchants, capture-revolt cycle) function as modular analytical tools.",
+    "liveness": "Historically significant and actively referenced. Wu continues to write and advise on technology policy. The 2016 framework remains relevant as attention-capture mechanisms evolve.",
+    "scale_of_operation": "Field-level to planetary. Wu's analysis spans from individual media companies to the global attention economy, with particular strength at the institutional and field level.",
+    "temporality": "Deep historical. Wu's temporal logic is genealogical — he traces the present back 200 years to reveal structural continuities. This provides the kind of historical depth A(DAI)'s sensing apparatus needs, though Wu's temporality is linear rather than cyclical or tidal."
+  },
+  "uncertain": ["epistemological_stance", "who_is_excluded", "failure_under_attention", "extraction_vector", "consent_architecture", "structural_tension"]
+}

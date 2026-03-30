@@ -1,0 +1,84 @@
+{
+  "basic_identification": {
+    "name": "Discoverability crisis",
+    "type": "gap",
+    "originator": "Structural condition — no single actor created this crisis. It emerges from the intersection of platform algorithm dependence, the collapse of editorial gatekeeping without replacement infrastructure, and the absence of field-wide discovery mechanisms. Discussed by artists, curators (e.g., Jason Bailey / Artnome, Kenny Schachter), and platforms (Feral File, Verse Works).",
+    "year": "Acute since ~2022 post-crash, when algorithmic visibility collapsed for many artists alongside market volume",
+    "key_url": "No primary URL — this is a structural condition. Relevant discourse: https://www.artnome.com/, https://feralfile.com/, https://verse.works/",
+    "geography": "Global, but especially acute for artists outside US/European English-speaking networks"
+  },
+  "core_ideas": {
+    "core_claim": "Artists working in digital art who are not amplified by platform algorithms are structurally invisible. There is no field-wide discovery mechanism beyond social media feeds and marketplace trending pages. The field has no equivalent of gallery representation, art fair booths, biennial inclusion, or journal reviews that serve discovery in traditional art.",
+    "medium_specificity": "Digital art's discoverability crisis is medium-specific because: (1) digital art exists primarily online, making it entirely dependent on digital discovery mechanisms; (2) the sheer volume of digital art production dwarfs traditional art output, making curation more necessary but less present; (3) platform algorithms optimize for engagement (likes, sales, shares) not artistic significance; (4) the absence of physical exhibition spaces as default discovery infrastructure means no foot traffic, no neighborhood gallery walks, no studio visits as baseline.",
+    "relation_to_attention_economy": "The discoverability crisis is a direct product of the attention economy. Platform algorithms surface what generates engagement, not what is artistically significant. Artists must perform social media labor (posting process videos, engaging in discourse, maintaining posting frequency) to remain visible. When an artist stops performing for the algorithm, they disappear. This creates a systematic bias toward artists who are effective self-promoters rather than necessarily the most significant practitioners. The crisis intensifies as platforms (Twitter/X, Instagram) deprioritize external links and visual content in favor of engagement-farming formats.",
+    "relation_to_intention": "The discoverability crisis reveals the absence of intention-native infrastructure. Discovery currently serves attention capture (platform engagement) rather than declared field needs (finding significant work, understanding artistic lineages, identifying emerging practices). An intention-native discovery mechanism would surface work based on relational significance, conceptual contribution, and field-level relevance rather than engagement metrics."
+  },
+  "market_economics": {
+    "revenue_model": "Not applicable — this is a gap. However, the crisis has economic consequences: artists who cannot be discovered cannot sell. Platforms that solve discovery extract value through commission on resulting sales (typically 5-15%). Curated platforms (Feral File, Verse Works) use editorial curation as a partial discovery solution but are limited in scale.",
+    "market_position": "Infrastructure (absent). Discovery sits between creation and transaction in the value chain.",
+    "price_range": "Not applicable",
+    "volume_trend_2024_2026": "The crisis is deepening. Social media platform changes (Twitter/X algorithm shifts under Musk ownership, Instagram deprioritizing images for video/Reels, TikTok bans/uncertainty) have made discovery even more unstable. Meanwhile, the number of practicing digital artists continues to grow. The ratio of artists to functional discovery infrastructure is worsening. [uncertain]",
+    "collector_demographics": "Collectors are also affected — those seeking to discover new artists outside their existing networks face the same algorithmic mediation. Crypto-native collectors rely on Twitter/X threads and Discord alpha channels. Traditional collectors entering digital art have no reliable discovery pathway beyond curated platforms and art advisor recommendations.",
+    "sustainability": "The crisis is self-reinforcing without intervention. Platforms have no incentive to solve it (their business model benefits from attention competition). Individual solutions (curated newsletters, Discord groups, curated platforms) are valuable but don't scale to field-level coverage. A sustainable solution requires commons-level infrastructure that no market actor is incentivized to build."
+  },
+  "practice_aesthetics": {
+    "toolchain": "Current partial discovery tools: Twitter/X (primary social layer for digital art discourse), Instagram (visual portfolio, declining utility), Foundation/SuperRare/Art Blocks (marketplace discovery, limited to platform), Feral File (curated exhibitions), gallery websites, personal websites, Are.na (community curation), newsletters (e.g., Right Click Save, The JPEG). None provide field-wide coverage.",
+    "relation_to_AI": "AI could enable new discovery mechanisms (semantic similarity search across artworks, concept-based discovery, recommendation systems trained on curatorial judgment rather than engagement). However, AI-powered discovery risks reproducing and amplifying existing biases. AI-generated art has also worsened the discoverability crisis by massively increasing the volume of work competing for attention.",
+    "liveness": "Not applicable — structural condition",
+    "aesthetic_vocabulary": "The discoverability crisis is compounded by vocabulary gaps. Without shared terms to describe what makes work significant, discovery defaults to visual similarity and social signals rather than conceptual or historical relevance. You cannot search for what you cannot name.",
+    "tendency_axis_position": "The crisis results from: enclosure (platforms enclose discovery behind proprietary algorithms), capture (attention capture dominates over structural need), spectacle (visible/viral work is discoverable, infrastructure-level work is not), individual (discovery is individual artist's burden rather than collective infrastructure)."
+  },
+  "infrastructure_governance": {
+    "openness": "Discovery infrastructure is entirely proprietary. Each platform's algorithm is a black box. No open discovery index, no shared metadata standard, no public API for cross-platform search of digital art.",
+    "governance_model": "Discovery is currently governed by corporate algorithm design (Twitter/X, Instagram, marketplace platforms). No community, curatorial, or expert governance of discovery exists at field level. Curated platforms (Feral File, Verse Works) provide editorial governance but only for their own selections.",
+    "data_sovereignty": "Artists have no control over their discoverability. They cannot see or influence the algorithmic parameters that determine their visibility. Platform changes (algorithm updates, policy changes, account suspensions) can instantly eliminate an artist's discoverable presence.",
+    "interoperability": "Zero. There is no way to search across platforms for digital art. Each marketplace, each social platform, each gallery website is a silo. No federated search, no shared index, no common metadata.",
+    "preservation_strategy": "Discovery itself is not preserved. An artist's visibility at any moment is ephemeral — determined by real-time algorithmic ranking. Historical discoverability (how prominent was this artist in 2022?) is not recorded anywhere.",
+    "consent_architecture": "Absent for algorithmic discovery (artists cannot consent to or opt out of algorithmic ranking). Present in curated contexts (artists consent to participate in exhibitions, features). No field-wide consent framework for discovery."
+  },
+  "field_position": {
+    "relation_to_traditional_art_world": "Traditional art has layered discovery infrastructure: gallery representation, art fair participation, biennial inclusion, museum exhibitions, critical reviews, art magazines, art advisor networks, auction house catalogs. These are imperfect and exclusionary but at least diverse and partially independent of any single algorithm. Digital art lacks all of these or has only nascent versions.",
+    "what_it_enables": "The crisis enables nothing — it prevents discovery of significant work. Its resolution would enable: field-wide visibility for artists working outside platform mainstreams, collector access to broader range of practices, curatorial research across the full field, educational discovery of digital art history and current practice.",
+    "what_it_lacks": "A field-wide, platform-independent, open, curated, searchable index of digital art practitioners and their work. Also lacks: trusted editorial infrastructure (equivalent of art magazines/critics), systematic exhibition infrastructure (equivalent of galleries/biennials), and relational discovery (find artists through conceptual/aesthetic connections rather than social connections).",
+    "who_is_excluded": "Artists without social media presence or skills; artists in non-English-speaking communities; artists whose work doesn't photograph/thumbnail well (interactive, generative, performative work); artists who don't participate in crypto/NFT discourse; older digital artists whose historical work predates current platforms; artists who refuse to perform for algorithms.",
+    "frontier_signal": "Emerging — growing recognition of the crisis. Some projects attempt solutions: Artacle (AI-powered art discovery), Right Click Save (editorial), gallery programs (Pace Verso, Nagel Draxler), but no field-wide solution exists. The gap is increasingly discussed in digital art discourse."
+  },
+  "attention_intention": {
+    "discovery_mechanism": "Currently: algorithm (Twitter/X, Instagram), marketplace trending (SuperRare, Foundation), word of mouth (Discord, Telegram), curation (Feral File, Verse Works, galleries). All are fragmented, none provide field-wide coverage.",
+    "attention_dependency": "The field's discovery infrastructure is almost 100% dependent on attention-economy platforms. If Twitter/X and Instagram disappeared tomorrow, the primary discovery channels for digital art would collapse. No alternative exists.",
+    "intention_alignment": "Current discovery is entirely attention-native — optimized for engagement, not field need. An intention-native discovery system would be one where artists are discoverable based on their relational significance to the field (conceptual contribution, influence, practice innovation) rather than their social media performance.",
+    "commons_contribution": "Zero commons-level discovery infrastructure exists. All discovery is mediated through proprietary platforms. No open index, no shared data, no public infrastructure."
+  },
+  "provenance_temporality": {
+    "provenance_type": "Neither — discovery mechanisms track neither ownership provenance nor meaning provenance. They track real-time engagement metrics only.",
+    "temporal_logic": "Real-time only. Algorithmic discovery has no memory — an artist's significance last year has no bearing on their discoverability today unless they maintain ongoing engagement. There is no archival or historical discovery mode.",
+    "absence_handling": "Discovery mechanisms do not detect or represent absence. They only surface what is actively present and engaging. Artists who stop posting, works that are not on current platforms, practices that predate current infrastructure — all are absent from discovery with no indication that they exist."
+  },
+  "coherence": {
+    "coherence_vs_consensus": "Neither. Algorithmic discovery imposes a single metric (engagement) as consensus, but this is a false consensus that does not reflect the field's actual values. No space for coherence (multiple valid discovery logics coexisting) exists in current infrastructure.",
+    "contestability": "Not contestable. Artists cannot challenge their algorithmic ranking. There is no mechanism to dispute being algorithmically buried. Platform decisions about featuring or deprioritizing content are opaque and unappealable.",
+    "forkability": "Impossible to fork proprietary algorithms. Open alternatives could be built but would need to achieve critical mass to be useful. The discovery crisis is partly a collective action problem."
+  },
+  "adai_comparison": {
+    "layer_mapping": "sensing-loop",
+    "what_adai_should_adopt": "A(DAI) should build discovery as a core function — specifically relational discovery (find artists/works through conceptual connections, not just social connections). The sensing loop should detect and surface significant work that algorithms miss. Study how Are.na enables community-curated discovery, how Spotify's Discover Weekly works via collaborative filtering, and how academic citation networks enable discovery through intellectual lineage.",
+    "what_adai_should_refuse": "A(DAI) must refuse: (1) engagement-based ranking — discovery must not reproduce attention economy logic; (2) completeness claims — acknowledge that any discovery mechanism has blind spots; (3) algorithmic opacity — whatever surfaces work must be explainable and contestable; (4) single-axis ranking — resist the temptation to create a 'top artists' list.",
+    "structural_tension": "The tension is between coverage and curation. A(DAI) wants to see the whole field (including what algorithms miss) but must still make navigability choices that inevitably foreground some work over others. The question is whether A(DAI) can create discovery infrastructure that is honest about its own perspective rather than claiming algorithmic neutrality."
+  },
+  "regulatory_legal": {
+    "regulatory_exposure": "EU Digital Services Act may apply to discovery algorithms if A(DAI) or others build recommendation systems — transparency requirements for algorithmic content curation. EU AI Act's provisions on recommender systems may also apply. No direct copyright implications for discovery itself. [uncertain]",
+    "ip_model": "Not directly applicable to the gap itself. Discovery metadata (artist names, work titles, links) is generally not copyrightable as facts. Thumbnail images used in discovery raise fair use questions.",
+    "opt_in_vs_opt_out": "A critical design question for any solution: should artists be discoverable by default (opt-out) or only if they choose (opt-in)? Opt-in limits the knowledge graph's completeness. Opt-out raises questions about consent, especially for artists who want to control their visibility contexts."
+  },
+  "ecosystem": {
+    "platform_dependency": "The crisis IS platform dependency. The field's discovery is entirely dependent on a small number of corporate platforms (Twitter/X, Instagram, OpenSea, SuperRare, Foundation, Art Blocks) whose incentives do not align with field-level discovery needs.",
+    "network_effects": "The crisis creates negative network effects: as more artists join platforms, signal-to-noise ratio worsens, and discovery becomes harder for everyone except those already established. Platforms benefit from this (more content, more engagement) even as individual artists suffer.",
+    "post_crash_trajectory": "Worsening post-crash. During the 2021-2022 boom, high transaction volume created a rising tide of visibility. Post-crash, with volume down 90%+, the algorithmic amplification dried up, and many artists became invisible. The crisis has driven some consolidation around curated platforms (Feral File, Verse Works) and editorial channels (Right Click Save), but these serve a small fraction of the field. [uncertain]"
+  },
+  "uncertain": [
+    "volume_trend_2024_2026",
+    "regulatory_exposure",
+    "post_crash_trajectory",
+    "collector_demographics"
+  ]
+}
