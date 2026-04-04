@@ -61,14 +61,9 @@ The immediate deliverable. Publish the North Star on Substack and deploy a gener
 
 First automated data runs from curated sources populate the graph with enough substance to be interesting — and provocative. This is the foundation. The design principle is provocation: the first runs should produce something substantive enough for people to disagree with. Disagreement drives contribution.
 
-**Sources (Iri identifying 10–15 this week):**
-- Wikipedia/Wikidata — base knowledge, canonical practitioners
-- Institutional archives — ZKM, Ars Electronica, Rhizome
-- Platform APIs — Tezos/fxhash (first artwork nodes)
-- RSS feeds, BlueSky — dynamic signal flow
-- X is $5k/mo — likely skip for now
+**Sources (first pass ):**
+https://github.com/a-digital-arts-institute/adai-v1/blob/main/sources.yaml 
 
-**Expected output:** 2,000–5,000+ nodes after first three runs, including first artwork nodes. This is the data the visualisation renders.
 
 **Scout agents with editorial lens:** Not valueless scraping. Agents carry coded values and a structured reasoning scaffolding. The editorial lens is the critique of AI built into the practice. Iri is creating the value-based framework.
 
@@ -311,6 +306,6 @@ CR-SQLite (Gio's C port), Shards (HTTP server + scripting), Python (pipeline scr
 
 Human-readable IDs with type prefix: `artwork:fidenza`, `practitioner:casey reas`, `concept:generative code`. Not kebab-case slugs or UUIDs.
 
-## Mode 1 — the commons is the product
+## Mode 1 — 
 
-There is no Mode 2. A(DAI) builds the commons. That's it. Open, field-owned intelligence. Never sold. CC-BY-SA. The databases are the product. Forkability is not a feature — it is the point.
+A(DAI) builds the commons.. Open, field-owned intelligence. Never sold. CC-BY-SA. 

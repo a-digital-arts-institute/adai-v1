@@ -2,7 +2,6 @@
 .env
 .env.*
 .env.py
-!.env.example
 
 # Python
 __pycache__/
@@ -14,8 +13,6 @@ concepts_cache.json
 
 # Node
 node_modules/
-dist/
-.vercel/
 
 # Claude Code project memory
 .claude/
@@ -31,9 +28,6 @@ Meeting notes/
 *.pptx
 *.docx
 *.pdf
-
-# Vercel local
-.vercel
 
 # Recovery keys
 proton-recovery-kit.pdf
