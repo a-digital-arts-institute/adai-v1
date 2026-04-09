@@ -1,0 +1,126 @@
+topic: "Tyson Yunkaporta's Agent Complexity Protocols"
+
+fields:
+  core_identity:
+    description: "Basic identification and provenance"
+    fields:
+      name:
+        description: "Concept/protocol name"
+        detail_level: brief
+      source_text:
+        description: "Primary publication or source where this concept is articulated"
+        detail_level: brief
+      indigenous_knowledge_origin:
+        description: "Specific Aboriginal/Indigenous knowledge tradition this draws from (e.g. Apalech, Gumbaynggirr, pan-Aboriginal)"
+        detail_level: moderate
+      year_introduced:
+        description: "Year first published or articulated"
+        detail_level: brief
+
+  conceptual_framework:
+    description: "Theoretical and epistemological grounding"
+    fields:
+      principle_description:
+        description: "Core statement of the principle or protocol in Yunkaporta's terms"
+        detail_level: detailed
+      complexity_science_parallel:
+        description: "Equivalent or adjacent concept in Western complexity science (e.g. Cynefin domain, CAS property, network theory)"
+        detail_level: moderate
+      indigenous_epistemology_basis:
+        description: "How this concept is grounded in Indigenous ways of knowing — not just 'what' but 'how it is known'"
+        detail_level: detailed
+      protocol_type:
+        description: "Classification: sustainability_agent | knowledge_creation | governance | pedagogical | AI | wellbeing | engagement"
+        detail_level: brief
+
+  relational_dimensions:
+    description: "How the concept operates within relational systems"
+    fields:
+      pronoun_mapping:
+        description: "Which Aboriginal relational pronoun structure maps here (us-two, us-only, us-all, us-belonging-to)"
+        detail_level: moderate
+      accountability_structure:
+        description: "Who/what the agent is accountable to when following this protocol"
+        detail_level: moderate
+      reciprocity_mechanism:
+        description: "How reciprocal exchange operates within this concept"
+        detail_level: moderate
+      circle_work_level:
+        description: "Whether this operates at us-only (closed), us-two (paired), or us-all (open) level"
+        detail_level: brief
+
+  agent_design_implications:
+    description: "How this translates to computational or organizational agent design"
+    fields:
+      design_pattern:
+        description: "Positive design pattern this concept implies for AI/agent systems"
+        detail_level: detailed
+      anti_pattern:
+        description: "What this concept warns against — the failure mode or extractive behavior"
+        detail_level: moderate
+      failure_mode:
+        description: "What happens when this protocol is violated or ignored in a complex system"
+        detail_level: moderate
+      scale_behavior:
+        description: "How the concept manifests at different scales (dyadic, group, collective, landscape, planetary) — fractal self-similarity"
+        detail_level: moderate
+
+  temporal_and_spatial:
+    description: "Time and place dimensions"
+    fields:
+      temporal_dimension:
+        description: "Relationship to time: cyclic, deep time, intergenerational, seasonal, emergent"
+        detail_level: moderate
+      place_specificity:
+        description: "Whether this is universal, regional, or place-bound (Country-specific)"
+        detail_level: brief
+      emergence_pattern:
+        description: "How this relates to emergence: condition for, product of, or constraint on emergence"
+        detail_level: moderate
+
+  practical_application:
+    description: "How this can be applied"
+    fields:
+      ai_relevance:
+        description: "Specific relevance to AI/agent system design"
+        detail_level: detailed
+      organizational_relevance:
+        description: "Relevance to human organizational/governance design"
+        detail_level: moderate
+      example_implementation:
+        description: "Known examples of this being applied (IKS Lab, IP//AI Lab, Cynefin collaboration, etc.)"
+        detail_level: moderate
+
+  critical_context:
+    description: "Ethical boundaries and misuse risks"
+    fields:
+      knowledge_sovereignty_status:
+        description: "Access classification: open, shared-with-conditions, closed/sacred, requiring-permission"
+        detail_level: brief
+      western_misreadings:
+        description: "Common ways this concept is misunderstood or flattened by Western framings"
+        detail_level: moderate
+      appropriation_risks:
+        description: "Specific risks of extractive use or decontextualization"
+        detail_level: moderate
+      yunkaporta_critique:
+        description: "Yunkaporta's own stated concerns or caveats about how this concept is used"
+        detail_level: moderate
+
+  cross_references:
+    description: "Links to related concepts and external frameworks"
+    fields:
+      cynefin_domain_mapping:
+        description: "Which Cynefin domain (clear, complicated, complex, chaotic, confused) this primarily operates in"
+        detail_level: brief
+      related_items:
+        description: "Other items in this research set that are directly connected"
+        detail_level: brief
+      negative_entropy_mechanism:
+        description: "How this contributes to regeneration and offsetting entropy — the regenerative dimension"
+        detail_level: moderate
+
+uncertain:
+  - blockchain_alignment  # May be too speculative without Kelleher's direct work
+  - negative_entropy_mechanism  # Yunkaporta discusses this but formal definition is thin
+  - cynefin_domain_mapping  # Requires careful interpretation of the Re-emergence Yarns

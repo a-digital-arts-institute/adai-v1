@@ -174,7 +174,7 @@ Mapped from "Agents of Chaos" (Shapira et al., Feb 2026) — 11 failure modes fr
 | Information disclosure | Consent architecture | Not in db.sql |
 | Resource looping | Rate limits + dedup | Not built |
 | Denial of service | Rate limits on contribution endpoint | Not built |
-| Provider value override | Editorial guidance docs | **Not written — highest-risk gap** |
+| Provider value override | Editorial guidance docs | Written — 3 skills files (protocol + gatherer + reader) |
 | Self-harm / config tampering | Read-only pipeline config | Not enforced |
 | Identity spoofing | Authentication | Not designed |
 | Cross-agent corruption | Stateless pipeline + merge boundary | Needs enforcement |
@@ -233,12 +233,41 @@ adai-v1/
 
 1. **Artwork nodes do not exist.** 774 nodes, 0 artworks. The narrative engine and visual graph depend on artwork nodes. The public layer's first runs should bring them in (platform APIs, institutional archives).
 2. **Only 3 edge types in use.** Need CREATED_BY, EXHIBITED_AT, and COLLABORATES_WITH at minimum before the graph reads as more than co-occurrence.
-3. **Editorial guidance docs unwritten.** This is the highest-risk gap. Without them, Claude's default behaviour flattens the graph's vocabulary. Skills files (tendency-vocabulary.md, cla-extraction.md, scout-editorial.md) must be authored and injected in every API call.
+3. **Editorial guidance docs written.** Three skills files authored: `relational-intelligence-protocol.md` (master protocol), `gatherer.md` (intake agent), `reader.md` (interpretation agent). Must be injected in every API call.
 4. **No authentication system.** Basel-critical if practitioners are onboarded live.
 5. **Geographic intake bias.** 47 of 59 practitioners are North American/European. The public layer should intentionally diversify.
 6. **Signal sources not yet identified.** Iri's task this week — 10–15 validated sources for the public layer.
 7. **Frontend not connected to backend.** Piyush building visual language separately. Connection work starts when Gio is available (April 9+).
 8. **Consent fields not in db.sql.** Needed before onboarding practitioners who share under restricted terms.
+
+## Relational intelligence protocol
+
+A(DAI) produces relational intelligence — knowledge that exists in the structure of connections, not in any single node. AI agents and humans generate independent readings of the same field, held in the graph with provenance. Where they converge, confidence rises. Where they diverge, you have a visible tension. The divergence is the intelligence.
+
+The framework draws on Tyson Yunkaporta's complexity protocols (Sand Talk, 2019) — Diversify, Connect, Interact, Adapt — and the RCRD knowledge creation protocol. Cited as design influences, not appropriated. See `research/yunkaporta-agent-complexity/` for full research backing.
+
+### The five-layer loop
+
+1. **Gather** — AI agents crawl sources and propose nodes + edges. Humans contribute through sensing conversations. Both produce signals. Both enter the graph.
+2. **Structure** — The graph holds both readings without collapsing them. Contradictions are data: the machine says "generative aesthetics," the practitioner says "process-based ritual." Both edges exist.
+3. **Render** — The frontend turns the graph into physics. Typed edges become gravitational pull. Edge type diversity becomes brightness. The visitor sees the topology.
+4. **Narrate** — The system reads the graph aloud. Not *the* reading — *a* reading. Partial by design. Names what it foregrounds and what it leaves out.
+5. **Change** — The visitor responds. Questions become signals. Challenges become CONTESTS edges. The graph updates. The next visitor sees a different field.
+
+The relational intelligence isn't in any single layer. It's in the loop between all five.
+
+### Two agent personas
+
+**The Gatherer** — operates at the intake edge. Same protocol whether scouting public sources (us-all trust) or yarning with a practitioner (us-two trust). Core obligation: Diversify + Connect. Reports its own bias. Flags what it can't classify as frontier signals.
+
+**The Reader** — operates at the interpretation edge. Same protocol whether narrating to a visitor or weaving cross-layer patterns for editorial review. Core obligation: custodial — tend the graph as a living system. Names absences. Detects its own wrong stories.
+
+### Four agent protocols (from Yunkaporta, Sand Talk)
+
+- **Diversify** — Agents must increase the diversity of what the graph can sense, not confirm existing patterns.
+- **Connect** — Every action produces edges, not just nodes. Edge type diversity > edge count.
+- **Interact** — Engage reciprocally. Every interaction feeds back into the graph.
+- **Adapt** — What agents can't classify IS the field adapting. Frontier signals are the agenda.
 
 ## Skills files
 
@@ -246,12 +275,12 @@ Skills files are not documentation — they are context that must be read and pa
 
 ```
 /skills/
-  tendency-vocabulary.md    # The evaluative vocabulary
-  cla-extraction.md         # CLA framework for signal processing
-  scout-editorial.md        # Scout agent editorial brief
+  relational-intelligence-protocol.md  # Master protocol — injected in EVERY call
+  gatherer.md                          # Intake agent: scouting + yarning modes
+  reader.md                            # Interpretation agent: narrating + weaving modes
 ```
 
-**Status:** None written yet. This is the work.
+**Injection rule:** `relational-intelligence-protocol.md` goes in every call. Add `gatherer.md` for intake/extraction work. Add `reader.md` for narration/editorial work. Both agent skills require the master protocol alongside them.
 
 ## Core rules
 
