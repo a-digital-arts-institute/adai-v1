@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A(DAI) — Relational Intelligence in Action</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Syne:wght@400;600;700&family=Syne+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #111118;
+  --surface-elevated: #181822;
+  --surface-recessed: #08080c;
+  --border: rgba(255,255,255,0.06);
+  --border-bright: rgba(255,255,255,0.12);
+  --text: #e8e4df;
+  --text-dim: #7a7672;
+  --text-muted: #4a4744;
+
+  --practitioner: #d4a06a;
+  --practitioner-dim: rgba(212,160,106,0.12);
+  --practitioner-glow: rgba(212,160,106,0.3);
+  --artwork: #b8c8d8;
+  --artwork-dim: rgba(184,200,216,0.10);
+  --artwork-glow: rgba(184,200,216,0.25);
+  --concept: #8aab7a;
+  --concept-dim: rgba(138,171,122,0.10);
+  --concept-glow: rgba(138,171,122,0.25);
+  --frontier: #e8c44a;
+  --frontier-dim: rgba(232,196,74,0.12);
+  --frontier-glow: rgba(232,196,74,0.4);
+  --tension: #c45a5a;
+  --tension-dim: rgba(196,90,90,0.12);
+  --void-color: #2a2a3a;
+  --signal: #7aabab;
+
+  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-body: 'Syne', system-ui, sans-serif;
+  --font-mono: 'Syne Mono', 'SF Mono', monospace;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* --- HERO --- */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 4rem 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 40%, var(--practitioner-dim) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 60%, var(--concept-dim) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, var(--artwork-dim) 0%, transparent 40%);
+  pointer-events: none;
+}
+
+.hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+
+.hero .subtitle {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  max-width: 600px;
+  position: relative;
+  letter-spacing: 0.02em;
+}
+
+.hero .loop {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 3rem;
+  position: relative;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.hero .loop span {
+  padding: 0.3rem 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  transition: all 0.3s;
+}
+.hero .loop span:hover {
+  border-color: var(--practitioner);
+  color: var(--practitioner);
+}
+.hero .loop .arrow { border: none; color: var(--text-muted); }
+
+/* --- SCENARIO SECTIONS --- */
+.scenario {
+  min-height: 100vh;
+  padding: 6rem 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.scenario-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.scenario-number {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.scenario-title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 400;
+  line-height: 1.15;
+  margin-bottom: 0.75rem;
+}
+
+.scenario-lead {
+  font-size: 1.05rem;
+  color: var(--text-dim);
+  max-width: 700px;
+  margin-bottom: 3rem;
+  line-height: 1.7;
+}
+
+/* --- MOCKUP FRAMES --- */
+.mockup {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.mockup-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 1rem;
+  background: var(--surface-recessed);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.mockup-bar .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  opacity: 0.4;
+}
+
+.mockup-body {
+  padding: 1.5rem;
+}
+
+/* --- SCENARIO 1: SCOUT DASHBOARD --- */
+.scout-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .scout-grid { grid-template-columns: 1fr; }
+}
+
+.bias-card {
+  grid-column: 1 / -1;
+  background: var(--tension-dim);
+  border: 1px solid rgba(196,90,90,0.25);
+  border-radius: 6px;
+  padding: 1.25rem;
+}
+
+.bias-card .bias-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tension);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.bias-card .bias-label::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--tension);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+.bias-bar {
+  display: flex;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0.75rem 0 0.5rem;
+  background: var(--surface-recessed);
+}
+
+.bias-bar .segment {
+  transition: width 0.6s ease;
+}
+
+.bias-bar .seg-west { background: var(--practitioner); width: 78%; }
+.bias-bar .seg-asia { background: var(--concept); width: 12%; }
+.bias-bar .seg-latam { background: var(--signal); width: 6%; }
+.bias-bar .seg-africa { background: var(--frontier); width: 4%; }
+
+.bias-legend {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  flex-wrap: wrap;
+}
+
+.bias-legend span::before {
+  content: '';
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 2px;
+  margin-right: 0.3rem;
+  vertical-align: middle;
+}
+.bias-legend .leg-west::before { background: var(--practitioner); }
+.bias-legend .leg-asia::before { background: var(--concept); }
+.bias-legend .leg-latam::before { background: var(--signal); }
+.bias-legend .leg-africa::before { background: var(--frontier); }
+
+.stat-card {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1.25rem;
+}
+
+.stat-card .stat-number {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.stat-card .stat-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+}
+
+.frontier-card {
+  background: var(--frontier-dim);
+  border: 1px solid rgba(232,196,74,0.2);
+  border-radius: 6px;
+  padding: 1.25rem;
+}
+
+.frontier-card .frontier-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--frontier);
+  margin-bottom: 0.75rem;
+}
+
+.frontier-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0;
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.frontier-item:last-child { border-bottom: none; }
+
+.frontier-item .fi-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--frontier);
+  box-shadow: 0 0 8px var(--frontier-glow);
+  animation: pulse-dot 2.5s ease-in-out infinite;
+  flex-shrink: 0;
+}
+
+.frontier-item .fi-name {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--frontier);
+}
+
+.frontier-item .fi-reason {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+/* Proposed graph diff */
+.graph-diff {
+  grid-column: 1 / -1;
+  background: var(--surface-recessed);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+  min-height: 240px;
+}
+
+.graph-diff .gd-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+.gd-nodes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.gd-node {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  border: 1px dashed;
+  position: relative;
+}
+
+.gd-node.existing {
+  border-style: solid;
+  opacity: 0.5;
+}
+
+.gd-node.new {
+  animation: glow-in 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow-in {
+  0% { box-shadow: 0 0 4px transparent; }
+  100% { box-shadow: 0 0 12px var(--glow-color); }
+}
+
+.gd-node.type-artwork {
+  border-color: var(--artwork);
+  color: var(--artwork);
+  --glow-color: var(--artwork-glow);
+}
+
+.gd-node.type-practitioner {
+  border-color: var(--practitioner);
+  color: var(--practitioner);
+  --glow-color: var(--practitioner-glow);
+}
+
+.gd-node.type-concept {
+  border-color: var(--concept);
+  color: var(--concept);
+  --glow-color: var(--concept-glow);
+}
+
+.gd-node.type-frontier {
+  border-color: var(--frontier);
+  color: var(--frontier);
+  --glow-color: var(--frontier-glow);
+}
+
+.gd-node .gd-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+/* Edge lines between nodes */
+.gd-edges {
+  margin-top: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.gd-edge {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.gd-edge .edge-type {
+  color: var(--concept);
+  font-weight: 600;
+}
+
+.gd-edge.edge-new {
+  border-style: dashed;
+  border-color: var(--border-bright);
+}
+
+/* --- SCENARIO 2: YARNING --- */
+.yarn-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .yarn-layout { grid-template-columns: 1fr; }
+}
+
+.yarn-conversation {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.yarn-msg {
+  max-width: 85%;
+  padding: 0.9rem 1.1rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  position: relative;
+}
+
+.yarn-msg.human {
+  align-self: flex-start;
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 2px;
+}
+
+.yarn-msg.agent {
+  align-self: flex-end;
+  background: var(--practitioner-dim);
+  border: 1px solid rgba(212,160,106,0.15);
+  border-bottom-right-radius: 2px;
+  color: var(--text);
+}
+
+.yarn-msg .msg-sender {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+
+.yarn-msg.human .msg-sender { color: var(--practitioner); }
+.yarn-msg.agent .msg-sender { color: var(--concept); }
+
+.yarn-msg .frontier-highlight {
+  background: var(--frontier-dim);
+  color: var(--frontier);
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  border-bottom: 2px solid var(--frontier);
+}
+
+.yarn-msg .tension-highlight {
+  background: var(--tension-dim);
+  color: var(--tension);
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.85rem;
+}
+
+.yarn-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sovereign-db {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.sovereign-db .sdb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.sovereign-db .sdb-title {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--practitioner);
+}
+
+.sovereign-db .sdb-count {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  padding: 0.15rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+}
+
+.sdb-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+  font-size: 0.78rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.sdb-item:last-child { border-bottom: none; }
+
+.sdb-item .sdb-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.sdb-item .sdb-type {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.sdb-item.new-item {
+  animation: fadeSlide 0.6s ease both;
+}
+
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.tension-card {
+  background: var(--tension-dim);
+  border: 1px solid rgba(196,90,90,0.2);
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+.tension-card .tc-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--tension);
+  margin-bottom: 0.75rem;
+}
+
+.tension-visual {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+}
+
+.tension-pole {
+  text-align: center;
+  flex: 1;
+}
+
+.tension-pole .tp-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.tension-pole.machine .tp-label {
+  background: var(--concept-dim);
+  color: var(--concept);
+  border: 1px solid rgba(138,171,122,0.2);
+}
+
+.tension-pole.human .tp-label {
+  background: var(--practitioner-dim);
+  color: var(--practitioner);
+  border: 1px solid rgba(212,160,106,0.2);
+}
+
+.tension-vs {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.tension-note {
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  font-style: italic;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border);
+}
+
+/* --- SCENARIO 3: LIVING CANVAS --- */
+.canvas-frame {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  min-height: 500px;
+}
+
+.canvas-field {
+  position: relative;
+  width: 100%;
+  height: 500px;
+  overflow: hidden;
+}
+
+/* Particle field simulation with CSS */
+.particle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.particle.p-practitioner {
+  background: var(--practitioner);
+  box-shadow: 0 0 8px var(--practitioner-glow);
+}
+
+.particle.p-artwork {
+  background: var(--artwork);
+  box-shadow: 0 0 6px var(--artwork-glow);
+}
+
+.particle.p-concept {
+  background: var(--concept);
+  box-shadow: 0 0 6px var(--concept-glow);
+}
+
+.particle.p-frontier {
+  background: var(--frontier);
+  box-shadow: 0 0 12px var(--frontier-glow);
+  animation: frontier-pulse 2s ease-in-out infinite;
+}
+
+@keyframes frontier-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.4); opacity: 0.5; }
+}
+
+/* Void region */
+.void-region {
+  position: absolute;
+  border: 1px dashed rgba(255,255,255,0.08);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.void-label {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.15);
+  text-align: center;
+  padding: 0.5rem;
+  line-height: 1.3;
+}
+
+/* Narration overlay */
+.narration-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 2rem 2rem 1.5rem;
+  background: linear-gradient(to top, rgba(10,10,15,0.95) 0%, rgba(10,10,15,0.7) 60%, transparent 100%);
+}
+
+.narration-text {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  line-height: 1.7;
+  color: var(--text);
+  max-width: 650px;
+}
+
+.narration-angle {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.narration-angle .angle-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+}
+
+.narration-angle .angle-dot.absence { background: var(--void-color); border: 1px solid var(--text-muted); }
+.narration-angle .angle-dot.frontier { background: var(--frontier); }
+
+/* Drop link input */
+.drop-link {
+  position: absolute;
+  bottom: 1rem;
+  right: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+}
+
+.drop-link .dl-cursor {
+  width: 1px;
+  height: 14px;
+  background: var(--text-dim);
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Receive state */
+.receive-panel {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 1.5rem;
+}
+
+.receive-signal {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.receive-dot-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding-top: 0.25rem;
+}
+
+.receive-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--signal);
+  box-shadow: 0 0 12px rgba(122,171,171,0.4);
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+.receive-line {
+  width: 1px;
+  height: 30px;
+  background: linear-gradient(to bottom, var(--signal), transparent);
+}
+
+.receive-content {
+  flex: 1;
+}
+
+.receive-content .rc-title {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--signal);
+  margin-bottom: 0.5rem;
+}
+
+.receive-content .rc-text {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+.receive-content .rc-speculative {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.receive-content .rc-tag {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 3px;
+  border: 1px dashed;
+}
+
+.rc-tag.tag-new {
+  border-color: var(--signal);
+  color: var(--signal);
+  background: rgba(122,171,171,0.08);
+}
+
+.rc-tag.tag-bridge {
+  border-color: var(--concept);
+  color: var(--concept);
+  background: var(--concept-dim);
+}
+
+/* --- EMOTIONAL ARC --- */
+.feeling {
+  margin-top: 2.5rem;
+  padding: 1.5rem;
+  background: var(--surface);
+  border-left: 3px solid var(--practitioner);
+  border-radius: 0 6px 6px 0;
+}
+
+.feeling .feeling-label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--practitioner);
+  margin-bottom: 0.5rem;
+}
+
+.feeling p {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: var(--text-dim);
+}
+
+.feeling.feeling-tension {
+  border-left-color: var(--tension);
+}
+.feeling.feeling-tension .feeling-label { color: var(--tension); }
+
+.feeling.feeling-signal {
+  border-left-color: var(--signal);
+}
+.feeling.feeling-signal .feeling-label { color: var(--signal); }
+
+/* --- SECTION DIVIDER --- */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.section-divider .div-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.section-divider .div-text {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+/* --- ANIMATIONS --- */
+.fade-up {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeUp 0.8s ease forwards;
+}
+
+@keyframes fadeUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-up:nth-child(1) { animation-delay: 0.1s; }
+.fade-up:nth-child(2) { animation-delay: 0.2s; }
+.fade-up:nth-child(3) { animation-delay: 0.3s; }
+.fade-up:nth-child(4) { animation-delay: 0.4s; }
+
+/* --- RESPONSIVE --- */
+@media (max-width: 600px) {
+  .scenario { padding: 3rem 1.25rem; }
+  .mockup-body { padding: 1rem; }
+  .canvas-field { height: 350px; }
+  .yarn-msg { max-width: 95%; }
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== HERO ==================== -->
+<section class="hero">
+  <h1>Relational Intelligence<br>in Action</h1>
+  <p class="subtitle">Three scenarios showing what A(DAI)'s agents surface, what the visitor sees, and what it feels like when a living canon senses the field.</p>
+  <div class="loop">
+    <span>Gather</span>
+    <span class="arrow">&rarr;</span>
+    <span>Structure</span>
+    <span class="arrow">&rarr;</span>
+    <span>Render</span>
+    <span class="arrow">&rarr;</span>
+    <span>Narrate</span>
+    <span class="arrow">&rarr;</span>
+    <span>Change</span>
+    <span class="arrow">&rarr;</span>
+    <span style="opacity:0.4;">Gather</span>
+  </div>
+</section>
+
+<!-- ==================== SCENARIO 1 ==================== -->
+<div class="section-divider">
+  <div class="div-line"></div>
+  <div class="div-text">Scenario 1</div>
+  <div class="div-line"></div>
+</div>
+
+<section class="scenario" style="background-image: radial-gradient(ellipse at 80% 30%, var(--artwork-dim) 0%, transparent 50%);">
+  <div class="scenario-inner">
+    <div class="scenario-number fade-up">Scenario One &mdash; The Gatherer Scouts</div>
+    <h2 class="scenario-title fade-up">The editorial team sees<br>what the system found &mdash;<br>and what it missed</h2>
+    <p class="scenario-lead fade-up">The Gatherer crawls fxhash collections. 47 artworks extracted. But the first thing you see isn't the data &mdash; it's the bias report. The system tells you what it can't see before it shows you what it found.</p>
+
+    <div class="mockup fade-up">
+      <div class="mockup-bar">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span>adai-basel.fly.dev/review &mdash; Gatherer Scout Run #014</span>
+      </div>
+      <div class="mockup-body">
+        <div class="scout-grid">
+
+          <!-- Bias Report -->
+          <div class="bias-card">
+            <div class="bias-label">Bias Report &mdash; Geographic Distribution</div>
+            <p style="font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.5rem;">
+              "I processed 200 artworks from 12 sources. 180 were from western platforms. The graph's geographic skew increased."
+            </p>
+            <div class="bias-bar">
+              <div class="segment seg-west"></div>
+              <div class="segment seg-asia"></div>
+              <div class="segment seg-latam"></div>
+              <div class="segment seg-africa"></div>
+            </div>
+            <div class="bias-legend">
+              <span class="leg-west">Europe / NA 78%</span>
+              <span class="leg-asia">Asia 12%</span>
+              <span class="leg-latam">LATAM 6%</span>
+              <span class="leg-africa">Africa 4%</span>
+            </div>
+          </div>
+
+          <!-- Stats -->
+          <div class="stat-card">
+            <div class="stat-number" style="color: var(--artwork);">47</div>
+            <div class="stat-label">artworks extracted</div>
+            <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-dim);">
+              89 edges proposed &middot; 32 new nodes
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-number" style="color: var(--concept);">18%</div>
+            <div class="stat-label">RELATED_TO edges</div>
+            <div style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-dim);">
+              Below 30% threshold &middot; Editorial lens holding
+            </div>
+          </div>
+
+          <!-- Frontier Signals -->
+          <div class="frontier-card" style="grid-column: 1 / -1;">
+            <div class="frontier-label">Frontier Signals &mdash; 4 concepts the graph can't classify yet</div>
+            <div class="frontier-item">
+              <span class="fi-dot"></span>
+              <span class="fi-name">concept:onchain aesthetics</span>
+              <span class="fi-reason">no existing concept covers blockchain-native visual language</span>
+            </div>
+            <div class="frontier-item">
+              <span class="fi-dot"></span>
+              <span class="fi-name">concept:long-form generative</span>
+              <span class="fi-reason">distinct from "generative art" &mdash; specific to fxhash output model</span>
+            </div>
+            <div class="frontier-item">
+              <span class="fi-dot"></span>
+              <span class="fi-name">concept:deterministic randomness</span>
+              <span class="fi-reason">hash-seeded outputs &mdash; overlaps with "generative code" but narrower</span>
+            </div>
+            <div class="frontier-item">
+              <span class="fi-dot"></span>
+              <span class="fi-name">concept:collector co-creation</span>
+              <span class="fi-reason">minting as creative act &mdash; no category for audience-as-author</span>
+            </div>
+          </div>
+
+          <!-- Graph Diff -->
+          <div class="graph-diff">
+            <div class="gd-label">Proposed Graph Additions</div>
+            <div class="gd-nodes">
+              <div class="gd-node type-practitioner existing"><span class="gd-dot"></span> zancan</div>
+              <div class="gd-node type-artwork new"><span class="gd-dot"></span> garden, monoliths</div>
+              <div class="gd-node type-concept existing"><span class="gd-dot"></span> generative code</div>
+              <div class="gd-node type-artwork new"><span class="gd-dot"></span> meridian</div>
+              <div class="gd-node type-frontier new"><span class="gd-dot"></span> onchain aesthetics</div>
+              <div class="gd-node type-practitioner new"><span class="gd-dot"></span> ix shells</div>
+              <div class="gd-node type-artwork new"><span class="gd-dot"></span> fragments of an infinite field</div>
+              <div class="gd-node type-concept existing"><span class="gd-dot"></span> algorithmic art</div>
+            </div>
+            <div class="gd-edges">
+              <div class="gd-edge edge-new"><span class="edge-type">CREATED_BY</span> garden, monoliths &rarr; zancan</div>
+              <div class="gd-edge edge-new"><span class="edge-type">EMBODIES</span> garden, monoliths &rarr; generative code</div>
+              <div class="gd-edge edge-new"><span class="edge-type">USES_TECHNIQUE</span> meridian &rarr; algorithmic art</div>
+              <div class="gd-edge edge-new" style="border-color: var(--frontier);"><span class="edge-type" style="color: var(--frontier);">RELATED_TO</span> meridian &rarr; onchain aesthetics</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feeling fade-up">
+      <div class="feeling-label">What the editorial team feels</div>
+      <p>Accountability. The system doesn't pretend to be neutral. It tells you what it found and what it missed, in the same breath. The bias bar is a mirror &mdash; the graph's skew is your skew. The frontier signals are an invitation: these are the concepts the field is reaching for that we don't have words for yet. You feel the editorial agenda forming in real-time. Not from a meeting &mdash; from the data itself.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SCENARIO 2 ==================== -->
+<div class="section-divider">
+  <div class="div-line"></div>
+  <div class="div-text">Scenario 2</div>
+  <div class="div-line"></div>
+</div>
+
+<section class="scenario" style="background-image: radial-gradient(ellipse at 20% 60%, var(--practitioner-dim) 0%, transparent 50%);">
+  <div class="scenario-inner">
+    <div class="scenario-number fade-up">Scenario Two &mdash; The Gatherer Yarns</div>
+    <h2 class="scenario-title fade-up">A practitioner describes<br>their work. The system<br>learns new language.</h2>
+    <p class="scenario-lead fade-up">Ade in Lagos describes biodata sonification. The conversation is non-linear &mdash; sensors lead to ritual, ritual leads to community. The Gatherer follows. When Ade says something the graph has no concept for, the system flags it as a frontier. When Ade contradicts the graph's classification, both readings stay.</p>
+
+    <div class="mockup fade-up">
+      <div class="mockup-bar">
+        <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+        <span>adai-basel.fly.dev/yarn &mdash; practitioner:ade okonkwo</span>
+      </div>
+      <div class="mockup-body">
+        <div class="yarn-layout">
+
+          <!-- Conversation -->
+          <div class="yarn-conversation">
+            <div class="yarn-msg human">
+              <div class="msg-sender">Ade</div>
+              I work with biodata &mdash; heart rate, galvanic skin response, soil moisture. But the work isn't about the data. The data is the medium, like paint. What I'm making is &mdash; it's hard to explain &mdash; it's more like a <span class="frontier-highlight">living data ceremony</span>.
+            </div>
+
+            <div class="yarn-msg agent">
+              <div class="msg-sender">Gatherer</div>
+              "Living data ceremony" &mdash; the graph doesn't have a concept for that yet. The closest nodes are <em>concept:data sonification</em> and <em>concept:bioart</em>, but neither captures the ritual dimension you're describing. I'm keeping your term as a frontier signal. Can you say more about what makes it a ceremony rather than a performance?
+            </div>
+
+            <div class="yarn-msg human">
+              <div class="msg-sender">Ade</div>
+              A performance has an audience. A ceremony has participants. Everyone in the space is generating data &mdash; their heartbeats, their breathing &mdash; and the sound changes in response. They're inside it. And it's connected to place &mdash; the soil data comes from the specific ground we're standing on.
+            </div>
+
+            <div class="yarn-msg agent">
+              <div class="msg-sender">Gatherer</div>
+              That's three distinct threads: participation vs spectatorship, embodied data, and place-specificity. The graph currently classifies your practice as <span class="tension-highlight">BELONGS_TO "generative art"</span> based on your fxhash work. Does that feel right?
+            </div>
+
+            <div class="yarn-msg human">
+              <div class="msg-sender">Ade</div>
+              No. <span class="tension-highlight">I'm not generative art. I'm systems practice.</span> The fxhash pieces are one output of a much larger practice. Most of what I do never touches a blockchain.
+            </div>
+
+            <div class="yarn-msg agent">
+              <div class="msg-sender">Gatherer</div>
+              Noted. I'm not removing the existing edge &mdash; the fxhash work does connect to generative art. But I'm adding PRACTICES "systems practice" from your own account. Both edges stay, with different provenance: the machine classified from platform data, you classified from lived experience. The tension between the two is the intelligence.
+            </div>
+          </div>
+
+          <!-- Sidebar -->
+          <div class="yarn-sidebar">
+            <div class="sovereign-db">
+              <div class="sdb-header">
+                <span class="sdb-title">Ade's Sovereign DB</span>
+                <span class="sdb-count">12 nodes, 23 edges</span>
+              </div>
+              <div class="sdb-item new-item" style="animation-delay: 0s;">
+                <span class="sdb-dot" style="background: var(--frontier); box-shadow: 0 0 6px var(--frontier-glow);"></span>
+                concept:living data ceremony
+                <span class="sdb-type" style="color: var(--frontier);">frontier</span>
+              </div>
+              <div class="sdb-item new-item" style="animation-delay: 0.15s;">
+                <span class="sdb-dot" style="background: var(--concept);"></span>
+                concept:systems practice
+                <span class="sdb-type">PRACTICES</span>
+              </div>
+              <div class="sdb-item new-item" style="animation-delay: 0.3s;">
+                <span class="sdb-dot" style="background: var(--concept);"></span>
+                concept:embodied data
+                <span class="sdb-type">PRACTICES</span>
+              </div>
+              <div class="sdb-item" style="opacity: 0.5;">
+                <span class="sdb-dot" style="background: var(--concept);"></span>
+                concept:biodata sonification
+                <span class="sdb-type">PRACTICES</span>
+              </div>
+              <div class="sdb-item" style="opacity: 0.5;">
+                <span class="sdb-dot" style="background: var(--artwork);"></span>
+                artwork:pulse garden
+                <span class="sdb-type">CREATED_BY</span>
+              </div>
+              <div class="sdb-item" style="opacity: 0.5;">
+                <span class="sdb-dot" style="background: var(--artwork);"></span>
+                artwork:soil frequencies
+                <span class="sdb-type">CREATED_BY</span>
+              </div>
+            </div>
+
+            <div class="tension-card">
+              <div class="tc-label">Tension Detected</div>
+              <div class="tension-visual">
+                <div class="tension-pole machine">
+                  <div class="tp-label">generative art</div>
+                  <div style="font-size: 0.6rem; color: var(--text-muted); margin-top: 0.25rem;">machine-classified<br>from fxhash data</div>
+                </div>
+                <div class="tension-vs">&harr;</div>
+                <div class="tension-pole human">
+                  <div class="tp-label">systems practice</div>
+                  <div style="font-size: 0.6rem; color: var(--text-muted); margin-top: 0.25rem;">practitioner<br>self-report</div>
+                </div>
+              </div>
+              <div class="tension-note">Both edges preserved. Provenance tracks which reading came from where. The divergence is the intelligence.</div>
+            </div>
+
+            <div class="frontier-card">
+              <div class="frontier-label">Frontier Language</div>
+              <div class="frontier-item">
+                <span class="fi-dot"></span>
+                <span class="fi-name">living data ceremony</span>
+              </div>
+              <div style="font-size: 0.7rem; color: var(--text-dim); margin-top: 0.5rem;">
+                Nearest: concept:data sonification<br>
+                Distance: significant &mdash; different epistemological frame
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feeling feeling-tension fade-up">
+      <div class="feeling-label">What the practitioner feels</div>
+      <p>Heard. The system didn't flatten "living data ceremony" into "bioart" or "data sonification." It kept the term, flagged it as new, and asked to understand what makes it different. When Ade said "I'm not generative art," the system didn't delete the old edge &mdash; it added a new one and showed both. The practitioner sees their own language entering the graph in real-time. Their sovereign database is growing. They own this data. It's theirs to take.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SCENARIO 3 ==================== -->
+<div class="section-divider">
+  <div class="div-line"></div>
+  <div class="div-text">Scenario 3</div>
+  <div class="div-line"></div>
+</div>
+
+<section class="scenario" style="background-image: radial-gradient(ellipse at 50% 50%, rgba(42,42,58,0.3) 0%, transparent 50%);">
+  <div class="scenario-inner">
+    <div class="scenario-number fade-up">Scenario Three &mdash; The Reader Narrates</div>
+    <h2 class="scenario-title fade-up">The visitor sees the field.<br>Then changes it.</h2>
+    <p class="scenario-lead fade-up">A visitor arrives at the Living Canvas. The Reader foregrounds an absence: sound art is almost invisible in the graph. The visitor drops a link &mdash; an article about a sound art collective in S&atilde;o Paulo. The graph literally deforms around their contribution.</p>
+
+    <div class="canvas-frame fade-up">
+      <div class="canvas-field">
+        <!-- Dense cluster (top-right) -->
+        <div class="particle p-practitioner" style="width:10px;height:10px;top:18%;left:62%;"></div>
+        <div class="particle p-practitioner" style="width:8px;height:8px;top:22%;left:68%;"></div>
+        <div class="particle p-practitioner" style="width:12px;height:12px;top:15%;left:72%;"></div>
+        <div class="particle p-artwork" style="width:6px;height:6px;top:20%;left:65%;"></div>
+        <div class="particle p-artwork" style="width:5px;height:5px;top:25%;left:70%;"></div>
+        <div class="particle p-artwork" style="width:7px;height:7px;top:17%;left:75%;"></div>
+        <div class="particle p-concept" style="width:14px;height:14px;top:21%;left:69%;"></div>
+        <div class="particle p-practitioner" style="width:7px;height:7px;top:28%;left:64%;"></div>
+        <div class="particle p-artwork" style="width:5px;height:5px;top:13%;left:67%;"></div>
+        <div class="particle p-practitioner" style="width:9px;height:9px;top:24%;left:74%;"></div>
+
+        <!-- Scattered middle -->
+        <div class="particle p-concept" style="width:8px;height:8px;top:40%;left:45%;"></div>
+        <div class="particle p-practitioner" style="width:6px;height:6px;top:45%;left:50%;"></div>
+        <div class="particle p-artwork" style="width:4px;height:4px;top:38%;left:52%;"></div>
+        <div class="particle p-practitioner" style="width:5px;height:5px;top:50%;left:40%;"></div>
+
+        <!-- Sparse region (bottom-left) — the void -->
+        <div class="particle p-concept" style="width:5px;height:5px;top:65%;left:20%;opacity:0.4;"></div>
+        <div class="particle p-frontier" style="width:8px;height:8px;top:70%;left:25%;"></div>
+
+        <!-- Void region -->
+        <div class="void-region" style="width:200px;height:200px;top:55%;left:8%;">
+          <div class="void-label">sound art<br>2 nodes</div>
+        </div>
+
+        <!-- Another void -->
+        <div class="void-region" style="width:150px;height:150px;top:60%;left:55%;opacity:0.5;">
+          <div class="void-label" style="font-size:0.7rem;">South America<br>0 practitioners</div>
+        </div>
+
+        <!-- More scattered particles -->
+        <div class="particle p-practitioner" style="width:7px;height:7px;top:35%;left:30%;"></div>
+        <div class="particle p-artwork" style="width:4px;height:4px;top:32%;left:35%;"></div>
+        <div class="particle p-concept" style="width:10px;height:10px;top:30%;left:48%;"></div>
+        <div class="particle p-practitioner" style="width:6px;height:6px;top:42%;left:58%;"></div>
+        <div class="particle p-artwork" style="width:5px;height:5px;top:48%;left:55%;"></div>
+
+        <!-- Narration overlay -->
+        <div class="narration-overlay">
+          <div class="narration-angle">
+            <span class="angle-dot absence"></span>
+            Reading angle: Absence
+          </div>
+          <div class="narration-text">
+            No practitioners from South America appear in this region of the graph. Sound art has two nodes &mdash; both connected only by RELATED_TO edges the system couldn't classify further. The graph's vocabulary is thin here. This isn't a judgment about the field. It's a measurement of what we haven't gathered yet.
+          </div>
+        </div>
+
+        <!-- Drop link -->
+        <div class="drop-link">
+          drop a link <span class="dl-cursor"></span>
+        </div>
+      </div>
+
+      <!-- RECEIVE state -->
+      <div class="receive-panel">
+        <div class="receive-signal">
+          <div class="receive-dot-stack">
+            <div class="receive-dot"></div>
+            <div class="receive-line"></div>
+          </div>
+          <div class="receive-content">
+            <div class="rc-title">Signal Received &mdash; Speculative Placement</div>
+            <div class="rc-text">
+              A sound art collective in S&atilde;o Paulo working with urban noise and environmental data. This sits at the intersection of two voids in the graph &mdash; South American practice and sound art. One signal doesn't fill the gap, but it marks where connections might form.
+            </div>
+            <div class="rc-speculative">
+              <span class="rc-tag tag-new">scene:s&atilde;o paulo sound art</span>
+              <span class="rc-tag tag-bridge">bridge &rarr; concept:sound art</span>
+              <span class="rc-tag tag-bridge">bridge &rarr; concept:environmental data</span>
+              <span class="rc-tag tag-new">practitioner:coletivo ruidosa</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="feeling feeling-signal fade-up">
+      <div class="feeling-label">What the visitor feels</div>
+      <p>Agency. The system named what it couldn't see, and you filled a gap it didn't know how to fill. The void in the particle field &mdash; the empty space where South American sound art should be &mdash; isn't a bug, it's an invitation. When you dropped the link, you watched the field deform around your contribution. A new cluster forming at the intersection of two absences. You changed the shape of the graph. The next visitor will see a different field because you were here.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== FOOTER ==================== -->
+<section style="padding: 4rem 2rem; text-align: center;">
+  <p style="font-family: var(--font-mono); font-size: 0.7rem; color: var(--text-muted); letter-spacing: 0.1em;">
+    A(DAI) &mdash; Relational Intelligence Protocol
+  </p>
+  <p style="font-family: var(--font-display); font-size: 1rem; color: var(--text-dim); margin-top: 0.5rem;">
+    The Gatherer proposes. The graph structures.<br>
+    The frontend renders. The Reader narrates.<br>
+    The visitor challenges. The graph changes.<br>
+    The next reading is different.
+  </p>
+  <div style="margin-top: 2rem;">
+    <div style="display: flex; justify-content: center; gap: 1.5rem; font-family: var(--font-mono); font-size: 0.65rem; color: var(--text-muted); flex-wrap: wrap;">
+      <span><span style="color: var(--practitioner);">&bull;</span> practitioner</span>
+      <span><span style="color: var(--artwork);">&bull;</span> artwork</span>
+      <span><span style="color: var(--concept);">&bull;</span> concept</span>
+      <span><span style="color: var(--frontier);">&bull;</span> frontier</span>
+      <span><span style="color: var(--tension);">&bull;</span> tension</span>
+      <span><span style="color: var(--signal);">&bull;</span> signal</span>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>
