@@ -1,16 +1,15 @@
-FROM fragcolor/shards-headless:latest
-
-RUN dnf install -y \
-  bash \
-  curl \
-  ca-certificates \
-  sqlite \
-  && dnf clean all
+FROM node:22-slim
 
 WORKDIR /app
 
-COPY db.sql seed.shs run.shs server.shs server-base.shs entrypoint.sh ./
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY tsconfig.json db.sql entrypoint.sh ./
+COPY src/ ./src/
 COPY results/ ./results/
+
+RUN npm run build
 
 VOLUME ["/data"]
 
