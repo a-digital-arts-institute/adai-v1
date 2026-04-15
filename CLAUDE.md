@@ -8,7 +8,7 @@ Live at: https://adai-basel.fly.dev/
 
 ## Shards language reference
 
-See `/Users/sugar/devel/edge-talk/Scripts-Src/CLAUDE.md` for the full Shards language reference. Key things to know for this codebase:
+See [SHARDS.md](SHARDS.md) for the full Shards language reference. Key things to know for this codebase:
 
 - Shards is a **dataflow language** — data flows through pipes, newlines are implicit pipes
 - `=` is immutable ref, `>=` is mutable set, `>` is update

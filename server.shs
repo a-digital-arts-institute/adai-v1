@@ -288,7 +288,7 @@
   })
 
   data-node-count | When(Is(0) {
-    "{\"error\":\"not found\"}" | Http.Response(404 Headers: @json-headers)
+    {"error": "not found"} | Await(ToJson) | Http.Response(404 Headers: @json-headers)
     none | Stop
   })
 
@@ -303,61 +303,38 @@
   node-result | Take("created_at") | ExpectSeq | Take(0) | ToString = dcreated
   node-result | Take("updated_by") | ExpectSeq | Take(0) | ToString = dupdated
 
-  ; build node JSON - embed metadata raw if it's a JSON string, otherwise null
-  "null" >= dmeta-json
+  ; parse metadata into a table if it's a JSON string, otherwise empty table
+  {} | ToAnyTable >= dmeta-parsed
   dmeta | When(IsString {
-    ExpectString > dmeta-json
+    Maybe({
+      ExpectString | Await(FromJson) | ExpectTable | ToAnyTable > dmeta-parsed
+    })
   })
 
-  ["{\"node\":{\"id\":\"" node-id "\",\"name\":\"" dname "\",\"type\":\"" dtype
-   "\",\"slug\":\"" slug "\",\"created_at\":\"" dcreated "\",\"updated_by\":\"" dupdated
-   "\",\"metadata\":" dmeta-json "}"] | String.Format >= json-out
+  ; build node table
+  {"id": node-id "name": dname "type": dtype
+   "slug": slug "created_at": dcreated "updated_by": dupdated
+   "metadata": dmeta-parsed} = node-table
 
   ; edges
-  ",\"edges\":[" | AppendTo(json-out)
-  0 >= de-count
+  Sequence(de-rows Type: @type([{none: Type::Any}]))
   Maybe({
-    [node-id node-id] | DB.Query("SELECT id, source_id, target_id, edge_type, signal_id, confidence, charge, created_at, created_by FROM edges WHERE source_id = ? OR target_id = ?" @adai-db)
-    = de-result
-    de-result | Take("id") | ExpectSeq = de-ids
-    de-ids | Count > de-count
-
-    0 >= di
-    Repeat({
-      When({di | IsMore(0)} { "," | AppendTo(json-out) })
-      ["{\"id\":\"" (de-ids | Take(di) | ExpectString)
-       "\",\"source_id\":\"" (de-result | Take("source_id") | ExpectSeq | Take(di) | ExpectString)
-       "\",\"target_id\":\"" (de-result | Take("target_id") | ExpectSeq | Take(di) | ExpectString)
-       "\",\"edge_type\":\"" (de-result | Take("edge_type") | ExpectSeq | Take(di) | ExpectString)
-       "\",\"confidence\":\"" (de-result | Take("confidence") | ExpectSeq | Take(di) | ToString)
-       "\"}"] | String.Format | AppendTo(json-out)
-      Inc(di)
-    } Times: de-count)
+    [node-id node-id] | DB.Query("SELECT id, source_id, target_id, edge_type, confidence FROM edges WHERE source_id = ? OR target_id = ?" @adai-db AsRows: true) | ExpectSeq
+    ForEach({
+      ExpectTable >> de-rows
+    })
   })
 
   ; signals linked through intake
-  "],\"signals\":[" | AppendTo(json-out)
-  0 >= ds-count
+  Sequence(ds-rows Type: @type([{none: Type::Any}]))
   Maybe({
-    [node-id] | DB.Query("SELECT s.id, s.title, s.source_url, s.summary, s.content, s.submitted_by, s.confidence, s.created_at FROM signals s JOIN intake_queue iq ON iq.signal_id = s.id WHERE iq.target_node = ? AND iq.status = 'approved'" @adai-db)
-    = ds-result
-    ds-result | Take("id") | ExpectSeq = ds-ids
-    ds-ids | Count > ds-count
-
-    0 >= si
-    Repeat({
-      When({si | IsMore(0)} { "," | AppendTo(json-out) })
-      ["{\"id\":\"" (ds-ids | Take(si) | ExpectString)
-       "\",\"title\":\"" (ds-result | Take("title") | ExpectSeq | Take(si) | ToString)
-       "\",\"submitted_by\":\"" (ds-result | Take("submitted_by") | ExpectSeq | Take(si) | ToString)
-       "\"}"] | String.Format | AppendTo(json-out)
-      Inc(si)
-    } Times: ds-count)
+    [node-id] | DB.Query("SELECT s.id, s.title, s.submitted_by FROM signals s JOIN intake_queue iq ON iq.signal_id = s.id WHERE iq.target_node = ? AND iq.status = 'approved'" @adai-db AsRows: true) | ExpectSeq
+    ForEach({
+      ExpectTable >> ds-rows
+    })
   })
 
-  "]}" | AppendTo(json-out)
-
-  json-out | Http.Response(200 Headers: @json-headers)
+  {"node": node-table "edges": de-rows "signals": ds-rows} | Await(ToJson) | Http.Response(200 Headers: @json-headers)
   none | Stop
 })
 
@@ -375,13 +352,9 @@
   [] | DB.Query("SELECT COUNT(*) as count FROM intake_queue WHERE status = 'pending'" @adai-db)
   Take("count") | ExpectSeq | Take(0) | ExpectInt = pending-count
 
-  ["{\"total_nodes\":" total-nodes | ToString
-   ",\"total_edges\":" total-edges | ToString
-   ",\"total_signals\":" total-signals | ToString
-   ",\"pending_reviews\":" pending-count | ToString
-   "}"] | String.Format = stats-json
-
-  stats-json | Http.Response(200 Headers: @json-headers)
+  {"total_nodes": total-nodes "total_edges": total-edges
+   "total_signals": total-signals "pending_reviews": pending-count}
+  Await(ToJson) | Http.Response(200 Headers: @json-headers)
   none | Stop
 })
 
@@ -621,7 +594,7 @@
   = iq-approve
   iq-approve | Take("id") | ExpectSeq = iq-a-ids
   iq-a-ids | Count | When(Is(0) {
-    "{\"error\":\"not found or already reviewed\"}" | Http.Response(404 Headers: @json-headers)
+    {"error": "not found or already reviewed"} | Await(ToJson) | Http.Response(404 Headers: @json-headers)
     none | Stop
   })
 
@@ -648,7 +621,7 @@
   = iq-reject
   iq-reject | Take("id") | ExpectSeq = iq-r-ids
   iq-r-ids | Count | When(Is(0) {
-    "{\"error\":\"not found or already reviewed\"}" | Http.Response(404 Headers: @json-headers)
+    {"error": "not found or already reviewed"} | Await(ToJson) | Http.Response(404 Headers: @json-headers)
     none | Stop
   })
 
@@ -672,83 +645,49 @@
   })
 
   ; build nodes array
-  "{\"nodes\":[" >= graph-json
-  0 >= gn-count
+  Sequence(graph-nodes Type: @type([{none: Type::Any}]))
   Maybe({
     type-filter | If(Is("") {
         ; default: practitioners + concepts (concepts are what connect practitioners via PRACTICES edges)
-        [] | DB.Query("SELECT id, name, type, slug FROM nodes WHERE type NOT IN ('related', 'scene') ORDER BY name" @adai-db)
+        [] | DB.Query("SELECT id, name, type, slug FROM nodes WHERE type NOT IN ('related', 'scene') ORDER BY name" @adai-db AsRows: true)
       } {
         type-filter | If(Is("_all") {
             ; everything except 'related'
-            [] | DB.Query("SELECT id, name, type, slug FROM nodes WHERE type != 'related' ORDER BY name" @adai-db)
+            [] | DB.Query("SELECT id, name, type, slug FROM nodes WHERE type != 'related' ORDER BY name" @adai-db AsRows: true)
           } {
-            [type-filter] | DB.Query("SELECT id, name, type, slug FROM nodes WHERE type = ? ORDER BY name" @adai-db)
+            [type-filter] | DB.Query("SELECT id, name, type, slug FROM nodes WHERE type = ? ORDER BY name" @adai-db AsRows: true)
           }
         )
       }
-    ) = gn-result
-    gn-result | Take("id") | ExpectSeq = gn-ids
-    gn-ids | Count > gn-count
-    gn-result | Take("name") | ExpectSeq = gn-names
-    gn-result | Take("type") | ExpectSeq = gn-types
-    gn-result | Take("slug") | ExpectSeq = gn-slugs
-
-    0 >= gi
-    Repeat({
-      When({gi | IsMore(0)} { "," | AppendTo(graph-json) })
-      ["{\"id\":\"" (gn-ids | Take(gi) | ExpectString)
-       "\",\"name\":\"" (gn-names | Take(gi) | ExpectString)
-       "\",\"type\":\"" (gn-types | Take(gi) | ExpectString)
-       "\",\"slug\":\"" (gn-slugs | Take(gi) | ExpectString)
-       "\"}"] | String.Format | AppendTo(graph-json)
-      Inc(gi)
-    } Times: gn-count)
+    ) | ExpectSeq | ForEach({
+      ExpectTable >> graph-nodes
+    })
   })
 
   ; build edges array — only include edges where BOTH source and target are in the node set
-  "],\"edges\":[" | AppendTo(graph-json)
+  Sequence(graph-edges Type: @type([{none: Type::Any}]))
   Maybe({
     ; edges: include only edges where BOTH endpoints are in the returned node set
-    ; for default view: both endpoints must be non-meta
-    ; for type filter: both endpoints must match the filter
-    ; for _all: both non-related
     ; NOTE: the default view includes all edge types (PRACTICES, BELONGS_TO, RELATED_TO, etc.)
     ; between non-related, non-scene nodes. Practitioners connect via shared concept nodes
     ; through PRACTICES edges. The JS handles adding scene nodes/edges when toggled.
     type-filter | If(Is("") {
-        ; default: edges between practitioners and concepts (PRACTICES edges create the connections)
-        [] | DB.Query("SELECT e.source_id, e.target_id, e.edge_type, e.confidence FROM edges e WHERE e.source_id IN (SELECT id FROM nodes WHERE type NOT IN ('related','scene')) AND e.target_id IN (SELECT id FROM nodes WHERE type NOT IN ('related','scene'))" @adai-db)
+        ; default: edges between practitioners and concepts
+        [] | DB.Query("SELECT e.source_id AS source, e.target_id AS target, e.edge_type AS type, e.confidence FROM edges e WHERE e.source_id IN (SELECT id FROM nodes WHERE type NOT IN ('related','scene')) AND e.target_id IN (SELECT id FROM nodes WHERE type NOT IN ('related','scene'))" @adai-db AsRows: true)
       } {
         type-filter | If(Is("_all") {
-            [] | DB.Query("SELECT e.source_id, e.target_id, e.edge_type, e.confidence FROM edges e WHERE e.source_id IN (SELECT id FROM nodes WHERE type != 'related') AND e.target_id IN (SELECT id FROM nodes WHERE type != 'related')" @adai-db)
+            [] | DB.Query("SELECT e.source_id AS source, e.target_id AS target, e.edge_type AS type, e.confidence FROM edges e WHERE e.source_id IN (SELECT id FROM nodes WHERE type != 'related') AND e.target_id IN (SELECT id FROM nodes WHERE type != 'related')" @adai-db AsRows: true)
           } {
-            ; for single-type filter: edges between nodes of that type
-            [type-filter type-filter] | DB.Query("SELECT e.source_id, e.target_id, e.edge_type, e.confidence FROM edges e WHERE e.source_id IN (SELECT id FROM nodes WHERE type = ?) AND e.target_id IN (SELECT id FROM nodes WHERE type = ?)" @adai-db)
+            [type-filter type-filter] | DB.Query("SELECT e.source_id AS source, e.target_id AS target, e.edge_type AS type, e.confidence FROM edges e WHERE e.source_id IN (SELECT id FROM nodes WHERE type = ?) AND e.target_id IN (SELECT id FROM nodes WHERE type = ?)" @adai-db AsRows: true)
           }
         )
       }
-    ) = ge-result
-    ge-result | Take("source_id") | ExpectSeq = ge-sources
-    ge-sources | Count = ge-count
-    ge-result | Take("target_id") | ExpectSeq = ge-targets
-    ge-result | Take("edge_type") | ExpectSeq = ge-types
-    ge-result | Take("confidence") | ExpectSeq = ge-confs
-
-    0 >= gei
-    Repeat({
-      When({gei | IsMore(0)} { "," | AppendTo(graph-json) })
-      ["{\"source\":\"" (ge-sources | Take(gei) | ExpectString)
-       "\",\"target\":\"" (ge-targets | Take(gei) | ExpectString)
-       "\",\"type\":\"" (ge-types | Take(gei) | ExpectString)
-       "\",\"confidence\":\"" (ge-confs | Take(gei) | ToString)
-       "\"}"] | String.Format | AppendTo(graph-json)
-      Inc(gei)
-    } Times: ge-count)
+    ) | ExpectSeq | ForEach({
+      ExpectTable >> graph-edges
+    })
   })
 
-  "]}" | AppendTo(graph-json)
-  graph-json | Http.Response(200 Headers: @json-headers)
+  {"nodes": graph-nodes "edges": graph-edges} | Await(ToJson) | Http.Response(200 Headers: @json-headers)
   none | Stop
 })
 
@@ -764,7 +703,7 @@
   })
 
   ego-node-count | When(Is(0) {
-    "{\"error\":\"not found\"}" | Http.Response(404 Headers: @json-headers)
+    {"error": "not found"} | Await(ToJson) | Http.Response(404 Headers: @json-headers)
     none | Stop
   })
 
@@ -778,62 +717,40 @@
   ego-node | Take("type") | ExpectSeq | Take(0) | ExpectString = ego-type
 
   ; start with the center node
-  ["{\"nodes\":[{\"id\":\"" ego-id "\",\"name\":\"" ego-name "\",\"type\":\"" ego-type "\",\"slug\":\"" ego-slug "\",\"center\":true}"] | String.Format >= ego-json
+  Sequence(ego-nodes Type: @type([{none: Type::Any}]))
+  {"id": ego-id "name": ego-name "type": ego-type "slug": ego-slug "center": true} >> ego-nodes
 
   ; get edges, then get connected node info separately
-  "" >= ego-edges-json
+  Sequence(ego-edges Type: @type([{none: Type::Any}]))
 
   Maybe({
-    [ego-id ego-id] | DB.Query("SELECT source_id, target_id, edge_type, confidence FROM edges WHERE source_id = ? OR target_id = ?" @adai-db)
-    = ego-edges
-    ego-edges | Take("source_id") | ExpectSeq = ee-sources
-    ego-edges | Take("target_id") | ExpectSeq = ee-targets
-    ego-edges | Take("edge_type") | ExpectSeq = ee-types
-    ego-edges | Take("confidence") | ExpectSeq = ee-confs
-    ee-sources | Count = ee-count
+    [ego-id ego-id] | DB.Query("SELECT source_id, target_id, edge_type, confidence FROM edges WHERE source_id = ? OR target_id = ?" @adai-db AsRows: true) | ExpectSeq
+    ForEach({
+      ExpectTable = edge-row
 
-    ; collect neighbor node IDs and build edges JSON
-    "" >= edges-part
-    0 >= eei
-    Repeat({
-      When({eei | IsMore(0)} { "," | AppendTo(edges-part) })
-      ee-sources | Take(eei) | ExpectString = ee-src
-      ee-targets | Take(eei) | ExpectString = ee-tgt
-      ["{\"source\":\"" ee-src
-       "\",\"target\":\"" ee-tgt
-       "\",\"type\":\"" (ee-types | Take(eei) | ExpectString)
-       "\",\"confidence\":\"" (ee-confs | Take(eei) | ToString)
-       "\"}"] | String.Format | AppendTo(edges-part)
+      ; build edge with renamed keys for D3
+      {"source": (edge-row | Take("source_id") | ExpectString)
+       "target": (edge-row | Take("target_id") | ExpectString)
+       "type": (edge-row | Take("edge_type") | ExpectString)
+       "confidence": (edge-row | Take("confidence") | ToString)} >> ego-edges
 
       ; add the "other" node
-      ee-src | If(Is(ego-id) {
-          ee-tgt
+      edge-row | Take("source_id") | ExpectString | If(Is(ego-id) {
+          edge-row | Take("target_id") | ExpectString
         } {
-          ee-src
+          edge-row | Take("source_id") | ExpectString
         }
       ) = neighbor-id
 
       ; query neighbor details
-      [neighbor-id] | DB.Query("SELECT id, name, type, slug FROM nodes WHERE id = ?" @adai-db)
-      = nb-result
       Maybe({
-        nb-result | Take("id") | ExpectSeq | Take(0) | ExpectString = nb-id
-        nb-result | Take("name") | ExpectSeq | Take(0) | ExpectString = nb-name
-        nb-result | Take("type") | ExpectSeq | Take(0) | ExpectString = nb-type
-        nb-result | Take("slug") | ExpectSeq | Take(0) | ExpectString = nb-slug
-        [",{\"id\":\"" nb-id "\",\"name\":\"" nb-name "\",\"type\":\"" nb-type "\",\"slug\":\"" nb-slug "\"}"] | String.Format | AppendTo(ego-json)
+        [neighbor-id] | DB.Query("SELECT id, name, type, slug FROM nodes WHERE id = ?" @adai-db AsRows: true)
+        ExpectSeq | Take(0) | ExpectTable >> ego-nodes
       })
-
-      Inc(eei)
-    } Times: ee-count)
-
-    edges-part > ego-edges-json
+    })
   })
 
-  ; close nodes array, add edges
-  ["],\"edges\":[" ego-edges-json "]}"] | String.Format | AppendTo(ego-json)
-
-  ego-json | Http.Response(200 Headers: @json-headers)
+  {"nodes": ego-nodes "edges": ego-edges} | Await(ToJson) | Http.Response(200 Headers: @json-headers)
   none | Stop
 })
 
@@ -1151,7 +1068,7 @@ svg.on('click',function(e){if(e.target.tagName==='svg')closePanel();});
                 ExpectString > reject-reason-val
               })
               reject-reason-val | When(Is("") {
-                "{\"error\":\"reason is required\"}" | Http.Response(400 Headers: @json-headers)
+                {"error": "reason is required"} | Await(ToJson) | Http.Response(400 Headers: @json-headers)
                 none | Stop
               })
               {id: review-id reason: reject-reason-val} | Do(handle-review-reject)
