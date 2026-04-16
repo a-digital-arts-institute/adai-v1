@@ -2,9 +2,9 @@
 *.db
 *.db-shm
 *.db-wal
-shards.db
-shards.log
+*.log
+node_modules/
+dist/
+docs/
 adai-digital-arts-report-research/
-DESIGN-BRIEF-v2.md
-fields.yaml
-outline.yaml
+.claude/

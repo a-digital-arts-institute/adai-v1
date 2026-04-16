@@ -2,55 +2,46 @@
 
 ## What this is
 
-A Shards-based HTTP server that serves the A(DAI) digital arts knowledge graph. It stores practitioner/concept/scene data in SQLite with CR-SQLite CRDT extensions, serves HTML pages and a D3 graph visualization, and exposes a JSON API for graph queries.
+A TypeScript/Express HTTP server that serves the A(DAI) digital arts knowledge graph. It stores practitioner/concept/scene data in SQLite with CR-SQLite CRDT extensions, serves HTML pages and a D3 graph visualization, and exposes a JSON API for graph queries.
 
 Live at: https://adai-basel.fly.dev/
-
-## Shards language reference
-
-See `/Users/sugar/devel/edge-talk/Scripts-Src/CLAUDE.md` for the full Shards language reference. Key things to know for this codebase:
-
-- Shards is a **dataflow language** — data flows through pipes, newlines are implicit pipes
-- `=` is immutable ref, `>=` is mutable set, `>` is update
-- `Do(wire)` runs inline sharing parent scope — **variable names must not collide between router and handler wires**
-- `DB.Query` returns `{column: [values...]}` — **returns `{}` (empty table) for 0 rows**, so `Take("col") | ExpectSeq` fails on empty results. Always wrap in `Maybe({})` or count first.
-- CRR tables (CR-SQLite) cannot have `UNIQUE` indices besides PK, and all `NOT NULL` columns must have `DEFAULT` values
-- CLI args override `@define` values as strings — use `#(@define-name | ToInt)` for numeric conversion (see `Http.Server` port pattern)
-- `ForRange(from to { ... })` is inclusive on both ends — prefer `Repeat({ ... Inc(idx) } Times: n)` for index-based iteration to avoid off-by-one
 
 ## Architecture
 
 ```
-run.shs              — entry point: init DB, load crsqlite, start server
-server.shs           — all HTTP handlers + routing
-server-base.shs      — shared defines, headers, CSS, html-page template
-seed.shs             — reads ./results/*.json, populates nodes + edges
+src/
+  index.ts           — entry point: init DB, start Express server
+  db.ts              — SQLite/CR-SQLite database setup and helpers
+  seed.ts            — reads ./results/*.json, populates nodes + edges
+  templates.ts       — HTML page templates (header, footer, CSS)
+  routes/
+    pages.ts         — HTML page route handlers
+    api.ts           — JSON API route handlers
 db.sql               — CR-SQLite schema (CRR tables + local tables)
 results/             — 59 JSON research files (one per practitioner)
-Dockerfile           — fragcolor/shards-headless based
+Dockerfile           — Node 22 based
 fly.toml             — Fly.io config (fra region, 512MB)
 entrypoint.sh        — seeds on first boot, starts server
 ```
 
-## Shards binary
-
-`shards` should be on PATH. If not: `/Users/sugar/devel/shards/build/Release/shards`
-
 ## Running locally
 
 ```bash
+# Install dependencies
+npm install
+
 # Fresh seed + run
-rm -f adai.db && shards seed.shs && shards run.shs
+rm -f adai.db && npm run seed && npm run dev
 
 # Just run (if adai.db already exists)
-shards run.shs
+npm run dev
 ```
 
 Server starts on http://localhost:8080
 
 ## Database
 
-Single SQLite file `adai.db` with CR-SQLite CRDT extensions.
+Single SQLite file `adai.db` with CR-SQLite CRDT extensions (`@shards-lang/crsqlite`).
 
 **CRR tables** (synced via CRDTs):
 - `nodes` — id, type, name, slug, metadata (full JSON), updated_by
@@ -84,59 +75,6 @@ Single SQLite file `adai.db` with CR-SQLite CRDT extensions.
 - `POST /api/contribute` — submit a signal (JSON body)
 - `POST /api/review/:id/approve` — approve intake item
 - `POST /api/review/:id/reject` — reject with reason
-
-## Patterns to follow
-
-### HTTP handler pattern (from Formabble identity server)
-```shards
-@wire(handle-something {
-  = input  ; receive from pipe
-
-  ; do work, query DB, build HTML
-  "" >= body
-  "content" | AppendTo(body)
-
-  @html-page("Title" body) = page
-  page | Http.Response(200 Headers: @html-headers)
-  none | Stop
-})
-```
-
-### Safe DB query pattern
-```shards
-; DB.Query returns {} for 0 rows — ExpectSeq will fail
-; Always wrap in Maybe or count first
-Maybe({
-  [param] | DB.Query("SELECT ..." @adai-db)
-  Take("column") | ExpectSeq = results
-  results | Count = n
-  ; ... use results ...
-})
-```
-
-### Routing pattern
-```shards
-Http.Read
-{Take("method") = method}
-{Take("target") = target}
-{Take("body") = raw-body}
-
-method | Match([
-  "GET" {
-    target | Cond([
-      {Is("/path")} { Do(handler) }
-      {String.Starts(With: "/prefix/")} {
-        target | String.Split("/") = parts
-        parts | Take(2) | ExpectString | Do(handler)
-      }
-    ] Passthrough: true)
-  }
-  "POST" {
-    raw-body | ExpectString | Await(FromJson) | ExpectTable = post-body
-    ; ... route POST endpoints ...
-  }
-] Passthrough: true)
-```
 
 ## Deploying
 
