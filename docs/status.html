@@ -982,8 +982,8 @@
 <!-- FIRST-PASS INGESTION PLAN -->
 <div class="ingestion-section animate" style="--i:15">
   <div class="ingestion-header">
-    <span class="title">First-Pass Ingestion Plan &mdash; 4 Sources, 3 Tiers, All 6 Edge Types</span>
-    <span class="tag">Decided Apr 13 &middot; ZKM added Apr 16</span>
+    <span class="title">First-Pass Ingestion Plan &mdash; 3 Sources, 3 Tiers, All 6 Edge Types</span>
+    <span class="tag">Decided Apr 13</span>
   </div>
   <div class="source-cards">
     <div class="source-card">
@@ -1025,19 +1025,6 @@
         <span class="edge-tag edge-tag--belongs">BELONGS_TO</span>
       </div>
     </div>
-    <div class="source-card">
-      <div class="source-num">Run 4 &mdash; European Institution</div>
-      <div class="source-name">ZKM (Karlsruhe)</div>
-      <div class="source-tier">Tier 2 (Institutional) &middot; Phase 1 &middot; Priority: High</div>
-      <div class="source-method">Playwright scraper &middot; No auth<br>schema-aligned extraction</div>
-      <div class="source-why">Added Apr 16 by Iri. European new-media institution complements MoMA's US-centric view. Structured artworks + exhibitions + practitioner data, scraped directly against the A(DAI) schema. Strong source for media-art genealogy.</div>
-      <div class="edge-tags">
-        <span class="edge-tag edge-tag--created">CREATED_BY</span>
-        <span class="edge-tag edge-tag--exhibited">EXHIBITED_AT</span>
-        <span class="edge-tag edge-tag--practices">PRACTICES</span>
-        <span class="edge-tag edge-tag--belongs">BELONGS_TO</span>
-      </div>
-    </div>
   </div>
 
   <!-- Edge coverage table -->
@@ -1050,7 +1037,6 @@
           <th>MoMA</th>
           <th>fxhash</th>
           <th>Wikidata</th>
-          <th>ZKM</th>
           <th>How</th>
         </tr>
       </thead>
@@ -1060,20 +1046,17 @@
           <td class="check">&#10003;</td>
           <td class="check">&#10003;</td>
           <td class="dash">&mdash;</td>
-          <td class="check">&#10003;</td>
-          <td>Artworks.csv &rarr; ConstituentID &middot; Token &rarr; author &middot; ZKM work &rarr; artist</td>
+          <td>Artworks.csv &rarr; ConstituentID &middot; Token &rarr; author</td>
         </tr>
         <tr>
           <td class="edge-name">EXHIBITED_AT</td>
           <td class="check">&#10003;</td>
           <td class="dash">&mdash;</td>
           <td class="check">&#10003;</td>
-          <td class="check">&#10003;</td>
-          <td>MoMA/ZKM collection = exhibited fact &middot; wdt:P6379 collections worldwide</td>
+          <td>MoMA collection = exhibited fact &middot; wdt:P6379 collections worldwide</td>
         </tr>
         <tr>
           <td class="edge-name">PRACTICES</td>
-          <td class="check">&#10003;</td>
           <td class="check">&#10003;</td>
           <td class="check">&#10003;</td>
           <td class="check">&#10003;</td>
@@ -1084,7 +1067,6 @@
           <td class="check">&#10003;</td>
           <td class="check">&#10003;</td>
           <td class="check">&#10003;</td>
-          <td class="check">&#10003;</td>
           <td>Nationality/period clustering &middot; Tezos scene &middot; wdt:P937 work location</td>
         </tr>
         <tr>
@@ -1092,12 +1074,10 @@
           <td class="dash">&mdash;</td>
           <td class="check">&#10003;</td>
           <td class="check">&#10003;</td>
-          <td class="dash">&mdash;</td>
           <td>Co-authored tokens/split contracts &middot; wdt:P1327 collaborator</td>
         </tr>
         <tr>
           <td class="edge-name">RELATED_TO</td>
-          <td class="check">&#10003;</td>
           <td class="check">&#10003;</td>
           <td class="check">&#10003;</td>
           <td class="check">&#10003;</td>
@@ -1210,7 +1190,7 @@
   <div class="team-card animate" style="--i:17">
     <div class="name">Iri</div>
     <div class="role">Strategy &amp; Editorial</div>
-    <div class="focus">Profile flow co-designed with Gio (Apr 15&ndash;16). Classification regime edges + Reader regime angle shipped. ZKM source added. Next: article pipeline, Basel onboarding rehearsal, North Star final pass.</div>
+    <div class="focus">Profile flow co-designed with Gio (Apr 15&ndash;16). Classification regime edges + Reader regime angle shipped. Next: article pipeline, Basel onboarding rehearsal, North Star final pass.</div>
   </div>
   <div class="team-card animate" style="--i:18">
     <div class="name">Gio</div>
@@ -1232,7 +1212,7 @@
 <!-- FOOTER -->
 <div class="footer animate" style="--i:21">
   <span>Audit performed April 18, 2026 &mdash; incorporates Apr 15 architecture call + Apr 16 team call (storage, URLs, cohort) + schema lock</span>
-  <span>Schema locked &middot; Profile architecture v0.1 &middot; Storage = fly.io + Cloudflare R2 &middot; Ingestion: MoMA + fxhash + Wikidata + ZKM &middot; 4 Claude skills planned &middot; &ldquo;decoupled, not decentralized&rdquo;</span>
+  <span>Schema locked &middot; Profile architecture v0.1 &middot; Storage = fly.io + Cloudflare R2 &middot; Ingestion: MoMA + fxhash + Wikidata &middot; 4 Claude skills planned &middot; &ldquo;decoupled, not decentralized&rdquo;</span>
 </div>
 
 <script>
