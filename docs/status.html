@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>A(DAI) Mission Control — April 13, 2026</title>
+<title>A(DAI) Mission Control — April 18, 2026</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
@@ -596,7 +596,7 @@
 <div class="header animate" style="--i:0">
   <div class="header-left">
     <h1><span>A(DAI)</span> Mission Control</h1>
-    <div class="subtitle">Project Status &middot; April 13, 2026 &middot; Notion ↔ Codebase Audit</div>
+    <div class="subtitle">Project Status &middot; April 18, 2026 &middot; Notion ↔ Codebase Audit</div>
   </div>
   <div class="countdown animate-scale" style="--i:1">
     <div class="number" id="days">--</div>
@@ -618,8 +618,8 @@
     <div class="val val--red">0</div>
     <div class="desc">Artwork Nodes</div>
   </div>
-  <div class="kpi kpi--amber animate-scale" style="--i:5">
-    <div class="val val--amber">3/6</div>
+  <div class="kpi kpi--red animate-scale" style="--i:5">
+    <div class="val val--red">3/8</div>
     <div class="desc">Edge Types</div>
   </div>
   <div class="kpi kpi--blue animate-scale" style="--i:6">
@@ -630,12 +630,22 @@
     <div class="val val--green">3</div>
     <div class="desc">Skills Files</div>
   </div>
+  <div class="kpi kpi--blue animate-scale" style="--i:8">
+    <div class="val val--blue">4</div>
+    <div class="desc">Profile Skills Planned</div>
+  </div>
 </div>
 
 <!-- RISK BANNER -->
-<div class="risk-banner animate" style="--i:8">
-  <div class="dot"></div>
-  <div><strong>Schema freeze this week.</strong> Proposal drafted for Gio&rsquo;s review (<a href="https://www.notion.so/3417b5c8702081e89a07c6c7a1fef9d6" style="color:var(--amber)">Notion</a>). 9 columns across 2 tables (consent, processing_trace, bi-temporal, source_origin) + 3 discussion items (batch tracking, cross-source dedup, signal status). Pipeline decision: Scenario B &mdash; deterministic import for bulk data, agent enrichment in post-processing.</div>
+<div class="risk-banner animate" style="--i:9; background: var(--amber-dim); border-color: rgba(255, 176, 32, 0.25);">
+  <div class="dot" style="background: var(--amber); box-shadow: 0 0 6px var(--amber);"></div>
+  <div><strong style="color: var(--amber);">Schema locked. Storage resolved (fly.io + Cloudflare R2).</strong> This week&rsquo;s axis is the <strong>practitioner profile architecture</strong> (<a href="profile-user-flow.html" style="color:var(--amber)">profile-user-flow.html</a>, <a href="profile-mockup.html" style="color:var(--amber)">profile-mockup.html</a>) &mdash; bearer-token onboarding, adai-contribute + adai-view skills, ~22 endpoints at <code style="background:rgba(255,176,32,0.08); padding:1px 5px; border-radius:3px; font-family:var(--font-mono); font-size:12px;">/p/:slug</code>. Build sequence: Schema+API &rarr; Claude Skills &rarr; Frontend Profile Page &rarr; 5-practitioner pre-Basel rehearsal (Noah, Eli/Benny, Alex, +2).</div>
+</div>
+
+<!-- POST-WEB STANCE INSET -->
+<div style="margin:-16px 0 28px 0; padding:12px 20px; border-left:3px solid var(--blue); background:rgba(59,158,255,0.04); font-family:var(--font-mono); font-size:12px; color:var(--text-dim); line-height:1.5;">
+  &ldquo;The skill <em>is</em> the interface. No WordPress CRM, no admin pages, no edit forms &mdash; practitioners talk to Claude and the graph updates.&rdquo;
+  <span style="color:var(--text); opacity:0.55;">&mdash; Gio, Apr 16 call. Framing: <strong style="color:var(--blue);">decoupled, not decentralized</strong>.</span>
 </div>
 
 <!-- TRACKS -->
@@ -689,7 +699,7 @@
     <div class="track-header">
       <span class="track-num">02</span>
       <span class="track-title">Infrastructure &amp; Backend</span>
-      <span class="track-progress"><span>1</span>/7 complete</span>
+      <span class="track-progress"><span>2</span>/8 complete</span>
     </div>
     <div class="track-items">
       <div class="item">
@@ -710,11 +720,11 @@
       </div>
       <div class="item">
         <div class="item-top">
-          <div class="status-dot status-dot--critical"></div>
+          <div class="status-dot status-dot--done"></div>
           <span class="item-name">Schema freeze</span>
-          <span class="item-badge badge--critical">In Review</span>
+          <span class="item-badge badge--done">Locked Apr 18</span>
         </div>
-        <div class="item-detail">Proposal drafted &mdash; 9 columns (consent, trace, bi-temporal, source_origin) + 3 discussion items (batch_id, node_aliases, signal status). Awaiting Gio&rsquo;s confirmation. Pipeline: Scenario B (deterministic import + agent post-processing).</div>
+        <div class="item-detail">Locked with Gio. 10 new columns across 2 tables (consent, processing_trace, bi-temporal, source_origin) + batch_id, node_aliases, signal status all confirmed. Pipeline: Scenario B (deterministic import + agent post-processing).</div>
       </div>
       <div class="item">
         <div class="item-top">
@@ -726,11 +736,19 @@
       </div>
       <div class="item">
         <div class="item-top">
-          <div class="status-dot status-dot--blocked"></div>
+          <div class="status-dot status-dot--progress"></div>
           <span class="item-name">Authentication</span>
-          <span class="item-badge badge--blocked">Not Designed</span>
+          <span class="item-badge badge--wip">Designed</span>
         </div>
-        <div class="item-detail">Basel-critical if practitioners onboard live. No progress visible.</div>
+        <div class="item-detail">Bearer token design confirmed Apr 15&ndash;16. Token = identity. One token per practitioner, generated at 1:1 onboarding. See profile-user-flow.html &sect;2.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--progress"></div>
+          <span class="item-name">Asset storage</span>
+          <span class="item-badge badge--wip">Decided Apr 16</span>
+        </div>
+        <div class="item-detail">Cloudflare R2 for big assets (images, video, 3D) + fly.io for database. JB setting up R2 account. Framing: &ldquo;decoupled, not decentralized.&rdquo; Only practitioner-uploaded assets; metadata stays in CR-SQLite.</div>
       </div>
       <div class="item">
         <div class="item-top">
@@ -779,9 +797,9 @@
         <div class="item-top">
           <div class="status-dot status-dot--risk"></div>
           <span class="item-name">Edge types in use</span>
-          <span class="item-badge badge--risk">3 of 6</span>
+          <span class="item-badge badge--risk">3 of 8</span>
         </div>
-        <div class="item-detail">Have: PRACTICES, BELONGS_TO, RELATED_TO. First 3 runs will activate all 6 (see edge coverage below).</div>
+        <div class="item-detail">Have: PRACTICES, BELONGS_TO, RELATED_TO. First 3 runs activate CREATED_BY, EXHIBITED_AT, COLLABORATES_WITH. CLASSIFIED_BY + LEGIBLE_TO (classification regime edges, added Apr 15) populated mechanically at import + enriched by gatherer post-processing. See CLAUDE.md, skills/gatherer.md.</div>
       </div>
       <div class="item">
         <div class="item-top">
@@ -807,7 +825,7 @@
     <div class="track-header">
       <span class="track-num">04</span>
       <span class="track-title">Frontend &amp; Brand</span>
-      <span class="track-progress"><span>1</span>/4 complete</span>
+      <span class="track-progress"><span>1</span>/5 complete</span>
     </div>
     <div class="track-items">
       <div class="item">
@@ -828,11 +846,11 @@
       </div>
       <div class="item">
         <div class="item-top">
-          <div class="status-dot status-dot--not-started"></div>
+          <div class="status-dot status-dot--progress"></div>
           <span class="item-name">Frontend-backend connection</span>
-          <span class="item-badge badge--pending">Not Started</span>
+          <span class="item-badge badge--wip">In Progress</span>
         </div>
-        <div class="item-detail">Waiting for Gio. API endpoints ready at adai-basel.fly.dev.</div>
+        <div class="item-detail">Unblocked by schema lock + endpoint spec (profile-user-flow.html &sect;4). Piyush building 3 interaction views: (a) hover &rarr; info card; (b) zoom &rarr; node mini-profile; (c) click &rarr; full page at <code>/p/:slug</code>. Then connect one artist end-to-end.</div>
       </div>
       <div class="item">
         <div class="item-top">
@@ -842,14 +860,97 @@
         </div>
         <div class="item-detail">"Join the first to test the graph." Landing page flywheel.</div>
       </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--not-started"></div>
+          <span class="item-name">Blog section on daiadai.netlify.app</span>
+          <span class="item-badge badge--pending">Decided Apr 16</span>
+        </div>
+        <div class="item-detail">Blog on main site (not Substack-only). Articles can read the graph. Pipeline of articles drafted by Iri + JB.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRACK 5: PRACTITIONER PROFILES -->
+  <div class="track animate" style="--i:13">
+    <div class="track-header">
+      <span class="track-num">05</span>
+      <span class="track-title">Practitioner Profiles</span>
+      <span class="track-progress"><span>3</span>/8 complete</span>
+    </div>
+    <div class="track-items">
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--done"></div>
+          <span class="item-name">Profile architecture designed</span>
+          <span class="item-badge badge--done">Done Apr 15</span>
+        </div>
+        <div class="item-detail">Gio &times; Iri call. Profile = view, not page. One DB, three surfaces (human frontend, adai-contribute skill, adai-view skill). See profile-user-flow.html v0.1.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--done"></div>
+          <span class="item-name">Open questions resolved</span>
+          <span class="item-badge badge--done">Done Apr 16</span>
+        </div>
+        <div class="item-detail">Frontier signals public &middot; <code>/p/:slug</code> URL &middot; storage = R2 + fly.io &middot; contest own edges auto / others queued.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--done"></div>
+          <span class="item-name">Profile mockup</span>
+          <span class="item-badge badge--done">Done Apr 16</span>
+        </div>
+        <div class="item-detail">Living Canvas aesthetic, 3-screen flow (field &rarr; profile &rarr; contribute). See profile-mockup.html.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--not-started"></div>
+          <span class="item-name">adai-contribute skill</span>
+          <span class="item-badge badge--pending">Pending</span>
+        </div>
+        <div class="item-detail">Token auth, read + write, merge-boundary aware. Basel v1. Custom variants per practitioner possible. Layer 2 of build sequence.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--not-started"></div>
+          <span class="item-name">adai-view skill</span>
+          <span class="item-badge badge--pending">Pending</span>
+        </div>
+        <div class="item-detail">No auth, read-only queries. Any Claude user. Basel v1.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--progress"></div>
+          <span class="item-name">Frontend profile page</span>
+          <span class="item-badge badge--wip">WIP</span>
+        </div>
+        <div class="item-detail">3 interaction views in design (Piyush): hover &middot; zoom &middot; click-through to <code>/p/:slug</code>. Panels A&ndash;D consuming the API.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--not-started"></div>
+          <span class="item-name">Pre-Basel onboarding cohort</span>
+          <span class="item-badge badge--pending">Pending</span>
+        </div>
+        <div class="item-detail">5 practitioners: Noah, Eli or Benny (010), Alex (Right Click Save), Piyush, team-internal. Live rehearsal before Basel as a showcase.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--not-started"></div>
+          <span class="item-name">File upload (R2) + image panel</span>
+          <span class="item-badge badge--pending">Pending</span>
+        </div>
+        <div class="item-detail">Needed for artwork documentation. Blocked on R2 account + endpoint wiring.</div>
+      </div>
     </div>
   </div>
 
 </div>
 
 <!-- SCHEMA FREEZE DETAIL -->
-<div class="schema-section animate" style="--i:13">
-  <div class="schema-header">Schema Freeze Assessment &mdash; db.sql</div>
+<div class="schema-section animate" style="--i:14">
+  <div class="schema-header">Schema Freeze &mdash; Locked Apr 18</div>
   <div class="schema-grid">
     <div class="schema-col">
       <h4>In schema now <span class="ct ct--green">(6 tables)</span></h4>
@@ -863,26 +964,26 @@
       </ul>
     </div>
     <div class="schema-col">
-      <h4>Proposed &mdash; awaiting Gio <span class="ct ct--red">(9 columns + 3 discussion)</span></h4>
-      <ul class="schema-list schema-list--out">
+      <h4>Locked &mdash; confirmed with Gio <span class="ct ct--green">(10 columns)</span></h4>
+      <ul class="schema-list schema-list--in">
         <li>signals.consent_scope / consent_attribution / consent_revocable (GDPR)</li>
         <li>signals.processing_trace (JSON &mdash; enrichment audit trail)</li>
         <li>signals.source_origin (ouroboros defense &mdash; human_primary | platform_api | ...)</li>
         <li>edges.event_time (when relationship was true in the field)</li>
         <li>edges.valid_from / valid_until / invalidated_by (bi-temporal + corrections)</li>
-        <li style="opacity:0.6">Discussion: signals.batch_id (import run tracking &amp; rollback)</li>
-        <li style="opacity:0.6">Discussion: node_aliases table (cross-source entity dedup)</li>
-        <li style="opacity:0.6">Discussion: signals.status (active | revoked | superseded)</li>
+        <li>signals.batch_id (import run tracking &amp; rollback)</li>
+        <li>node_aliases table (cross-source entity dedup)</li>
+        <li>signals.status (active | revoked | superseded)</li>
       </ul>
     </div>
   </div>
 </div>
 
 <!-- FIRST-PASS INGESTION PLAN -->
-<div class="ingestion-section animate" style="--i:14">
+<div class="ingestion-section animate" style="--i:15">
   <div class="ingestion-header">
-    <span class="title">First-Pass Ingestion Plan &mdash; 3 Sources, 3 Tiers, All 6 Edge Types</span>
-    <span class="tag">Decided Apr 13</span>
+    <span class="title">First-Pass Ingestion Plan &mdash; 4 Sources, 3 Tiers, All 6 Edge Types</span>
+    <span class="tag">Decided Apr 13 &middot; ZKM added Apr 16</span>
   </div>
   <div class="source-cards">
     <div class="source-card">
@@ -924,6 +1025,19 @@
         <span class="edge-tag edge-tag--belongs">BELONGS_TO</span>
       </div>
     </div>
+    <div class="source-card">
+      <div class="source-num">Run 4 &mdash; European Institution</div>
+      <div class="source-name">ZKM (Karlsruhe)</div>
+      <div class="source-tier">Tier 2 (Institutional) &middot; Phase 1 &middot; Priority: High</div>
+      <div class="source-method">Playwright scraper &middot; No auth<br>schema-aligned extraction</div>
+      <div class="source-why">Added Apr 16 by Iri. European new-media institution complements MoMA's US-centric view. Structured artworks + exhibitions + practitioner data, scraped directly against the A(DAI) schema. Strong source for media-art genealogy.</div>
+      <div class="edge-tags">
+        <span class="edge-tag edge-tag--created">CREATED_BY</span>
+        <span class="edge-tag edge-tag--exhibited">EXHIBITED_AT</span>
+        <span class="edge-tag edge-tag--practices">PRACTICES</span>
+        <span class="edge-tag edge-tag--belongs">BELONGS_TO</span>
+      </div>
+    </div>
   </div>
 
   <!-- Edge coverage table -->
@@ -936,6 +1050,7 @@
           <th>MoMA</th>
           <th>fxhash</th>
           <th>Wikidata</th>
+          <th>ZKM</th>
           <th>How</th>
         </tr>
       </thead>
@@ -945,17 +1060,20 @@
           <td class="check">&#10003;</td>
           <td class="check">&#10003;</td>
           <td class="dash">&mdash;</td>
-          <td>Artworks.csv &rarr; ConstituentID &middot; Token &rarr; author</td>
+          <td class="check">&#10003;</td>
+          <td>Artworks.csv &rarr; ConstituentID &middot; Token &rarr; author &middot; ZKM work &rarr; artist</td>
         </tr>
         <tr>
           <td class="edge-name">EXHIBITED_AT</td>
           <td class="check">&#10003;</td>
           <td class="dash">&mdash;</td>
           <td class="check">&#10003;</td>
-          <td>MoMA collection = exhibited fact &middot; wdt:P6379 collections worldwide</td>
+          <td class="check">&#10003;</td>
+          <td>MoMA/ZKM collection = exhibited fact &middot; wdt:P6379 collections worldwide</td>
         </tr>
         <tr>
           <td class="edge-name">PRACTICES</td>
+          <td class="check">&#10003;</td>
           <td class="check">&#10003;</td>
           <td class="check">&#10003;</td>
           <td class="check">&#10003;</td>
@@ -966,6 +1084,7 @@
           <td class="check">&#10003;</td>
           <td class="check">&#10003;</td>
           <td class="check">&#10003;</td>
+          <td class="check">&#10003;</td>
           <td>Nationality/period clustering &middot; Tezos scene &middot; wdt:P937 work location</td>
         </tr>
         <tr>
@@ -973,10 +1092,12 @@
           <td class="dash">&mdash;</td>
           <td class="check">&#10003;</td>
           <td class="check">&#10003;</td>
+          <td class="dash">&mdash;</td>
           <td>Co-authored tokens/split contracts &middot; wdt:P1327 collaborator</td>
         </tr>
         <tr>
           <td class="edge-name">RELATED_TO</td>
+          <td class="check">&#10003;</td>
           <td class="check">&#10003;</td>
           <td class="check">&#10003;</td>
           <td class="check">&#10003;</td>
@@ -1001,11 +1122,14 @@
   <div style="font-size:10px; font-family:var(--font-mono); color:var(--text-dim); text-align:center; margin-top:6px;">
     Scenario B &mdash; bulk structured data this week. Scenario A (agent during ingestion) for intimate layer later.
   </div>
+  <div style="font-size:10px; font-family:var(--font-mono); color:var(--text-dim); text-align:center; margin-top:4px; padding:8px 20px 14px;">
+    X (Twitter) deferred &mdash; API cost (~$5K/mo or per-post token billing). Revisit for dynamic signals post-Basel.
+  </div>
 </div>
 
 <!-- REFERENCE FILES -->
-<div class="schema-section animate" style="--i:14.5">
-  <div class="schema-header">Reference Files &mdash; Schema Freeze &amp; Pipeline</div>
+<div class="schema-section animate" style="--i:16">
+  <div class="schema-header">Reference Files &mdash; Schema, Profile Architecture &amp; Pipeline</div>
   <div style="padding:16px 20px;">
     <table style="width:100%; font-size:12px; font-family:var(--font-mono); border-collapse:collapse;">
       <thead>
@@ -1016,6 +1140,21 @@
         </tr>
       </thead>
       <tbody style="color:var(--text);">
+        <tr style="border-top:1px solid var(--border);">
+          <td style="padding:6px 8px 6px 0; white-space:nowrap;">profile-user-flow.html</td>
+          <td style="padding:6px 8px 6px 0;"><a href="profile-user-flow.html" style="color:var(--blue);">docs/profile-user-flow.html &nearr;</a></td>
+          <td style="padding:6px 8px 6px 0; color:var(--text-dim);">Profile architecture, ~22 endpoints, 4 skills, merge boundary, open questions.</td>
+        </tr>
+        <tr style="border-top:1px solid var(--border);">
+          <td style="padding:6px 8px 6px 0; white-space:nowrap;">profile-mockup.html</td>
+          <td style="padding:6px 8px 6px 0;"><a href="profile-mockup.html" style="color:var(--blue);">docs/profile-mockup.html &nearr;</a></td>
+          <td style="padding:6px 8px 6px 0; color:var(--text-dim);">Living Canvas mockup, 3-screen flow (field &rarr; profile &rarr; contribute).</td>
+        </tr>
+        <tr style="border-top:1px solid var(--border);">
+          <td style="padding:6px 8px 6px 0; white-space:nowrap;">profile-flow.html</td>
+          <td style="padding:6px 8px 6px 0;"><a href="profile-flow.html" style="color:var(--blue);">docs/profile-flow.html &nearr;</a></td>
+          <td style="padding:6px 8px 6px 0; color:var(--text-dim);">How profile works inside the living canvas graph.</td>
+        </tr>
         <tr style="border-top:1px solid var(--border);">
           <td style="padding:6px 8px 6px 0; white-space:nowrap;">schema-proposal.md</td>
           <td style="padding:6px 8px 6px 0;"><code>claude/schema-proposal.md</code></td>
@@ -1068,32 +1207,32 @@
 
 <!-- TEAM -->
 <div class="team-row">
-  <div class="team-card animate" style="--i:15">
+  <div class="team-card animate" style="--i:17">
     <div class="name">Iri</div>
     <div class="role">Strategy &amp; Editorial</div>
-    <div class="focus">Skills files done. Sources curated. Next: schema decisions before freeze, North Star final pass.</div>
-  </div>
-  <div class="team-card animate" style="--i:16">
-    <div class="name">Gio</div>
-    <div class="role">Backend (full-time since Apr 9)</div>
-    <div class="focus">Priority: schema additions before freeze, branch merge, scout pipeline (Step 7), authentication.</div>
-  </div>
-  <div class="team-card animate" style="--i:17">
-    <div class="name">Piyush</div>
-    <div class="role">Frontend &amp; Brand</div>
-    <div class="focus">Brand page live. Particle viz in progress. Backend connection when Gio is ready.</div>
+    <div class="focus">Profile flow co-designed with Gio (Apr 15&ndash;16). Classification regime edges + Reader regime angle shipped. ZKM source added. Next: article pipeline, Basel onboarding rehearsal, North Star final pass.</div>
   </div>
   <div class="team-card animate" style="--i:18">
+    <div class="name">Gio</div>
+    <div class="role">Backend (full-time from Sicily)</div>
+    <div class="focus">Schema locked Apr 18. Next: branch merge, read endpoints, token middleware, <code>/p/:slug</code> routes, scout pipeline (Step 7).</div>
+  </div>
+  <div class="team-card animate" style="--i:19">
+    <div class="name">Piyush</div>
+    <div class="role">Frontend &amp; Brand</div>
+    <div class="focus">Brand + particle viz continuing. Designing 3 interaction views: hover &middot; zoom &middot; click &rarr; <code>/p/:slug</code>. Then connect one artist end-to-end against live API.</div>
+  </div>
+  <div class="team-card animate" style="--i:20">
     <div class="name">JB</div>
     <div class="role">Artist Relations</div>
-    <div class="focus">LLM interview concept under evaluation. Practitioner outreach. First artwork batch source.</div>
+    <div class="focus">Setting up Cloudflare R2. Coordinating pre-Basel cohort (Noah, Eli/Benny, Alex). Article pipeline with Iri. LLM interview concept still under evaluation.</div>
   </div>
 </div>
 
 <!-- FOOTER -->
-<div class="footer animate" style="--i:19">
-  <span>Audit performed April 13, 2026 &mdash; compared 15 Notion docs against live codebase + GitHub resources</span>
-  <span>12 Notion docs updated &middot; First-pass ingestion: MoMA (digital/new media only) + fxhash + Wikidata</span>
+<div class="footer animate" style="--i:21">
+  <span>Audit performed April 18, 2026 &mdash; incorporates Apr 15 architecture call + Apr 16 team call (storage, URLs, cohort) + schema lock</span>
+  <span>Schema locked &middot; Profile architecture v0.1 &middot; Storage = fly.io + Cloudflare R2 &middot; Ingestion: MoMA + fxhash + Wikidata + ZKM &middot; 4 Claude skills planned &middot; &ldquo;decoupled, not decentralized&rdquo;</span>
 </div>
 
 <script>
