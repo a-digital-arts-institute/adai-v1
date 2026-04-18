@@ -724,7 +724,7 @@
           <span class="item-name">Schema freeze</span>
           <span class="item-badge badge--done">Locked Apr 18</span>
         </div>
-        <div class="item-detail">Locked with Gio. 10 new columns across 2 tables (consent, processing_trace, bi-temporal, source_origin) + batch_id, node_aliases, signal status all confirmed. Pipeline: Scenario B (deterministic import + agent post-processing).</div>
+        <div class="item-detail">Locked with Gio. 10 columns across 2 tables &mdash; consent (&times;3) + processing_trace + source_origin + provenance_chain on signals; event_time + valid_from / valid_until / invalidated_by on edges. Plus classification_regime node type + CLASSIFIED_BY / LEGIBLE_TO edge types (no DDL). 3 items (batch_id, node_aliases, signal status) still Priority 2 for discussion. Pipeline: Scenario B.</div>
       </div>
       <div class="item">
         <div class="item-top">
@@ -964,13 +964,18 @@
       </ul>
     </div>
     <div class="schema-col">
-      <h4>Locked &mdash; confirmed with Gio <span class="ct ct--green">(10 columns)</span></h4>
+      <h4>Locked &mdash; confirmed with Gio <span class="ct ct--green">(10 columns + 2 conventions)</span></h4>
       <ul class="schema-list schema-list--in">
         <li>signals.consent_scope / consent_attribution / consent_revocable (GDPR)</li>
         <li>signals.processing_trace (JSON &mdash; enrichment audit trail)</li>
         <li>signals.source_origin (ouroboros defense &mdash; human_primary | platform_api | ...)</li>
+        <li>signals.provenance_chain (JSON &mdash; regime influence tracking)</li>
         <li>edges.event_time (when relationship was true in the field)</li>
         <li>edges.valid_from / valid_until / invalidated_by (bi-temporal + corrections)</li>
+        <li style="color:var(--text-dim); font-style:italic;">+ classification_regime node type &middot; CLASSIFIED_BY / LEGIBLE_TO edge types (no DDL)</li>
+      </ul>
+      <h4 style="margin-top:14px;">Priority 2 &mdash; still for discussion <span class="ct" style="color:var(--amber);">(3 items)</span></h4>
+      <ul class="schema-list schema-list--out" style="opacity:0.7;">
         <li>signals.batch_id (import run tracking &amp; rollback)</li>
         <li>node_aliases table (cross-source entity dedup)</li>
         <li>signals.status (active | revoked | superseded)</li>
