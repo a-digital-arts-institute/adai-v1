@@ -628,24 +628,38 @@
   </div>
   <div class="kpi kpi--green animate-scale" style="--i:7">
     <div class="val val--green">3</div>
-    <div class="desc">Skills Files</div>
+    <div class="desc">Editorial Engines</div>
   </div>
   <div class="kpi kpi--blue animate-scale" style="--i:8">
-    <div class="val val--blue">4</div>
-    <div class="desc">Profile Skills Planned</div>
+    <div class="val val--blue">2/4</div>
+    <div class="desc">Persona Skills · Basel/Total</div>
   </div>
 </div>
 
 <!-- RISK BANNER -->
 <div class="risk-banner animate" style="--i:9; background: var(--amber-dim); border-color: rgba(255, 176, 32, 0.25);">
   <div class="dot" style="background: var(--amber); box-shadow: 0 0 6px var(--amber);"></div>
-  <div><strong style="color: var(--amber);">Schema locked. Storage resolved (fly.io + Cloudflare R2).</strong> This week&rsquo;s axis is the <strong>practitioner profile architecture</strong> (<a href="profile-user-flow.html" style="color:var(--amber)">profile-user-flow.html</a>, <a href="profile-mockup.html" style="color:var(--amber)">profile-mockup.html</a>) &mdash; bearer-token onboarding, adai-contribute + adai-view skills, ~22 endpoints at <code style="background:rgba(255,176,32,0.08); padding:1px 5px; border-radius:3px; font-family:var(--font-mono); font-size:12px;">/p/:slug</code>. Build sequence: Schema+API &rarr; Claude Skills &rarr; Frontend Profile Page &rarr; 5-practitioner pre-Basel rehearsal (Noah, Eli/Benny, Alex, +2).</div>
+  <div><strong style="color: var(--amber);">Schema locked. Storage resolved (fly.io + Cloudflare R2).</strong> This week&rsquo;s axis is the <strong>practitioner profile architecture</strong> (<a href="profile-user-flow.html" style="color:var(--amber)">profile-user-flow.html</a>, <a href="profile-mockup.html" style="color:var(--amber)">profile-mockup.html</a>) &mdash; bearer-token onboarding, adai-contribute + adai-view personas, ~22 endpoints at <code style="background:rgba(255,176,32,0.08); padding:1px 5px; border-radius:3px; font-family:var(--font-mono); font-size:12px;">/p/:slug</code>. Build sequence: Schema+API &rarr; Personas + Engines &rarr; Frontend Profile Page &rarr; 5-practitioner pre-Basel rehearsal (Noah, Eli/Benny, Alex, +2).</div>
 </div>
 
 <!-- POST-WEB STANCE INSET -->
-<div style="margin:-16px 0 28px 0; padding:12px 20px; border-left:3px solid var(--blue); background:rgba(59,158,255,0.04); font-family:var(--font-mono); font-size:12px; color:var(--text-dim); line-height:1.5;">
+<div style="margin:-16px 0 12px 0; padding:12px 20px; border-left:3px solid var(--blue); background:rgba(59,158,255,0.04); font-family:var(--font-mono); font-size:12px; color:var(--text-dim); line-height:1.5;">
   &ldquo;The skill <em>is</em> the interface. No WordPress CRM, no admin pages, no edit forms &mdash; practitioners talk to Claude and the graph updates.&rdquo;
   <span style="color:var(--text); opacity:0.55;">&mdash; Gio, Apr 16 call. Framing: <strong style="color:var(--blue);">decoupled, not decentralized</strong>.</span>
+</div>
+
+<!-- SKILL STACK + ON-DEMAND GATHERER INSET -->
+<div style="margin:0 0 28px 0; padding:14px 20px; border-left:3px solid var(--green); background:rgba(0,234,109,0.04); font-family:var(--font-mono); font-size:12px; color:var(--text-dim); line-height:1.6;">
+  <div style="color:var(--text); opacity:0.8; margin-bottom:6px;"><strong style="color:var(--green);">Every A(DAI) Claude call is a 3-layer stack:</strong></div>
+  <div style="padding-left:8px; margin-bottom:10px;">
+    <div><span style="color:var(--green);">&#9642;</span> <code style="color:var(--text);">relational-intelligence-protocol.md</code> <span style="opacity:0.6;">&mdash; always, the grammar of the system</span></div>
+    <div><span style="color:var(--green);">&#9642;</span> <code style="color:var(--text);">gatherer.md</code> or <code style="color:var(--text);">reader.md</code> <span style="opacity:0.6;">&mdash; editorial engine (extract / interpret)</span></div>
+    <div><span style="color:var(--green);">&#9642;</span> <code style="color:var(--text);">adai-contribute</code> &middot; <code style="color:var(--text);">adai-view</code> &middot; <code style="color:var(--text);">adai-curate</code> &middot; <code style="color:var(--text);">adai-research</code> <span style="opacity:0.6;">&mdash; persona (conversation, tone, what practitioners see)</span></div>
+  </div>
+  <div style="color:var(--text); opacity:0.8; border-top:1px dashed rgba(0,234,109,0.2); padding-top:10px;">
+    <strong style="color:var(--green);">The gatherer is a tool, not a pipeline stage.</strong>
+    <span style="opacity:0.75;">You point it at a batch and say &ldquo;go.&rdquo; No event hooks, no automatic post-ingest trigger. <code style="color:var(--text);">processing_trace = NULL</code> means &ldquo;raw, unenriched&rdquo; &mdash; a valid, expected state.</span>
+  </div>
 </div>
 
 <!-- TRACKS -->
@@ -729,10 +743,10 @@
       <div class="item">
         <div class="item-top">
           <div class="status-dot status-dot--not-started"></div>
-          <span class="item-name">Scout agent pipeline</span>
+          <span class="item-name">Gatherer runner</span>
           <span class="item-badge badge--pending">Not Built</span>
         </div>
-        <div class="item-detail">Build Guide Steps 1-6 done. Step 7 (automation) not started. Gio's primary task.</div>
+        <div class="item-detail">Trigger tool for on-demand enrichment passes against imported batches. <strong>Not an event-driven automation</strong> &mdash; the gatherer is a callable, not a listener. Build Guide Steps 1&ndash;6 done. Step 7 (runner + scheduler) is Gio's primary task.</div>
       </div>
       <div class="item">
         <div class="item-top">
@@ -799,7 +813,7 @@
           <span class="item-name">Edge types in use</span>
           <span class="item-badge badge--risk">3 of 8</span>
         </div>
-        <div class="item-detail">Have: PRACTICES, BELONGS_TO, RELATED_TO. First 3 runs activate CREATED_BY, EXHIBITED_AT, COLLABORATES_WITH. CLASSIFIED_BY + LEGIBLE_TO (classification regime edges, added Apr 15) populated mechanically at import + enriched by gatherer post-processing. See CLAUDE.md, skills/gatherer.md.</div>
+        <div class="item-detail">Have: PRACTICES, BELONGS_TO, RELATED_TO. First 3 imports + triggered gatherer runs activate CREATED_BY, EXHIBITED_AT, COLLABORATES_WITH. CLASSIFIED_BY + LEGIBLE_TO (classification regime edges, added Apr 15) populated mechanically at import, then enriched when the gatherer is pointed at the batch. See CLAUDE.md, skills/gatherer.md.</div>
       </div>
       <div class="item">
         <div class="item-top">
@@ -906,18 +920,18 @@
       <div class="item">
         <div class="item-top">
           <div class="status-dot status-dot--not-started"></div>
-          <span class="item-name">adai-contribute skill</span>
-          <span class="item-badge badge--pending">Pending</span>
+          <span class="item-name">adai-contribute (persona)</span>
+          <span class="item-badge badge--pending">Basel v1</span>
         </div>
-        <div class="item-detail">Token auth, read + write, merge-boundary aware. Basel v1. Custom variants per practitioner possible. Layer 2 of build sequence.</div>
+        <div class="item-detail">Practitioner-facing conversation design. Token auth, read + write, merge-boundary aware. Runs on <code>gatherer.md</code> in sensing mode &mdash; persona handles what to ask &amp; how to talk; engine handles what to extract &amp; how to classify. Custom variants per practitioner possible.</div>
       </div>
       <div class="item">
         <div class="item-top">
           <div class="status-dot status-dot--not-started"></div>
-          <span class="item-name">adai-view skill</span>
-          <span class="item-badge badge--pending">Pending</span>
+          <span class="item-name">adai-view (persona)</span>
+          <span class="item-badge badge--pending">Basel v1</span>
         </div>
-        <div class="item-detail">No auth, read-only queries. Any Claude user. Basel v1.</div>
+        <div class="item-detail">Visitor-facing narration persona. No auth, read-only. Runs on <code>reader.md</code> in narrating mode &mdash; persona handles tone; engine decides what to surface &amp; what absence to name.</div>
       </div>
       <div class="item">
         <div class="item-top">
@@ -1092,20 +1106,23 @@
     </table>
   </div>
 
-  <!-- Pipeline — Scenario B (post-processing) -->
+  <!-- Pipeline — Scenario B (post-processing, on-demand gatherer) -->
   <div class="pipeline-row">
     <span class="pipeline-step">Source (CSV/GraphQL/SPARQL)</span>
     <span class="pipeline-arrow">&rarr;</span>
     <span class="pipeline-step">Deterministic parser (no LLM)</span>
     <span class="pipeline-arrow">&rarr;</span>
     <span class="pipeline-step">Nodes + factual edges in DB</span>
-    <span class="pipeline-arrow">&rarr;</span>
-    <span class="pipeline-step pipeline-step--highlight">Agent enrichment (Claude + gatherer.md)</span>
+    <span class="pipeline-arrow" style="color:var(--amber); opacity:0.7;" title="on-demand trigger, not automatic">&hellip;&rarr;</span>
+    <span class="pipeline-step pipeline-step--highlight" style="border-style:dashed;">Gatherer enrichment (triggered per batch)</span>
     <span class="pipeline-arrow">&rarr;</span>
     <span class="pipeline-step">intake_queue + JSON for Piyush</span>
   </div>
   <div style="font-size:10px; font-family:var(--font-mono); color:var(--text-dim); text-align:center; margin-top:6px;">
     Scenario B &mdash; bulk structured data this week. Scenario A (agent during ingestion) for intimate layer later.
+  </div>
+  <div style="font-size:10px; font-family:var(--font-mono); color:var(--amber); text-align:center; margin-top:4px; opacity:0.85;">
+    The dashed step is <strong>on-demand</strong> &mdash; someone triggers the gatherer on a batch. No event hooks. Raw data can live in the DB indefinitely without enrichment.
   </div>
   <div style="font-size:10px; font-family:var(--font-mono); color:var(--text-dim); text-align:center; margin-top:4px; padding:8px 20px 14px;">
     X (Twitter) deferred &mdash; API cost (~$5K/mo or per-post token billing). Revisit for dynamic signals post-Basel.
