@@ -1,0 +1,38 @@
+{
+  "basic_info": {
+    "name": "Crypto Market-Native",
+    "type": "classification_lens",
+    "slug": "crypto-market-native",
+    "active_years": "2014-present",
+    "location": "on-chain (Ethereum, Tezos, Bitcoin, Base, Solana) + associated platforms",
+    "url": null
+  },
+  "description": "The canonising logic of on-chain markets and platforms — Foundation, Art Blocks, fxhash, SuperRare, Manifold, Objkt, Zora, Highlight, Verse. This lens reads practice through on-chain provenance: who minted what, on which contract, when, to whom. Editions, secondary sales, auction records, curator-seal platforms, and the history of a wallet address carry weight equivalent to exhibition records. It is native to generative art (Art Blocks, fxhash) and to artist-contract culture (Manifold), and it collapses authorship, edition, and market-price into a single chain of cryptographically-signed events. It excels at tracking participation, community formation around drops, and the economic life of a work. It is structurally incapable of reading pre-2014 practice and has a shallow grasp of critical contexts that lived off-chain. Its canonising speed is extraordinary — Fidenza became a genre reference within months of release — but its retention depends on continued market interest.",
+  "exemplars": [
+    "Art Blocks (platform; the genre-defining on-chain generative art platform)",
+    "fxhash (Tezos generative-art platform)",
+    "Harm van den Dorpel (early adopter; chain-native practice)",
+    "Jonas Lund (system-native conceptual crypto work)",
+    "Sarah Friend (smart-contract-as-medium)",
+    "Fellowship (curatorial on-chain)",
+    "Feral File (curatorial digital editions)",
+    "Metalabel (collective on-chain publishing)",
+    "Tyler Hobbs / Fidenza (canon-forming within this lens)",
+    "Kevin McCoy / Quantum (first NFT; foundational on-chain history)"
+  ],
+  "blind_spots": "Pre-2014 practice in its entirety. Work explicitly critical of market infrastructure (Rhizome-tradition net.art that refuses tokenisation). Practice where the artwork is off-chain but the artist is on-chain-active — the lens tends to read these as 'web2 artists who also mint' rather than recognise the primary body of work. Communities where provenance is deliberately collective or anonymous, which the lens flattens into wallet addresses.",
+  "classification_logic": "Apply this lens when a practitioner's primary body of work exists as on-chain artefacts, when their career legibility depends on platforms like Foundation / Art Blocks / fxhash, or when secondary-market activity is the documented history. Apply to on-chain platforms themselves. Multi-lens is expected: a practitioner canonised by both MoMA and SuperRare carries both euro-american-institutional AND crypto-market-native (Anadol, Beeple). A practitioner whose on-chain work is a minor thread carries this lens with lower weight or not at all.",
+  "data_provenance": {
+    "source": "curated-2026-04",
+    "authored_by": "ai-draft",
+    "references_consulted": [
+      "CLAUDE.md §classification_regime principles",
+      "sources.yaml §on_chain group (Foundation, Zora, Manifold, Objkt, Art Blocks, fxhash, etc.)",
+      "observed on-chain activity across existing 59 practitioner JSONs"
+    ],
+    "reviewed": false,
+    "reviewed_by": null,
+    "reviewed_date": null,
+    "notes": "Draft for human review. Heavy overlap expected with euro-american-institutional for blue-chip-adjacent artists (Beeple, Anadol)."
+  }
+}

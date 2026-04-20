@@ -1,0 +1,38 @@
+{
+  "basic_info": {
+    "name": "Academic Media-Art History",
+    "type": "classification_lens",
+    "slug": "academic-media-art-history",
+    "active_years": "1960s-present",
+    "location": "distributed (major hubs: Karlsruhe, Linz, Cambridge MA, Montreal, Melbourne, Donau-Universität Krems)",
+    "url": null
+  },
+  "description": "The canonising logic of scholarly media-art history — the field consolidated by Oliver Grau's research networks, the Leonardo/MIT Press journal and book series since 1968, the MediaArtHistories conference circuit, ACM SIGGRAPH's historical record, and university programmes in digital humanities and media archaeology. This lens frames digital art through genealogy: who came before whom, what earlier technologies or ideas this work recovers or extends, how a specific practice fits a longer arc that includes pre-computer cybernetic art, concrete poetry, conceptual art, and scientific visualisation. It values provenance of ideas, cites other works carefully, and is structurally weak at immediately legible market or viral art — it waits. It is the slowest of the five lenses; its canonical judgements take decades to form, but they outlast the others. Pioneer-era practitioners (Cohen, Nake, Molnar, Schwartz, Mohr, Csuri, Komura) owe much of their current visibility to this lens rather than to market or immediate-institutional readings.",
+  "exemplars": [
+    "Harold Cohen / AARON (bridge practitioner — academic coverage predates institutional market recognition)",
+    "Lillian Schwartz (bridge — Bell Labs + academic writing)",
+    "Waldemar Cordeiro (bridge — ICAA / Latin American academic archive)",
+    "Masao Komura / CTG (bridge — SIGGRAPH Pioneers + MediaArtHistories retrospectives)",
+    "Prema Murthy (bridge — Rhizome + academic feminist media writing)",
+    "Hito Steyerl (heavy academic citation; e-flux journal; Duty Free Art)",
+    "Matteo Pasquinelli (theorist — academic media-critical scholarship)",
+    "McKenzie Wark (theorist — critical media theory)",
+    "Legacy Russell (theorist — Glitch Feminism)",
+    "Yuk Hui (theorist — philosophy of technology)"
+  ],
+  "blind_spots": "Very recent practice (the lens is slow; anything younger than ~5 years tends to be under-covered even when genuinely significant). Practice whose documentation lives only on social platforms or chat servers, which academic publishing cycles can't easily cite. Non-English-language scholarship — Spanish/Portuguese Latin American media-art scholarship, Japanese and Chinese academic circuits, are under-represented in the global-English canon this lens collapses into. Practitioners who refuse academic engagement.",
+  "classification_logic": "Apply this lens when the practitioner or work has substantial scholarly coverage — peer-reviewed articles, academic monographs, inclusion in conference proceedings (MediaArtHistories, SIGGRAPH historical papers, Leonardo journal), university teaching use — OR when the practitioner is themselves a working theorist whose writing is part of the academic corpus (Pasquinelli, Wark, Russell, Hui, Steyerl). Pair frequently with euro-american-institutional for blue-chip media artists, and with practitioner-self-report for theorist-practitioners.",
+  "data_provenance": {
+    "source": "curated-2026-04",
+    "authored_by": "ai-draft",
+    "references_consulted": [
+      "CLAUDE.md §classification_regime principles",
+      "sources.yaml §academic_discourse (MediaArtHistories line 2457, Leonardo / MIT Press line 1016, SIGGRAPH Pioneers line 2493)",
+      "existing 59 JSONs: theorist-tagged entries (Pasquinelli, Wark, Russell, Hui)"
+    ],
+    "reviewed": false,
+    "reviewed_by": null,
+    "reviewed_date": null,
+    "notes": "Draft for human review. Named 'Academic Media-Art History' to distinguish from contemporary-art academic circuits generally. The Grau / Leonardo axis is the inheritance this lens represents."
+  }
+}

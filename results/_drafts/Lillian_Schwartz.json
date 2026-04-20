@@ -1,0 +1,81 @@
+{
+  "basic_info": {
+    "name": "Lillian Schwartz",
+    "type": "artist",
+    "active_years": "1960s-2010s",
+    "location": "United States (Bell Laboratories, Murray Hill NJ; New York City)",
+    "url": null
+  },
+  "practice_description": {
+    "practice_summary": "American artist whose work at Bell Laboratories from 1968 onward established computer animation and computer-assisted image processing as serious artistic media. Schwartz arrived at Bell Labs as a painter and sculptor; in collaboration with computer scientists including Kenneth Knowlton, she produced a sustained body of computer-animated films (Pixillation, UFO, Mutations, Googolplex, among many others), digital image-processing experiments, and analytical studies — including her widely-cited computational comparison of the Mona Lisa with a Leonardo self-portrait. Schwartz's practice was unusual in that it emerged from an industrial research laboratory rather than an art school or studio; her work therefore inherited the engineering culture of Bell Labs (collaboration, tool-building, patent-like attribution of technique) alongside art-historical frames. She continued producing and teaching for decades after her Bell Labs years, and her archive and writings (with son Laurens, The Computer Artist's Handbook, 1992) are a primary resource for the history of computer animation.",
+    "methodology": "Iterative studio-plus-lab workflow: conceptual sketching and painterly source material paired with Bell Labs computing resources — BEFLIX, EXPLOR, and other in-house languages; line-printer output, microfilm plotter, 16mm optical printing; later, video and digital paint systems. Collaboration with Knowlton, Ken Perlin, and others was explicit and credited, though Schwartz was consistent that the authorship was hers — the scientists made the tools work; she made the work.",
+    "medium": "computer animation, 16mm film, computer graphics, digital painting, photography, print, computational image analysis"
+  },
+  "key_works": {
+    "works": [
+      {
+        "title": "Pixillation",
+        "year": "1970",
+        "description": "Short computer-animated film co-produced with Knowlton using the EXPLOR language, scored by Gershon Kingsley. One of the earliest computer animations to be widely exhibited as art (MoMA, 1971; Venice Biennale).",
+        "relevance": "Canonical early computer animation. Established that computer-generated moving image could be received as art, not only as technical demonstration."
+      },
+      {
+        "title": "Mutations",
+        "year": "1972",
+        "description": "Computer animation built from shifting geometric forms; a sustained meditation on continuous transformation that anticipates later generative-animation practice.",
+        "relevance": "Often cited as the work that demonstrated computer animation's specifically artistic, non-narrative vocabulary."
+      },
+      {
+        "title": "Leonardo computational self-portrait study",
+        "year": "1980s",
+        "description": "Schwartz used computational image-analysis techniques to argue that a red-chalk self-portrait of Leonardo and the Mona Lisa share underlying geometric structure consistent with the same sitter — the artist. Publicised in Art & Antiques and subsequently by major press.",
+        "relevance": "Rare example of an artist using computer-assisted analysis to intervene in art-historical scholarship — collapses the artist / analyst distinction."
+      }
+    ]
+  },
+  "network_position": {
+    "scene_affiliation": "Bell Laboratories computer-graphics group, Murray Hill NJ; early computer-art scene; SIGGRAPH community",
+    "connections": "Kenneth Knowlton (Bell Labs, primary collaborator), Ken Perlin (Bell Labs), Manfred Mohr (parallel generation; different institutional path), Harold Cohen (parallel AI-art pioneer), SIGGRAPH Pioneers circle, Robert Mallary"
+  },
+  "commons_orientation": {
+    "commons_summary": "Schwartz's work at Bell Labs occurred within a corporate research commons: shared computing time, collaborative tool-building, expectation that techniques developed in the group could be re-used. Her subsequent teaching and the Handbook explicitly aimed to make computer-art techniques available to a broad audience rather than to guard them as proprietary signatures."
+  },
+  "governance_model": "Collaborative within Bell Labs (shared computing resources governed by institutional policy). Individual authorship of finished works. Archive now held between family (Laurens Schwartz), institutional collections (MoMA, Whitney), and Bell Labs historical preservation efforts.",
+  "consent_and_authorship": "Co-authorship of tools with Knowlton and others was explicit and credited; authorship of the finished artworks was Schwartz's. Her writing is clear on this distinction and has been widely adopted as a model for artist-engineer collaboration in new-media practice.",
+  "liveness_and_duration": "Films are time-based but fixed (16mm originals, digital transfers). The original computing environment is not reproducible; current viewing relies on preserved film and video transfers.",
+  "data_materiality": {
+    "data_sources": "Her own paintings and sketches as source material; mathematical / geometric generators as secondary input. Later analytical work used scanned museum-quality reproductions of historical paintings.",
+    "data_provenance": "Source materials traceable via the Schwartz archive. Bell Labs code (BEFLIX / EXPLOR routines) partially preserved; full reconstruction of specific films' code is incomplete."
+  },
+  "embedding_space_relevance": "High — bridges the Bell Labs industrial-research lineage (a thread missing from the first-pass graph) to the broader algorithmic-art and computer-animation canons. Expected to sit close to Cohen, Molnar, Nake, Mohr in embedding space and to later animation-native artists (Pixar-lineage, emerging AI-video practice).",
+  "exhibition_modality": "Film screenings and installations originally; now also institutional collection displays (MoMA, Whitney, Smithsonian) and film-preservation screenings at media-archaeology festivals.",
+  "sensory_register": "Visual + audiovisual (the films carry original electronic scores). Time-based but non-interactive.",
+  "interoperability": "Film-preservation workflows apply. Code: partial archaeology possible via Bell Labs materials and the 1992 Handbook's documented techniques.",
+  "technical_approach": "BEFLIX, EXPLOR, and related Bell Labs in-house languages for animation generation; microfilm plotter, 16mm optical printer for output. Later digital paint systems and image-processing toolchains.",
+  "protocol_art_resonance": "Moderate: Schwartz's work is less about protocol-as-material than Cordeiro's or Cohen's but strongly exemplifies distributed authorship (artist-engineer collaboration) as a governance question for computer art.",
+  "potential_role_in_adai": "Bridge node: anchors the Bell Labs industrial-research lineage and provides a second 1970s non-AI computer-animation ancestor (paired with Cohen for pre-AI machine creativity on the symbolic side). Expected to carry strong edges to subsequent animation and computer-graphics canons.",
+  "temporal_status": "historical (principal practice 1968-2010s; deceased 2024; archive active)",
+  "uncertain": [
+    "Precise filmography — Schwartz produced ~70 films and dating of some early works varies across sources",
+    "Attribution of specific techniques within Bell Labs collaborations (Knowlton has written extensively on this; consensus is that artist/engineer roles were clear but specific line-drawing is case-by-case)",
+    "Status of original source code for most films (partial)",
+    "Relationship to later animation industries (Pixar, computer-graphics commercial industry) — influence is diffuse and widely claimed; direct lines are fewer"
+  ],
+  "relevance_to_sense_room": "Exemplifies explicit artist-engineer collaboration as a governance question — the sense room's agent-human pairing recapitulates the Schwartz-Knowlton relationship in a different medium.",
+  "classification_lenses": ["academic-media-art-history", "euro-american-institutional"],
+  "data_provenance": {
+    "source": "curated-2026-04",
+    "authored_by": "ai-draft",
+    "references_consulted": [
+      "Wikipedia / Wikidata Q6545540",
+      "Getty ULAN: Lillian Schwartz record",
+      "sources.yaml: Bell Labs — Lillian Schwartz archive line 2276",
+      "sources.yaml: SIGGRAPH Pioneers oral histories line 2493",
+      "Schwartz, L. & L. The Computer Artist's Handbook (1992)"
+    ],
+    "reviewed": false,
+    "reviewed_by": null,
+    "reviewed_date": null,
+    "notes": "Draft for human review. Schwartz died October 2024; death-date should be verified and 'active_years' / 'temporal_status' updated to reflect. 'active_years' currently shows practice range, not lifespan."
+  }
+}

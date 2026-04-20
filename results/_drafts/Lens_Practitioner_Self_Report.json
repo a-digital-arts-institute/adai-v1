@@ -1,0 +1,34 @@
+{
+  "basic_info": {
+    "name": "Practitioner Self-Report",
+    "type": "classification_lens",
+    "slug": "practitioner-self-report",
+    "active_years": "ongoing",
+    "location": "wherever the practitioner is",
+    "url": null
+  },
+  "description": "The practitioner's own account of their work, lineage, and position. Per CLAUDE.md §Trust Model, self-report from an artist about their own practice carries the highest epistemic authority in A(DAI) — higher than curatorial framing, academic writing, or market activity. The artist knows which tool they actually used, who they were thinking about, what the work contests, and which readings misread it. This lens is the project's editorial commitment to treating the artist as a primary source, not a subject to be canonised about. It is structurally different from the other four lenses: those read the field from the outside-in (the institution, the market, the academy, the regional gatekeeper). This one reads from the inside-out. It is also, crucially, the one this graph has the least of at first-pass: almost all 59 existing practitioner JSONs were researched about artists by outside authors. The self-report lens is therefore scaffolded now, empty for most nodes, and will fill in over time as practitioners join and edit their own claims.",
+  "exemplars": [
+    "Holly Herndon + Mat Dryhurst (Spawning; Holly+ — practitioners building their own infrastructure)",
+    "Grimes / Elf.Tech (artist-authored voice-model platform)",
+    "K Allado-McDowell (AI-collaborative practice theorised by the practitioner themselves)",
+    "Danielle Brathwaite-Shirley (artist-written accompanying texts drive the reading)",
+    "Tabita Rezaire (artist-led cosmology frames the work's meaning)",
+    "[scaffolded — the majority of this lens is intentionally empty at first-pass]"
+  ],
+  "blind_spots": "Practitioners who are deceased, inactive, or uninterested in self-documenting. Practice where the artist deliberately refuses self-authorship (anonymous, pseudonymous, or collectively-authored-without-spokesperson work). Language barriers — self-report in non-English is under-represented until translation is part of the ingestion flow. Cases where the artist's self-account conflicts with documented facts — the lens does not auto-resolve conflicts; it holds both.",
+  "classification_logic": "Apply this lens when a significant portion of the practitioner-node's metadata was authored or closely reviewed by the practitioner themselves. In practice, at first-pass this means almost none of the existing 59 — flag the lens as scaffolded-empty and surface it as a gap. Populate progressively as practitioners join Layer 3 (the intimate layer in the seed-doc) and contribute their own claims. A practitioner with BOTH euro-american-institutional AND practitioner-self-report tags is epistemically stronger than one with institutional tagging alone.",
+  "data_provenance": {
+    "source": "curated-2026-04",
+    "authored_by": "ai-draft",
+    "references_consulted": [
+      "CLAUDE.md §Trust model (practitioner self-report = highest authority)",
+      "CLAUDE.md §Principles #1 ('show the bias') and #18 ('the practitioner's sensing capacity is the primary intelligence source')",
+      "seed-doc Layer 3 (the intimate layer)"
+    ],
+    "reviewed": false,
+    "reviewed_by": null,
+    "reviewed_date": null,
+    "notes": "Draft for human review. Honest admission: at first-pass this lens is largely empty — the point is to make that emptiness visible as a gap the graph is committed to filling, not to paper over it with misclassifications."
+  }
+}

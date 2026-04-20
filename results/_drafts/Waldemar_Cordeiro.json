@@ -1,0 +1,81 @@
+{
+  "basic_info": {
+    "name": "Waldemar Cordeiro",
+    "type": "artist",
+    "active_years": "1945-1973",
+    "location": "São Paulo, Brazil (b. Rome, Italy, 1925; d. São Paulo, 1973)",
+    "url": null
+  },
+  "practice_description": {
+    "practice_summary": "Brazilian-Italian artist, critic, and organiser who moved concrete art into computation. Founded the Grupo Ruptura in São Paulo (1952), authoring the manifesto that set terms for Brazilian concretism. In the late 1960s, working with physicist Giorgio Moscati on an IBM/360 at the University of São Paulo's computing centre, Cordeiro produced the first substantial body of computer art in Latin America. His computer works — image processing of political and quotidian photographs (Lyndon Johnson, a farmer, a dead soldier, his daughter Gente) — treated the machine as a reading device that could dissolve and re-compose what a photograph encodes. He theorised this as 'arte concreta semântica' (semantic concrete art): the computer's capacity to operate on meaning, not only on form. Cordeiro died in 1973, at 48, just as his computer-art project was reaching international circulation via Cybernetic Serendipity and related touring exhibitions.",
+    "methodology": "Worked in two parallel registers through the 1960s: Euclidean and post-Euclidean concrete painting in São Paulo studio practice, and computer-based image processing conducted at USP on IBM/360 hardware with line-printer and plotter output. The computer workflow involved photographic sources converted to numerical values, processed through custom FORTRAN-era programmes, and output as printed grids or plotter drawings. The human decisions — which image, which processing pass, how to re-present the output — were the authorship; the machine executed.",
+    "medium": "concrete painting, computer-generated imagery, plotter drawing, line-printer output, photography, critical writing"
+  },
+  "key_works": {
+    "works": [
+      {
+        "title": "Derivadas de uma imagem (Derivatives of an Image)",
+        "year": "1969",
+        "description": "Series of computer-processed portraits — a farmer, Lyndon Johnson, a dead Vietnamese soldier — each passed through iterative image-processing operations on IBM/360 hardware. The image degrades, reconstitutes, or mutates across the series, functioning as a study in how a computational operation carries or sheds political meaning.",
+        "relevance": "Canonical within Latin-American computer-art history and a direct parallel to concurrent European computer-art experiments (Nake, Molnar), produced without Euro-American institutional connection. Establishes that 1960s computer art was a multi-continental phenomenon."
+      },
+      {
+        "title": "Gente",
+        "year": "1972",
+        "description": "Grid of computer-processed portraits of Cordeiro's daughter, iterated through tonal and structural transformations. Distinct from Derivadas in its intimate, familial source material — a deliberate domestic register for the same computational methodology.",
+        "relevance": "The most formally inventive of his computer works; widely reproduced in subsequent Latin American media-art histories."
+      },
+      {
+        "title": "Arteônica (curation + manifesto)",
+        "year": "1971",
+        "description": "Exhibition and accompanying theoretical text (sometimes rendered Arte & Electrónica / Arteonica) organising a São Paulo presentation of computer-based practice. Cordeiro's introductory text argued for 'arte concreta semântica' as the correct frame for this work.",
+        "relevance": "Primary theoretical document for Latin-American computer art's self-understanding. Cited alongside Cybernetic Serendipity as parallel 1968-71 global consolidation of the field."
+      }
+    ]
+  },
+  "network_position": {
+    "scene_affiliation": "São Paulo concretism, Grupo Ruptura, USP computing centre circle, Latin American computer-art circuit",
+    "connections": "Giorgio Moscati (physicist, IBM/360 collaborator), Grupo Ruptura, Frieder Nake (parallel computer-art generation), Vera Molnar (parallel computer-art generation), Décio Pignatari (concrete poetry, adjacent São Paulo circle), Augusto de Campos (concrete poetry)"
+  },
+  "commons_orientation": {
+    "commons_summary": "Cordeiro worked within a shared university computing resource — access to the IBM/360 was governed by institutional rather than market logic — and his critical writing treated the computer as a public apparatus for re-reading political imagery. His organising (Ruptura manifesto, Arteônica curation) built shared frameworks rather than proprietary signatures."
+  },
+  "governance_model": "Informal collective-authorship-by-proximity (with Moscati at USP; with Ruptura colleagues in São Paulo). No formal studio or foundation survived him. Posthumous governance is carried by his estate and by institutional holdings (MAC-USP, ICAA / MFAH documents, Getty Research Institute).",
+  "consent_and_authorship": "Authorship explicitly distributed in his writing: the artist chooses, the machine executes, and the political source (the photograph) carries meaning the work then tests. Contemporary reprints of Derivadas raise consent questions about the political source images (notably the Vietnamese soldier) that were not posed in 1969; any re-presentation today is handled with added contextual framing.",
+  "liveness_and_duration": "Static outputs (prints, plotter drawings) with long archival lifespan. The computational process that produced them is not live; it happened on hardware that no longer exists. Reconstructions of the code are possible but partial.",
+  "data_materiality": {
+    "data_sources": "Photographic sources (press photographs, personal archive). Numerical encoding handled on IBM/360 at USP. Output as line-printer tonal grids and plotter line drawings.",
+    "data_provenance": "Source images traceable (Johnson press photo, Vietnam War press photo, family photographs). Processing code not preserved in accessible form; reconstructed inferences exist in scholarly literature (Priscila Arantes, Analivia Cordeiro)."
+  },
+  "embedding_space_relevance": "High — as a bridge node, expected to sit close to Nake, Molnar, Mohr in embedding space (shared vocabulary: algorithmic processing, iterative variation, concrete-art-into-computation), and also close to contemporary Latin American computational practice that the first-pass graph lacks.",
+  "exhibition_modality": "Originally: São Paulo gallery and Bienal de São Paulo circuit; Arteônica São Paulo; Cybernetic Serendipity (London, 1968; touring 1969-71). Currently: posthumous retrospectives at MAC-USP, Itaú Cultural; inclusion in MoMA's 'Information' (1970) in conversation with the moment's wider consolidation.",
+  "sensory_register": "Visual (black-and-white printed output, occasional colour). Structurally static — the work does not change once output.",
+  "interoperability": "Print output is media-archaeologically stable but not directly queryable as data. Code: lost or unreconstructable at the level of executable reproduction.",
+  "technical_approach": "FORTRAN-era image-processing on IBM/360 mainframe; custom routines developed with Moscati for tonal quantisation, iterative re-quantisation, structural re-ordering. Output hardware: line printer, pen plotter.",
+  "protocol_art_resonance": "Strong: Cordeiro's 'semantic concrete art' anticipates the protocol-art move of treating computational operations themselves as the primary artistic material. His insistence that the machine operates on meaning (not just pattern) prefigures contemporary AI-art discourse.",
+  "potential_role_in_adai": "Bridge node. Anchors a 1960s non-Euro-American computer-art lineage. Carries the Latin American axis of the computer-art moment that Cybernetic Serendipity partly absorbed and partly missed. Expected to generate INFLUENCES edges to Nake, Molnar (same era, same lens via academic-media-art-history), and to later Brazilian digital practice once that enters the graph.",
+  "temporal_status": "historical (deceased 1973; active archive preservation ongoing via family and institutions)",
+  "uncertain": [
+    "Exact dates for individual Derivadas instances (series published across 1969-71)",
+    "Attribution weight between Cordeiro and Moscati (consensus: Cordeiro authored, Moscati enabled technically; Moscati has been explicit about not claiming artistic authorship)",
+    "Which specific works travelled to Cybernetic Serendipity vs which appeared only in São Paulo (scholarship varies)",
+    "Status of the FORTRAN source code — likely lost; some reconstructions exist in academic literature but none claims to be complete"
+  ],
+  "relevance_to_sense_room": "Historical anchor for a semantic-concrete-art reading of the room's practice: the room treats the graph as a computational operation on shared meaning, the same move Cordeiro named 'arte concreta semântica' fifty-five years earlier.",
+  "classification_lenses": ["academic-media-art-history", "euro-american-institutional"],
+  "data_provenance": {
+    "source": "curated-2026-04",
+    "authored_by": "ai-draft",
+    "references_consulted": [
+      "Wikipedia / Wikidata Q2542006",
+      "Getty ULAN: Waldemar Cordeiro record",
+      "sources.yaml: ICAA Documents Project (MFAH) line 1156",
+      "sources.yaml: FILE Festival (Brazil) line 1140",
+      "Oliver Grau et al. MediaArtHistories scholarship on parallel 1960s computer-art consolidation"
+    ],
+    "reviewed": false,
+    "reviewed_by": null,
+    "reviewed_date": null,
+    "notes": "Draft for human review. Flag: 'active_years' extended to 1945-1973 to include pre-computer concrete painting practice, not only the 1968-73 computer period. Some scholarship treats the computer work as a late pivot rather than a continuous line with his concrete painting — review for consistency with A(DAI) framing."
+  }
+}
