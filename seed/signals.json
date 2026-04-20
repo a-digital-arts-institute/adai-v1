@@ -1,0 +1,23 @@
+[
+  {
+    "id": "signal:seed-taxonomy-2026-04",
+    "title": "Seed taxonomy consolidation — April 2026",
+    "source_url": null,
+    "source_type": "migration",
+    "cla_layer": "public",
+    "summary": "Consolidation of the A(DAI) canon into a single seed/ directory. Sources: 59 confirmed practitioner research files (results/), 4 bridge drafts (Waldemar Cordeiro, Lillian Schwartz, Harold Cohen, Prema Murthy), 5 classification lens drafts, 177 artworks from the preview cleanup, plus 45 new practitioner drafts authored from the April 2026 seed taxonomy article 'Digital Art Is the Art of Our Age' (Ben Fry, Golan Levin, Jesse Kanda, plus 42 from the brief).",
+    "content": null,
+    "submitted_by": "contributor:migration",
+    "confidence": "high",
+    "lived_experience": 0,
+    "created_at": "2026-04-20T17:49:32Z",
+    "consent_scope": "full_commons",
+    "consent_attribution": "attributed",
+    "consent_revocable": 1,
+    "processing_trace": "{\"extracted\": [\"practitioners\", \"artworks\", \"concepts\", \"scenes\", \"classification_regimes\"], \"frontier_count\": 0, \"transform_version\": \"seed-consolidation-1.0\"}",
+    "source_origin": "human_secondary",
+    "batch_id": "seed-taxonomy-2026-04",
+    "status": "active",
+    "provenance_chain": "[{\"stage\": \"seed-research-2025\", \"actor\": \"iri\"}, {\"stage\": \"seed-taxonomy-article-2026-04\", \"actor\": \"iri\"}, {\"stage\": \"consolidation-2026-04-20\", \"actor\": \"contributor:migration\"}]"
+  }
+]
