@@ -1,0 +1,82 @@
+{
+  "basic_info": {
+    "name": "Harold Cohen",
+    "type": "artist",
+    "active_years": "1960s-2016",
+    "location": "United Kingdom / United States (born London 1928; d. Encinitas CA 2016)",
+    "url": null
+  },
+  "practice_description": {
+    "practice_summary": "British-American painter who, from 1973, developed AARON — a computer programme that autonomously made drawings and, later, colour paintings. Cohen spent four decades evolving AARON through hand-authored rule-based code, expanding its repertoire from abstract line drawings through figurative compositions (people in jungles, gardens) to colour image-making. AARON is the single longest-running artist-authored AI project in art history: one artist, one machine collaborator that grew and changed, forty-three years. Cohen treated AARON not as a tool and not as an autonomous agent in the contemporary sense, but as a colleague whose rule-set he continually revised. His writings — especially 'The Further Exploits of AARON, Painter' — frame this work as a sustained investigation into what machine-making can illuminate about human-making. He resisted framings that treated AARON as either mere tool or as approaching genuine creativity; his position was subtler and worked out in code.",
+    "methodology": "Slow, sustained, hand-authored symbolic AI. Cohen wrote AARON in C (earlier versions in LISP-adjacent environments), progressively encoding knowledge: how to draw a figure, how to compose a scene, how to select colour, how to balance a composition. Each expansion was an artistic decision implemented as a code change. No machine learning; no neural networks; no training data beyond Cohen's own continual rule-authoring. The paintings themselves were executed by a robotic painting machine Cohen designed, spraying or brushing pigment onto canvas as directed by AARON's compositional output.",
+    "medium": "code (C, earlier LISP-adjacent), autonomous drawing and painting programmes, robotic painting hardware, oil on canvas, acrylic, print, critical writing"
+  },
+  "key_works": {
+    "works": [
+      {
+        "title": "AARON",
+        "year": "1973-2016 (continuous)",
+        "description": "The programme itself, in its successive versions across four decades. Treated as a single evolving artwork — not a series of discrete pieces — though it produced thousands of drawings and hundreds of paintings along the way. Each version represents Cohen's current position on what AARON can and should be able to do.",
+        "relevance": "Foundational for every subsequent conversation about AI art. The canonical prior art for any 2020s generative-AI-in-art claim. Unique in being simultaneously software, artwork, collaborator, and decades-long sustained artistic project."
+      },
+      {
+        "title": "AARON-generated drawings (1970s-80s jungle series)",
+        "year": "1977-1985",
+        "description": "Early colour drawings produced by AARON during its 'people in jungles' figurative period. Displayed at Computer Museum Boston, Tate, and the Stedelijk. The aesthetic — child-like, vivid, confident line — was a deliberate product of the knowledge Cohen had encoded at that stage.",
+        "relevance": "The visual register most strongly associated with AARON in public memory. Widely reproduced in AI-art histories."
+      },
+      {
+        "title": "AARON colour paintings (late 1990s-2000s)",
+        "year": "1995-2010",
+        "description": "Large-format oil and acrylic canvases produced via Cohen's custom robotic painting machines, directed by AARON. Still-life, botanical, and figurative compositions with a distinctive tonal logic that arose from the colour rules Cohen spent years refining.",
+        "relevance": "Extends AARON into painting proper, not only drawing; demonstrates that the project could adapt across media while retaining authorial coherence."
+      }
+    ]
+  },
+  "network_position": {
+    "scene_affiliation": "early AI art pioneers (pre-deep-learning era); UC San Diego Centre for Research in Computing and the Arts (CRCA); symbolic-AI research community",
+    "connections": "Edward Feigenbaum (AI researcher, Stanford; long collaborator-interlocutor), Margaret Boden (philosopher of creativity; wrote extensively on AARON), Lillian Schwartz (parallel 1970s computer-art generation), Mario Klingemann (heir in GAN-era AI art), Anna Ridler (heir in dataset-era AI art), Sofia Crespo (heir)"
+  },
+  "commons_orientation": {
+    "commons_summary": "Cohen's writings and AARON's principles are publicly available; code has been partially released (Whitney has a working installation; Tate holds related materials). But the specific working AARON code as Cohen used it at any given moment was a personal studio artefact, not an open-source project. The Gazelli Art House and the Cohen estate have since curated partial releases."
+  },
+  "governance_model": "Single-author studio practice with institutional partners (UCSD CRCA) for computing resources. Posthumous governance now distributed between the Cohen estate, Gazelli Art House (representing the work commercially and curatorially), Tate, and the Whitney.",
+  "consent_and_authorship": "Cohen was insistent and public about authorship: he was the artist; AARON was his collaborator and medium. This resists the current convention of framing AI outputs as 'made by the AI' — a framing Cohen explicitly rejected as both technically inaccurate and historically lazy. A(DAI) treats this authorship position as a primary resource.",
+  "liveness_and_duration": "Both. The programme is live (can run and produce new output); the paintings and drawings are fixed. Running AARON today requires maintaining an old computing environment or porting the code; both partial preservations exist.",
+  "data_materiality": {
+    "data_sources": "None in the modern ML sense — AARON was not trained. Its 'knowledge' is the rule-set Cohen wrote. Inputs are random-seed parameters and Cohen's runtime choices; outputs are drawings, paintings, and compositional data.",
+    "data_provenance": "All authorship traces to Cohen and the code. Preservation: partial, ongoing."
+  },
+  "embedding_space_relevance": "Extremely high — AARON is the semantic anchor for pre-neural-network AI art and the ancestor most strongly cited by current AI artists. Expected to sit close to Klingemann, Crespo, Ridler, Anadol in embedding space via shared vocabulary (autonomous system, machine creativity, artist-programmed rules), and close to Cordeiro, Schwartz in pioneer-era embeddings.",
+  "exhibition_modality": "Historical: Tate (1983), Stedelijk, Computer Museum Boston, SIGGRAPH, Ars Electronica, documenta 6 (1977). Current: Whitney, Gazelli, recurring inclusion in AI-art survey exhibitions; AARON retrospectives ongoing since Cohen's death in 2016.",
+  "sensory_register": "Visual. AARON's outputs are drawings and paintings; the programme itself runs silently.",
+  "interoperability": "Partial. Code has been released in versions; running AARON today typically means using the Whitney's installation, Gazelli's curated software releases, or scholarly reconstructions. No canonical live-run.",
+  "technical_approach": "Symbolic AI: hand-authored rule sets implemented in C (earlier LISP-family). Robotic painting hardware designed by Cohen: colour-mixing arms, stylus-and-spray mechanisms directed by AARON's compositional output.",
+  "protocol_art_resonance": "Maximum. AARON is protocol-as-artwork, at a scale and duration no other project has matched. Cohen's four-decade sustained investigation of what rules mean when executed autonomously is the closest historical parallel to A(DAI)'s proposed graph-as-living-protocol.",
+  "potential_role_in_adai": "Highest-value bridge node in List A. Genealogical root for the entire AI cluster already in the graph (Klingemann, Anadol, Crespo, Ridler, Parrish, Elwes, Akten, Chung, Heaney). Expected to generate cross-era INFLUENCES edges to most of them once Phase 4 runs. Also anchors a pre-neural-network reading of AI art that the contemporary graph lacks.",
+  "temporal_status": "historical (deceased 2016; AARON still runnable in curated installations)",
+  "uncertain": [
+    "Exact scope of code release — multiple partial releases have occurred at different times (Whitney, Gazelli, Stanford); 'the code' is not a single artefact",
+    "Cohen's theoretical position evolved across his life — citations to him should note which period",
+    "AARON's precise starting date: Cohen dated it to 1973 but early experiments pre-date the consolidated programme",
+    "Posthumous production status — no new AARON-authored works are produced now; curated re-runs of existing versions are"
+  ],
+  "relevance_to_sense_room": "Direct precedent. The sense room treats its graph as a living collaborator whose rule-set its stewards evolve over time — structurally the same move Cohen made with AARON, in a different medium.",
+  "classification_lenses": ["euro-american-institutional", "academic-media-art-history", "practitioner-self-report"],
+  "data_provenance": {
+    "source": "curated-2026-04",
+    "authored_by": "ai-draft",
+    "references_consulted": [
+      "Wikipedia / Wikidata Q1586543",
+      "Getty ULAN: Harold Cohen record",
+      "sources.yaml: Harold Cohen / AARON source release line 2002",
+      "sources.yaml: SIGGRAPH Pioneers oral histories line 2493",
+      "Cohen, H. 'The Further Exploits of AARON, Painter' (1995)",
+      "Margaret Boden's writings on creativity and AARON"
+    ],
+    "reviewed": false,
+    "reviewed_by": null,
+    "reviewed_date": null,
+    "notes": "Draft for human review. Note: this is arguably the single most important bridge node in List A — Cohen's absence from the current graph is the largest genealogical gap. Reviewer should verify factual claims carefully."
+  }
+}

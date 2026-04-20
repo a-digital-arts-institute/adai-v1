@@ -1,0 +1,80 @@
+{
+  "basic_info": {
+    "name": "Prema Murthy",
+    "type": "artist",
+    "active_years": "mid-1990s-mid-2000s",
+    "location": "New York City (South Asian American)",
+    "url": null
+  },
+  "practice_description": {
+    "practice_summary": "American artist whose late-1990s and early-2000s net.art interrogated race, gender, and identity online. Bindigirl (1999) — a fictional South Asian cam-girl website — operated as critical parody, inviting the viewer into the tropes of ethnic sexualisation online while making the tropes legible as constructions. Subsequent works (Mythic Hybrid, Dreamcatcher) extended this project into data-driven video installations exploring how online infrastructure encodes bodily, racial, and cultural difference. Murthy was part of the constellation of late-90s net.art that treated the browser as both medium and political site; her specific contribution was to bring non-white, non-Western, non-masculine subjectivity into that field.",
+    "methodology": "Working across HTML/early web media, video, and installation. Bindigirl used standard web-page construction of the period (tables, animated GIFs, form elements) to mimic and subvert the cam-site format. Later works used statistical data (from health research, from online self-reports) as source material for generative video.",
+    "medium": "net.art, HTML/browser-based work, video installation, digital photography, performance"
+  },
+  "key_works": {
+    "works": [
+      {
+        "title": "Bindigirl",
+        "year": "1999",
+        "description": "Browser-based fictional cam-site performing as a South Asian online sex worker. Uses the formal conventions of the cam-site (photos, biographical text, interactive calendar) to make visible the racialised, orientalist tropes the format encodes. Widely cited in feminist media theory.",
+        "relevance": "Canonical late-90s net.art. Catalogued in Rhizome ArtBase. Brings a non-white subject position into a net.art moment often narrated as white and European."
+      },
+      {
+        "title": "Mythic Hybrid",
+        "year": "2002",
+        "description": "Multi-channel video installation using data from occupational-health studies of women workers in semiconductor manufacturing. Translates demographic data into generative video abstractions, making labour-condition data legible as aesthetic surface.",
+        "relevance": "Bridges net.art to data-driven installation; extends Murthy's political project from identity-online into global-economy / labour themes."
+      },
+      {
+        "title": "Dreamcatcher",
+        "year": "2005",
+        "description": "Video work using automated dream-self-report databases as input, producing an ambient, collaged stream of anonymous dream-images. Explores the limits of what demographic data collection can meaningfully say about inner life.",
+        "relevance": "Among the earliest artist-uses of online self-report aggregation as creative material — anticipates later critical AI-art practice."
+      }
+    ]
+  },
+  "network_position": {
+    "scene_affiliation": "late-1990s net.art; Rhizome community; New York feminist / critical-race digital practice",
+    "connections": "Rhizome (platform / community), Olia Lialina (parallel generation, net.art canon), Mark Tribe (Rhizome founder), Cornelia Sollfrank (feminist net.art), Mendi + Keith Obadike (parallel race-and-code practice), Mongrel (UK; parallel race-and-code practice)"
+  },
+  "commons_orientation": {
+    "commons_summary": "Early net.art ethos of open-browser, view-source, copyable HTML. Bindigirl's source code was part of the work's legibility — the page could be read as well as viewed. Murthy's subsequent work moved toward gallery installation and lost some of this commons disposition."
+  },
+  "governance_model": "Individual artist; represented by various galleries across her active period. Bindigirl's web artefact is preserved via Rhizome ArtBase. Current custody of later work: unclear from public sources.",
+  "consent_and_authorship": "Bindigirl invoked the question of whose consent matters in cam-site tropes — the fictional 'Bindigirl' does not exist, but the stereotype she enacts consents to an economy of sexualised representation. Murthy's authorship is clear; the meta-question of the work is consent's distribution across representation.",
+  "liveness_and_duration": "Bindigirl: archived / static (no longer live at its original URL; preserved as archival capture). Later installation works: time-based within exhibition contexts.",
+  "data_materiality": {
+    "data_sources": "Bindigirl: fictional, constructed. Mythic Hybrid: occupational-health statistical data on semiconductor-industry women workers. Dreamcatcher: aggregated dream self-reports.",
+    "data_provenance": "Bindigirl: authored. Mythic Hybrid: data sources were published research (specific citations should be verified before public-facing descriptions)."
+  },
+  "embedding_space_relevance": "High — Murthy bridges the net.art canon (where she sits close to Lialina and the Rhizome constellation) to race-and-code practice (where she sits close to American Artist, Mongrel, Brathwaite-Shirley). First-pass graph has strong net.art gap; her presence connects both.",
+  "exhibition_modality": "Web-native originally (Bindigirl URL); later gallery installation (Mythic Hybrid, Dreamcatcher). Preserved in Rhizome ArtBase.",
+  "sensory_register": "Browser / screen-based; later video + sound.",
+  "interoperability": "Bindigirl's HTML is archive-accessible; later works require venue-specific A/V installation.",
+  "technical_approach": "Standard-HTML web page construction (1999 era); custom video-generation pipelines for installation work.",
+  "protocol_art_resonance": "Moderate: Bindigirl's formal use of the cam-site protocol makes the protocol itself the subject of critique — a direct precedent for protocol-art approaches.",
+  "potential_role_in_adai": "Bridge node: brings South Asian diasporic subjectivity into a graph currently weak in that region. Strengthens the net.art genealogy and connects to race-and-code theorists already present (American Artist, Brathwaite-Shirley, Legacy Russell).",
+  "temporal_status": "recent / inactive (active production ~1999-2005; subsequent activity intermittent; current status unclear)",
+  "uncertain": [
+    "Current working practice — she has been less publicly active since ~2005; confirm whether she is still working",
+    "Exact dates for some works beyond Bindigirl",
+    "Dataset citations for Mythic Hybrid (occupational-health research) — need sourcing",
+    "Current gallery / institutional representation"
+  ],
+  "relevance_to_sense_room": "Demonstrates that a browser-based, copyable, viewable-source work can carry substantive racial critique — a precedent for how A(DAI)'s public snapshot surface can carry editorial position without hardening into single-reading canon.",
+  "classification_lenses": ["academic-media-art-history", "practitioner-self-report"],
+  "data_provenance": {
+    "source": "curated-2026-04",
+    "authored_by": "ai-draft",
+    "references_consulted": [
+      "Wikipedia / Wikidata (entry exists; verify QID)",
+      "sources.yaml: Rhizome ArtBase line 256 (Bindigirl is catalogued there)",
+      "sources.yaml: Net Art Anthology line 496",
+      "feminist media theory literature on Bindigirl (various)"
+    ],
+    "reviewed": false,
+    "reviewed_by": null,
+    "reviewed_date": null,
+    "notes": "Draft for human review. Known uncertainty: Murthy's current practice and recent whereabouts. Reviewer should verify QID and confirm current gallery status before public publishing of this node."
+  }
+}

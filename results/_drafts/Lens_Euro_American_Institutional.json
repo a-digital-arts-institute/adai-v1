@@ -1,0 +1,37 @@
+{
+  "basic_info": {
+    "name": "Euro-American Institutional",
+    "type": "classification_lens",
+    "slug": "euro-american-institutional",
+    "active_years": "1960s-present",
+    "location": "distributed (major centres: New York, London, Basel, Karlsruhe, Berlin)",
+    "url": null
+  },
+  "description": "The canonising logic of major Euro-American museums, kunsthalles, and flagship commissioning institutions — MoMA, Tate, the Whitney, Centre Pompidou, Serpentine, ZKM, HEK, Haus der Kulturen der Welt, major biennales. This lens reads digital art through the categories institutions have spent a century refining: the named practitioner as author, the discrete work as object (or timed performance), the exhibition as site, acquisition as validation, and the critical essay as afterlife. It tends to foreground works that translate into institutional formats — prints, editions, installations that travel, commissions that fit programme cycles. It is deeply literate in art-historical lineage and weak at reading work that lives natively on platforms or in network protocols. Institutions are slowly adapting: MoMA's acquisition of Anadol (2023), the Herndon/Dryhurst Holly+ commission (Serpentine), and Beeple's Christie's moment forced the lens to widen. But the logic beneath — the named maker, the primary object, the discrete exhibition — persists.",
+  "exemplars": [
+    "Casey Reas (Processing; widely institutional since 2001)",
+    "Refik Anadol (MoMA acquisition 2023)",
+    "Hito Steyerl (documenta, Venice, Tate)",
+    "Holly Herndon (Serpentine Holly+ commission)",
+    "Mario Klingemann (Sotheby's, MoMA)",
+    "Anna Ridler (Barbican, V&A, ZKM)",
+    "Sougwen Chung (Asian Art Museum, Cooper Hewitt)",
+    "Ian Cheng (MoMA PS1, Serpentine Emissaries)",
+    "teamLab (through its global museum tours)"
+  ],
+  "blind_spots": "Practice that lives in platforms, DAOs, chat servers, or code repositories and never produces a discrete exhibitable object. Activism or tactical-media work where the institutional frame would neutralise the work's politics. Non-Euro-American institutional circuits (NTT ICC, YCAM, Chronus) which use related but distinct canonising logics. Anonymous or pseudonymous practice. Work where the primary audience was never meant to be the museum-goer.",
+  "classification_logic": "Apply this lens when the practitioner or work has been acquired, commissioned, exhibited, or critically canonised by a Euro-American flagship institution, OR when the practitioner's career legibility is primarily institutional (monograph published by museum press, retrospective held, major public collection). Multi-lens tagging is expected: most practitioners here will also carry practitioner-self-report, and some will carry academic-media-art-history. Absence of this lens on a strong practitioner node is itself a finding — surface it.",
+  "data_provenance": {
+    "source": "curated-2026-04",
+    "authored_by": "ai-draft",
+    "references_consulted": [
+      "CLAUDE.md §classification_regime principles",
+      "sources.yaml §institutional_archives",
+      "observed exhibition/acquisition history across the existing 59 practitioner JSONs"
+    ],
+    "reviewed": false,
+    "reviewed_by": null,
+    "reviewed_date": null,
+    "notes": "Draft for human review. Exemplars drawn from existing 59 practitioner JSONs where institutional legibility is unambiguous."
+  }
+}
