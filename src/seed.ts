@@ -27,7 +27,7 @@ const db = getDb();
 
 // create migration signal
 db.prepare(
-  "INSERT OR IGNORE INTO signals (id, title, source_url, source_type, cla_layer, summary, content, submitted_by, confidence, lived_experience) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+  "INSERT OR IGNORE INTO signals (id, title, source_url, source_type, cla_layer, summary, content, submitted_by, confidence, lived_experience, source_origin, batch_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 ).run(
   "signal-migration",
   "Initial seed migration",
@@ -38,14 +38,16 @@ db.prepare(
   null,
   "migration",
   "low",
-  0
+  0,
+  "human_secondary",
+  "seed-migration-2026-04-20"
 );
 console.log("Migration signal created.");
 
 // create migration contributor
 db.prepare(
   "INSERT OR IGNORE INTO contributors (id, name, type, trust_tier, contributions, approved_count) VALUES (?, ?, ?, ?, ?, ?)"
-).run("contributor-migration", "migration", "script", "high", 0, 0);
+).run("contributor-migration", "migration", "script", "auto", 0, 0);
 console.log("Migration contributor created.");
 
 // process JSON files
@@ -57,7 +59,7 @@ const insertNode = db.prepare(
   "INSERT OR IGNORE INTO nodes (id, type, name, slug, metadata, updated_by) VALUES (?, ?, ?, ?, ?, ?)"
 );
 const insertEdge = db.prepare(
-  "INSERT OR IGNORE INTO edges (id, source_id, target_id, edge_type, signal_id, confidence, charge, created_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+  "INSERT OR IGNORE INTO edges (id, source_id, target_id, edge_type, signal_id, confidence, charge, created_by, event_time, valid_until, invalidated_by) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 );
 
 for (const file of files) {
@@ -85,7 +87,7 @@ for (const file of files) {
       const conceptId = `concept-${conceptSlug}`;
       insertNode.run(conceptId, "concept", conceptName, conceptSlug, null, "migration");
       const edgeId = `${nodeId}-practices-${conceptId}`;
-      insertEdge.run(edgeId, nodeId, conceptId, "PRACTICES", "signal-migration", "low", null, "migration");
+      insertEdge.run(edgeId, nodeId, conceptId, "PRACTICES", "signal-migration", "low", null, "migration", null, null, null);
     }
   }
 
@@ -101,7 +103,7 @@ for (const file of files) {
       const connId = `related-${connSlug}`;
       insertNode.run(connId, "related", cleanName, connSlug, null, "migration");
       const edgeId = `${nodeId}-related-to-${connId}`;
-      insertEdge.run(edgeId, nodeId, connId, "RELATED_TO", "signal-migration", "low", null, "migration");
+      insertEdge.run(edgeId, nodeId, connId, "RELATED_TO", "signal-migration", "low", null, "migration", null, null, null);
     }
   }
 
@@ -116,7 +118,7 @@ for (const file of files) {
       const sceneId = `scene-${sceneSlug}`;
       insertNode.run(sceneId, "scene", cleanScene, sceneSlug, null, "migration");
       const edgeId = `${nodeId}-belongs-to-${sceneId}`;
-      insertEdge.run(edgeId, nodeId, sceneId, "BELONGS_TO", "signal-migration", "low", null, "migration");
+      insertEdge.run(edgeId, nodeId, sceneId, "BELONGS_TO", "signal-migration", "low", null, "migration", null, null, null);
     }
   }
 }

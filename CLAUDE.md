@@ -45,17 +45,20 @@ Single SQLite file `adai.db` with CR-SQLite CRDT extensions (`@shards-lang/crsql
 
 **CRR tables** (synced via CRDTs):
 - `nodes` — id, type, name, slug, metadata (full JSON), updated_by
-- `edges` — id, source_id, target_id, edge_type, signal_id, confidence, created_by
-- `signals` — contributed information about practitioners
+- `edges` — id, source_id, target_id, edge_type, signal_id, confidence, charge, created_by, and bi-temporal fields: `event_time` (when the relationship was true in the world), `valid_from` (when the edge entered the graph), `valid_until` (NULL = still current), `invalidated_by` (id of the signal or edge that superseded it)
+- `signals` — contributed information about practitioners; consent fields (`consent_scope` ∈ {structural_only, full_commons}, `consent_attribution` ∈ {anonymous, attributed, attributed_with_notification}, `consent_revocable`), audit fields (`processing_trace` JSON of the agent's reasoning, `provenance_chain` JSON tracking flow through classification systems), `source_origin` ∈ {human_primary, human_secondary, ai_assisted, ai_generated, webscrape, platform_api, uncertain_origin, unknown}, `batch_id` for import-run tracking, `status` ∈ {active, revoked, superseded}
 - `contributors` — who contributed, trust tier, counts
+- `node_aliases` — cross-source entity resolution: `(source, external_id) → node_id` so MoMA's "Casey Reas", Wikidata's Q28936957, and fxhash's wallet all resolve to one node
 
 **Local tables**:
 - `intake_queue` — contribution review pipeline (pending/approved/rejected)
 - `settings` — key-value config
 
-**Edge types**: PRACTICES, BELONGS_TO, RELATED_TO, COLLABORATES_WITH, EXHIBITED_AT
+**Node types**: practitioner, concept, scene, related, institution, event, `classification_regime` (one per ingesting source; makes how an institution/market/platform classifies visible as a structural actor)
 
-**Trust tiers**: high (auto-merge), medium (auto-merge + tagged), low (queued), unverified (queued + flagged)
+**Edge types**: PRACTICES, BELONGS_TO, RELATED_TO, COLLABORATES_WITH, EXHIBITED_AT, CLASSIFIED_BY (any node → classification_regime that actively positioned it), LEGIBLE_TO (any node → classification_regime that could see it)
+
+**Trust tiers**: `auto` (founding team + practitioner self-report on own data — auto-merge), `reviewed` (established track record — auto-merge + tagged), `probationary` (default for new contributors — queued for review)
 
 ## HTTP endpoints
 
@@ -101,4 +104,4 @@ Each JSON in `results/` has: basic_info, practice_description, key_works, common
 - **BELONGS_TO edges** between practitioners and scenes
 - **RELATED_TO edges** between practitioners and related entities
 
-All seeded data has `confidence: 'low'`, `created_by: 'migration'`.
+All seeded data has `confidence: 'low'`, `created_by: 'migration'`. The migration signal itself is tagged `source_origin: 'human_secondary'`, `batch_id: 'seed-migration-2026-04-20'`, `status: 'active'`; the migration contributor is trust tier `auto`.
