@@ -244,4 +244,5 @@ console.log("Nodes by type:", nodesByType);
 const edgesByType = db.prepare("SELECT edge_type, COUNT(*) as count FROM edges GROUP BY edge_type ORDER BY count DESC").all();
 console.log("Edges by type:", edgesByType);
 
+db.exec("PRAGMA wal_checkpoint(TRUNCATE)");
 console.log("Consolidated seed complete!");
