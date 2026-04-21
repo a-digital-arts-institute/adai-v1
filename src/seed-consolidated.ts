@@ -224,6 +224,14 @@ for (const t of rootTargets) {
 db.exec("COMMIT");
 console.log(`A(DAI) root regime: 1 node, ${rootTargets.length} CLASSIFIED_BY edges.`);
 
+const { count: adaiCheck } = db
+  .prepare("SELECT COUNT(*) as count FROM nodes WHERE slug = 'adai'")
+  .get() as any;
+if (adaiCheck !== 1) {
+  console.error(`FATAL: A(DAI) node not present after bootstrap (count=${adaiCheck})`);
+  process.exit(1);
+}
+
 const { count: totalNodes } = db.prepare("SELECT COUNT(*) as count FROM nodes").get() as any;
 const { count: totalEdges } = db.prepare("SELECT COUNT(*) as count FROM edges").get() as any;
 const { count: totalSignals } = db.prepare("SELECT COUNT(*) as count FROM signals").get() as any;
