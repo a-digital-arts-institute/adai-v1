@@ -32,9 +32,11 @@ import glob
 from datetime import datetime, timezone
 from pathlib import Path
 
-ROOT = Path("/tmp/adai_work")
-RESULTS = ROOT / "results"
-SEED = ROOT / "seed"
+HERE = Path(__file__).parent             # seed/_build/
+SEED = HERE.parent                        # seed/
+REPO = SEED.parent                        # digital-arts-institute/
+RESULTS = REPO / "results"                # repo's research JSONs
+ROOT = HERE                               # new_entries.json + wikidata_verified.json live alongside this script
 SEED.mkdir(exist_ok=True)
 
 NOW = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -283,7 +285,7 @@ def normalize_practitioner_file(path, status):
             "trust_tier": "reviewed",
         }
 
-    add_node(node_id, ctype, name, slug, metadata=metadata, status=status)
+    add_node(node_id, ctype, name, slug, metadata=metadata, status=status, upgrade_stub=True)
 
     # Derive edges
     practice = data.get("practice_description", {})

@@ -3,9 +3,10 @@
 Merge image patches from image_patches/*.json into seed/nodes.json.
 
 Priority (when multiple sources claim an artwork):
-  1. wikidata  (standard license visible on Commons)
-  2. met       (Open Access CC0 — clear reuse rights)
-  3. moma      (collection thumbnail, license varies)
+  1. wikidata   (standard license visible on Commons)
+  2. met        (Open Access CC0 — clear reuse rights)
+  3. moma       (collection thumbnail, license varies)
+  4. artblocks  (media.artblocks.io thumbnail, per-project license)
 
 Only touches artwork nodes that don't already have an image_url. Nodes with
 an existing image_url are left alone (idempotent).
@@ -26,7 +27,16 @@ SEED = HERE.parent
 PATCHES_DIR = HERE / "image_patches"
 NODES_PATH = SEED / "nodes.json"
 
-SOURCE_PRIORITY = {"wikidata": 1, "met": 2, "moma": 3}
+SOURCE_PRIORITY = {"wikidata": 1, "met": 2, "moma": 3, "artblocks": 4}
+
+EXTERNAL_ID_KEYS = (
+    "moma_object_id",
+    "met_object_id",
+    "wikidata_qid",
+    "artblocks_contract",
+    "artblocks_project_id",
+    "artblocks_token_id",
+)
 
 
 def main():
@@ -75,7 +85,7 @@ def main():
         md["image_source"] = patch.get("image_source", "unknown")
         # Store per-source external IDs in metadata so they survive round-trip
         for k, v in patch.items():
-            if k in ("moma_object_id", "met_object_id", "wikidata_qid") and v:
+            if k in EXTERNAL_ID_KEYS and v:
                 md[k] = v
         n["metadata"] = json.dumps(md, ensure_ascii=False)
         applied += 1

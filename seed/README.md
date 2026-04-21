@@ -15,6 +15,7 @@ Replaces the `results/` directory in the repo. Every entry maps 1:1 to a row in 
 | `signals.json` | `signals` | Single seed-batch signal with `source_origin: "human_secondary"`, `consent_scope: "full_commons"`, `batch_id: "seed-taxonomy-2026-04"`. |
 | `contributors.json` | `contributors` | Single `contributor:migration` entry, trust_tier `reviewed`. |
 | `aliases.json` | `node_aliases` | Verified Wikidata QIDs for 60 practitioners. |
+| `SOURCES.md` | — | Selection criteria, methodology, source citations, data sourcing rationale, and known gaps. |
 | `COVERAGE.md` | — | Per-category counts, image hit rate, gaps list, notes for follow-up. |
 
 ## ID convention
