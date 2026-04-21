@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "tsx src/index.ts",
     "seed": "tsx src/seed.ts",
+    "seed:consolidated": "tsx src/seed-consolidated.ts",
     "build": "tsc",
     "start": "node dist/index.js"
   },
