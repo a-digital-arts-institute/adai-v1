@@ -63,13 +63,14 @@ router.get("/", (_req, res) => {
   }
 
   body += `<h2>Classification Regimes</h2>
-<p class='meta'>Every entity in the graph was seen through one or more lenses. A <em>classification regime</em> is a first-class node representing one such lens — a body of research, an institution's collection, a platform's taxonomy. The <code>CLASSIFIED_BY</code> edge records which lens saw which entity. This makes the provenance of the canon legible instead of hidden.</p>`;
+<p class='meta'>Every entity in the graph was seen through one or more lenses. A <em>classification regime</em> is a first-class node representing one such lens — a body of research, an institution's collection, a platform's taxonomy. The <code>CLASSIFIED_BY</code> edge records which lens saw which entity. This makes the provenance of the canon legible instead of hidden. A(DAI) sits at the root: every other regime, and every first-class entity, declares <code>CLASSIFIED_BY</code> A(DAI).</p>`;
 
   const regimes = db
-    .prepare("SELECT id, name, slug FROM nodes WHERE type = 'classification_regime' ORDER BY name")
+    .prepare("SELECT id, name, slug FROM nodes WHERE type = 'classification_regime' ORDER BY CASE WHEN slug = 'adai' THEN 0 ELSE 1 END, name")
     .all() as any[];
   for (const r of regimes) {
-    body += `<div class='card'><h3><a href='/practitioner/${r.slug}'>${r.name}</a></h3><span class='tag'>classification_regime</span></div>`;
+    const rootTag = r.slug === "adai" ? `<span class='tag' style='background:#3a2e16;color:#f4c261'>absolute root</span>` : `<span class='tag'>classification_regime</span>`;
+    body += `<div class='card'><h3><a href='/practitioner/${r.slug}'>${r.name}</a></h3>${rootTag}</div>`;
   }
 
   res.set(HTML_HEADERS).send(htmlPage("Home", body));
@@ -468,7 +469,7 @@ router.get("/graph", (_req, res) => {
 <label style='margin-left:0.5rem;font-size:0.8rem;color:#666'><input type='checkbox' id='walk-mode' checked> Walk component on click</label>
 <button id='reset-view' style='margin-left:0.5rem;background:#111;color:#888;border:1px solid #333;padding:0.25rem 0.5rem;border-radius:3px;font-size:0.75rem;cursor:pointer'>Reset view</button>
 <span id='node-count' style='margin-left:1rem;font-size:0.75rem;color:#555'></span>
-<div style='margin-top:0.4rem;font-size:0.7rem;color:#555'>red hubs = classification_regime (the lens a node was seen through). click any node to walk its connected component.</div>
+<div style='margin-top:0.4rem;font-size:0.7rem;color:#555'>gold hub = A(DAI), the absolute root. red hubs = sub-regimes (the lens a node was seen through). click any node to walk its connected component.</div>
 </div>
 <svg id='graph-svg'></svg>
 <div id='detail-panel' style='display:none;position:absolute;top:0;right:0;width:280px;background:#0f0f0f;border:1px solid #222;border-radius:4px;padding:1rem;max-height:80vh;overflow-y:auto;z-index:10'>
@@ -535,8 +536,8 @@ function render(data){
     .attr('stroke-opacity',0.6);
 
   node=g.append('g').selectAll('circle').data(data.nodes).enter().append('circle')
-    .attr('r',function(d){return d.center?12:d.type==='classification_regime'?11:(d.type==='concept'||d.type==='scene')?4:8;})
-    .attr('fill',function(d){return typeColors[d.type]||'#555';})
+    .attr('r',function(d){return d.slug==='adai'?16:d.center?12:d.type==='classification_regime'?11:(d.type==='concept'||d.type==='scene')?4:8;})
+    .attr('fill',function(d){return d.slug==='adai'?'#f4c261':(typeColors[d.type]||'#555');})
     .attr('stroke',function(d){return d.center?'#fff':'none';})
     .attr('stroke-width',function(d){return d.center?2:0;})
     .attr('cursor','pointer')

@@ -154,6 +154,76 @@ for (const a of aliases) {
 }
 console.log(`Aliases inserted: ${aliases.length}`);
 
+// --- A(DAI) absolute-root regime ---
+// A(DAI) is the umbrella classifying lens. Every first-class entity in the graph
+// — and every sub-regime — is classified by A(DAI) by virtue of being present here.
+const adaiRegimeId = "classification_regime:a(dai)";
+const adaiSignalId = "signal:adai-root-2026-04-21";
+const adaiMetadata = JSON.stringify({
+  status: "confirmed",
+  is_root: true,
+  description:
+    "A(DAI) — the umbrella classifying lens of this commons. Every entity in the graph and every sub-regime is classified by A(DAI) by virtue of being present here. Making the meta-lens explicit keeps the data honest.",
+});
+
+insertSignal.run(
+  adaiSignalId,
+  "A(DAI) root classification",
+  null,
+  "migration",
+  "public",
+  "Bootstrap: asserts A(DAI) as the umbrella classification_regime and links every first-class entity + every sub-regime to it.",
+  null,
+  "contributor:migration",
+  "high",
+  0,
+  new Date().toISOString().slice(0, 19) + "Z",
+  "full_commons",
+  "attributed",
+  1,
+  JSON.stringify({ step: "adai-root-bootstrap" }),
+  "human_primary",
+  "adai-root-2026-04-21",
+  "active",
+  JSON.stringify([{ stage: "adai-root-assertion", actor: "contributor:migration" }])
+);
+
+insertNode.run(
+  adaiRegimeId,
+  "classification_regime",
+  "A(DAI)",
+  "adai",
+  adaiMetadata,
+  new Date().toISOString().slice(0, 19) + "Z",
+  "contributor:migration"
+);
+
+const nowIso = new Date().toISOString().slice(0, 19) + "Z";
+const rootTargets = db
+  .prepare("SELECT id FROM nodes WHERE type NOT IN ('concept', 'scene', 'related') AND id != ?")
+  .all(adaiRegimeId) as Array<{ id: string }>;
+
+db.exec("BEGIN");
+for (const t of rootTargets) {
+  insertEdge.run(
+    `${t.id}--classified-by--${adaiRegimeId}`,
+    t.id,
+    adaiRegimeId,
+    "CLASSIFIED_BY",
+    adaiSignalId,
+    "high",
+    null,
+    nowIso,
+    "contributor:migration",
+    null,
+    nowIso,
+    null,
+    null
+  );
+}
+db.exec("COMMIT");
+console.log(`A(DAI) root regime: 1 node, ${rootTargets.length} CLASSIFIED_BY edges.`);
+
 const { count: totalNodes } = db.prepare("SELECT COUNT(*) as count FROM nodes").get() as any;
 const { count: totalEdges } = db.prepare("SELECT COUNT(*) as count FROM edges").get() as any;
 const { count: totalSignals } = db.prepare("SELECT COUNT(*) as count FROM signals").get() as any;
