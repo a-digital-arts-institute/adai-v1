@@ -5,12 +5,10 @@ DB_PATH="/data/adai.db"
 
 echo "A(DAI) server starting..."
 
-# If no database exists on the volume, seed it
 if [ ! -f "$DB_PATH" ]; then
-  echo "No database found, running seed..."
-  cd /app
-  DB_PATH="$DB_PATH" node dist/seed.js
-  echo "Seed complete."
+  echo "No database on volume; seeding from baked /app/seed.db"
+  cp /app/seed.db "$DB_PATH"
+  echo "Seed copy complete."
 else
   echo "Existing database found at $DB_PATH"
 fi
