@@ -465,8 +465,10 @@ router.get("/graph", (_req, res) => {
 <option value='_all'>Everything</option>
 </select>
 <label style='margin-left:0.5rem;font-size:0.8rem;color:#666'><input type='checkbox' id='show-scenes'> + Scenes</label>
+<label style='margin-left:0.5rem;font-size:0.8rem;color:#666'><input type='checkbox' id='walk-mode' checked> Walk component on click</label>
+<button id='reset-view' style='margin-left:0.5rem;background:#111;color:#888;border:1px solid #333;padding:0.25rem 0.5rem;border-radius:3px;font-size:0.75rem;cursor:pointer'>Reset view</button>
 <span id='node-count' style='margin-left:1rem;font-size:0.75rem;color:#555'></span>
-<div style='margin-top:0.4rem;font-size:0.7rem;color:#555'>red hubs = classification_regime (the lens a node was seen through)</div>
+<div style='margin-top:0.4rem;font-size:0.7rem;color:#555'>red hubs = classification_regime (the lens a node was seen through). click any node to walk its connected component.</div>
 </div>
 <svg id='graph-svg'></svg>
 <div id='detail-panel' style='display:none;position:absolute;top:0;right:0;width:280px;background:#0f0f0f;border:1px solid #222;border-radius:4px;padding:1rem;max-height:80vh;overflow-y:auto;z-index:10'>
@@ -539,7 +541,7 @@ function render(data){
     .attr('stroke-width',function(d){return d.center?2:0;})
     .attr('cursor','pointer')
     .call(d3.drag().on('start',dragStart).on('drag',dragging).on('end',dragEnd))
-    .on('click',function(e,d){selectNode(d);});
+    .on('click',function(e,d){onNodeClick(d);});
 
   node.append('title').text(function(d){return d.name+' ('+d.type+')';});
 
@@ -612,6 +614,24 @@ function closePanel(){
   selectedNode=null;
 }
 
+var inWalkView=false;
+function onNodeClick(d){
+  var walk=document.getElementById('walk-mode').checked;
+  if(walk){walkComponent(d);}else{selectNode(d);}
+}
+function walkComponent(d){
+  fetch('/api/graph/'+encodeURIComponent(d.slug)+'/component').then(function(r){return r.json();}).then(function(data){
+    inWalkView=true;
+    currentData=data;
+    var suffix=data.truncated?' (truncated)':'';
+    document.getElementById('node-count').textContent='walked from '+d.name+' — '+data.nodes.length+' nodes, '+data.edges.length+' edges'+suffix;
+    render(data);
+    var start=data.nodes.find(function(n){return n.center;})||d;
+    selectNode(start);
+  });
+}
+function resetView(){inWalkView=false;closePanel();reloadGraph();}
+
 function dragStart(e,d){if(!e.active)simulation.alphaTarget(0.3).restart();d.fx=d.x;d.fy=d.y;}
 function dragging(e,d){d.fx=e.x;d.fy=e.y;}
 function dragEnd(e,d){if(!e.active)simulation.alphaTarget(0);d.fx=null;d.fy=null;}
@@ -645,8 +665,9 @@ function reloadGraph(){
     }
   });
 }
-document.getElementById('type-filter').addEventListener('change',reloadGraph);
-document.getElementById('show-scenes').addEventListener('change',reloadGraph);
+document.getElementById('type-filter').addEventListener('change',resetView);
+document.getElementById('show-scenes').addEventListener('change',resetView);
+document.getElementById('reset-view').addEventListener('click',resetView);
 
 loadGraph('/api/graph');
 

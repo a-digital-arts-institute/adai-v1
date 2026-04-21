@@ -75,6 +75,69 @@ router.get("/api/graph", (req, res) => {
   });
 });
 
+// GET /api/graph/:slug/component — full connected component reachable from :slug
+router.get("/api/graph/:slug/component", (req, res) => {
+  const db = getDb();
+  const slug = req.params.slug;
+  const maxNodes = Math.min(Math.max(parseInt((req.query.max_nodes as string) || "800", 10) || 800, 1), 5000);
+
+  const start = db.prepare("SELECT id, name, type, slug FROM nodes WHERE slug = ?").get(slug) as any;
+  if (!start) {
+    res.status(404).set(JSON_HEADERS).json({ error: "not found" });
+    return;
+  }
+
+  const nodeRows = db.prepare("SELECT id, name, type, slug FROM nodes").all() as any[];
+  const nodeById = new Map<string, any>();
+  for (const n of nodeRows) nodeById.set(n.id, n);
+
+  const edgeRows = db
+    .prepare("SELECT source_id, target_id, edge_type, confidence FROM edges WHERE valid_until IS NULL")
+    .all() as any[];
+
+  const adj = new Map<string, Array<{ other: string; e: any }>>();
+  for (const e of edgeRows) {
+    if (!adj.has(e.source_id)) adj.set(e.source_id, []);
+    if (!adj.has(e.target_id)) adj.set(e.target_id, []);
+    adj.get(e.source_id)!.push({ other: e.target_id, e });
+    adj.get(e.target_id)!.push({ other: e.source_id, e });
+  }
+
+  const visited = new Set<string>([start.id]);
+  const queue: string[] = [start.id];
+  const edgesOut: any[] = [];
+  const seenEdgeKeys = new Set<string>();
+  let truncated = false;
+
+  while (queue.length > 0) {
+    const cur = queue.shift()!;
+    const neighbours = adj.get(cur) || [];
+    for (const { other, e } of neighbours) {
+      const ek = `${e.source_id}|${e.target_id}|${e.edge_type}`;
+      if (!seenEdgeKeys.has(ek)) {
+        seenEdgeKeys.add(ek);
+        edgesOut.push({ source: e.source_id, target: e.target_id, type: e.edge_type, confidence: e.confidence });
+      }
+      if (!visited.has(other)) {
+        if (visited.size >= maxNodes) {
+          truncated = true;
+          continue;
+        }
+        visited.add(other);
+        queue.push(other);
+      }
+    }
+  }
+
+  const nodes: any[] = [];
+  for (const id of visited) {
+    const n = nodeById.get(id);
+    if (n) nodes.push({ id: n.id, name: n.name, type: n.type, slug: n.slug, center: n.id === start.id });
+  }
+
+  res.set(JSON_HEADERS).json({ nodes, edges: edgesOut, truncated, start_id: start.id });
+});
+
 // GET /api/graph/:slug — ego graph (1-hop)
 router.get("/api/graph/:slug", (req, res) => {
   const db = getDb();
