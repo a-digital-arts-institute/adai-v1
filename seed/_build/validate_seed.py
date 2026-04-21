@@ -14,7 +14,7 @@ import json
 import sys
 from pathlib import Path
 
-SEED = Path("/tmp/adai_work/seed")
+SEED = Path(__file__).parent.parent
 
 errors = []
 warnings = []
