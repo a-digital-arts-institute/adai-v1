@@ -21,3 +21,10 @@ shards.log
 # Logs
 /tmp/
 *.log
+
+# Seed enrichment intermediate artifacts — not for commit
+seed/*.bak
+seed/*.pre-enrichment.bak
+seed/_build/task3_input.json
+seed/_build/fxhash_new_artworks.json
+seed/_build/moma_new_artworks.json

@@ -27,7 +27,7 @@ SEED = HERE.parent
 PATCHES_DIR = HERE / "image_patches"
 NODES_PATH = SEED / "nodes.json"
 
-SOURCE_PRIORITY = {"wikidata": 1, "met": 2, "moma": 3, "artblocks": 4}
+SOURCE_PRIORITY = {"wikidata_portrait": 1, "wikidata": 2, "met": 3, "moma": 4, "artblocks": 5, "fxhash": 6}
 
 EXTERNAL_ID_KEYS = (
     "moma_object_id",
@@ -71,12 +71,19 @@ def main():
     skipped_missing_node = 0
     node_by_id = {n["id"]: n for n in nodes}
 
+    def _load_md(n):
+        m = n.get("metadata")
+        if isinstance(m, str):
+            try: return json.loads(m)
+            except Exception: return {}
+        return m or {}
+
     for nid, (prio, patch) in all_patches.items():
         if nid not in node_by_id:
             skipped_missing_node += 1
             continue
         n = node_by_id[nid]
-        md = json.loads(n["metadata"])
+        md = _load_md(n)
         if md.get("image_url"):
             skipped_has_image += 1
             continue
@@ -87,7 +94,8 @@ def main():
         for k, v in patch.items():
             if k in EXTERNAL_ID_KEYS and v:
                 md[k] = v
-        n["metadata"] = json.dumps(md, ensure_ascii=False)
+        # Preserve dict-typed metadata (post-enrichment format) — don't re-serialize to string
+        n["metadata"] = md
         applied += 1
 
     print(f"\nApplied:             {applied}")

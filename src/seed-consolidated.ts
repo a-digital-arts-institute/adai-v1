@@ -123,9 +123,25 @@ console.log(`Signals inserted: ${signals.length}`);
 const insertNode = db.prepare(
   "INSERT OR IGNORE INTO nodes (id, type, name, slug, metadata, created_at, updated_by) VALUES (?, ?, ?, ?, ?, ?, ?)"
 );
+// Metadata can arrive as a JSON-string (legacy seed) or a parsed object (post-enrichment seed).
+// Normalise to string before binding.
+const asString = (v: unknown): string | null => {
+  if (v == null) return null;
+  if (typeof v === "string") return v;
+  return JSON.stringify(v);
+};
+const nowSeedIso = new Date().toISOString().slice(0, 19) + "Z";
 db.exec("BEGIN");
 for (const n of nodes) {
-  insertNode.run(n.id, n.type, n.name, n.slug, n.metadata, n.created_at, n.updated_by);
+  insertNode.run(
+    n.id,
+    n.type,
+    n.name,
+    n.slug ?? null,
+    asString(n.metadata),
+    n.created_at ?? nowSeedIso,
+    n.updated_by ?? "contributor:migration"
+  );
 }
 db.exec("COMMIT");
 console.log(`Nodes inserted: ${nodes.length}`);
@@ -139,8 +155,19 @@ const insertEdge = db.prepare(
 db.exec("BEGIN");
 for (const e of edges) {
   insertEdge.run(
-    e.id, e.source_id, e.target_id, e.edge_type, e.signal_id, e.confidence, e.charge,
-    e.created_at, e.created_by, e.event_time, e.valid_from, e.valid_until, e.invalidated_by
+    e.id,
+    e.source_id,
+    e.target_id,
+    e.edge_type,
+    e.signal_id ?? null,
+    e.confidence ?? null,
+    e.charge ?? null,
+    e.created_at ?? nowSeedIso,
+    e.created_by ?? "gatherer-enrichment",
+    e.event_time ?? null,
+    e.valid_from ?? null,
+    e.valid_until ?? null,
+    e.invalidated_by ?? null
   );
 }
 db.exec("COMMIT");
@@ -154,83 +181,26 @@ for (const a of aliases) {
 }
 console.log(`Aliases inserted: ${aliases.length}`);
 
-// --- A(DAI) absolute-root regime ---
-// A(DAI) is the umbrella classifying lens. Every first-class entity in the graph
-// — and every sub-regime — is classified by A(DAI) by virtue of being present here.
-const adaiRegimeId = "classification_regime:a(dai)";
-const adaiSignalId = "signal:adai-root-2026-04-21";
-const adaiMetadata = JSON.stringify({
-  status: "confirmed",
-  is_root: true,
-  description:
-    "A(DAI) — the umbrella classifying lens of this commons. Every entity in the graph and every sub-regime is classified by A(DAI) by virtue of being present here. Making the meta-lens explicit keeps the data honest.",
-});
-
-insertSignal.run(
-  adaiSignalId,
-  "A(DAI) root classification",
-  null,
-  "migration",
-  "public",
-  "Bootstrap: asserts A(DAI) as the umbrella classification_regime and links every first-class entity + every sub-regime to it.",
-  null,
-  "contributor:migration",
-  "high",
-  0,
-  new Date().toISOString().slice(0, 19) + "Z",
-  "full_commons",
-  "attributed",
-  1,
-  JSON.stringify({ step: "adai-root-bootstrap" }),
-  "human_primary",
-  "adai-root-2026-04-21",
-  "active",
-  JSON.stringify([{ stage: "adai-root-assertion", actor: "contributor:migration" }])
+// --- A(DAI) root regime: disabled after enrichment pass (2026-04-22) ---
+// The enriched seed already ships a single canonical lens:
+//   classification_regime:a(dai) seed canon v1 (april 2026)
+// Every canonical entity in the seed has a CLASSIFIED_BY edge to that node.
+// The former 'classification_regime:a(dai)' root injected here produced a
+// 483-edge explosion that centred the graph on itself, hiding the actual
+// relational structure. It was removed in Task 0e of the enrichment spec.
+//
+// If you want a single umbrella regime again, promote the seed canon node
+// to root — do not reintroduce the auto-injecting loop.
+console.log(
+  "A(DAI) root regime: skipped (enrichment 2026-04-22 — single seed-canon lens already in nodes.json)."
 );
 
-insertNode.run(
-  adaiRegimeId,
-  "classification_regime",
-  "A(DAI)",
-  "adai",
-  adaiMetadata,
-  new Date().toISOString().slice(0, 19) + "Z",
-  "contributor:migration"
-);
-
-const nowIso = new Date().toISOString().slice(0, 19) + "Z";
-const rootTargets = db
-  .prepare("SELECT id FROM nodes WHERE type NOT IN ('concept', 'scene', 'related') AND id != ?")
-  .all(adaiRegimeId) as Array<{ id: string }>;
-
-db.exec("BEGIN");
-for (const t of rootTargets) {
-  insertEdge.run(
-    `${t.id}--classified-by--${adaiRegimeId}`,
-    t.id,
-    adaiRegimeId,
-    "CLASSIFIED_BY",
-    adaiSignalId,
-    "high",
-    null,
-    nowIso,
-    "contributor:migration",
-    null,
-    nowIso,
-    null,
-    null
-  );
-}
-db.exec("COMMIT");
-console.log(`A(DAI) root regime: 1 node, ${rootTargets.length} CLASSIFIED_BY edges.`);
-
-const { count: adaiCheck } = db
-  .prepare("SELECT COUNT(*) as count FROM nodes WHERE slug = 'adai'")
-  .get() as any;
-if (adaiCheck !== 1) {
-  console.error(`FATAL: A(DAI) node not present after bootstrap (count=${adaiCheck})`);
-  process.exit(1);
-}
+// Note: the upstream `A(DAI) root presence assertion` (commit 18e1ff4) was
+// dropped here because the enrichment (Task 0e) retired the
+// `classification_regime:a(dai)` root. The single canonical lens is now
+// `classification_regime:a(dai) seed canon v1 (april 2026)`, already in
+// seed/nodes.json. The upstream WAL checkpoint fix (205f4c6) is preserved
+// further down — see PRAGMA wal_checkpoint(TRUNCATE) near the end of this file.
 
 const { count: totalNodes } = db.prepare("SELECT COUNT(*) as count FROM nodes").get() as any;
 const { count: totalEdges } = db.prepare("SELECT COUNT(*) as count FROM edges").get() as any;

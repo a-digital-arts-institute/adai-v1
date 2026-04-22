@@ -1,1 +1,72 @@
-[]
+[
+  {
+    "node_id": "artwork:distellamap",
+    "image_url": "https://www.moma.org/media/W1siZiIsIjEyMjM4MiJdLFsicCIsImNvbnZlcnQiLCItcmVzaXplIDEwMjR4MTAyNFx1MDAzZSJdXQ.jpg?sha=d9a52c4c221e02a5",
+    "image_license": "moma.org — see collection URL for rights",
+    "image_source": "moma",
+    "moma_object_id": "110352",
+    "moma_artwork_url": "https://www.moma.org/collection/works/110352",
+    "matched_artist": "Ben Fry",
+    "matched_title": "Distellamap (Pac-Man)"
+  },
+  {
+    "node_id": "artwork:roberta breitmore",
+    "image_url": "https://www.moma.org/media/W1siZiIsIjIzMTk5MyJdLFsicCIsImNvbnZlcnQiLCItcmVzaXplIDEwMjR4MTAyNFx1MDAzZSJdXQ.jpg?sha=b7a6dda3cc6d8171",
+    "image_license": "moma.org — see collection URL for rights",
+    "image_source": "moma",
+    "moma_object_id": "147298",
+    "moma_artwork_url": "https://www.moma.org/collection/works/147298",
+    "matched_artist": "Lynn Hershman Leeson",
+    "matched_title": "Roberta Breitmore Blank Check"
+  },
+  {
+    "node_id": "artwork:us dead talk love",
+    "image_url": "https://www.moma.org/media/W1siZiIsIjI3NTU4MSJdLFsicCIsImNvbnZlcnQiLCItcmVzaXplIDEwMjR4MTAyNFx1MDAzZSJdXQ.jpg?sha=016b358a25c50564",
+    "image_license": "moma.org — see collection URL for rights",
+    "image_source": "moma",
+    "moma_object_id": "170615",
+    "moma_artwork_url": "https://www.moma.org/collection/works/170615",
+    "matched_artist": "Ed Atkins",
+    "matched_title": "Us Dead Talk Love"
+  },
+  {
+    "node_id": "artwork:pulse room",
+    "image_url": "https://www.moma.org/media/W1siZiIsIjMwNDQzNiJdLFsicCIsImNvbnZlcnQiLCItcmVzaXplIDEwMjR4MTAyNFx1MDAzZSJdXQ.jpg?sha=35db04f668d2f5f8",
+    "image_license": "moma.org — see collection URL for rights",
+    "image_source": "moma",
+    "moma_object_id": "180180",
+    "moma_artwork_url": "https://www.moma.org/collection/works/180180",
+    "matched_artist": "Rafael Lozano-Hemmer",
+    "matched_title": "Pulse Room"
+  },
+  {
+    "node_id": "artwork:walled unwalled",
+    "image_url": "https://www.moma.org/media/W1siZiIsIjQ3MTk2NyJdLFsicCIsImNvbnZlcnQiLCItcmVzaXplIDEwMjR4MTAyNFx1MDAzZSJdXQ.jpg?sha=4eacda7e4d0f2f51",
+    "image_license": "moma.org — see collection URL for rights",
+    "image_source": "moma",
+    "moma_object_id": "401147",
+    "moma_artwork_url": "https://www.moma.org/collection/works/401147",
+    "matched_artist": "Lawrence Abu Hamdan",
+    "matched_title": "Walled Unwalled"
+  },
+  {
+    "node_id": "artwork:vvebcam",
+    "image_url": "https://www.moma.org/media/W1siZiIsIjQ3MjE1OSJdLFsicCIsImNvbnZlcnQiLCItcmVzaXplIDEwMjR4MTAyNFx1MDAzZSJdXQ.jpg?sha=6d44e973368f4b5b",
+    "image_license": "moma.org — see collection URL for rights",
+    "image_source": "moma",
+    "moma_object_id": "401436",
+    "moma_artwork_url": "https://www.moma.org/collection/works/401436",
+    "matched_artist": "Petra Cortright",
+    "matched_title": "VVEBCAM"
+  },
+  {
+    "node_id": "artwork:unsupervised machine hallucinations moma",
+    "image_url": "https://www.moma.org/media/W1siZiIsIjUzMzYyMyJdLFsicCIsImNvbnZlcnQiLCItcmVzaXplIDEwMjR4MTAyNFx1MDAzZSJdXQ.jpg?sha=717ce4e7630c461d",
+    "image_license": "moma.org — see collection URL for rights",
+    "image_source": "moma",
+    "moma_object_id": "442077",
+    "moma_artwork_url": "https://www.moma.org/collection/works/442077",
+    "matched_artist": "Refik Anadol",
+    "matched_title": "Unsupervised — Machine Hallucinations — MoMA"
+  }
+]
