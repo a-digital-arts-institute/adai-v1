@@ -68,7 +68,7 @@ Single SQLite file `adai.db` with CR-SQLite CRDT extensions (`@shards-lang/crsql
 
 **Trust tiers**: `auto` (founding team + practitioner self-report on own data — auto-merge), `reviewed` (established track record — auto-merge + tagged), `probationary` (default for new contributors — queued for review). The auto-approve check in `POST /api/contribute` treats `auto` and `reviewed` as auto-merge; everyone else goes to the review queue.
 
-**A(DAI) absolute-root regime**: `classification_regime:a(dai)` (slug `adai`) is the umbrella lens. Every first-class entity (practitioner/artwork/collective/platform/institution/publication/project) and every sub-regime declares `CLASSIFIED_BY → classification_regime:a(dai)`. This makes the meta-lens explicit — data is in the commons because A(DAI)'s frame put it there. Renders gold in `/graph`.
+**A(DAI) absolute-root regime**: `classification_regime:a(dai) seed canon v1 (april 2026)` (slug `adai-seed-canon-v1-2026-04`) is the umbrella lens. Canonical entities declare `CLASSIFIED_BY → classification_regime:a(dai) seed canon v1 (april 2026)` — these edges are authored in `seed/edges.json`, not auto-injected. The earlier auto-injecting loop (removed in the 2026-04-22 enrichment, Task 0e) caused a 483-edge explosion that hid the real relational structure; don't reintroduce it. Renders gold in `/graph`.
 
 ### Querying rules
 

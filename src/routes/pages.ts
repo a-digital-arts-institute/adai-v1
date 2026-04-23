@@ -66,10 +66,10 @@ router.get("/", (_req, res) => {
 <p class='meta'>Every entity in the graph was seen through one or more lenses. A <em>classification regime</em> is a first-class node representing one such lens — a body of research, an institution's collection, a platform's taxonomy. The <code>CLASSIFIED_BY</code> edge records which lens saw which entity. This makes the provenance of the canon legible instead of hidden. A(DAI) sits at the root: every other regime, and every first-class entity, declares <code>CLASSIFIED_BY</code> A(DAI).</p>`;
 
   const regimes = db
-    .prepare("SELECT id, name, slug FROM nodes WHERE type = 'classification_regime' ORDER BY CASE WHEN slug = 'adai' THEN 0 ELSE 1 END, name")
+    .prepare("SELECT id, name, slug FROM nodes WHERE type = 'classification_regime' ORDER BY CASE WHEN slug = 'adai-seed-canon-v1-2026-04' THEN 0 ELSE 1 END, name")
     .all() as any[];
   for (const r of regimes) {
-    const rootTag = r.slug === "adai" ? `<span class='tag' style='background:#3a2e16;color:#f4c261'>absolute root</span>` : `<span class='tag'>classification_regime</span>`;
+    const rootTag = r.slug === "adai-seed-canon-v1-2026-04" ? `<span class='tag' style='background:#3a2e16;color:#f4c261'>absolute root</span>` : `<span class='tag'>classification_regime</span>`;
     body += `<div class='card'><h3><a href='/practitioner/${r.slug}'>${r.name}</a></h3>${rootTag}</div>`;
   }
 
@@ -536,8 +536,8 @@ function render(data){
     .attr('stroke-opacity',0.6);
 
   node=g.append('g').selectAll('circle').data(data.nodes).enter().append('circle')
-    .attr('r',function(d){return d.slug==='adai'?16:d.center?12:d.type==='classification_regime'?11:(d.type==='concept'||d.type==='scene')?4:8;})
-    .attr('fill',function(d){return d.slug==='adai'?'#f4c261':(typeColors[d.type]||'#555');})
+    .attr('r',function(d){return d.slug==='adai-seed-canon-v1-2026-04'?16:d.center?12:d.type==='classification_regime'?11:(d.type==='concept'||d.type==='scene')?4:8;})
+    .attr('fill',function(d){return d.slug==='adai-seed-canon-v1-2026-04'?'#f4c261':(typeColors[d.type]||'#555');})
     .attr('stroke',function(d){return d.center?'#fff':'none';})
     .attr('stroke-width',function(d){return d.center?2:0;})
     .attr('cursor','pointer')
