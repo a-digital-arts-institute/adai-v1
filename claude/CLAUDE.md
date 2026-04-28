@@ -128,20 +128,25 @@ Both flow through the same backend. The distinction should be visually represent
 
 ## Edge types
 
-**Ship first (6 types — reliable classification):**
+**9 live in the canonical seed (a(dai) seed canon v1, April 2026):**
 
-| Edge type | Meaning |
-|---|---|
-| PRACTICES | Practitioner → Concept ("this artist works with generative code") |
-| BELONGS_TO | Practitioner → Scene ("this artist is part of Berlin generative art") |
-| EXHIBITED_AT | Practitioner → Institution ("showed at ZKM") |
-| COLLABORATES_WITH | Practitioner → Practitioner ("these two work together") |
-| CREATED_BY | Artwork → Practitioner ("this work was made by this artist") |
-| RELATED_TO | Catch-all — flag for vocabulary expansion |
+| Edge type | From → To | Count |
+|---|---|---|
+| EMBODIES | Artwork → Concept | 621 |
+| PRACTICES | Practitioner → Concept | 461 |
+| CREATED_BY | Artwork → Practitioner | 405 |
+| EXHIBITED_AT | Practitioner / Artwork → Institution | 300 |
+| CLASSIFIED_BY | Any → Classification regime | 283 |
+| COLLABORATES_WITH | Practitioner ↔ Practitioner | 183 |
+| BELONGS_TO | Practitioner → Scene | 154 |
+| USES_TECHNIQUE | Artwork → Concept | 75 |
+| INFLUENCES | Practitioner → Practitioner | 4 |
 
-**10 more types exist for later deployment** (PIONEERED, CRITIQUES, INFLUENCES, TENSION_WITH, EMERGED_FROM, EMBODIES, RESPONDS_TO, USES_TECHNIQUE, EXHIBITED_IN, CONTESTS). Deploy when signal volume justifies the classification judgment. Full list and classification rules in the seed doc.
+**Reserved (zero rows by design):** RESPONDS_TO (Artwork → Artwork) — requires evidence of artist intent, practitioner-contributed only, never inferred.
 
-Accumulation of RELATED_TO edges is the agenda for expanding the vocabulary. What the system can't classify marks where the field is actually moving.
+**Deploy when signal volume justifies:** PIONEERED, CRITIQUES, TENSION_WITH, EMERGED_FROM, CONTESTS. Full list and classification rules in [seed-doc.md](../seed-doc.md).
+
+The vocabulary is provisional. What the system can't classify marks where the field is actually moving.
 
 ## Gravity model
 
@@ -186,65 +191,23 @@ Mapped from "Agents of Chaos" (Shapira et al., Feb 2026) — 11 failure modes fr
 
 **Priority before public scale:** (1) GDPR erasure propagation, (2) consent enforcement at query layer, (3) practitioner correction flow, (4) input sanitisation for prompt injection, (5) processing traces with full audit trail.
 
-## Current state (as of April 2026)
+## Operational state lives elsewhere
 
-GitHub org: `a-digital-arts-institute`. Two repos:
+This file is the schema — durable principles, architecture, the graph's vocabulary. It changes when the *system* changes, not when the *week* changes.
 
-- **`seed-doc`** — single `index.html`, the living specification
-- **`adai-v1`** — the live codebase, branch `feat/cr-sqlite-backend` (to be merged to main). **Deployed at [adai-basel.fly.dev](https://adai-basel.fly.dev)**
+For live state — what's deployed, what's blocked, what's in flight, current node/edge counts:
 
-### What's live
+- **`seed-doc.md`** — the living specification at the repo root. Carries the up-to-date counts and the named gaps as a backlog.
+- **`adai-basel.fly.dev`** — the live backend. `/api/stats` returns the current counts; `/graph` shows the topology.
+- **The team's vault** — operational dashboards, sprint blockers, dated activity log. Not in this repo.
 
-CR-SQLite backend (Gio, Shards). 774 nodes, 929 edges (3 types: PRACTICES 284, BELONGS_TO 366, RELATED_TO 279). Contribution flow, curator review queue, practitioner profiles, data export. Single-DB deployment.
-
-### What's in progress
-
-- **Piyush:** Particle/gravitational visualizations, brand system, generative landing page → deploying on Netlify
-- **Iri:** North Star article for Substack, identifying 10–15 signal sources for public layer, value-based framework for scout agents
-- **Gio:** Available from April 9 (Sicily, Europe timezone, full month). Merging branch to main, creating Claude skill for repo, exploring public layer data collection
-- **JB:** Artist relations, testing LLM interview concept, sourcing archivists (Piyush and others who find deep/obscure material)
-
-### Repo structure
-
-```
-adai-v1/
-├── adai-digital-arts-report-research/   # Field/outline schemas (reference)
-├── docs/                                # Spec gap analysis
-├── results/                             # 59 JSON research files (seed input)
-├── db.sql                               # Database schema
-├── Dockerfile / fly.toml / entrypoint.sh  # Fly.io deployment
-├── run.shs / seed.shs / server.shs      # Shards server + seed scripts
-└── CLAUDE.md                            # This file
-```
-
-### Endpoints (live at adai-basel.fly.dev)
-
-| Route | Description |
-|---|---|
-| `/` | Home — stats + recent additions |
-| `/explore` | Browse all entities |
-| `/practitioner/:slug` | Practitioner profile with graph connections |
-| `/practitioner/:slug/data` | Raw JSON data export ("give me my data") |
-| `/contribute` | Submit a signal |
-| `/review` | Curator review queue |
-| `/api/stats` | JSON stats |
-
-## Critical gaps (updated April 2026)
-
-1. **Artwork nodes do not exist.** 774 nodes, 0 artworks. The narrative engine and visual graph depend on artwork nodes. The public layer's first runs should bring them in (platform APIs, institutional archives).
-2. **Only 3 edge types in use.** Need CREATED_BY, EXHIBITED_AT, and COLLABORATES_WITH at minimum before the graph reads as more than co-occurrence.
-3. **Editorial guidance docs written.** Three skills files authored: `relational-intelligence-protocol.md` (master protocol), `gatherer.md` (intake agent), `reader.md` (interpretation agent). Must be injected in every API call.
-4. **No authentication system.** Basel-critical if practitioners are onboarded live.
-5. **Geographic intake bias.** 47 of 59 practitioners are North American/European. The public layer should intentionally diversify.
-6. **Signal sources not yet identified.** Iri's task this week — 10–15 validated sources for the public layer.
-7. **Frontend not connected to backend.** Piyush building visual language separately. Connection work starts when Gio is available (April 9+).
-8. **Consent fields not in db.sql.** Needed before onboarding practitioners who share under restricted terms.
+GitHub org: `a-digital-arts-institute`. The live codebase is `adai-v1` (this repo), deployed at [adai-basel.fly.dev](https://adai-basel.fly.dev). For the file tree, see the repo root; for HTTP endpoints, see the repo-root [`CLAUDE.md`](../CLAUDE.md).
 
 ## Relational intelligence protocol
 
 A(DAI) produces relational intelligence — knowledge that exists in the structure of connections, not in any single node. AI agents and humans generate independent readings of the same field, held in the graph with provenance. Where they converge, confidence rises. Where they diverge, you have a visible tension. The divergence is the intelligence.
 
-The framework is influenced by Tyson Yunkaporta's complexity protocols (Sand Talk, 2019). See `research/yunkaporta-agent-complexity/` for full research backing and `skills/relational-intelligence-protocol.md` for the attribution table mapping A(DAI)'s terms to their sources.
+The framework rests on per-concept intellectual debts to Ostrom (commons design + polycentric governance), Bohm (dialogic suspension), Schön (reflection-in-action), Haraway (situated knowledges), Puig de la Bellacasa (care ethics), and Stengers (cosmopolitical proposal). See `claude/skills/relational-intelligence-protocol.md` for the per-concept attribution table and the historical-influence note recording the prior Yunkaporta lineage that this rooting supersedes.
 
 ### The five-layer loop
 
@@ -328,13 +291,13 @@ CR-SQLite (Gio's C port), Shards (HTTP server + scripting), Python (pipeline scr
 
 - **Iri** — strategy, editorial, signal source curation, value framework for agents, build coordination
 - **JB** — market development, artist relations, sensing conversations, LLM interview concept
-- **Gio** — backend architecture, CR-SQLite, protocol, public layer data collection (available full-time from April 9, Sicily)
+- **Gio** — backend architecture, CR-SQLite, protocol, public layer data collection
 - **Piyush** — frontend, generative landing page, brand system, particle/gravitational visualization, immersive site design
 
 ## Entity IDs
 
 Human-readable IDs with type prefix: `artwork:fidenza`, `practitioner:casey reas`, `concept:generative code`. Not kebab-case slugs or UUIDs.
 
-## Mode 1 — 
+## The commons is the product
 
-A(DAI) builds the commons.. Open, field-owned intelligence. Never sold. CC-BY-SA. 
+A(DAI) builds the commons. Open, field-owned intelligence. Never sold. CC-BY-SA.
