@@ -1,5 +1,26 @@
 [
   {
+    "id": "signal:artblocks-api-2026-04",
+    "title": "Art Blocks Hasura API — artwork drafts (April 2026)",
+    "source_url": "https://data.artblocks.io/v1/graphql",
+    "source_type": "api",
+    "cla_layer": "public",
+    "summary": "Bulk ingest of Art Blocks core-contract projects (V0/V1/V3) whose artist_name matches an existing seed practitioner. Creates draft artwork nodes so follow-up passes (fetch_artblocks.py, editorial review) have something to attach to.",
+    "content": null,
+    "submitted_by": "contributor:artblocks-import",
+    "confidence": "high",
+    "lived_experience": 0,
+    "created_at": "2026-04-21T13:45:48Z",
+    "consent_scope": "public",
+    "consent_attribution": "Art Blocks (per-project license varies)",
+    "consent_revocable": 0,
+    "processing_trace": "{\"contracts\": [\"0x059edd72cd353df5106d2b9cc5ab83a52287ac3a\", \"0xa7d8d9ef8d8ce8992df33d8b8cf4aebabd5bd270\", \"0x99a9b7c1116f9ceeb1652de04d5969cce509b069\"], \"query\": \"projects_metadata by artist_name ilike %practitioner_name%\"}",
+    "source_origin": "api",
+    "batch_id": "artblocks-drafts-2026-04",
+    "status": "processed",
+    "provenance_chain": null
+  },
+  {
     "id": "signal:seed-taxonomy-2026-04",
     "title": "Seed taxonomy consolidation — April 2026",
     "source_url": null,
@@ -19,26 +40,5 @@
     "batch_id": "seed-taxonomy-2026-04",
     "status": "active",
     "provenance_chain": "[{\"stage\": \"seed-research-2025\", \"actor\": \"iri\"}, {\"stage\": \"seed-taxonomy-article-2026-04\", \"actor\": \"iri\"}, {\"stage\": \"consolidation-2026-04-20\", \"actor\": \"contributor:migration\"}]"
-  },
-  {
-    "id": "signal:artblocks-api-2026-04",
-    "title": "Art Blocks Hasura API — artwork drafts (April 2026)",
-    "source_url": "https://data.artblocks.io/v1/graphql",
-    "source_type": "api",
-    "cla_layer": "public",
-    "summary": "Bulk ingest of Art Blocks core-contract projects (V0/V1/V3) whose artist_name matches an existing seed practitioner. Creates draft artwork nodes so follow-up passes (fetch_artblocks.py, editorial review) have something to attach to.",
-    "content": null,
-    "submitted_by": "contributor:artblocks-import",
-    "confidence": "high",
-    "lived_experience": false,
-    "created_at": "2026-04-21T13:45:48Z",
-    "consent_scope": "public",
-    "consent_attribution": "Art Blocks (per-project license varies)",
-    "consent_revocable": false,
-    "processing_trace": "{\"contracts\": [\"0x059edd72cd353df5106d2b9cc5ab83a52287ac3a\", \"0xa7d8d9ef8d8ce8992df33d8b8cf4aebabd5bd270\", \"0x99a9b7c1116f9ceeb1652de04d5969cce509b069\"], \"query\": \"projects_metadata by artist_name ilike %practitioner_name%\"}",
-    "source_origin": "api",
-    "batch_id": "artblocks-drafts-2026-04",
-    "status": "processed",
-    "provenance_chain": null
   }
 ]
