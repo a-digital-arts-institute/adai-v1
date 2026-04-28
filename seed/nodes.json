@@ -7617,192 +7617,6 @@
     "updated_by": "contributor:migration"
   },
   {
-    "id": "practitioner:mario klingemann quasimondo",
-    "name": "Mario Klingemann (Quasimondo)",
-    "type": "practitioner",
-    "slug": "mario-klingemann-quasimondo",
-    "metadata": {
-      "status": "confirmed",
-      "source_origin": "human_secondary",
-      "sub_type": "artist",
-      "active_years": "2015-present (generative/AI art; earlier digital art from ~2000s; net art from ~1998)",
-      "location": null,
-      "wikidata_qid": null,
-      "url": "https://quasimondo.com/",
-      "practice_summary": "Mario Klingemann is a pioneer of GAN-based art who treats the navigation of neural network latent spaces as a primary artistic practice — exploring the boundaries, glitches, and uncanny territories of machine-generated imagery with a focus on human perception, portraiture, and the aesthetic possibilities of algorithmic systems.",
-      "methodology": "Klingemann works through intensive, iterative experimentation with neural network architectures — modifying GANs, training on custom datasets, and exploring the full topology of latent spaces including edge cases, failure modes, and interpolation artefacts that reveal the inner logic of the models. His methodology is distinctively exploratory and prolific: rapid prototyping, sharing work-in-progress on social media (Twitter/X), and treating the latent space as a vast territory to be mapped through intuition and systematic navigation. He often works with found and historical imagery (archival photographs, art history datasets, medical imagery) to create haunting, dreamlike outputs. He has built custom tools for real-time latent space exploration and developed techniques for controlling and steering GAN outputs. Recently Google Arts & Culture Artist in Residence.",
-      "medium": [
-        "GAN-generated imagery",
-        "neural network art",
-        "generative installation",
-        "creative coding",
-        "real-time AI systems"
-      ],
-      "key_works": [
-        {
-          "title": "Memories of Passersby I",
-          "year": "2018",
-          "description": "An autonomous AI artwork consisting of two screens displaying continuously generated GAN portraits — an endless procession of faces that exist only briefly before dissolving into the next. The system runs on a custom-built computer, generating unique portraits in real-time forever. One of the first AI artworks sold at auction (Sotheby's, 2019). The portraits emerge from and dissolve back into abstract forms, visualising the latent space traversal.",
-          "relevance": "Demonstrates autonomous, endlessly generating AI art — a self-sustaining generative system that produces unique visual output indefinitely. A model for how A(DAI)'s Sense Room could feature continuously generating, never-repeating visual content driven by underlying intelligence."
-        },
-        {
-          "title": "Neural Glitch / Neurographic Portraits",
-          "year": "2017-2019",
-          "description": "A body of work exploring the glitches, artefacts, and edge cases of GAN-generated portraiture. Rather than pursuing photorealistic generation, Klingemann deliberately seeks out the uncanny, distorted, and dreamlike states that emerge at the boundaries of what the model has learned — faces merging, features dissolving, impossible anatomies.",
-          "relevance": "Demonstrates artistic practice at the edges of latent space — where the model's learned representations break down and produce something genuinely new. Relevant to A(DAI)'s interest in what emerges at the boundaries and intersections of knowledge domains."
-        },
-        {
-          "title": "Appropriate Response",
-          "year": "2020",
-          "description": "A real-time interactive installation where a camera captures visitors and a neural network responds by generating AI imagery that 'responds' to the visitor's appearance, expression, and posture. The system creates a visual dialogue between human and machine perception.",
-          "relevance": "Interactive AI system that creates a feedback loop between human presence and machine generation — visitors see themselves reflected through the distorting mirror of a neural network. Relevant to Sense Room concepts of responsive, presence-aware environments."
-        }
-      ],
-      "exhibitions": [
-        "Gallery"
-      ],
-      "scene_affiliation": [
-        "AI art",
-        "GAN art",
-        "generative art",
-        "creative coding",
-        "NFT art"
-      ],
-      "collaborators": [
-        {
-          "name": "Memo Akten",
-          "type": "COLLABORATES_WITH"
-        },
-        {
-          "name": "Refik Anadol",
-          "type": "COLLABORATES_WITH"
-        },
-        {
-          "name": "Sofia Crespo",
-          "type": "COLLABORATES_WITH"
-        },
-        {
-          "name": "Holly Herndon",
-          "type": "COLLABORATES_WITH"
-        }
-      ],
-      "commons_summary": "Klingemann is notably generous in sharing techniques, discoveries, and work-in-progress through social media (Twitter/X), making his practice unusually transparent. He has shared code snippets, training techniques, and conceptual approaches openly. However, finished artworks are sold through commercial galleries and auctions (Sotheby's, Onkaos gallery). The practice combines radical openness in process with commercial enclosure of final outputs. Some code shared on GitHub but no systematic open-source release of tools.",
-      "governance_summary": "Klingemann works as an independent solo artist. Creative decisions are entirely his own. Institutional residencies (Google Arts & Culture) provide resources but not creative direction. No collective governance structure.",
-      "image_url": null,
-      "image_license": null,
-      "image_source": null,
-      "full_profile": {
-        "basic_info": {
-          "name": "Mario Klingemann (Quasimondo)",
-          "type": "artist",
-          "active_years": "2015-present (generative/AI art; earlier digital art from ~2000s; net art from ~1998)",
-          "location": "Munich, Germany",
-          "url": "https://quasimondo.com/"
-        },
-        "practice_description": {
-          "medium": "GAN-generated imagery, neural network art, generative installation, creative coding, real-time AI systems",
-          "practice_summary": "Mario Klingemann is a pioneer of GAN-based art who treats the navigation of neural network latent spaces as a primary artistic practice — exploring the boundaries, glitches, and uncanny territories of machine-generated imagery with a focus on human perception, portraiture, and the aesthetic possibilities of algorithmic systems.",
-          "methodology": "Klingemann works through intensive, iterative experimentation with neural network architectures — modifying GANs, training on custom datasets, and exploring the full topology of latent spaces including edge cases, failure modes, and interpolation artefacts that reveal the inner logic of the models. His methodology is distinctively exploratory and prolific: rapid prototyping, sharing work-in-progress on social media (Twitter/X), and treating the latent space as a vast territory to be mapped through intuition and systematic navigation. He often works with found and historical imagery (archival photographs, art history datasets, medical imagery) to create haunting, dreamlike outputs. He has built custom tools for real-time latent space exploration and developed techniques for controlling and steering GAN outputs. Recently Google Arts & Culture Artist in Residence."
-        },
-        "relevance_to_sense_room": {
-          "relevance_summary": "Klingemann's practice defines what it means to navigate latent space as artistic practice — he has mapped more territory in GAN embedding spaces than perhaps any other artist. His work demonstrates how the space between trained images contains its own aesthetic logic and can be traversed as a genuinely new medium, directly relevant to how A(DAI)'s knowledge graph could become navigable experiential terrain.",
-          "art_as_substrate": "Partially. Klingemann's generative outputs — continuous streams of morphing GAN imagery — can function as visual substrates, especially in installation contexts. However, much of his work is oriented toward discrete images or short video loops shared online rather than ambient environmental substrates.",
-          "relational_composition": "Partially. The latent space itself encodes relationships between all images in the training set — navigating it reveals how the model represents connections between visual concepts. Klingemann's interpolation works trace paths between visual states, making these latent relationships visible. However, the composition is navigational rather than explicitly graph-based.",
-          "self_recomposing": "Yes, in installation works. Klingemann has created real-time generative installations that continuously traverse latent space, producing endlessly evolving imagery. The real-time systems respond to parameters that can be modulated. Autonomous generative works run indefinitely without repeating."
-        },
-        "key_works": {
-          "works": [
-            {
-              "title": "Memories of Passersby I",
-              "year": "2018",
-              "description": "An autonomous AI artwork consisting of two screens displaying continuously generated GAN portraits — an endless procession of faces that exist only briefly before dissolving into the next. The system runs on a custom-built computer, generating unique portraits in real-time forever. One of the first AI artworks sold at auction (Sotheby's, 2019). The portraits emerge from and dissolve back into abstract forms, visualising the latent space traversal.",
-              "relevance": "Demonstrates autonomous, endlessly generating AI art — a self-sustaining generative system that produces unique visual output indefinitely. A model for how A(DAI)'s Sense Room could feature continuously generating, never-repeating visual content driven by underlying intelligence."
-            },
-            {
-              "title": "Neural Glitch / Neurographic Portraits",
-              "year": "2017-2019",
-              "description": "A body of work exploring the glitches, artefacts, and edge cases of GAN-generated portraiture. Rather than pursuing photorealistic generation, Klingemann deliberately seeks out the uncanny, distorted, and dreamlike states that emerge at the boundaries of what the model has learned — faces merging, features dissolving, impossible anatomies.",
-              "relevance": "Demonstrates artistic practice at the edges of latent space — where the model's learned representations break down and produce something genuinely new. Relevant to A(DAI)'s interest in what emerges at the boundaries and intersections of knowledge domains."
-            },
-            {
-              "title": "Appropriate Response",
-              "year": "2020",
-              "description": "A real-time interactive installation where a camera captures visitors and a neural network responds by generating AI imagery that 'responds' to the visitor's appearance, expression, and posture. The system creates a visual dialogue between human and machine perception.",
-              "relevance": "Interactive AI system that creates a feedback loop between human presence and machine generation — visitors see themselves reflected through the distorting mirror of a neural network. Relevant to Sense Room concepts of responsive, presence-aware environments."
-            }
-          ]
-        },
-        "protocol_art_resonance": {
-          "protocol_art_summary": "Klingemann treats the exploration of neural network architectures, training procedures, and latent space navigation techniques as artistic practice. He has developed and shared novel methods for controlling GAN outputs, steering generation, and navigating latent spaces. His prolific sharing of techniques and discoveries on social media functions as a form of open protocol-sharing for the AI art community.",
-          "system_designed": "Custom tools for real-time latent space navigation and GAN output control. Autonomous generative systems (Memories of Passersby I) that function as self-sustaining art machines. Various techniques for GAN training, interpolation, and output steering shared through social media and talks."
-        },
-        "commons_orientation": {
-          "licence_model": "hybrid",
-          "commons_summary": "Klingemann is notably generous in sharing techniques, discoveries, and work-in-progress through social media (Twitter/X), making his practice unusually transparent. He has shared code snippets, training techniques, and conceptual approaches openly. However, finished artworks are sold through commercial galleries and auctions (Sotheby's, Onkaos gallery). The practice combines radical openness in process with commercial enclosure of final outputs. Some code shared on GitHub but no systematic open-source release of tools."
-        },
-        "governance_model": {
-          "governance_type": "solo",
-          "governance_detail": "Klingemann works as an independent solo artist. Creative decisions are entirely his own. Institutional residencies (Google Arts & Culture) provide resources but not creative direction. No collective governance structure."
-        },
-        "consent_and_authorship": {
-          "consent_approach": "Training data includes historical photographs, art history images, and found imagery — often archival material where consent from depicted individuals is not obtainable. Interactive works capture visitor imagery in real-time for neural network processing but do not store it. The ethics of training on historical imagery (especially portraiture) is not always explicitly addressed.",
-          "authorship_model": "Solo authorship attributed to Klingemann. Machine co-authorship is an implicit dimension — the GAN generates the imagery — but Klingemann positions himself firmly as the artist who designs the system, curates the training data, navigates the latent space, and selects the outputs. The machine is a medium, not a co-author, in his framing."
-        },
-        "liveness_and_duration": {
-          "temporal_type": "continuously-evolving",
-          "temporal_detail": "Autonomous works like Memories of Passersby I generate continuously and indefinitely — the system traverses latent space in real-time, producing unique outputs that never repeat. Interactive installations respond to visitor presence in real-time. The generation is live, not pre-rendered, with the underlying neural network producing new outputs at each moment."
-        },
-        "data_materiality": {
-          "data_sources": "Historical portrait photography, art history image collections, medical/anatomical imagery, archival photographs, found imagery, curated image datasets specific to each project. The choice of training data is a primary artistic decision — what the model learns to see defines what it can generate.",
-          "data_provenance": "Mixed. Training data includes historical/archival imagery (often out of copyright or of unclear copyright status), publicly available art reproductions, web-sourced images, and curated collections. The provenance and consent status of training data is not always explicitly documented — a common characteristic of early GAN art practice."
-        },
-        "embedding_space_relevance": {
-          "embedding_summary": "Absolutely central. Klingemann is one of the defining practitioners of latent space navigation as artistic practice. His work is fundamentally about exploring the topology of GAN embedding spaces — finding interesting regions, tracing paths between states, discovering what emerges at boundaries and interpolations. He has developed an intuitive fluency with high-dimensional spaces that few other artists match, treating latent space as a territory to be explored with the same curiosity and intentionality as a painter approaches a canvas.",
-          "multimodal": "Primarily visual. Klingemann's work is overwhelmingly image-based, focused on GAN-generated imagery. Some installation works include sound design, but the practice does not typically span multiple modalities in a unified embedding framework."
-        },
-        "exhibition_modality": {
-          "modality": "hybrid",
-          "spatial_description": "Works manifest as autonomous screen-based installations (Memories of Passersby I as a bespoke two-screen furniture object), interactive camera-based installations, large-scale prints, online/social media (extensive Twitter presence sharing generated imagery), and NFTs. The autonomous installations are designed as self-contained objects that generate endlessly. Gallery presentations range from single screens to room-scale installations."
-        },
-        "sensory_register": {
-          "senses": "visual",
-          "dominant_register": "visual"
-        },
-        "interoperability": {
-          "composability": "The generative systems produce continuous visual output streams that could theoretically serve as inputs to other systems. However, installations like Memories of Passersby I are designed as self-contained autonomous objects. No APIs or standard interfaces are exposed for external integration.",
-          "technical_openness": "Partially open. Techniques and code snippets are shared through social media and talks. Some code on GitHub. But complete systems and trained models are not formally open-sourced. The practice is transparent about methods but does not systematically release reusable tools."
-        },
-        "technical_approach": {
-          "stack": "Python, PyTorch/TensorFlow for GAN training, StyleGAN/StyleGAN2, BigGAN, custom GAN architectures, NVIDIA GPUs for training and real-time inference, custom real-time rendering systems for autonomous installations, RunwayML (early adopter), Google Colab for experimentation, various GAN interpolation and steering techniques."
-        },
-        "network_position": {
-          "position_type": "hub",
-          "scene_affiliation": "AI art, GAN art, generative art, creative coding, NFT art. One of the most visible and influential figures in the early GAN art movement (2017-2020). Connected to Google Arts & Culture (artist in residence), the commercial AI art market (Sotheby's, galleries), the crypto/NFT art ecosystem, and the broader creative coding community. Active social media presence makes him a node for sharing techniques and discoveries.",
-          "connections": "Memo Akten (both early GAN/neural network art pioneers, share techniques and conceptual territory). Refik Anadol (both create AI-generated visuals, but Klingemann works at a more intimate, experimental scale). Sofia Crespo (both GAN art practitioners, shared generative art community, but different subject matter — Klingemann focuses on human perception/portraiture, Crespo on biology/ecology). Holly Herndon / Mat Dryhurst (connected through AI art community discussions around authorship and consent)."
-        },
-        "potential_role_in_adai": {
-          "role": "theoretical-reference",
-          "role_detail": "Klingemann's practice provides the most extensive body of work demonstrating latent space navigation as artistic practice. He offers: (1) a deep practical vocabulary for what it means to navigate high-dimensional spaces artistically, (2) examples of autonomous generative systems that run indefinitely — relevant to Sense Room infrastructure, (3) a model for how process transparency (sharing techniques publicly) can coexist with commercial art practice, (4) understanding of the aesthetic properties of latent space — its topology, boundaries, and emergent qualities. His work is essential reference for understanding what AI-driven visual generation can look and feel like."
-        },
-        "temporal_status": {
-          "status": "ongoing-practice"
-        },
-        "uncertain": [
-          "active_years",
-          "location"
-        ]
-      },
-      "data_provenance": {
-        "source": "seed-research-2025",
-        "confidence": "high",
-        "trust_tier": "reviewed"
-      },
-      "original_type": "artist",
-      "source_file": "Mario_Klingemann.json",
-      "seed_category": null
-    }
-  },
-  {
     "id": "concept:gan-generated imagery",
     "type": "concept",
     "name": "GAN-generated imagery",
@@ -7919,10 +7733,10 @@
       "status": "confirmed",
       "source_origin": "ai_assisted",
       "sub_type": "artist",
-      "active_years": null,
+      "active_years": "2015-present (generative/AI art; earlier digital art from ~2000s; net art from ~1998)",
       "location": null,
       "wikidata_qid": null,
-      "url": null,
+      "url": "https://quasimondo.com/",
       "practice_summary": "German artist whose two-decade practice in AI-based image-making predates the 2022 diffusion-model boom. 'Memories of Passersby I' (2018) is one of the first autonomous GAN-based artworks purchased by a major gallery (Sotheby's); extensive output spans neural-style transfer, GAN portraiture, and diffusion-era practice.",
       "methodology": "Writes, trains, and fine-tunes neural models — often on self-assembled datasets — and runs them as autonomous systems. Publishes models and intermediate outputs on GitHub/Twitter; long-running practice of 'doing public R&D'.",
       "medium": [
@@ -7971,11 +7785,118 @@
       "image_url": null,
       "image_license": null,
       "image_source": null,
-      "full_profile": null,
-      "data_provenance": null,
-      "original_type": null,
+      "full_profile": {
+        "basic_info": {
+          "name": "Mario Klingemann (Quasimondo)",
+          "type": "artist",
+          "active_years": "2015-present (generative/AI art; earlier digital art from ~2000s; net art from ~1998)",
+          "location": "Munich, Germany",
+          "url": "https://quasimondo.com/"
+        },
+        "practice_description": {
+          "medium": "GAN-generated imagery, neural network art, generative installation, creative coding, real-time AI systems",
+          "practice_summary": "Mario Klingemann is a pioneer of GAN-based art who treats the navigation of neural network latent spaces as a primary artistic practice — exploring the boundaries, glitches, and uncanny territories of machine-generated imagery with a focus on human perception, portraiture, and the aesthetic possibilities of algorithmic systems.",
+          "methodology": "Klingemann works through intensive, iterative experimentation with neural network architectures — modifying GANs, training on custom datasets, and exploring the full topology of latent spaces including edge cases, failure modes, and interpolation artefacts that reveal the inner logic of the models. His methodology is distinctively exploratory and prolific: rapid prototyping, sharing work-in-progress on social media (Twitter/X), and treating the latent space as a vast territory to be mapped through intuition and systematic navigation. He often works with found and historical imagery (archival photographs, art history datasets, medical imagery) to create haunting, dreamlike outputs. He has built custom tools for real-time latent space exploration and developed techniques for controlling and steering GAN outputs. Recently Google Arts & Culture Artist in Residence."
+        },
+        "relevance_to_sense_room": {
+          "relevance_summary": "Klingemann's practice defines what it means to navigate latent space as artistic practice — he has mapped more territory in GAN embedding spaces than perhaps any other artist. His work demonstrates how the space between trained images contains its own aesthetic logic and can be traversed as a genuinely new medium, directly relevant to how A(DAI)'s knowledge graph could become navigable experiential terrain.",
+          "art_as_substrate": "Partially. Klingemann's generative outputs — continuous streams of morphing GAN imagery — can function as visual substrates, especially in installation contexts. However, much of his work is oriented toward discrete images or short video loops shared online rather than ambient environmental substrates.",
+          "relational_composition": "Partially. The latent space itself encodes relationships between all images in the training set — navigating it reveals how the model represents connections between visual concepts. Klingemann's interpolation works trace paths between visual states, making these latent relationships visible. However, the composition is navigational rather than explicitly graph-based.",
+          "self_recomposing": "Yes, in installation works. Klingemann has created real-time generative installations that continuously traverse latent space, producing endlessly evolving imagery. The real-time systems respond to parameters that can be modulated. Autonomous generative works run indefinitely without repeating."
+        },
+        "key_works": {
+          "works": [
+            {
+              "title": "Memories of Passersby I",
+              "year": "2018",
+              "description": "An autonomous AI artwork consisting of two screens displaying continuously generated GAN portraits — an endless procession of faces that exist only briefly before dissolving into the next. The system runs on a custom-built computer, generating unique portraits in real-time forever. One of the first AI artworks sold at auction (Sotheby's, 2019). The portraits emerge from and dissolve back into abstract forms, visualising the latent space traversal.",
+              "relevance": "Demonstrates autonomous, endlessly generating AI art — a self-sustaining generative system that produces unique visual output indefinitely. A model for how A(DAI)'s Sense Room could feature continuously generating, never-repeating visual content driven by underlying intelligence."
+            },
+            {
+              "title": "Neural Glitch / Neurographic Portraits",
+              "year": "2017-2019",
+              "description": "A body of work exploring the glitches, artefacts, and edge cases of GAN-generated portraiture. Rather than pursuing photorealistic generation, Klingemann deliberately seeks out the uncanny, distorted, and dreamlike states that emerge at the boundaries of what the model has learned — faces merging, features dissolving, impossible anatomies.",
+              "relevance": "Demonstrates artistic practice at the edges of latent space — where the model's learned representations break down and produce something genuinely new. Relevant to A(DAI)'s interest in what emerges at the boundaries and intersections of knowledge domains."
+            },
+            {
+              "title": "Appropriate Response",
+              "year": "2020",
+              "description": "A real-time interactive installation where a camera captures visitors and a neural network responds by generating AI imagery that 'responds' to the visitor's appearance, expression, and posture. The system creates a visual dialogue between human and machine perception.",
+              "relevance": "Interactive AI system that creates a feedback loop between human presence and machine generation — visitors see themselves reflected through the distorting mirror of a neural network. Relevant to Sense Room concepts of responsive, presence-aware environments."
+            }
+          ]
+        },
+        "protocol_art_resonance": {
+          "protocol_art_summary": "Klingemann treats the exploration of neural network architectures, training procedures, and latent space navigation techniques as artistic practice. He has developed and shared novel methods for controlling GAN outputs, steering generation, and navigating latent spaces. His prolific sharing of techniques and discoveries on social media functions as a form of open protocol-sharing for the AI art community.",
+          "system_designed": "Custom tools for real-time latent space navigation and GAN output control. Autonomous generative systems (Memories of Passersby I) that function as self-sustaining art machines. Various techniques for GAN training, interpolation, and output steering shared through social media and talks."
+        },
+        "commons_orientation": {
+          "licence_model": "hybrid",
+          "commons_summary": "Klingemann is notably generous in sharing techniques, discoveries, and work-in-progress through social media (Twitter/X), making his practice unusually transparent. He has shared code snippets, training techniques, and conceptual approaches openly. However, finished artworks are sold through commercial galleries and auctions (Sotheby's, Onkaos gallery). The practice combines radical openness in process with commercial enclosure of final outputs. Some code shared on GitHub but no systematic open-source release of tools."
+        },
+        "governance_model": {
+          "governance_type": "solo",
+          "governance_detail": "Klingemann works as an independent solo artist. Creative decisions are entirely his own. Institutional residencies (Google Arts & Culture) provide resources but not creative direction. No collective governance structure."
+        },
+        "consent_and_authorship": {
+          "consent_approach": "Training data includes historical photographs, art history images, and found imagery — often archival material where consent from depicted individuals is not obtainable. Interactive works capture visitor imagery in real-time for neural network processing but do not store it. The ethics of training on historical imagery (especially portraiture) is not always explicitly addressed.",
+          "authorship_model": "Solo authorship attributed to Klingemann. Machine co-authorship is an implicit dimension — the GAN generates the imagery — but Klingemann positions himself firmly as the artist who designs the system, curates the training data, navigates the latent space, and selects the outputs. The machine is a medium, not a co-author, in his framing."
+        },
+        "liveness_and_duration": {
+          "temporal_type": "continuously-evolving",
+          "temporal_detail": "Autonomous works like Memories of Passersby I generate continuously and indefinitely — the system traverses latent space in real-time, producing unique outputs that never repeat. Interactive installations respond to visitor presence in real-time. The generation is live, not pre-rendered, with the underlying neural network producing new outputs at each moment."
+        },
+        "data_materiality": {
+          "data_sources": "Historical portrait photography, art history image collections, medical/anatomical imagery, archival photographs, found imagery, curated image datasets specific to each project. The choice of training data is a primary artistic decision — what the model learns to see defines what it can generate.",
+          "data_provenance": "Mixed. Training data includes historical/archival imagery (often out of copyright or of unclear copyright status), publicly available art reproductions, web-sourced images, and curated collections. The provenance and consent status of training data is not always explicitly documented — a common characteristic of early GAN art practice."
+        },
+        "embedding_space_relevance": {
+          "embedding_summary": "Absolutely central. Klingemann is one of the defining practitioners of latent space navigation as artistic practice. His work is fundamentally about exploring the topology of GAN embedding spaces — finding interesting regions, tracing paths between states, discovering what emerges at boundaries and interpolations. He has developed an intuitive fluency with high-dimensional spaces that few other artists match, treating latent space as a territory to be explored with the same curiosity and intentionality as a painter approaches a canvas.",
+          "multimodal": "Primarily visual. Klingemann's work is overwhelmingly image-based, focused on GAN-generated imagery. Some installation works include sound design, but the practice does not typically span multiple modalities in a unified embedding framework."
+        },
+        "exhibition_modality": {
+          "modality": "hybrid",
+          "spatial_description": "Works manifest as autonomous screen-based installations (Memories of Passersby I as a bespoke two-screen furniture object), interactive camera-based installations, large-scale prints, online/social media (extensive Twitter presence sharing generated imagery), and NFTs. The autonomous installations are designed as self-contained objects that generate endlessly. Gallery presentations range from single screens to room-scale installations."
+        },
+        "sensory_register": {
+          "senses": "visual",
+          "dominant_register": "visual"
+        },
+        "interoperability": {
+          "composability": "The generative systems produce continuous visual output streams that could theoretically serve as inputs to other systems. However, installations like Memories of Passersby I are designed as self-contained autonomous objects. No APIs or standard interfaces are exposed for external integration.",
+          "technical_openness": "Partially open. Techniques and code snippets are shared through social media and talks. Some code on GitHub. But complete systems and trained models are not formally open-sourced. The practice is transparent about methods but does not systematically release reusable tools."
+        },
+        "technical_approach": {
+          "stack": "Python, PyTorch/TensorFlow for GAN training, StyleGAN/StyleGAN2, BigGAN, custom GAN architectures, NVIDIA GPUs for training and real-time inference, custom real-time rendering systems for autonomous installations, RunwayML (early adopter), Google Colab for experimentation, various GAN interpolation and steering techniques."
+        },
+        "network_position": {
+          "position_type": "hub",
+          "scene_affiliation": "AI art, GAN art, generative art, creative coding, NFT art. One of the most visible and influential figures in the early GAN art movement (2017-2020). Connected to Google Arts & Culture (artist in residence), the commercial AI art market (Sotheby's, galleries), the crypto/NFT art ecosystem, and the broader creative coding community. Active social media presence makes him a node for sharing techniques and discoveries.",
+          "connections": "Memo Akten (both early GAN/neural network art pioneers, share techniques and conceptual territory). Refik Anadol (both create AI-generated visuals, but Klingemann works at a more intimate, experimental scale). Sofia Crespo (both GAN art practitioners, shared generative art community, but different subject matter — Klingemann focuses on human perception/portraiture, Crespo on biology/ecology). Holly Herndon / Mat Dryhurst (connected through AI art community discussions around authorship and consent)."
+        },
+        "potential_role_in_adai": {
+          "role": "theoretical-reference",
+          "role_detail": "Klingemann's practice provides the most extensive body of work demonstrating latent space navigation as artistic practice. He offers: (1) a deep practical vocabulary for what it means to navigate high-dimensional spaces artistically, (2) examples of autonomous generative systems that run indefinitely — relevant to Sense Room infrastructure, (3) a model for how process transparency (sharing techniques publicly) can coexist with commercial art practice, (4) understanding of the aesthetic properties of latent space — its topology, boundaries, and emergent qualities. His work is essential reference for understanding what AI-driven visual generation can look and feel like."
+        },
+        "temporal_status": {
+          "status": "ongoing-practice"
+        },
+        "uncertain": [
+          "active_years",
+          "location"
+        ]
+      },
+      "data_provenance": {
+        "source": "seed-research-2025",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "original_type": "artist",
       "source_file": "stub-promoted",
-      "seed_category": null
+      "seed_category": null,
+      "merged_from": [
+        "practitioner:mario klingemann quasimondo"
+      ]
     }
   },
   {
@@ -11350,15 +11271,6 @@
     }
   },
   {
-    "id": "concept:netart",
-    "type": "concept",
-    "name": "net.art",
-    "slug": "netart",
-    "metadata": "{\"auto_generated\": true, \"source\": \"derived_from_practitioner_medium\", \"status\": \"draft\"}",
-    "created_at": "2026-04-21T13:29:05Z",
-    "updated_by": "contributor:migration"
-  },
-  {
     "id": "concept:html browser-based work",
     "type": "concept",
     "name": "HTML/browser-based work",
@@ -13355,7 +13267,7 @@
     "type": "artwork",
     "name": "Memories of Passersby I",
     "slug": "memories-of-passersby-i",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"An autonomous AI artwork consisting of two screens displaying continuously generated GAN portraits — an endless procession of faces that exist only briefly before dissolving into the next. The system runs on a custom-built computer, generating unique portraits in real-time forever. One of the first AI artworks sold at auction (Sotheby's, 2019). The portraits emerge from and dissolve back into abstract forms, visualising the latent space traversal.\", \"relevance\": \"Demonstrates autonomous, endlessly generating AI art — a self-sustaining generative system that produces unique visual output indefinitely. A model for how A(DAI)'s Sense Room could feature continuously generating, never-repeating visual content driven by underlying intelligence.\", \"year_start\": 2018, \"year_end\": 2018, \"year_ongoing\": false, \"year_uncertain\": false, \"year_raw\": \"2018\", \"work_type\": \"artwork\", \"practitioner_type_raw\": \"artist\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-mario-klingemann-quasimondo--memories-of-passersby-i\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": "{\"status\": \"confirmed\", \"description\": \"An autonomous AI artwork consisting of two screens displaying continuously generated GAN portraits — an endless procession of faces that exist only briefly before dissolving into the next. The system runs on a custom-built computer, generating unique portraits in real-time forever. One of the first AI artworks sold at auction (Sotheby's, 2019). The portraits emerge from and dissolve back into abstract forms, visualising the latent space traversal.\", \"relevance\": \"Demonstrates autonomous, endlessly generating AI art — a self-sustaining generative system that produces unique visual output indefinitely. A model for how A(DAI)'s Sense Room could feature continuously generating, never-repeating visual content driven by underlying intelligence.\", \"year_start\": 2018, \"year_end\": 2018, \"year_ongoing\": false, \"year_uncertain\": false, \"year_raw\": \"2018\", \"work_type\": \"artwork\", \"practitioner_type_raw\": \"artist\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-mario-klingemann-quasimondo--memories-of-passersby-i\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}, \"source_origin\": \"ai_assisted\", \"year\": \"2018\", \"creator_id\": \"practitioner:mario klingemann\", \"auto_generated\": true, \"generated_by\": \"enrichment-seed-canon-v1-2026-04\", \"signal_id\": \"enrichment-seed-canon-v1-2026-04\", \"merged_from\": [\"artwork:memories of passersby i (mario klingemann)\"]}",
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -14377,7 +14289,7 @@
     "type": "concept",
     "name": "net art",
     "slug": "net-art",
-    "metadata": "{\"auto_generated\": true, \"source\": \"derived_from_practitioner_medium\", \"status\": \"draft\"}",
+    "metadata": "{\"auto_generated\": true, \"source\": \"derived_from_practitioner_medium\", \"status\": \"draft\", \"merged_from\": [\"concept:netart\"]}",
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -18798,7 +18710,7 @@
     "slug": "century",
     "metadata": "{\"status\": \"draft\", \"description\": \"CENTURY is my homage to paintings and drawings from the twentieth century and the countless hours I’ve spent looking at them. The references span the origins of concrete and non-objective art to color-field painting and minimalism. The strongest direct reference is a series of pictures created by Ellsworth Kelly in the 1950s where he cut his paintings into pieces and reassembled them in different orders. CENTURY creates a distinct picture for each unique transaction hash, and you can “cut” and “reassemble” it in different ways by pressing ‘1’ on your keyboard. Press ‘2’ to put the slices in the original order. These are landscapes; they look best large and in motion running as live code.\", \"work_type\": \"platform\", \"year_start\": 2021, \"year_end\": 2021, \"year_ongoing\": false, \"year_uncertain\": false, \"image_url\": \"https://media.artblocks.io/thumb/100000000.png\", \"image_license\": \"Art Blocks (verify per project license)\", \"image_source\": \"artblocks\", \"artblocks_contract\": \"0xa7d8d9ef8d8ce8992df33d8b8cf4aebabd5bd270\", \"artblocks_project_id\": \"100\", \"artblocks_token_id\": \"100000000\", \"artblocks_title\": \"CENTURY\", \"artblocks_artist_name\": \"Casey REAS\", \"data_provenance\": {\"source\": \"artblocks-hasura\", \"fetched_at\": \"2026-04-21T13:45:48Z\", \"signal_id\": \"signal:artblocks-api-2026-04\"}, \"creator_practitioner_id\": \"practitioner:casey reas\"}",
     "created_at": "2026-04-21T13:45:48Z",
-    "updated_by": "contributor:artblocks-import"
+    "updated_by": "gatherer-artblocks-v1"
   },
   {
     "id": "artwork:phototaxis",
@@ -18807,7 +18719,7 @@
     "slug": "phototaxis",
     "metadata": "{\"status\": \"draft\", \"description\": \"“Phototaxis” is a simulated environment populated by simple machines. After Valentino Braitenberg’s 1984 book “Vehicles,” there are four kinds of machines with different wiring and behaviors: Explorers, Aggressors, Lovers, and Cowards. Each line charts the history of one machine’s movement. The core of this code was the foundation for my MicroImage series of works dating back to 2001. I’ve worked on it in fits and starts since then, and in 2021 it was further developed for Art Blocks. Press ‘P’ to play/pause, ‘B’ for the big bang, ‘1’–’5’ to change the magnification, and ‘L’ to reveal the lights’ locations.\", \"work_type\": \"platform\", \"year_start\": 2021, \"year_end\": 2021, \"year_ongoing\": false, \"year_uncertain\": false, \"image_url\": \"https://media.artblocks.io/thumb/164000000.png\", \"image_license\": \"Art Blocks (verify per project license)\", \"image_source\": \"artblocks\", \"artblocks_contract\": \"0xa7d8d9ef8d8ce8992df33d8b8cf4aebabd5bd270\", \"artblocks_project_id\": \"164\", \"artblocks_token_id\": \"164000000\", \"artblocks_title\": \"Phototaxis\", \"artblocks_artist_name\": \"Casey REAS\", \"data_provenance\": {\"source\": \"artblocks-hasura\", \"fetched_at\": \"2026-04-21T13:45:48Z\", \"signal_id\": \"signal:artblocks-api-2026-04\"}, \"creator_practitioner_id\": \"practitioner:casey reas\"}",
     "created_at": "2026-04-21T13:45:48Z",
-    "updated_by": "contributor:artblocks-import"
+    "updated_by": "gatherer-artblocks-v1"
   },
   {
     "id": "artwork:century 2052",
@@ -18816,7 +18728,7 @@
     "slug": "century-2052",
     "metadata": "{\"status\": \"draft\", \"description\": \"This artwork will “die” on 20 October 2052.\\n\\nToday I’m 50.\\nWill I live to be 80?\\nWill I outlive this artwork?\\nWill this artwork outlive me?\\n\\nThe original CENTURY project is autobiographical. Creating art and experiencing art is the core of my life, and CENTURY is my homage to 20th Century artists. It’s a synthesis of their ideas.\\n\\nCENTURY 2052 brings the endeavor to the 21st Century. It’s released as 50 unique artworks, one for each year since I was born. The artwork transitions from life to death at 6:44pm EST on October 20th 2052.\\n\\nThis isn't a commercial or public release. It’s a gift to others who have shaped the world of art that I inhabit.\", \"work_type\": \"platform\", \"year_start\": 2022, \"year_end\": 2022, \"year_ongoing\": false, \"year_uncertain\": false, \"image_url\": \"https://media.artblocks.io/thumb/369000000.png\", \"image_license\": \"Art Blocks (verify per project license)\", \"image_source\": \"artblocks\", \"artblocks_contract\": \"0xa7d8d9ef8d8ce8992df33d8b8cf4aebabd5bd270\", \"artblocks_project_id\": \"369\", \"artblocks_token_id\": \"369000000\", \"artblocks_title\": \"CENTURY 2052\", \"artblocks_artist_name\": \"Casey REAS\", \"data_provenance\": {\"source\": \"artblocks-hasura\", \"fetched_at\": \"2026-04-21T13:45:48Z\", \"signal_id\": \"signal:artblocks-api-2026-04\"}, \"creator_practitioner_id\": \"practitioner:casey reas\"}",
     "created_at": "2026-04-21T13:45:48Z",
-    "updated_by": "contributor:artblocks-import"
+    "updated_by": "gatherer-artblocks-v1"
   },
   {
     "id": "artwork:pre-process",
@@ -18825,7 +18737,7 @@
     "slug": "pre-process",
     "metadata": "{\"status\": \"draft\", \"description\": \"Ways of knowing...\\nWays of seeing…\\n\\nI can trace the origin of *Pre-Process* back to a Saturday afternoon in 2003 when I was sketching—first on paper, and then with code. I began by drawing circles, then connecting their center points, and then placing the circles in motion as coded animation. At that time, I was focused on *ideas* and not *images*—specifically, on dynamic systems and the ways a set of elements relate to each other within an imagined environment. I was working through questions about how to experience these systems and what might be an ideal (or interesting) way to engage with them. \\n\\nThe ideas and code from this session later became the core of much of my subsequent work: including the foundation for the *Process* series of software, prints, and installations and the more recent *Process Compendium* works. *Pre-Process* pulls these origin points back into focus, develops them with what I’ve learned in the intervening years, and puts them on the blockchain to be archived. I consider the project a Rosetta Stone for my practice. It asks fundamental questions about the relationships between process and end result, including: Where is the aesthetic focus of a generative system? Is it deep within the code or within the picture the system creates?\\n\\nUltimately, *Pre-Process* emphasizes experiencing the origin of the system and then transitioning with it as it seeks, but never finds, equilibrium. The system is built around Element 1, the first that I created for the *Process* series:\\n\\n*Element 1: Form 1 + Behavior 1 + Behavior 2 + Behavior 3 + Behavior 4\\nForm 1: Circle\\nBehavior 1: Move in a straight line\\nBehavior 2: Constrain to surface\\nBehavior 3: Change direction while touching another Element\\nBehavior 4: Move away from an overlapping Element*\\n\\n*Pre-Process* is the origin of a long journey that I’m still on. It continues to ask essential questions and to encourage me to explore possibilities. Through it, I came to realize that I was ultimately more a picture-maker than a conceptual artist, or, the way I like to think about it,  I’m a “conceptual artist” with a small ‘c.’ I want the energy to be with the system (the ideas) *and* the surface (the picture) in equal measure. More directly, the work exists *between* the instructions, the performance and interpretation of the instructions, and the resulting images.\", \"work_type\": \"platform\", \"year_start\": 2022, \"year_end\": 2022, \"year_ongoing\": false, \"year_uncertain\": false, \"image_url\": \"https://media.artblocks.io/thumb/383000000.png\", \"image_license\": \"Art Blocks (verify per project license)\", \"image_source\": \"artblocks\", \"artblocks_contract\": \"0x99a9b7c1116f9ceeb1652de04d5969cce509b069\", \"artblocks_project_id\": \"383\", \"artblocks_token_id\": \"383000000\", \"artblocks_title\": \"Pre-Process\", \"artblocks_artist_name\": \"Casey REAS\", \"data_provenance\": {\"source\": \"artblocks-hasura\", \"fetched_at\": \"2026-04-21T13:45:48Z\", \"signal_id\": \"signal:artblocks-api-2026-04\"}, \"creator_practitioner_id\": \"practitioner:casey reas\"}",
     "created_at": "2026-04-21T13:45:48Z",
-    "updated_by": "contributor:artblocks-import"
+    "updated_by": "gatherer-artblocks-v1"
   },
   {
     "id": "artwork:the wrapture",
@@ -18834,7 +18746,7 @@
     "slug": "the-wrapture",
     "metadata": "{\"status\": \"draft\", \"description\": \"The Wrapture is a generative edition with unique properties. Technically it is capped at 666 editions, however holders of The Eternal Pump have the opportunity to limit the edition to 50 algorithmic editions if they can cooperate.\\n\\nThe rules are fairly simple: as long as no one trades, sells, or lists their edition for sale in the next year, no additional editions will be made available for minting. However, if one collector breaks the rules, the remainder of the 666 editions will be opened up to the public for minting. If no one breaks the rules for one year, the edition will be capped and collectors will be free to “move” the art with no repercussions.\\n\\nCollectors will be faced with an interesting dilemma - should be fun to watch. \\n\\nMade by Dmitri Cherniak with Javascript and GLSL.\", \"work_type\": \"platform\", \"year_start\": 2021, \"year_end\": 2021, \"year_ongoing\": false, \"year_uncertain\": false, \"image_url\": \"https://media.artblocks.io/thumb/234000000.png\", \"image_license\": \"Art Blocks (verify per project license)\", \"image_source\": \"artblocks\", \"artblocks_contract\": \"0xa7d8d9ef8d8ce8992df33d8b8cf4aebabd5bd270\", \"artblocks_project_id\": \"234\", \"artblocks_token_id\": \"234000000\", \"artblocks_title\": \"The Wrapture\", \"artblocks_artist_name\": \"Dmitri Cherniak\", \"data_provenance\": {\"source\": \"artblocks-hasura\", \"fetched_at\": \"2026-04-21T13:45:48Z\", \"signal_id\": \"signal:artblocks-api-2026-04\"}, \"creator_practitioner_id\": \"practitioner:dmitri cherniak\"}",
     "created_at": "2026-04-21T13:45:48Z",
-    "updated_by": "contributor:artblocks-import"
+    "updated_by": "gatherer-artblocks-v1"
   },
   {
     "id": "artwork:cytographia",
@@ -18843,7 +18755,7 @@
     "slug": "cytographia",
     "metadata": "{\"status\": \"draft\", \"description\": \"*Cytographia* is an elegy for species we will never know, or will never know again, expressed through generative illustrations from an imaginary book about imaginary organisms. The artwork depicts speculative cell structures whose appearances and movements arise emergently and in response to real-time user interactions. *Cytographia* was created using [p5.js](https://p5js.org/) (an open-source programming toolkit for the arts) and may run best in the Chrome browser on OSX.\\n\\nAn algorithmic \\\"neoincunabulum of xenocytology\\\", *Cytographia* presents an interactive diagram of a one-celled microorganism, styled to evoke a hand-drawn engraving. Every aspect of this illustration is generated through custom code, including the simulated behavior of the depicted creature, the poiesis of its anatomy, the calligraphic quality of its lines, the asemic letterforms of its labels, and the virtual \\\"paper\\\" on which it is rendered. *Cytographia*'s drawings may be exported as high-resolution PNG images, or in an SVG vector format suitable for pen-plotting on A4 paper.\\n\\nThe *Cytographia* project draws inspiration from several historically significant books that visually and methodically documented encounters with the unknown. These include Robert Hooke's *[Micrographia](https://en.wikipedia.org/wiki/Micrographia)* (1665), a landmark of scientific observation in which living cells were described for the first time; Edmund Fry's *[Pantographia](https://en.wikipedia.org/wiki/Pantographia)* (1799), an attempt to compile exemplars of all the world's writing systems; Ernst Haeckel's [*Kunstformen der Natur*](https://en.wikipedia.org/wiki/Kunstformen_der_Natur) (1899), a rich exploration of symmetry and structural hierarchy in natural forms; and Luigi Serafini's hallucinatory *[Codex Seraphinianus](https://en.wikipedia.org/wiki/Codex_Seraphinianus)* (1981), a visual encyclopedia of an artist's imagined world. The generative letterforms in *Cytographia* are loosely based on 16th-century typefaces by [Ludovico degli Arrighi](https://en.wikipedia.org/wiki/Ludovico_Vicentino_degli_Arrighi).\\n\\n*Cytographia* represents a culmination of several enduring threads in Golan Levin's thirty-year *oeuvre* of interactive software art, including research into responsive blobs (e.g. [*Polygona Nervosa*](https://objkt.com/asset/hicetnunc/56312), 1997); artificial life (e.g. [*Obzok*](https://www.youtube.com/watch?v=oVOCKzE2fZk), 2001); the use of physics simulations in computational drawing (e.g. [*Floccus*](https://artbase.rhizome.org/wiki/Q3783), 1999) and the algorithmic generation of asemic writing systems (e.g. [*Alphabet Synthesis Machine*](https://en.wikipedia.org/wiki/Alphabet_Synthesis_Machine), 2002).\\n\\n*Cytographia* requires a modern browser with WebGL and hardware acceleration enabled. The recommended configuration for *Cytographia* is the Chrome browser on MacOS, in which the artwork is known to produce consistent and replicable results. The project responds to both mouse/touch and keyboard interactions. An index of *Cytographia*'s key commands can be displayed by pressing **h** (for \\\"help\\\"). These key commands provide access to functionality including file export; toggles that enable or disable various graphical options, potentially improving performance on some systems; and access to a playful \\\"sandbox\\\" mode, in which a collector or visitor can assemble the organelles of their own imaginary lifeform.\", \"work_type\": \"platform\", \"year_start\": 2024, \"year_end\": 2024, \"year_ongoing\": false, \"year_uncertain\": false, \"image_url\": \"https://media.artblocks.io/thumb/487000000.png\", \"image_license\": \"Art Blocks (verify per project license)\", \"image_source\": \"artblocks\", \"artblocks_contract\": \"0x99a9b7c1116f9ceeb1652de04d5969cce509b069\", \"artblocks_project_id\": \"487\", \"artblocks_token_id\": \"487000000\", \"artblocks_title\": \"Cytographia\", \"artblocks_artist_name\": \"Golan Levin\", \"data_provenance\": {\"source\": \"artblocks-hasura\", \"fetched_at\": \"2026-04-21T13:45:48Z\", \"signal_id\": \"signal:artblocks-api-2026-04\"}, \"creator_practitioner_id\": \"practitioner:golan levin\"}",
     "created_at": "2026-04-21T13:45:48Z",
-    "updated_by": "contributor:artblocks-import"
+    "updated_by": "gatherer-artblocks-v1"
   },
   {
     "id": "artwork:race condition",
@@ -18852,7 +18764,7 @@
     "slug": "race-condition",
     "metadata": "{\"status\": \"draft\", \"description\": \"*🔈 Click anywhere to start the soundtrack 🔈*\\n\\n\\n***Race Condition*** is a racing game where you're flying through space at rapid speeds and see colors and shapes swoosh by. \\n\\n\\nThe game-objective is straightforward: you accelerate and try and stay on the road, if you miss a jump or a turn, you crash! The script determines the properties of your spaceship, acceleration, handling and max speed, as well as the map layout, including difficulty, color composition, and available power ups.\\n\\n\\nOnce the series has been fully minted, a highscore of all the mints will be created on [racecondition.art](https://racecondition.art). The winners in each category will be awarded an additional Race Condition Winner NFT. The categories include but are not limited to fastest spaceship, most difficult level, easiest level, worst acceleration, and worst max speed.\\n\\n\\nIn *Race Condition*, the winners are not determined by your driving skills, but by something outside of your control, the properties and features of your mint. Is your level more difficult than the others? Is your spaceship faster? Whether you are a winner in one of the categories is not really up to you, so enjoy the ride and race without pressure! \\n\\n**The Controls**\\n⬆️ or **W** to accelerate\\n⬇️ or **S** to decelerate (and cancel Nitro)\\n⬅️ or **A** to drive left\\n➡️ or **D** to drive right\\n**Space** to jump\\n**N** to activate Nitro\\n**M** or ⬇️ **S** to stop Nitro\\n**ESC** to open settings\\n\\nShortly after loading, the spaceship will start to race the map by itself in *self-driving mode*, where it can't crash. As soon as you press a key on your keyboard, it switches to *driving mode*.\\n\\n**The Levels**\\nRace Condition has 21 different map generating algorithms, each with their own set of challenges and difficulty rating. The algorithms take into account the playability in combination with the difficulty and try to strike a good balance between the two. Each mint gets a difficulty rating and that determines which map pool is used for the creation of the level. The easy ones requires next to zero effort whereas the hard ones require a lot of skill in driving. The Easy Medium Hard means that it can select map algorithms from the complete pool.\\n\\n**The Music**\\nThe music is generated by first selecting a scale from a set of 14 predefined ones, combined with two oscillators / synth configurations, and spread across an imaginary step-sequencer, where the hash determines which steps should be activated or not, how long the sequencer should be, what BPM it should be, and when it step into the next phase of the step-sequencer, which results in some very nice chip-tune repetitive tracks. \\n\\n**Notes**\\nOn mobile, the spaceship accelerates automatically and you turn left/right by tilting your device. You need to grant permission for this to work, if you decline, the spaceship will drive by itself in *self-driving mode*.\", \"work_type\": \"platform\", \"year_start\": 2023, \"year_end\": 2023, \"year_ongoing\": false, \"year_uncertain\": false, \"image_url\": \"https://media.artblocks.io/thumb/393000000.png\", \"image_license\": \"Art Blocks (verify per project license)\", \"image_source\": \"artblocks\", \"artblocks_contract\": \"0x99a9b7c1116f9ceeb1652de04d5969cce509b069\", \"artblocks_project_id\": \"393\", \"artblocks_token_id\": \"393000000\", \"artblocks_title\": \"Race Condition\", \"artblocks_artist_name\": \"Jonas Lund\", \"data_provenance\": {\"source\": \"artblocks-hasura\", \"fetched_at\": \"2026-04-21T13:45:48Z\", \"signal_id\": \"signal:artblocks-api-2026-04\"}, \"creator_practitioner_id\": \"practitioner:jonas lund\"}",
     "created_at": "2026-04-21T13:45:48Z",
-    "updated_by": "contributor:artblocks-import"
+    "updated_by": "gatherer-artblocks-v1"
   },
   {
     "id": "artwork:organized disruption",
@@ -18861,7 +18773,7 @@
     "slug": "organized-disruption",
     "metadata": "{\"status\": \"draft\", \"description\": \"\\\"Organized Disruption\\\" uses a circle packing algorithm to position and scale objects on a plane in an organized pleasing composition. A series of weighted probabilities determines how this composition is disrupted by picking 1 of 3 forms... squares, spheres (slight elevation off plane), rectangles (extreme elevation off plane). Probability also determines 1 of 9 color sets (some colors being harder to acquire), and 3 possible color animations (slow, medium, fast). Each seeded token hash \\\"might\\\" unlock a collection of mouse interactions... proximity object displacement, proximity scale up, proximity scale down, proximity object mutation, proximity object rotation. All minted compositions include \\\"mouse + click + drag\\\" to rotate the system. All minted compositions can press the \\\"s\\\" key on your keyboard to \\\"save\\\" an image.\", \"work_type\": \"platform\", \"year_start\": 2021, \"year_end\": 2021, \"year_ongoing\": false, \"year_uncertain\": false, \"image_url\": \"https://media.artblocks.io/thumb/133000000.png\", \"image_license\": \"Art Blocks (verify per project license)\", \"image_source\": \"artblocks\", \"artblocks_contract\": \"0xa7d8d9ef8d8ce8992df33d8b8cf4aebabd5bd270\", \"artblocks_project_id\": \"133\", \"artblocks_token_id\": \"133000000\", \"artblocks_title\": \"Organized Disruption\", \"artblocks_artist_name\": \"Joshua Davis / PrayStation\", \"data_provenance\": {\"source\": \"artblocks-hasura\", \"fetched_at\": \"2026-04-21T13:45:48Z\", \"signal_id\": \"signal:artblocks-api-2026-04\"}, \"creator_practitioner_id\": \"practitioner:joshua davis\"}",
     "created_at": "2026-04-21T13:45:48Z",
-    "updated_by": "contributor:artblocks-import"
+    "updated_by": "gatherer-artblocks-v1"
   },
   {
     "id": "artwork:cargo",
@@ -18870,7 +18782,7 @@
     "slug": "cargo",
     "metadata": "{\"status\": \"draft\", \"description\": \"**Cargo** is a series of abstract paintings created with animated pixels that are constantly moving without ever repeating. It is painting new patterns on the fly in between macro and micro compositions with a duality of different rhythms and continuous synchronicity. The focus is alternately drawn to detail, then distracted by movement elsewhere and caught up in the overall picture. This rhythm turns the visual complexity into an active experience.\\n\\nASDF: “My work should offer individual ways of interpretation, or even allow one to find some self in it. It wants to inspire some thoughts about dynamics and systemics and also just mesmerize the audience, capture them in a little fantasy, or just for a brief moment in a state of satisfaction.”\\n\\nCargo is the latest work in Kim Asendorf’s ongoing work series of pixel pattern animations. Starting with [monogrid](https://monogrid.xyz) in 2021, and [Sabotage](https://sabotage.kim) in 2022, both highly conceptual series, therefore visually very raw and unimaginable. Asendorf discovered various interesting details in these works, which eventually became fundamental in his artistic expression.\\n\\nCargo is a real time WebGL software written in JavaScript and GLSL. At its core is a flip-flop render buffer, also known as feedback buffer. That means the animation is alternately rendered in two different frame buffers. This technique allows the usage of the previous frame of the animation as an asset in the current rendering, which allows for a series of reactive animation strategies.\\n\\nAn initial image with variable structures and patterns is rendered and subsequently loaded into the frame buffer. A fragment shader is used to apply a set of animation algorithms that make the pixel move and a set of reset algorithms that constantly try to recreate the initial image. The final animation happens in selected containers and is always a combination of two algorithms, one from each set. By regularly animating and partially resetting the pixels, a wide range of movement patterns appear.\\n\\nCargo is a responsive and pixel exact artwork and it will fill the screen on any display size, thus changing the total amount of used pixels accordingly. This results in the fact that the detail level in the artwork is changing depending on the dimensions. The overall structure is consistently stretching the x and y axis independently. Single containers scale along the dimensions and offer more pixels to render the patterns at a larger representation compared to a smaller representation. This behavior leads to a brilliance, perfect pixels, a crisp rendering with nothing like compression artifacts.\\n\\nThis software includes the [simplex noise](https://github.com/jwagner/simplex-noise.js) JavaScript implementation by Jonas Wagner and the [cellular noise](https://github.com/stegu/webgl-noise) GLSL code by Stefan Gustavson.\", \"work_type\": \"platform\", \"year_start\": 2023, \"year_end\": 2023, \"year_ongoing\": false, \"year_uncertain\": false, \"image_url\": \"https://media.artblocks.io/thumb/426000000.png\", \"image_license\": \"Art Blocks (verify per project license)\", \"image_source\": \"artblocks\", \"artblocks_contract\": \"0x99a9b7c1116f9ceeb1652de04d5969cce509b069\", \"artblocks_project_id\": \"426\", \"artblocks_token_id\": \"426000000\", \"artblocks_title\": \"Cargo\", \"artblocks_artist_name\": \"Kim Asendorf\", \"data_provenance\": {\"source\": \"artblocks-hasura\", \"fetched_at\": \"2026-04-21T13:45:48Z\", \"signal_id\": \"signal:artblocks-api-2026-04\"}, \"creator_practitioner_id\": \"practitioner:kim asendorf\"}",
     "created_at": "2026-04-21T13:45:48Z",
-    "updated_by": "contributor:artblocks-import"
+    "updated_by": "gatherer-artblocks-v1"
   },
   {
     "id": "artwork:gazers",
@@ -18879,7 +18791,7 @@
     "slug": "gazers",
     "metadata": "{\"status\": \"draft\", \"description\": \"Since the dawn of humanity, the Moon's phases have fascinated humans, influencing any number of activities on Earth including ocean tides, seasons, harvests, migrations, hunting, crime, sleeping, sex, and has inspired countless works of art. The first lunar calendar, dated to 32,000 BC was discovered, drawn on animal bone in caves. It's believed hunters during the last Ice Age used these portable lunar calendars to anticipate the behavior of different animals like Mammoths. Since then, our Moon has been imprinted across all our ancient and modern cultures, even becoming the system from which our Gregorian calendar evolved from. In the present day, investors in crypto have used the Moon symbolically. \\n\\nWhat does it mean for all of us in crypto to be so ahead of our time, all while using the same metaphor of the Moon for the various measures of success and individual goals we collectively share in crypto? And how will the future appreciate our ambitions and perseverance within the present moment's growing pains on our way to mass adoption? These are some of the questions that Gazers ask.\\n\\nOn the surface, Gazers function as a lunar calendar, algorithmically synching closely with Moon phases in the sky, joining the blockchain with one of humanity's longest running lineages in art. Gazers seeks to create a community of collectors celebrating the change of our perceptions that happen over time, our collective goals in crypto, and our love of color theory, astronomy, and generative art. \\n\\nWhat we are building in blockchain and NFTs will primarily be for the benefit of the future. As such, this artwork was designed to pace itself and speed up its frame rate over time, scaling into anticipated advancements in technology that will steadily allow the artwork to run at faster speeds while at larger scales. Each NFT starts out with the assignment of a date from the past 20 years. These dates correspond to events that happened under particular New Moons that shaped my path as an artist. This is the Origin Moon trait and how Gazers is in part a conceptual self portrait. \\n\\nStarting from the Origin Moon, each New Moon that arrives will speed up the potential animation of the NFT. For example, an NFT with a 20 year old Origin Moon might run at 20 frames per second, appearing as an animation. But one with an Origin Moon fresh from the sale will run closer to 1 frame per second, appearing more like a slowly evolving painting. Every moment, the frame rate of the artwork speeds up fractionally, indecipherable to our eyes. Stacking these advancements over time creates a generational evolution of experience. There is something undeniably beautiful about everything speeding up within our lifetimes, but the Moon, high above us, continues to carry on at the same meandering rate of 29.53 days in each cycle. Much like these blockchain technologies and NFT markets, this artwork was designed to be collected by the present, but appreciated in a greater sense than we can even imagine by the future. \\n\\nI created Gazers to be like a living artwork, to be lived with, and to not only have the artwork evolve over time but also the appreciation and experience of viewers. As I coded the work, I imagined it hanging on the wall of collectors, a fixture in their physical space. Collectors might spend a moment admiring their work, walk away for a couple hours, and then come back to be delighted, noticing the most subtle of shifts. Each layer of the work consists of pattern designs. With the passage of time, the thickness of the layered lines pulse and the direction a design moves will advance or rotate, changing our perception of color in the most subtle and optical of ways. Each day at midnight, each layer receives a new set of rules in terms of how to rise or shine over the next 24 hours. The result is color that rises and sets, echoing the change of light in our sky.\\n\\nMy use of color has consistently been what I've been best known for across my 20 year artistic career. In all my work until now, I've made all the color and design choices as I've painted as a human in the moment. But in Gazers, I designed a complex system around color theory as I understand it, joining my talent for coding with my vision for color. \\n\\nMany NFT collectors of my work might be familiar with the additional experiences some of their NFTs unlock at my website. Rather than use a Gazers NFT to unlock a website, I decided this time to create rendering modes that unlock within the code over time. These additional modes of viewing are intended to help a collector better understand the architecture of their artwork's design and also benefit from greater enjoyment of it. The addition of these experiences should present an additional benefit to HODLing for some. \\n\\nEvery 29 and a half days, we reach a Moon phase called the New Moon. This is when the dark side of the Moon is fully visible and no sunlight is reflected from the lunar surface back to Earth. In Gazers, each New Moon phase creates a New Moon design. In this artwork, the hash seed creates color theory and design rules. These rules are deterministic and dictate all the moons that will generatively be created into infinity. Time reveals our moons. Pairing time with deterministic generative code creates the ephemeral moment. We can all agree that looking at the Moon in the sky never seems to be the exact same experience twice, nor the exact same from different locations. I wanted to echo this nature in Gazers and emphasize the urgency and rarity of our present moment and how an artwork can capture this. \\n\\nAs individuals, we all have our own version of the Moon and what reaching it means. Just as our goals change over time, often subtly, sometimes dramatically, so will our moons, creating a visual representation that might coincide with what's changing inside of us. In crypto, we are all ahead of our time. We are all gazers. And we are all waiting for our next Moon.\", \"work_type\": \"platform\", \"year_start\": 2021, \"year_end\": 2021, \"year_ongoing\": false, \"year_uncertain\": false, \"image_url\": \"https://media.artblocks.io/thumb/215000000.png\", \"image_license\": \"Art Blocks (verify per project license)\", \"image_source\": \"artblocks\", \"artblocks_contract\": \"0xa7d8d9ef8d8ce8992df33d8b8cf4aebabd5bd270\", \"artblocks_project_id\": \"215\", \"artblocks_token_id\": \"215000000\", \"artblocks_title\": \"Gazers\", \"artblocks_artist_name\": \"Matt Kane\", \"data_provenance\": {\"source\": \"artblocks-hasura\", \"fetched_at\": \"2026-04-21T13:45:48Z\", \"signal_id\": \"signal:artblocks-api-2026-04\"}, \"creator_practitioner_id\": \"practitioner:matt kane\"}",
     "created_at": "2026-04-21T13:45:48Z",
-    "updated_by": "contributor:artblocks-import"
+    "updated_by": "gatherer-artblocks-v1"
   },
   {
     "id": "artwork:ancient courses of fictional rivers",
@@ -18888,7 +18800,7 @@
     "slug": "ancient-courses-of-fictional-rivers",
     "metadata": "{\"status\": \"draft\", \"description\": \"Ancient Courses is a generative experience that explores the aesthetics of meandering rivers and the settlements that form on their banks. The design is graphic and cartographic with bold color palettes rendered against map iconography and line sensibility. From the river banks, roads stretch across the landscape: sometimes a single access road, other times sprawling towns. The river meandering is simulated via a custom algorithm which closely models the real world process.\\n\\nPress 'r' to reset the simulation.\\nPress 's' to save an image to disk.\\nPress 'h' to re-run the simulation at print res. This is significantly slower than the default screen res version. The progress bar at the bottom of the screen shows how long before the print-res image is automatically saved to disk.\\n\\nA limited number of Ancient Courses mints will come with a Treasure Map feature. The owner can request a physical print (max one print per treasure map).\\n\\nBest viewed on Chrome, Firefox, or Safari.\", \"work_type\": \"platform\", \"year_start\": 2022, \"year_end\": 2022, \"year_ongoing\": false, \"year_uncertain\": false, \"image_url\": \"https://media.artblocks.io/thumb/284000000.png\", \"image_license\": \"Art Blocks (verify per project license)\", \"image_source\": \"artblocks\", \"artblocks_contract\": \"0xa7d8d9ef8d8ce8992df33d8b8cf4aebabd5bd270\", \"artblocks_project_id\": \"284\", \"artblocks_token_id\": \"284000000\", \"artblocks_title\": \"Ancient Courses of Fictional Rivers\", \"artblocks_artist_name\": \"Robert Hodgin\", \"data_provenance\": {\"source\": \"artblocks-hasura\", \"fetched_at\": \"2026-04-21T13:45:48Z\", \"signal_id\": \"signal:artblocks-api-2026-04\"}, \"creator_practitioner_id\": \"practitioner:robert hodgin\"}",
     "created_at": "2026-04-21T13:45:48Z",
-    "updated_by": "contributor:artblocks-import"
+    "updated_by": "gatherer-artblocks-v1"
   },
   {
     "id": "artwork:latent spirits",
@@ -18897,7 +18809,7 @@
     "slug": "latent-spirits",
     "metadata": "{\"status\": \"draft\", \"description\": \"🐺🐵🐶🐺🐱🦁🐯🦒🦊🐻🐰🐹🐭🐗🐷🐮🦝🐨🐼🐸\\nRorschach meets Pareidolia.   Spirit Animal meets Mood Ring.\\n-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-\\nWhat will be revealed about who you are --- who you become.\\nWhat do YOU see?\\n\\n's' to re-render at print res\\n'f' to toggle force node positions\\n'v' to invert vertically\\n'd' to toggle progress bar\", \"work_type\": \"platform\", \"year_start\": 2022, \"year_end\": 2022, \"year_ongoing\": false, \"year_uncertain\": false, \"image_url\": \"https://media.artblocks.io/thumb/329000000.png\", \"image_license\": \"Art Blocks (verify per project license)\", \"image_source\": \"artblocks\", \"artblocks_contract\": \"0xa7d8d9ef8d8ce8992df33d8b8cf4aebabd5bd270\", \"artblocks_project_id\": \"329\", \"artblocks_token_id\": \"329000000\", \"artblocks_title\": \"Latent Spirits\", \"artblocks_artist_name\": \"Robert Hodgin\", \"data_provenance\": {\"source\": \"artblocks-hasura\", \"fetched_at\": \"2026-04-21T13:45:48Z\", \"signal_id\": \"signal:artblocks-api-2026-04\"}, \"creator_practitioner_id\": \"practitioner:robert hodgin\"}",
     "created_at": "2026-04-21T13:45:48Z",
-    "updated_by": "contributor:artblocks-import"
+    "updated_by": "gatherer-artblocks-v1"
   },
   {
     "id": "artwork:solar transits",
@@ -18906,7 +18818,7 @@
     "slug": "solar-transits",
     "metadata": "{\"status\": \"draft\", \"description\": \"Solar Transits is a procedural exploration of the origins of astrophotography. Each image in this series depicts a randomly generated astronomical event but viewed through the lens of mid-to-late 19th century image capture techniques. The collection features a variety of rare alignments of stars, planets and moons, and are rendered in the spirit of the daguerreotype.\\n\\nIn June of 2012, I took a trip to Minneapolis to speak at the Eyeo Festival. Venus was going to transit while I was there. I was curious. I had not seen a transit before. At 5:09 pm on June 5th, a nearly imperceptible black circle began its march across the sun. Were it not a predicted mathematical certainty, it is doubtful anyone would have noticed. For six minutes, the light from the sun was 0.087% dimmer.\\n\\nIt is a significant thing to see an object silhouetted against the sun. We are so accustom to seeing our perfect circle of pure light that we can't help but to celebrate the occasions where something blocks the view. I still feel a little more excitement when a slight shadow shoots across the landscape on a cloudless day, the source being an extremely rare transit of a commercial jet liner.\\n\\nExponentially more rare is the planetary transit. When Venus hangs on the horizon, glowing against the night sky, it is all too easy to think it another star. Only when it is viewed in silhouette can its position in our universe be fully appreciated: orbitally locked like us, and forever drawing it's path around the sun. That tiny black circle effected me in a big way. The scale of the cosmos shifted into perspective. That doesn’t happen often. I was incredibly moved. It was an experience I will never forget. This project is an homage to that strange once-in-a-lifetime event.\\n\\nAs it turns out, I was very lucky to have seen it at all. In the time since my birth in 1972, a Venus transit has only happened twice. The 1st time was in 2004 but I lived in a part of the world where it was not visible. The 2nd time was in 2012. Unless I live to be 145 years old, there won’t be a 3rd time. There are a couple silver linings: the Great American solar eclipse is on April 8 2024, and Mercury will transit in 2032.\\n\\nThe first 10 sales will have the option to purchase their output in the form of a framed daguerreotype.\", \"work_type\": \"platform\", \"year_start\": 2023, \"year_end\": 2023, \"year_ongoing\": false, \"year_uncertain\": false, \"image_url\": \"https://media.artblocks.io/thumb/423000000.png\", \"image_license\": \"Art Blocks (verify per project license)\", \"image_source\": \"artblocks\", \"artblocks_contract\": \"0x99a9b7c1116f9ceeb1652de04d5969cce509b069\", \"artblocks_project_id\": \"423\", \"artblocks_token_id\": \"423000000\", \"artblocks_title\": \"Solar Transits\", \"artblocks_artist_name\": \"Robert Hodgin\", \"data_provenance\": {\"source\": \"artblocks-hasura\", \"fetched_at\": \"2026-04-21T13:45:48Z\", \"signal_id\": \"signal:artblocks-api-2026-04\"}, \"creator_practitioner_id\": \"practitioner:robert hodgin\"}",
     "created_at": "2026-04-21T13:45:48Z",
-    "updated_by": "contributor:artblocks-import"
+    "updated_by": "gatherer-artblocks-v1"
   },
   {
     "id": "artwork:recollection",
@@ -18915,7 +18827,7 @@
     "slug": "recollection",
     "metadata": "{\"status\": \"draft\", \"description\": \"Recollection is released as part of reGEN, a special charitable auction of generative art to raise funds for Cure Alzheimer’s Fund, curated by Alex Estorick and Foteini Valeonti in collaboration with The Giving Block. \\n\\n\\nIt is curious how our memories can mislead. I vividly recall a childhood trek up Mt. Fuji with my parents through a foggy bamboo forest, and the image of my dad buying a walking stick from an older vendor. But as my mom later clarified, the adventure actually took place in a Tokyo park –– I’ve never even visited Fuji-san. Contemplating this blend of the real and the imagined has led me to create generative vistas whose clarity is eroded by the passing of time.\\n\\n\\nThe landscapes in Recollection are understated and familiar: rolling hills, distant mountains, and sporadic clusters of trees or forests. There is a path through grass and stone –– sometimes clear but, at other times, overgrown and obscure. Many of these paths culminate at a portal, its purpose enigmatic. It is pure mystery, both inviting and unsettling. It is an obscuring void, a memory half-recalled.\\n\\nRecollection is a meditation on the mysteries of the mind, and a tribute to the quest for understanding. It stands not only as a beacon of hope for those grappling with the disintegration of memory, but also a testament to the enduring pursuit of clarity in the midst of obscurity. While some details may fade with time, the essence — the emotions, the lessons, the significance — has the potential to regenerate through reflection, conversation, and creative expression.\\n\\n\\nRecollection is part of the reGEN initiative for Alzheimer’s research. For many, this cause is deeply personal and, I believe, it is no exaggeration to say that almost everyone has witnessed the effects of Alzheimer’s, be it within their own family or through friends. This project not only creates funding but also plays a pivotal role in amplifying awareness about Alzheimer’s disease. The opportunity to merge the joy of artistic expression with a mission that has tangible, real-world implications is profoundly inspiring.\", \"work_type\": \"platform\", \"year_start\": 2023, \"year_end\": 2023, \"year_ongoing\": false, \"year_uncertain\": false, \"image_url\": \"https://media.artblocks.io/thumb/475000000.png\", \"image_license\": \"Art Blocks (verify per project license)\", \"image_source\": \"artblocks\", \"artblocks_contract\": \"0x99a9b7c1116f9ceeb1652de04d5969cce509b069\", \"artblocks_project_id\": \"475\", \"artblocks_token_id\": \"475000000\", \"artblocks_title\": \"Recollection\", \"artblocks_artist_name\": \"Robert Hodgin\", \"data_provenance\": {\"source\": \"artblocks-hasura\", \"fetched_at\": \"2026-04-21T13:45:48Z\", \"signal_id\": \"signal:artblocks-api-2026-04\"}, \"creator_practitioner_id\": \"practitioner:robert hodgin\"}",
     "created_at": "2026-04-21T13:45:48Z",
-    "updated_by": "contributor:artblocks-import"
+    "updated_by": "gatherer-artblocks-v1"
   },
   {
     "id": "artwork:incomplete control",
@@ -18924,7 +18836,7 @@
     "slug": "incomplete-control",
     "metadata": "{\"status\": \"draft\", \"description\": \"Incomplete Control is about letting go, allowing room for error and imperfection. It is a meditation on the relation between analogue and computational aesthetics. The output space is a continuous spectrum. Each iteration has its own character to discover and enjoy, if you are willing to give it the time.\", \"work_type\": \"platform\", \"year_start\": 2021, \"year_end\": 2021, \"year_ongoing\": false, \"year_uncertain\": false, \"image_url\": \"https://media.artblocks.io/thumb/228000000.png\", \"image_license\": \"Art Blocks (verify per project license)\", \"image_source\": \"artblocks\", \"artblocks_contract\": \"0xa7d8d9ef8d8ce8992df33d8b8cf4aebabd5bd270\", \"artblocks_project_id\": \"228\", \"artblocks_token_id\": \"228000000\", \"artblocks_title\": \"Incomplete Control\", \"artblocks_artist_name\": \"Tyler Hobbs\", \"data_provenance\": {\"source\": \"artblocks-hasura\", \"fetched_at\": \"2026-04-21T13:45:48Z\", \"signal_id\": \"signal:artblocks-api-2026-04\"}, \"creator_practitioner_id\": \"practitioner:tyler hobbs\"}",
     "created_at": "2026-04-21T13:45:48Z",
-    "updated_by": "contributor:artblocks-import"
+    "updated_by": "gatherer-artblocks-v1"
   },
   {
     "id": "classification_regime:a(dai) seed canon v1 (april 2026)",
@@ -19669,22 +19581,6 @@
       "year": "2018-present",
       "description": "Ongoing book and essay project on artificial intelligence as a form of reason that cannot be reduced to human cognition — 'alien reason'. Parisi's current work argues that treating AI either as tool or as anthropomorphic subject misses its actual ontological status, and proposes a speculative framework that many contemporary AI artists cite as closest to what their practices are actually encountering.",
       "creator_id": "practitioner:luciana parisi",
-      "auto_generated": true,
-      "generated_by": "enrichment-seed-canon-v1-2026-04",
-      "signal_id": "enrichment-seed-canon-v1-2026-04"
-    }
-  },
-  {
-    "id": "artwork:memories of passersby i (mario klingemann)",
-    "name": "Memories of Passersby I",
-    "type": "artwork",
-    "slug": "memories of passersby i",
-    "metadata": {
-      "status": "confirmed",
-      "source_origin": "ai_assisted",
-      "year": "2018",
-      "description": "Autonomous GAN-based painting machine that continuously generates new 'portraits' of people who never existed, displayed on two period-styled picture-framed screens driven by a custom-built AI system. The piece was sold at Sotheby's in 2019 — one of the earliest autonomous-AI works to enter the major auction circuit — and is a reference work for the argument that an AI system can be the author of a perpetually-new artwork. Its slowness and refusal to cache images makes the non-reproducibility of its outputs part of the content.",
-      "creator_id": "practitioner:mario klingemann",
       "auto_generated": true,
       "generated_by": "enrichment-seed-canon-v1-2026-04",
       "signal_id": "enrichment-seed-canon-v1-2026-04"
@@ -37018,5 +36914,851 @@
         "trust_tier": "human_secondary"
       }
     }
+  },
+  {
+    "id": "practitioner:jodi",
+    "type": "practitioner",
+    "name": "JODI",
+    "slug": "jodi",
+    "metadata": {
+      "status": "confirmed",
+      "source_origin": "human_secondary",
+      "sub_type": "net.art duo",
+      "role_in_seed": "collective",
+      "wikidata_qid": "Q2915356",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q2915356",
+      "wikidata_label": "JODI",
+      "wikidata_description": "collective of two internet artists",
+      "instance_of": [
+        "artistic duo",
+        "artist collective"
+      ],
+      "country": [],
+      "occupation": [],
+      "wd_movement": [],
+      "wd_genre": [],
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "active_years": "1994-01-01–present",
+      "signal_id": "wikidata-named-anchors-2026-04-28",
+      "generated_by": "wikidata-named-anchors-2026-04-28",
+      "auto_generated": true,
+      "data_provenance": {
+        "source": "wikidata-named-anchors",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      }
+    },
+    "created_at": "2026-04-28T00:00:00Z",
+    "updated_by": "contributor:migration"
+  },
+  {
+    "id": "practitioner:eva and franco mattes",
+    "type": "practitioner",
+    "name": "Eva and Franco Mattes",
+    "slug": "eva and franco mattes",
+    "metadata": {
+      "status": "confirmed",
+      "source_origin": "human_secondary",
+      "sub_type": "net.art duo",
+      "role_in_seed": "collective",
+      "wikidata_qid": "Q5415207",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q5415207",
+      "wikidata_label": "Eva and Franco Mattes",
+      "wikidata_description": "Italiana artist duo",
+      "instance_of": [
+        "artistic duo"
+      ],
+      "country": [],
+      "occupation": [],
+      "wd_movement": [],
+      "wd_genre": [],
+      "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Eva%20and%20Franco%20Mattes%20conduct%20a%20seminar%20for%20the%20New%20York%20Arts%20Practicum%20%2814467070356%29.jpg",
+      "image_license": "Wikimedia Commons — see file page",
+      "image_source": "wikidata",
+      "active_years": "?–present",
+      "signal_id": "wikidata-named-anchors-2026-04-28",
+      "generated_by": "wikidata-named-anchors-2026-04-28",
+      "auto_generated": true,
+      "data_provenance": {
+        "source": "wikidata-named-anchors",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      }
+    },
+    "created_at": "2026-04-28T00:00:00Z",
+    "updated_by": "contributor:migration"
+  },
+  {
+    "id": "practitioner:vns matrix",
+    "type": "practitioner",
+    "name": "VNS Matrix",
+    "slug": "vns matrix",
+    "metadata": {
+      "status": "confirmed",
+      "source_origin": "human_secondary",
+      "sub_type": "cyberfeminist collective",
+      "role_in_seed": "collective",
+      "wikidata_qid": "Q7907351",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q7907351",
+      "wikidata_label": "VNS Matrix",
+      "wikidata_description": "Australian cyberfeminist art collective",
+      "instance_of": [
+        "artist collective"
+      ],
+      "country": [],
+      "occupation": [
+        "artist"
+      ],
+      "wd_movement": [
+        "conceptual art",
+        "cyberfeminism",
+        "Postmodernism"
+      ],
+      "wd_genre": [],
+      "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/21.menderako%20manifestu%20ziberfeminista.png",
+      "image_license": "Wikimedia Commons — see file page",
+      "image_source": "wikidata",
+      "active_years": "1991-01-01–1997-01-01",
+      "signal_id": "wikidata-named-anchors-2026-04-28",
+      "generated_by": "wikidata-named-anchors-2026-04-28",
+      "auto_generated": true,
+      "data_provenance": {
+        "source": "wikidata-named-anchors",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      }
+    },
+    "created_at": "2026-04-28T00:00:00Z",
+    "updated_by": "contributor:migration"
+  },
+  {
+    "id": "practitioner:rafaël rozendaal",
+    "type": "practitioner",
+    "name": "Rafaël Rozendaal",
+    "slug": "rafael rozendaal",
+    "metadata": {
+      "status": "confirmed",
+      "source_origin": "human_secondary",
+      "sub_type": "net artist",
+      "role_in_seed": "practitioner",
+      "wikidata_qid": "Q3417276",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q3417276",
+      "wikidata_label": "Rafaël Rozendaal",
+      "wikidata_description": "Dutch-Brazilian artist (born 1980)",
+      "instance_of": [
+        "human"
+      ],
+      "country": [
+        "Kingdom of the Netherlands"
+      ],
+      "occupation": [
+        "computer artist",
+        "internet artist",
+        "draftsperson"
+      ],
+      "wd_movement": [],
+      "wd_genre": [],
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "active_years": "1980-06-06–present",
+      "signal_id": "wikidata-named-anchors-2026-04-28",
+      "generated_by": "wikidata-named-anchors-2026-04-28",
+      "auto_generated": true,
+      "data_provenance": {
+        "source": "wikidata-named-anchors",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      }
+    },
+    "created_at": "2026-04-28T00:00:00Z",
+    "updated_by": "contributor:migration"
+  },
+  {
+    "id": "practitioner:shu lea cheang",
+    "type": "practitioner",
+    "name": "Shu Lea Cheang",
+    "slug": "shu lea cheang",
+    "metadata": {
+      "status": "confirmed",
+      "source_origin": "human_secondary",
+      "sub_type": "net artist / filmmaker",
+      "role_in_seed": "practitioner",
+      "wikidata_qid": "Q3482619",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q3482619",
+      "wikidata_label": "Shu Lea Cheang",
+      "wikidata_description": "Taiwanese-American artist and filmmaker (born 1954)",
+      "instance_of": [
+        "human"
+      ],
+      "country": [
+        "United States",
+        "Taiwan"
+      ],
+      "occupation": [
+        "video artist",
+        "new media artist",
+        "film director",
+        "multimedia artist",
+        "artist",
+        "screenwriter",
+        "photographer"
+      ],
+      "wd_movement": [],
+      "wd_genre": [],
+      "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Shu-lea-cheang-hausderkunst-2025.jpg",
+      "image_license": "Wikimedia Commons — see file page",
+      "image_source": "wikidata",
+      "active_years": "1954-04-13–present",
+      "signal_id": "wikidata-named-anchors-2026-04-28",
+      "generated_by": "wikidata-named-anchors-2026-04-28",
+      "auto_generated": true,
+      "data_provenance": {
+        "source": "wikidata-named-anchors",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      }
+    },
+    "created_at": "2026-04-28T00:00:00Z",
+    "updated_by": "contributor:migration"
+  },
+  {
+    "id": "practitioner:coco fusco",
+    "type": "practitioner",
+    "name": "Coco Fusco",
+    "slug": "coco fusco",
+    "metadata": {
+      "status": "confirmed",
+      "source_origin": "human_secondary",
+      "sub_type": "performance / media artist",
+      "role_in_seed": "practitioner",
+      "wikidata_qid": "Q5139737",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q5139737",
+      "wikidata_label": "Coco Fusco",
+      "wikidata_description": "American artist (born 1960)",
+      "instance_of": [
+        "human"
+      ],
+      "country": [
+        "United States",
+        "Cuba"
+      ],
+      "occupation": [
+        "video artist",
+        "visual artist",
+        "performance artist",
+        "artist",
+        "writer"
+      ],
+      "wd_movement": [],
+      "wd_genre": [],
+      "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Interview%20with%20Coco%20Fusco%2C%20199%20sec%20%28edited%29.jpg",
+      "image_license": "Wikimedia Commons — see file page",
+      "image_source": "wikidata",
+      "active_years": "1960-06-18–present",
+      "signal_id": "wikidata-named-anchors-2026-04-28",
+      "generated_by": "wikidata-named-anchors-2026-04-28",
+      "auto_generated": true,
+      "data_provenance": {
+        "source": "wikidata-named-anchors",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      }
+    },
+    "created_at": "2026-04-28T00:00:00Z",
+    "updated_by": "contributor:migration"
+  },
+  {
+    "id": "practitioner:rosa menkman",
+    "type": "practitioner",
+    "name": "Rosa Menkman",
+    "slug": "rosa menkman",
+    "metadata": {
+      "status": "confirmed",
+      "source_origin": "human_secondary",
+      "sub_type": "glitch artist / theorist",
+      "role_in_seed": "practitioner",
+      "wikidata_qid": "Q16892461",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q16892461",
+      "wikidata_label": "Rosa Menkman",
+      "wikidata_description": "Dutch visual artist (born 1983)",
+      "instance_of": [
+        "human"
+      ],
+      "country": [
+        "Kingdom of the Netherlands"
+      ],
+      "occupation": [
+        "theorist",
+        "art theorist",
+        "visual artist",
+        "new media artist",
+        "multimedia artist",
+        "exhibition curator"
+      ],
+      "wd_movement": [],
+      "wd_genre": [
+        "electronic music"
+      ],
+      "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Rosa%20Menkman%20before%20GLITCH%20Radioshow%20in%20Chicago.jpg",
+      "image_license": "Wikimedia Commons — see file page",
+      "image_source": "wikidata",
+      "active_years": "1983-04-03–present",
+      "signal_id": "wikidata-named-anchors-2026-04-28",
+      "generated_by": "wikidata-named-anchors-2026-04-28",
+      "auto_generated": true,
+      "data_provenance": {
+        "source": "wikidata-named-anchors",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      }
+    },
+    "created_at": "2026-04-28T00:00:00Z",
+    "updated_by": "contributor:migration"
+  },
+  {
+    "id": "practitioner:stephanie dinkins",
+    "type": "practitioner",
+    "name": "Stephanie Dinkins",
+    "slug": "stephanie dinkins",
+    "metadata": {
+      "status": "confirmed",
+      "source_origin": "human_secondary",
+      "sub_type": "ai art / black tech canon",
+      "role_in_seed": "practitioner",
+      "wikidata_qid": "Q28869335",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q28869335",
+      "wikidata_label": "Stephanie Dinkins",
+      "wikidata_description": "American artist (1964–) who creates media platforms for dialogs about artificial intelligence (AI), race, gender, aging, and our future (born 1964)",
+      "instance_of": [
+        "human"
+      ],
+      "country": [
+        "United States"
+      ],
+      "occupation": [
+        "visual artist",
+        "new media artist",
+        "artist",
+        "professor",
+        "photographer"
+      ],
+      "wd_movement": [],
+      "wd_genre": [],
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "active_years": "1964-01-01–present",
+      "signal_id": "wikidata-named-anchors-2026-04-28",
+      "generated_by": "wikidata-named-anchors-2026-04-28",
+      "auto_generated": true,
+      "data_provenance": {
+        "source": "wikidata-named-anchors",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      }
+    },
+    "created_at": "2026-04-28T00:00:00Z",
+    "updated_by": "contributor:migration"
+  },
+  {
+    "id": "practitioner:john gerrard",
+    "type": "practitioner",
+    "name": "John Gerrard",
+    "slug": "john gerrard",
+    "metadata": {
+      "status": "confirmed",
+      "source_origin": "human_secondary",
+      "sub_type": "real-time simulation art",
+      "role_in_seed": "practitioner",
+      "wikidata_qid": "Q6235193",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q6235193",
+      "wikidata_label": "John Gerrard",
+      "wikidata_description": "Irish artist (born 1974)",
+      "instance_of": [
+        "human"
+      ],
+      "country": [
+        "Ireland"
+      ],
+      "occupation": [
+        "artist"
+      ],
+      "wd_movement": [],
+      "wd_genre": [],
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "active_years": "1974-07-20–present",
+      "signal_id": "wikidata-named-anchors-2026-04-28",
+      "generated_by": "wikidata-named-anchors-2026-04-28",
+      "auto_generated": true,
+      "data_provenance": {
+        "source": "wikidata-named-anchors",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      }
+    },
+    "created_at": "2026-04-28T00:00:00Z",
+    "updated_by": "contributor:migration"
+  },
+  {
+    "id": "practitioner:maurice benayoun",
+    "type": "practitioner",
+    "name": "Maurice Benayoun",
+    "slug": "maurice benayoun",
+    "metadata": {
+      "status": "confirmed",
+      "source_origin": "human_secondary",
+      "sub_type": "interactive / VR art",
+      "role_in_seed": "practitioner",
+      "wikidata_qid": "Q3300395",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q3300395",
+      "wikidata_label": "Maurice Benayoun",
+      "wikidata_description": "French visual artist (born 1957)",
+      "instance_of": [
+        "human"
+      ],
+      "country": [
+        "France"
+      ],
+      "occupation": [
+        "video artist",
+        "researcher",
+        "exhibition curator",
+        "artist"
+      ],
+      "wd_movement": [],
+      "wd_genre": [],
+      "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/MoBen.jpg",
+      "image_license": "Wikimedia Commons — see file page",
+      "image_source": "wikidata",
+      "active_years": "1957-03-29–present",
+      "signal_id": "wikidata-named-anchors-2026-04-28",
+      "generated_by": "wikidata-named-anchors-2026-04-28",
+      "auto_generated": true,
+      "data_provenance": {
+        "source": "wikidata-named-anchors",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      }
+    },
+    "created_at": "2026-04-28T00:00:00Z",
+    "updated_by": "contributor:migration"
+  },
+  {
+    "id": "practitioner:friedrich kittler",
+    "type": "practitioner",
+    "name": "Friedrich Kittler",
+    "slug": "friedrich kittler",
+    "metadata": {
+      "status": "anchor",
+      "source_origin": "human_secondary",
+      "sub_type": "media theorist",
+      "role_in_seed": "theorist-anchor",
+      "wikidata_qid": "Q69187",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q69187",
+      "wikidata_label": "Friedrich Kittler",
+      "wikidata_description": "literary scholar and media theorist (1943–2011)",
+      "instance_of": [
+        "human"
+      ],
+      "country": [
+        "Germany"
+      ],
+      "occupation": [
+        "literary scholar",
+        "philosopher",
+        "literary historian",
+        "media scholar",
+        "university teacher",
+        "historian"
+      ],
+      "wd_movement": [],
+      "wd_genre": [],
+      "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Friedrich%20Kittler%20%282009%29.png",
+      "image_license": "Wikimedia Commons — see file page",
+      "image_source": "wikidata",
+      "active_years": "1943-06-12–2011-10-18",
+      "signal_id": "wikidata-named-anchors-2026-04-28",
+      "generated_by": "wikidata-named-anchors-2026-04-28",
+      "auto_generated": true,
+      "data_provenance": {
+        "source": "wikidata-named-anchors",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "note": "Preserved as anchor node for INFLUENCES edges; not a digital-arts practitioner. Same pattern as Simondon, de Campos, LeWitt."
+    },
+    "created_at": "2026-04-28T00:00:00Z",
+    "updated_by": "contributor:migration"
+  },
+  {
+    "id": "practitioner:vilém flusser",
+    "type": "practitioner",
+    "name": "Vilém Flusser",
+    "slug": "vilem flusser",
+    "metadata": {
+      "status": "anchor",
+      "source_origin": "human_secondary",
+      "sub_type": "media theorist",
+      "role_in_seed": "theorist-anchor",
+      "wikidata_qid": "Q215623",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q215623",
+      "wikidata_label": "Vilém Flusser",
+      "wikidata_description": "Czech philosopher and photographer",
+      "instance_of": [
+        "human"
+      ],
+      "country": [
+        "Brazil"
+      ],
+      "occupation": [
+        "philosopher",
+        "journalist",
+        "art historian",
+        "university teacher",
+        "writer",
+        "photographer"
+      ],
+      "wd_movement": [],
+      "wd_genre": [],
+      "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Vilem%20Flusser%201940.jpg",
+      "image_license": "Wikimedia Commons — see file page",
+      "image_source": "wikidata",
+      "active_years": "1920-05-12–1991-11-27",
+      "signal_id": "wikidata-named-anchors-2026-04-28",
+      "generated_by": "wikidata-named-anchors-2026-04-28",
+      "auto_generated": true,
+      "data_provenance": {
+        "source": "wikidata-named-anchors",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "note": "Preserved as anchor node for INFLUENCES edges; not a digital-arts practitioner. Same pattern as Simondon, de Campos, LeWitt."
+    },
+    "created_at": "2026-04-28T00:00:00Z",
+    "updated_by": "contributor:migration"
+  },
+  {
+    "id": "artwork:dust storm manter kansas",
+    "type": "artwork",
+    "name": "Dust Storm (Manter, Kansas)",
+    "slug": "dust storm manter kansas",
+    "metadata": {
+      "status": "confirmed",
+      "source_origin": "human_secondary",
+      "year": "2008-01-01",
+      "creator_id": "practitioner:john gerrard",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "wikidata_qid": "Q21743189",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q21743189",
+      "wd_depicts": [],
+      "wd_genre": [],
+      "wd_movement": [],
+      "wd_instance_of": [
+        "work of art"
+      ],
+      "signal_id": "wikidata-named-anchors-2026-04-28",
+      "generated_by": "wikidata-named-anchors-2026-04-28",
+      "auto_generated": true
+    },
+    "created_at": "2026-04-28T00:00:00Z",
+    "updated_by": "contributor:migration"
+  },
+  {
+    "id": "artwork:a cyberfeminist manifesto for the 21st century",
+    "type": "artwork",
+    "name": "A Cyberfeminist Manifesto for the 21st Century",
+    "slug": "a cyberfeminist manifesto for the 21st century",
+    "metadata": {
+      "status": "confirmed",
+      "source_origin": "human_secondary",
+      "year": "1991-01-01",
+      "creator_id": "practitioner:vns matrix",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "wikidata_qid": "Q28050701",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q28050701",
+      "wd_depicts": [],
+      "wd_genre": [],
+      "wd_movement": [
+        "cyberfeminism"
+      ],
+      "wd_instance_of": [
+        "manifesto",
+        "art project"
+      ],
+      "signal_id": "wikidata-named-anchors-2026-04-28",
+      "generated_by": "wikidata-named-anchors-2026-04-28",
+      "auto_generated": true
+    },
+    "created_at": "2026-04-28T00:00:00Z",
+    "updated_by": "contributor:migration"
+  },
+  {
+    "id": "artwork:automatic rain",
+    "type": "artwork",
+    "name": "Automatic Rain",
+    "slug": "automatic rain",
+    "metadata": {
+      "status": "confirmed",
+      "source_origin": "human_secondary",
+      "year": "1995-01-01",
+      "creator_id": "practitioner:jodi",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "wikidata_qid": "Q38516803",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q38516803",
+      "wd_depicts": [],
+      "wd_genre": [
+        "internet art"
+      ],
+      "wd_movement": [],
+      "wd_instance_of": [
+        "work of art"
+      ],
+      "signal_id": "wikidata-named-anchors-2026-04-28",
+      "generated_by": "wikidata-named-anchors-2026-04-28",
+      "auto_generated": true
+    },
+    "created_at": "2026-04-28T00:00:00Z",
+    "updated_by": "contributor:migration"
+  },
+  {
+    "id": "artwork:solar reserve tonopah nevada",
+    "type": "artwork",
+    "name": "Solar Reserve (Tonopah, Nevada)",
+    "slug": "solar reserve tonopah nevada",
+    "metadata": {
+      "status": "confirmed",
+      "source_origin": "human_secondary",
+      "year": "2014-01-01",
+      "creator_id": "practitioner:john gerrard",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "wikidata_qid": "Q57560817",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q57560817",
+      "wd_depicts": [
+        "solar power plant"
+      ],
+      "wd_genre": [
+        "time-based media"
+      ],
+      "wd_movement": [],
+      "wd_instance_of": [
+        "work of art"
+      ],
+      "signal_id": "wikidata-named-anchors-2026-04-28",
+      "generated_by": "wikidata-named-anchors-2026-04-28",
+      "auto_generated": true
+    },
+    "created_at": "2026-04-28T00:00:00Z",
+    "updated_by": "contributor:migration"
+  },
+  {
+    "id": "concept:solar power plant",
+    "name": "solar power plant",
+    "type": "concept",
+    "slug": "solar power plant",
+    "metadata": {
+      "status": "confirmed",
+      "source_origin": "human_secondary",
+      "first_surfaced_by": "practitioner:john gerrard",
+      "signal_id": "wikidata-named-anchors-2026-04-28",
+      "generated_by": "wikidata-named-anchors-2026-04-28",
+      "derivation": "wikidata-P180-depicts",
+      "auto_generated": true
+    },
+    "created_at": "2026-04-28T00:00:00Z",
+    "updated_by": "contributor:migration"
+  },
+  {
+    "id": "concept:time-based media",
+    "name": "time-based media",
+    "type": "concept",
+    "slug": "time-based media",
+    "metadata": {
+      "status": "confirmed",
+      "source_origin": "human_secondary",
+      "first_surfaced_by": "practitioner:john gerrard",
+      "signal_id": "wikidata-named-anchors-2026-04-28",
+      "generated_by": "wikidata-named-anchors-2026-04-28",
+      "derivation": "wikidata-P136-genre",
+      "auto_generated": true
+    },
+    "created_at": "2026-04-28T00:00:00Z",
+    "updated_by": "contributor:migration"
+  },
+  {
+    "id": "artwork:secret garden",
+    "type": "artwork",
+    "name": "Secret Garden",
+    "slug": "secret garden",
+    "metadata": {
+      "status": "confirmed",
+      "source_origin": "human_secondary",
+      "year": "2020-01-01",
+      "creator_id": "practitioner:stephanie dinkins",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "wikidata_qid": "Q113535713",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q113535713",
+      "wd_depicts": [],
+      "wd_genre": [
+        "site-specific art"
+      ],
+      "wd_movement": [],
+      "wd_instance_of": [
+        "video installation",
+        "interactive video"
+      ],
+      "signal_id": "wikidata-named-anchors-2026-04-28",
+      "generated_by": "wikidata-named-anchors-2026-04-28",
+      "auto_generated": true
+    },
+    "created_at": "2026-04-28T00:00:00Z",
+    "updated_by": "contributor:migration"
+  },
+  {
+    "id": "concept:site-specific art",
+    "name": "site-specific art",
+    "type": "concept",
+    "slug": "site-specific art",
+    "metadata": {
+      "status": "confirmed",
+      "source_origin": "human_secondary",
+      "first_surfaced_by": "practitioner:stephanie dinkins",
+      "signal_id": "wikidata-named-anchors-2026-04-28",
+      "generated_by": "wikidata-named-anchors-2026-04-28",
+      "derivation": "wikidata-P136-genre",
+      "auto_generated": true
+    },
+    "created_at": "2026-04-28T00:00:00Z",
+    "updated_by": "contributor:migration"
+  },
+  {
+    "id": "artwork:wet networks",
+    "type": "artwork",
+    "name": "Wet Networks",
+    "slug": "wet networks",
+    "metadata": {
+      "status": "confirmed",
+      "source_origin": "human_secondary",
+      "year": "2021-07-01",
+      "creator_id": "practitioner:shu lea cheang",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "wikidata_qid": "Q113665614",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q113665614",
+      "wd_depicts": [],
+      "wd_genre": [],
+      "wd_movement": [],
+      "wd_instance_of": [
+        "art exhibition"
+      ],
+      "signal_id": "wikidata-named-anchors-2026-04-28",
+      "generated_by": "wikidata-named-anchors-2026-04-28",
+      "auto_generated": true
+    },
+    "created_at": "2026-04-28T00:00:00Z",
+    "updated_by": "contributor:migration"
+  },
+  {
+    "id": "artwork:neo geo city",
+    "type": "artwork",
+    "name": "Neo Geo City",
+    "slug": "neo geo city",
+    "metadata": {
+      "status": "confirmed",
+      "source_origin": "human_secondary",
+      "year": "2014-01-01",
+      "creator_id": "practitioner:rafaël rozendaal",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "wikidata_qid": "Q118609686",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q118609686",
+      "wd_depicts": [],
+      "wd_genre": [],
+      "wd_movement": [],
+      "wd_instance_of": [
+        "interactive artwork",
+        "Internet artwork"
+      ],
+      "signal_id": "wikidata-named-anchors-2026-04-28",
+      "generated_by": "wikidata-named-anchors-2026-04-28",
+      "auto_generated": true
+    },
+    "created_at": "2026-04-28T00:00:00Z",
+    "updated_by": "contributor:migration"
+  },
+  {
+    "id": "artwork:all wrongs reversed 1982",
+    "type": "artwork",
+    "name": "All wrongs reversed ©1982",
+    "slug": "all wrongs reversed 1982",
+    "metadata": {
+      "status": "confirmed",
+      "source_origin": "human_secondary",
+      "year": null,
+      "creator_id": "practitioner:jodi",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "wikidata_qid": "Q132199156",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q132199156",
+      "wd_depicts": [],
+      "wd_genre": [],
+      "wd_movement": [],
+      "wd_instance_of": [
+        "application software",
+        "exhibit",
+        "creative work"
+      ],
+      "signal_id": "wikidata-named-anchors-2026-04-28",
+      "generated_by": "wikidata-named-anchors-2026-04-28",
+      "auto_generated": true
+    },
+    "created_at": "2026-04-28T00:00:00Z",
+    "updated_by": "contributor:migration"
+  },
+  {
+    "id": "artwork:zyx",
+    "type": "artwork",
+    "name": "ZYX",
+    "slug": "zyx",
+    "metadata": {
+      "status": "confirmed",
+      "source_origin": "human_secondary",
+      "year": null,
+      "creator_id": "practitioner:jodi",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "wikidata_qid": "Q132200275",
+      "wikidata_url": "https://www.wikidata.org/wiki/Q132200275",
+      "wd_depicts": [],
+      "wd_genre": [],
+      "wd_movement": [],
+      "wd_instance_of": [
+        "application software",
+        "creative work"
+      ],
+      "signal_id": "wikidata-named-anchors-2026-04-28",
+      "generated_by": "wikidata-named-anchors-2026-04-28",
+      "auto_generated": true
+    },
+    "created_at": "2026-04-28T00:00:00Z",
+    "updated_by": "contributor:migration"
   }
 ]

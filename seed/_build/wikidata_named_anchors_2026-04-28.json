@@ -1,0 +1,1379 @@
+{
+  "signal_id": "wikidata-named-anchors-2026-04-28",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "method_note": "Wikidata named-anchor pass — driven by a hand-curated 12-entry list of canonical figures missing from the seed (10 practitioners + 2 theorist-anchor stubs). Same SPARQL machinery as v3b. Verifies QIDs first, then queries artworks via P170 + practitioner-level P135/P136. Output is a merge bundle that fold_merge_into_seed can apply, after which dedup_pre_commit should be re-run.",
+  "endpoint": "https://query.wikidata.org/sparql",
+  "anchors_attempted": [
+    {
+      "id": "practitioner:jodi",
+      "qid": "Q2915356",
+      "sub_type": "net.art duo",
+      "role": "collective"
+    },
+    {
+      "id": "practitioner:eva and franco mattes",
+      "qid": "Q5415207",
+      "sub_type": "net.art duo",
+      "role": "collective"
+    },
+    {
+      "id": "practitioner:vns matrix",
+      "qid": "Q7907351",
+      "sub_type": "cyberfeminist collective",
+      "role": "collective"
+    },
+    {
+      "id": "practitioner:rafaël rozendaal",
+      "qid": "Q3417276",
+      "sub_type": "net artist",
+      "role": "practitioner"
+    },
+    {
+      "id": "practitioner:shu lea cheang",
+      "qid": "Q3482619",
+      "sub_type": "net artist / filmmaker",
+      "role": "practitioner"
+    },
+    {
+      "id": "practitioner:coco fusco",
+      "qid": "Q5139737",
+      "sub_type": "performance / media artist",
+      "role": "practitioner"
+    },
+    {
+      "id": "practitioner:rosa menkman",
+      "qid": "Q16892461",
+      "sub_type": "glitch artist / theorist",
+      "role": "practitioner"
+    },
+    {
+      "id": "practitioner:stephanie dinkins",
+      "qid": "Q28869335",
+      "sub_type": "ai art / black tech canon",
+      "role": "practitioner"
+    },
+    {
+      "id": "practitioner:john gerrard",
+      "qid": "Q6235193",
+      "sub_type": "real-time simulation art",
+      "role": "practitioner"
+    },
+    {
+      "id": "practitioner:maurice benayoun",
+      "qid": "Q3300395",
+      "sub_type": "interactive / VR art",
+      "role": "practitioner"
+    },
+    {
+      "id": "practitioner:friedrich kittler",
+      "qid": "Q69187",
+      "sub_type": "media theorist",
+      "role": "theorist-anchor"
+    },
+    {
+      "id": "practitioner:vilém flusser",
+      "qid": "Q215623",
+      "sub_type": "media theorist",
+      "role": "theorist-anchor"
+    }
+  ],
+  "skipped_already_present": [],
+  "qids_unresolved": [],
+  "stats": {
+    "new_practitioners": 12,
+    "belongs_to_from_practitioner_props": 1,
+    "artworks_returned": 10,
+    "new_artworks": 9,
+    "embodies_from_genre": 3,
+    "embodies_from_depicts": 1,
+    "exhibited_at_emitted": 1,
+    "classified_by_emitted": 12,
+    "new_concepts": 3,
+    "total_new_nodes": 24,
+    "total_new_edges": 27
+  },
+  "insert": {
+    "nodes": [
+      {
+        "id": "practitioner:jodi",
+        "type": "practitioner",
+        "name": "JODI",
+        "slug": "jodi",
+        "metadata": {
+          "status": "confirmed",
+          "source_origin": "human_secondary",
+          "sub_type": "net.art duo",
+          "role_in_seed": "collective",
+          "wikidata_qid": "Q2915356",
+          "wikidata_url": "https://www.wikidata.org/wiki/Q2915356",
+          "wikidata_label": "JODI",
+          "wikidata_description": "collective of two internet artists",
+          "instance_of": [
+            "artistic duo",
+            "artist collective"
+          ],
+          "country": [],
+          "occupation": [],
+          "wd_movement": [],
+          "wd_genre": [],
+          "image_url": null,
+          "image_license": null,
+          "image_source": null,
+          "active_years": "1994-01-01–present",
+          "signal_id": "wikidata-named-anchors-2026-04-28",
+          "generated_by": "wikidata-named-anchors-2026-04-28",
+          "auto_generated": true,
+          "data_provenance": {
+            "source": "wikidata-named-anchors",
+            "confidence": "high",
+            "trust_tier": "reviewed"
+          }
+        },
+        "created_at": "2026-04-28T00:00:00Z",
+        "updated_by": "contributor:migration"
+      },
+      {
+        "id": "practitioner:eva and franco mattes",
+        "type": "practitioner",
+        "name": "Eva and Franco Mattes",
+        "slug": "eva and franco mattes",
+        "metadata": {
+          "status": "confirmed",
+          "source_origin": "human_secondary",
+          "sub_type": "net.art duo",
+          "role_in_seed": "collective",
+          "wikidata_qid": "Q5415207",
+          "wikidata_url": "https://www.wikidata.org/wiki/Q5415207",
+          "wikidata_label": "Eva and Franco Mattes",
+          "wikidata_description": "Italiana artist duo",
+          "instance_of": [
+            "artistic duo"
+          ],
+          "country": [],
+          "occupation": [],
+          "wd_movement": [],
+          "wd_genre": [],
+          "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Eva%20and%20Franco%20Mattes%20conduct%20a%20seminar%20for%20the%20New%20York%20Arts%20Practicum%20%2814467070356%29.jpg",
+          "image_license": "Wikimedia Commons — see file page",
+          "image_source": "wikidata",
+          "active_years": "?–present",
+          "signal_id": "wikidata-named-anchors-2026-04-28",
+          "generated_by": "wikidata-named-anchors-2026-04-28",
+          "auto_generated": true,
+          "data_provenance": {
+            "source": "wikidata-named-anchors",
+            "confidence": "high",
+            "trust_tier": "reviewed"
+          }
+        },
+        "created_at": "2026-04-28T00:00:00Z",
+        "updated_by": "contributor:migration"
+      },
+      {
+        "id": "practitioner:vns matrix",
+        "type": "practitioner",
+        "name": "VNS Matrix",
+        "slug": "vns matrix",
+        "metadata": {
+          "status": "confirmed",
+          "source_origin": "human_secondary",
+          "sub_type": "cyberfeminist collective",
+          "role_in_seed": "collective",
+          "wikidata_qid": "Q7907351",
+          "wikidata_url": "https://www.wikidata.org/wiki/Q7907351",
+          "wikidata_label": "VNS Matrix",
+          "wikidata_description": "Australian cyberfeminist art collective",
+          "instance_of": [
+            "artist collective"
+          ],
+          "country": [],
+          "occupation": [
+            "artist"
+          ],
+          "wd_movement": [
+            "conceptual art",
+            "cyberfeminism",
+            "Postmodernism"
+          ],
+          "wd_genre": [],
+          "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/21.menderako%20manifestu%20ziberfeminista.png",
+          "image_license": "Wikimedia Commons — see file page",
+          "image_source": "wikidata",
+          "active_years": "1991-01-01–1997-01-01",
+          "signal_id": "wikidata-named-anchors-2026-04-28",
+          "generated_by": "wikidata-named-anchors-2026-04-28",
+          "auto_generated": true,
+          "data_provenance": {
+            "source": "wikidata-named-anchors",
+            "confidence": "high",
+            "trust_tier": "reviewed"
+          }
+        },
+        "created_at": "2026-04-28T00:00:00Z",
+        "updated_by": "contributor:migration"
+      },
+      {
+        "id": "practitioner:rafaël rozendaal",
+        "type": "practitioner",
+        "name": "Rafaël Rozendaal",
+        "slug": "rafael rozendaal",
+        "metadata": {
+          "status": "confirmed",
+          "source_origin": "human_secondary",
+          "sub_type": "net artist",
+          "role_in_seed": "practitioner",
+          "wikidata_qid": "Q3417276",
+          "wikidata_url": "https://www.wikidata.org/wiki/Q3417276",
+          "wikidata_label": "Rafaël Rozendaal",
+          "wikidata_description": "Dutch-Brazilian artist (born 1980)",
+          "instance_of": [
+            "human"
+          ],
+          "country": [
+            "Kingdom of the Netherlands"
+          ],
+          "occupation": [
+            "computer artist",
+            "internet artist",
+            "draftsperson"
+          ],
+          "wd_movement": [],
+          "wd_genre": [],
+          "image_url": null,
+          "image_license": null,
+          "image_source": null,
+          "active_years": "1980-06-06–present",
+          "signal_id": "wikidata-named-anchors-2026-04-28",
+          "generated_by": "wikidata-named-anchors-2026-04-28",
+          "auto_generated": true,
+          "data_provenance": {
+            "source": "wikidata-named-anchors",
+            "confidence": "high",
+            "trust_tier": "reviewed"
+          }
+        },
+        "created_at": "2026-04-28T00:00:00Z",
+        "updated_by": "contributor:migration"
+      },
+      {
+        "id": "practitioner:shu lea cheang",
+        "type": "practitioner",
+        "name": "Shu Lea Cheang",
+        "slug": "shu lea cheang",
+        "metadata": {
+          "status": "confirmed",
+          "source_origin": "human_secondary",
+          "sub_type": "net artist / filmmaker",
+          "role_in_seed": "practitioner",
+          "wikidata_qid": "Q3482619",
+          "wikidata_url": "https://www.wikidata.org/wiki/Q3482619",
+          "wikidata_label": "Shu Lea Cheang",
+          "wikidata_description": "Taiwanese-American artist and filmmaker (born 1954)",
+          "instance_of": [
+            "human"
+          ],
+          "country": [
+            "United States",
+            "Taiwan"
+          ],
+          "occupation": [
+            "video artist",
+            "new media artist",
+            "film director",
+            "multimedia artist",
+            "artist",
+            "screenwriter",
+            "photographer"
+          ],
+          "wd_movement": [],
+          "wd_genre": [],
+          "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Shu-lea-cheang-hausderkunst-2025.jpg",
+          "image_license": "Wikimedia Commons — see file page",
+          "image_source": "wikidata",
+          "active_years": "1954-04-13–present",
+          "signal_id": "wikidata-named-anchors-2026-04-28",
+          "generated_by": "wikidata-named-anchors-2026-04-28",
+          "auto_generated": true,
+          "data_provenance": {
+            "source": "wikidata-named-anchors",
+            "confidence": "high",
+            "trust_tier": "reviewed"
+          }
+        },
+        "created_at": "2026-04-28T00:00:00Z",
+        "updated_by": "contributor:migration"
+      },
+      {
+        "id": "practitioner:coco fusco",
+        "type": "practitioner",
+        "name": "Coco Fusco",
+        "slug": "coco fusco",
+        "metadata": {
+          "status": "confirmed",
+          "source_origin": "human_secondary",
+          "sub_type": "performance / media artist",
+          "role_in_seed": "practitioner",
+          "wikidata_qid": "Q5139737",
+          "wikidata_url": "https://www.wikidata.org/wiki/Q5139737",
+          "wikidata_label": "Coco Fusco",
+          "wikidata_description": "American artist (born 1960)",
+          "instance_of": [
+            "human"
+          ],
+          "country": [
+            "United States",
+            "Cuba"
+          ],
+          "occupation": [
+            "video artist",
+            "visual artist",
+            "performance artist",
+            "artist",
+            "writer"
+          ],
+          "wd_movement": [],
+          "wd_genre": [],
+          "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Interview%20with%20Coco%20Fusco%2C%20199%20sec%20%28edited%29.jpg",
+          "image_license": "Wikimedia Commons — see file page",
+          "image_source": "wikidata",
+          "active_years": "1960-06-18–present",
+          "signal_id": "wikidata-named-anchors-2026-04-28",
+          "generated_by": "wikidata-named-anchors-2026-04-28",
+          "auto_generated": true,
+          "data_provenance": {
+            "source": "wikidata-named-anchors",
+            "confidence": "high",
+            "trust_tier": "reviewed"
+          }
+        },
+        "created_at": "2026-04-28T00:00:00Z",
+        "updated_by": "contributor:migration"
+      },
+      {
+        "id": "practitioner:rosa menkman",
+        "type": "practitioner",
+        "name": "Rosa Menkman",
+        "slug": "rosa menkman",
+        "metadata": {
+          "status": "confirmed",
+          "source_origin": "human_secondary",
+          "sub_type": "glitch artist / theorist",
+          "role_in_seed": "practitioner",
+          "wikidata_qid": "Q16892461",
+          "wikidata_url": "https://www.wikidata.org/wiki/Q16892461",
+          "wikidata_label": "Rosa Menkman",
+          "wikidata_description": "Dutch visual artist (born 1983)",
+          "instance_of": [
+            "human"
+          ],
+          "country": [
+            "Kingdom of the Netherlands"
+          ],
+          "occupation": [
+            "theorist",
+            "art theorist",
+            "visual artist",
+            "new media artist",
+            "multimedia artist",
+            "exhibition curator"
+          ],
+          "wd_movement": [],
+          "wd_genre": [
+            "electronic music"
+          ],
+          "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Rosa%20Menkman%20before%20GLITCH%20Radioshow%20in%20Chicago.jpg",
+          "image_license": "Wikimedia Commons — see file page",
+          "image_source": "wikidata",
+          "active_years": "1983-04-03–present",
+          "signal_id": "wikidata-named-anchors-2026-04-28",
+          "generated_by": "wikidata-named-anchors-2026-04-28",
+          "auto_generated": true,
+          "data_provenance": {
+            "source": "wikidata-named-anchors",
+            "confidence": "high",
+            "trust_tier": "reviewed"
+          }
+        },
+        "created_at": "2026-04-28T00:00:00Z",
+        "updated_by": "contributor:migration"
+      },
+      {
+        "id": "practitioner:stephanie dinkins",
+        "type": "practitioner",
+        "name": "Stephanie Dinkins",
+        "slug": "stephanie dinkins",
+        "metadata": {
+          "status": "confirmed",
+          "source_origin": "human_secondary",
+          "sub_type": "ai art / black tech canon",
+          "role_in_seed": "practitioner",
+          "wikidata_qid": "Q28869335",
+          "wikidata_url": "https://www.wikidata.org/wiki/Q28869335",
+          "wikidata_label": "Stephanie Dinkins",
+          "wikidata_description": "American artist (1964–) who creates media platforms for dialogs about artificial intelligence (AI), race, gender, aging, and our future (born 1964)",
+          "instance_of": [
+            "human"
+          ],
+          "country": [
+            "United States"
+          ],
+          "occupation": [
+            "visual artist",
+            "new media artist",
+            "artist",
+            "professor",
+            "photographer"
+          ],
+          "wd_movement": [],
+          "wd_genre": [],
+          "image_url": null,
+          "image_license": null,
+          "image_source": null,
+          "active_years": "1964-01-01–present",
+          "signal_id": "wikidata-named-anchors-2026-04-28",
+          "generated_by": "wikidata-named-anchors-2026-04-28",
+          "auto_generated": true,
+          "data_provenance": {
+            "source": "wikidata-named-anchors",
+            "confidence": "high",
+            "trust_tier": "reviewed"
+          }
+        },
+        "created_at": "2026-04-28T00:00:00Z",
+        "updated_by": "contributor:migration"
+      },
+      {
+        "id": "practitioner:john gerrard",
+        "type": "practitioner",
+        "name": "John Gerrard",
+        "slug": "john gerrard",
+        "metadata": {
+          "status": "confirmed",
+          "source_origin": "human_secondary",
+          "sub_type": "real-time simulation art",
+          "role_in_seed": "practitioner",
+          "wikidata_qid": "Q6235193",
+          "wikidata_url": "https://www.wikidata.org/wiki/Q6235193",
+          "wikidata_label": "John Gerrard",
+          "wikidata_description": "Irish artist (born 1974)",
+          "instance_of": [
+            "human"
+          ],
+          "country": [
+            "Ireland"
+          ],
+          "occupation": [
+            "artist"
+          ],
+          "wd_movement": [],
+          "wd_genre": [],
+          "image_url": null,
+          "image_license": null,
+          "image_source": null,
+          "active_years": "1974-07-20–present",
+          "signal_id": "wikidata-named-anchors-2026-04-28",
+          "generated_by": "wikidata-named-anchors-2026-04-28",
+          "auto_generated": true,
+          "data_provenance": {
+            "source": "wikidata-named-anchors",
+            "confidence": "high",
+            "trust_tier": "reviewed"
+          }
+        },
+        "created_at": "2026-04-28T00:00:00Z",
+        "updated_by": "contributor:migration"
+      },
+      {
+        "id": "practitioner:maurice benayoun",
+        "type": "practitioner",
+        "name": "Maurice Benayoun",
+        "slug": "maurice benayoun",
+        "metadata": {
+          "status": "confirmed",
+          "source_origin": "human_secondary",
+          "sub_type": "interactive / VR art",
+          "role_in_seed": "practitioner",
+          "wikidata_qid": "Q3300395",
+          "wikidata_url": "https://www.wikidata.org/wiki/Q3300395",
+          "wikidata_label": "Maurice Benayoun",
+          "wikidata_description": "French visual artist (born 1957)",
+          "instance_of": [
+            "human"
+          ],
+          "country": [
+            "France"
+          ],
+          "occupation": [
+            "video artist",
+            "researcher",
+            "exhibition curator",
+            "artist"
+          ],
+          "wd_movement": [],
+          "wd_genre": [],
+          "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/MoBen.jpg",
+          "image_license": "Wikimedia Commons — see file page",
+          "image_source": "wikidata",
+          "active_years": "1957-03-29–present",
+          "signal_id": "wikidata-named-anchors-2026-04-28",
+          "generated_by": "wikidata-named-anchors-2026-04-28",
+          "auto_generated": true,
+          "data_provenance": {
+            "source": "wikidata-named-anchors",
+            "confidence": "high",
+            "trust_tier": "reviewed"
+          }
+        },
+        "created_at": "2026-04-28T00:00:00Z",
+        "updated_by": "contributor:migration"
+      },
+      {
+        "id": "practitioner:friedrich kittler",
+        "type": "practitioner",
+        "name": "Friedrich Kittler",
+        "slug": "friedrich kittler",
+        "metadata": {
+          "status": "anchor",
+          "source_origin": "human_secondary",
+          "sub_type": "media theorist",
+          "role_in_seed": "theorist-anchor",
+          "wikidata_qid": "Q69187",
+          "wikidata_url": "https://www.wikidata.org/wiki/Q69187",
+          "wikidata_label": "Friedrich Kittler",
+          "wikidata_description": "literary scholar and media theorist (1943–2011)",
+          "instance_of": [
+            "human"
+          ],
+          "country": [
+            "Germany"
+          ],
+          "occupation": [
+            "literary scholar",
+            "philosopher",
+            "literary historian",
+            "media scholar",
+            "university teacher",
+            "historian"
+          ],
+          "wd_movement": [],
+          "wd_genre": [],
+          "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Friedrich%20Kittler%20%282009%29.png",
+          "image_license": "Wikimedia Commons — see file page",
+          "image_source": "wikidata",
+          "active_years": "1943-06-12–2011-10-18",
+          "signal_id": "wikidata-named-anchors-2026-04-28",
+          "generated_by": "wikidata-named-anchors-2026-04-28",
+          "auto_generated": true,
+          "data_provenance": {
+            "source": "wikidata-named-anchors",
+            "confidence": "high",
+            "trust_tier": "reviewed"
+          },
+          "note": "Preserved as anchor node for INFLUENCES edges; not a digital-arts practitioner. Same pattern as Simondon, de Campos, LeWitt."
+        },
+        "created_at": "2026-04-28T00:00:00Z",
+        "updated_by": "contributor:migration"
+      },
+      {
+        "id": "practitioner:vilém flusser",
+        "type": "practitioner",
+        "name": "Vilém Flusser",
+        "slug": "vilem flusser",
+        "metadata": {
+          "status": "anchor",
+          "source_origin": "human_secondary",
+          "sub_type": "media theorist",
+          "role_in_seed": "theorist-anchor",
+          "wikidata_qid": "Q215623",
+          "wikidata_url": "https://www.wikidata.org/wiki/Q215623",
+          "wikidata_label": "Vilém Flusser",
+          "wikidata_description": "Czech philosopher and photographer",
+          "instance_of": [
+            "human"
+          ],
+          "country": [
+            "Brazil"
+          ],
+          "occupation": [
+            "philosopher",
+            "journalist",
+            "art historian",
+            "university teacher",
+            "writer",
+            "photographer"
+          ],
+          "wd_movement": [],
+          "wd_genre": [],
+          "image_url": "http://commons.wikimedia.org/wiki/Special:FilePath/Vilem%20Flusser%201940.jpg",
+          "image_license": "Wikimedia Commons — see file page",
+          "image_source": "wikidata",
+          "active_years": "1920-05-12–1991-11-27",
+          "signal_id": "wikidata-named-anchors-2026-04-28",
+          "generated_by": "wikidata-named-anchors-2026-04-28",
+          "auto_generated": true,
+          "data_provenance": {
+            "source": "wikidata-named-anchors",
+            "confidence": "high",
+            "trust_tier": "reviewed"
+          },
+          "note": "Preserved as anchor node for INFLUENCES edges; not a digital-arts practitioner. Same pattern as Simondon, de Campos, LeWitt."
+        },
+        "created_at": "2026-04-28T00:00:00Z",
+        "updated_by": "contributor:migration"
+      },
+      {
+        "id": "artwork:dust storm manter kansas",
+        "type": "artwork",
+        "name": "Dust Storm (Manter, Kansas)",
+        "slug": "dust storm manter kansas",
+        "metadata": {
+          "status": "confirmed",
+          "source_origin": "human_secondary",
+          "year": "2008-01-01",
+          "creator_id": "practitioner:john gerrard",
+          "image_url": null,
+          "image_license": null,
+          "image_source": null,
+          "wikidata_qid": "Q21743189",
+          "wikidata_url": "https://www.wikidata.org/wiki/Q21743189",
+          "wd_depicts": [],
+          "wd_genre": [],
+          "wd_movement": [],
+          "wd_instance_of": [
+            "work of art"
+          ],
+          "signal_id": "wikidata-named-anchors-2026-04-28",
+          "generated_by": "wikidata-named-anchors-2026-04-28",
+          "auto_generated": true
+        },
+        "created_at": "2026-04-28T00:00:00Z",
+        "updated_by": "contributor:migration"
+      },
+      {
+        "id": "artwork:a cyberfeminist manifesto for the 21st century",
+        "type": "artwork",
+        "name": "A Cyberfeminist Manifesto for the 21st Century",
+        "slug": "a cyberfeminist manifesto for the 21st century",
+        "metadata": {
+          "status": "confirmed",
+          "source_origin": "human_secondary",
+          "year": "1991-01-01",
+          "creator_id": "practitioner:vns matrix",
+          "image_url": null,
+          "image_license": null,
+          "image_source": null,
+          "wikidata_qid": "Q28050701",
+          "wikidata_url": "https://www.wikidata.org/wiki/Q28050701",
+          "wd_depicts": [],
+          "wd_genre": [],
+          "wd_movement": [
+            "cyberfeminism"
+          ],
+          "wd_instance_of": [
+            "manifesto",
+            "art project"
+          ],
+          "signal_id": "wikidata-named-anchors-2026-04-28",
+          "generated_by": "wikidata-named-anchors-2026-04-28",
+          "auto_generated": true
+        },
+        "created_at": "2026-04-28T00:00:00Z",
+        "updated_by": "contributor:migration"
+      },
+      {
+        "id": "artwork:automatic rain",
+        "type": "artwork",
+        "name": "Automatic Rain",
+        "slug": "automatic rain",
+        "metadata": {
+          "status": "confirmed",
+          "source_origin": "human_secondary",
+          "year": "1995-01-01",
+          "creator_id": "practitioner:jodi",
+          "image_url": null,
+          "image_license": null,
+          "image_source": null,
+          "wikidata_qid": "Q38516803",
+          "wikidata_url": "https://www.wikidata.org/wiki/Q38516803",
+          "wd_depicts": [],
+          "wd_genre": [
+            "internet art"
+          ],
+          "wd_movement": [],
+          "wd_instance_of": [
+            "work of art"
+          ],
+          "signal_id": "wikidata-named-anchors-2026-04-28",
+          "generated_by": "wikidata-named-anchors-2026-04-28",
+          "auto_generated": true
+        },
+        "created_at": "2026-04-28T00:00:00Z",
+        "updated_by": "contributor:migration"
+      },
+      {
+        "id": "artwork:solar reserve tonopah nevada",
+        "type": "artwork",
+        "name": "Solar Reserve (Tonopah, Nevada)",
+        "slug": "solar reserve tonopah nevada",
+        "metadata": {
+          "status": "confirmed",
+          "source_origin": "human_secondary",
+          "year": "2014-01-01",
+          "creator_id": "practitioner:john gerrard",
+          "image_url": null,
+          "image_license": null,
+          "image_source": null,
+          "wikidata_qid": "Q57560817",
+          "wikidata_url": "https://www.wikidata.org/wiki/Q57560817",
+          "wd_depicts": [
+            "solar power plant"
+          ],
+          "wd_genre": [
+            "time-based media"
+          ],
+          "wd_movement": [],
+          "wd_instance_of": [
+            "work of art"
+          ],
+          "signal_id": "wikidata-named-anchors-2026-04-28",
+          "generated_by": "wikidata-named-anchors-2026-04-28",
+          "auto_generated": true
+        },
+        "created_at": "2026-04-28T00:00:00Z",
+        "updated_by": "contributor:migration"
+      },
+      {
+        "id": "concept:solar power plant",
+        "name": "solar power plant",
+        "type": "concept",
+        "slug": "solar power plant",
+        "metadata": {
+          "status": "confirmed",
+          "source_origin": "human_secondary",
+          "first_surfaced_by": "practitioner:john gerrard",
+          "signal_id": "wikidata-named-anchors-2026-04-28",
+          "generated_by": "wikidata-named-anchors-2026-04-28",
+          "derivation": "wikidata-P180-depicts",
+          "auto_generated": true
+        },
+        "created_at": "2026-04-28T00:00:00Z",
+        "updated_by": "contributor:migration"
+      },
+      {
+        "id": "concept:time-based media",
+        "name": "time-based media",
+        "type": "concept",
+        "slug": "time-based media",
+        "metadata": {
+          "status": "confirmed",
+          "source_origin": "human_secondary",
+          "first_surfaced_by": "practitioner:john gerrard",
+          "signal_id": "wikidata-named-anchors-2026-04-28",
+          "generated_by": "wikidata-named-anchors-2026-04-28",
+          "derivation": "wikidata-P136-genre",
+          "auto_generated": true
+        },
+        "created_at": "2026-04-28T00:00:00Z",
+        "updated_by": "contributor:migration"
+      },
+      {
+        "id": "artwork:secret garden",
+        "type": "artwork",
+        "name": "Secret Garden",
+        "slug": "secret garden",
+        "metadata": {
+          "status": "confirmed",
+          "source_origin": "human_secondary",
+          "year": "2020-01-01",
+          "creator_id": "practitioner:stephanie dinkins",
+          "image_url": null,
+          "image_license": null,
+          "image_source": null,
+          "wikidata_qid": "Q113535713",
+          "wikidata_url": "https://www.wikidata.org/wiki/Q113535713",
+          "wd_depicts": [],
+          "wd_genre": [
+            "site-specific art"
+          ],
+          "wd_movement": [],
+          "wd_instance_of": [
+            "video installation",
+            "interactive video"
+          ],
+          "signal_id": "wikidata-named-anchors-2026-04-28",
+          "generated_by": "wikidata-named-anchors-2026-04-28",
+          "auto_generated": true
+        },
+        "created_at": "2026-04-28T00:00:00Z",
+        "updated_by": "contributor:migration"
+      },
+      {
+        "id": "concept:site-specific art",
+        "name": "site-specific art",
+        "type": "concept",
+        "slug": "site-specific art",
+        "metadata": {
+          "status": "confirmed",
+          "source_origin": "human_secondary",
+          "first_surfaced_by": "practitioner:stephanie dinkins",
+          "signal_id": "wikidata-named-anchors-2026-04-28",
+          "generated_by": "wikidata-named-anchors-2026-04-28",
+          "derivation": "wikidata-P136-genre",
+          "auto_generated": true
+        },
+        "created_at": "2026-04-28T00:00:00Z",
+        "updated_by": "contributor:migration"
+      },
+      {
+        "id": "artwork:wet networks",
+        "type": "artwork",
+        "name": "Wet Networks",
+        "slug": "wet networks",
+        "metadata": {
+          "status": "confirmed",
+          "source_origin": "human_secondary",
+          "year": "2021-07-01",
+          "creator_id": "practitioner:shu lea cheang",
+          "image_url": null,
+          "image_license": null,
+          "image_source": null,
+          "wikidata_qid": "Q113665614",
+          "wikidata_url": "https://www.wikidata.org/wiki/Q113665614",
+          "wd_depicts": [],
+          "wd_genre": [],
+          "wd_movement": [],
+          "wd_instance_of": [
+            "art exhibition"
+          ],
+          "signal_id": "wikidata-named-anchors-2026-04-28",
+          "generated_by": "wikidata-named-anchors-2026-04-28",
+          "auto_generated": true
+        },
+        "created_at": "2026-04-28T00:00:00Z",
+        "updated_by": "contributor:migration"
+      },
+      {
+        "id": "artwork:neo geo city",
+        "type": "artwork",
+        "name": "Neo Geo City",
+        "slug": "neo geo city",
+        "metadata": {
+          "status": "confirmed",
+          "source_origin": "human_secondary",
+          "year": "2014-01-01",
+          "creator_id": "practitioner:rafaël rozendaal",
+          "image_url": null,
+          "image_license": null,
+          "image_source": null,
+          "wikidata_qid": "Q118609686",
+          "wikidata_url": "https://www.wikidata.org/wiki/Q118609686",
+          "wd_depicts": [],
+          "wd_genre": [],
+          "wd_movement": [],
+          "wd_instance_of": [
+            "interactive artwork",
+            "Internet artwork"
+          ],
+          "signal_id": "wikidata-named-anchors-2026-04-28",
+          "generated_by": "wikidata-named-anchors-2026-04-28",
+          "auto_generated": true
+        },
+        "created_at": "2026-04-28T00:00:00Z",
+        "updated_by": "contributor:migration"
+      },
+      {
+        "id": "artwork:all wrongs reversed 1982",
+        "type": "artwork",
+        "name": "All wrongs reversed ©1982",
+        "slug": "all wrongs reversed 1982",
+        "metadata": {
+          "status": "confirmed",
+          "source_origin": "human_secondary",
+          "year": null,
+          "creator_id": "practitioner:jodi",
+          "image_url": null,
+          "image_license": null,
+          "image_source": null,
+          "wikidata_qid": "Q132199156",
+          "wikidata_url": "https://www.wikidata.org/wiki/Q132199156",
+          "wd_depicts": [],
+          "wd_genre": [],
+          "wd_movement": [],
+          "wd_instance_of": [
+            "application software",
+            "exhibit",
+            "creative work"
+          ],
+          "signal_id": "wikidata-named-anchors-2026-04-28",
+          "generated_by": "wikidata-named-anchors-2026-04-28",
+          "auto_generated": true
+        },
+        "created_at": "2026-04-28T00:00:00Z",
+        "updated_by": "contributor:migration"
+      },
+      {
+        "id": "artwork:zyx",
+        "type": "artwork",
+        "name": "ZYX",
+        "slug": "zyx",
+        "metadata": {
+          "status": "confirmed",
+          "source_origin": "human_secondary",
+          "year": null,
+          "creator_id": "practitioner:jodi",
+          "image_url": null,
+          "image_license": null,
+          "image_source": null,
+          "wikidata_qid": "Q132200275",
+          "wikidata_url": "https://www.wikidata.org/wiki/Q132200275",
+          "wd_depicts": [],
+          "wd_genre": [],
+          "wd_movement": [],
+          "wd_instance_of": [
+            "application software",
+            "creative work"
+          ],
+          "signal_id": "wikidata-named-anchors-2026-04-28",
+          "generated_by": "wikidata-named-anchors-2026-04-28",
+          "auto_generated": true
+        },
+        "created_at": "2026-04-28T00:00:00Z",
+        "updated_by": "contributor:migration"
+      }
+    ],
+    "edges": [
+      {
+        "id": "practitioner:vns matrix--belongs_to--scene:feminist digital practice",
+        "source_id": "practitioner:vns matrix",
+        "target_id": "scene:feminist digital practice",
+        "edge_type": "BELONGS_TO",
+        "confidence": "high",
+        "signal_id": "wikidata-named-anchors-2026-04-28",
+        "created_by": "gatherer-wikidata-named-anchors",
+        "source_evidence": "Wikidata Q7907351 P135/P136 → 'cyberfeminism' matched scene",
+        "charge": null,
+        "created_at": "2026-04-28T00:00:00Z",
+        "valid_from": "2026-04-28T00:00:00Z",
+        "valid_until": null,
+        "invalidated_by": null,
+        "event_time": null
+      },
+      {
+        "id": "artwork:dust storm manter kansas--created_by--practitioner:john gerrard",
+        "source_id": "artwork:dust storm manter kansas",
+        "target_id": "practitioner:john gerrard",
+        "edge_type": "CREATED_BY",
+        "confidence": "high",
+        "signal_id": "wikidata-named-anchors-2026-04-28",
+        "created_by": "gatherer-wikidata-named-anchors",
+        "source_evidence": "Wikidata Q21743189 P170 (creator) = Q6235193",
+        "charge": null,
+        "created_at": "2026-04-28T00:00:00Z",
+        "valid_from": "2026-04-28T00:00:00Z",
+        "valid_until": null,
+        "invalidated_by": null,
+        "event_time": null
+      },
+      {
+        "id": "artwork:a cyberfeminist manifesto for the 21st century--created_by--practitioner:vns matrix",
+        "source_id": "artwork:a cyberfeminist manifesto for the 21st century",
+        "target_id": "practitioner:vns matrix",
+        "edge_type": "CREATED_BY",
+        "confidence": "high",
+        "signal_id": "wikidata-named-anchors-2026-04-28",
+        "created_by": "gatherer-wikidata-named-anchors",
+        "source_evidence": "Wikidata Q28050701 P170 (creator) = Q7907351",
+        "charge": null,
+        "created_at": "2026-04-28T00:00:00Z",
+        "valid_from": "2026-04-28T00:00:00Z",
+        "valid_until": null,
+        "invalidated_by": null,
+        "event_time": null
+      },
+      {
+        "id": "artwork:automatic rain--created_by--practitioner:jodi",
+        "source_id": "artwork:automatic rain",
+        "target_id": "practitioner:jodi",
+        "edge_type": "CREATED_BY",
+        "confidence": "high",
+        "signal_id": "wikidata-named-anchors-2026-04-28",
+        "created_by": "gatherer-wikidata-named-anchors",
+        "source_evidence": "Wikidata Q38516803 P170 (creator) = Q2915356",
+        "charge": null,
+        "created_at": "2026-04-28T00:00:00Z",
+        "valid_from": "2026-04-28T00:00:00Z",
+        "valid_until": null,
+        "invalidated_by": null,
+        "event_time": null
+      },
+      {
+        "id": "artwork:automatic rain--embodies--concept:internet art",
+        "source_id": "artwork:automatic rain",
+        "target_id": "concept:internet art",
+        "edge_type": "EMBODIES",
+        "confidence": "high",
+        "signal_id": "wikidata-named-anchors-2026-04-28",
+        "created_by": "gatherer-wikidata-named-anchors",
+        "source_evidence": "Wikidata Q38516803 P136 (genre) → 'internet art'",
+        "charge": null,
+        "created_at": "2026-04-28T00:00:00Z",
+        "valid_from": "2026-04-28T00:00:00Z",
+        "valid_until": null,
+        "invalidated_by": null,
+        "event_time": null
+      },
+      {
+        "id": "artwork:solar reserve tonopah nevada--created_by--practitioner:john gerrard",
+        "source_id": "artwork:solar reserve tonopah nevada",
+        "target_id": "practitioner:john gerrard",
+        "edge_type": "CREATED_BY",
+        "confidence": "high",
+        "signal_id": "wikidata-named-anchors-2026-04-28",
+        "created_by": "gatherer-wikidata-named-anchors",
+        "source_evidence": "Wikidata Q57560817 P170 (creator) = Q6235193",
+        "charge": null,
+        "created_at": "2026-04-28T00:00:00Z",
+        "valid_from": "2026-04-28T00:00:00Z",
+        "valid_until": null,
+        "invalidated_by": null,
+        "event_time": null
+      },
+      {
+        "id": "artwork:solar reserve tonopah nevada--embodies--concept:solar power plant",
+        "source_id": "artwork:solar reserve tonopah nevada",
+        "target_id": "concept:solar power plant",
+        "edge_type": "EMBODIES",
+        "confidence": "high",
+        "signal_id": "wikidata-named-anchors-2026-04-28",
+        "created_by": "gatherer-wikidata-named-anchors",
+        "source_evidence": "Wikidata Q57560817 P180 (depicts) → 'solar power plant'",
+        "charge": null,
+        "created_at": "2026-04-28T00:00:00Z",
+        "valid_from": "2026-04-28T00:00:00Z",
+        "valid_until": null,
+        "invalidated_by": null,
+        "event_time": null
+      },
+      {
+        "id": "artwork:solar reserve tonopah nevada--embodies--concept:time-based media",
+        "source_id": "artwork:solar reserve tonopah nevada",
+        "target_id": "concept:time-based media",
+        "edge_type": "EMBODIES",
+        "confidence": "high",
+        "signal_id": "wikidata-named-anchors-2026-04-28",
+        "created_by": "gatherer-wikidata-named-anchors",
+        "source_evidence": "Wikidata Q57560817 P136 (genre) → 'time-based media'",
+        "charge": null,
+        "created_at": "2026-04-28T00:00:00Z",
+        "valid_from": "2026-04-28T00:00:00Z",
+        "valid_until": null,
+        "invalidated_by": null,
+        "event_time": null
+      },
+      {
+        "id": "artwork:secret garden--created_by--practitioner:stephanie dinkins",
+        "source_id": "artwork:secret garden",
+        "target_id": "practitioner:stephanie dinkins",
+        "edge_type": "CREATED_BY",
+        "confidence": "high",
+        "signal_id": "wikidata-named-anchors-2026-04-28",
+        "created_by": "gatherer-wikidata-named-anchors",
+        "source_evidence": "Wikidata Q113535713 P170 (creator) = Q28869335",
+        "charge": null,
+        "created_at": "2026-04-28T00:00:00Z",
+        "valid_from": "2026-04-28T00:00:00Z",
+        "valid_until": null,
+        "invalidated_by": null,
+        "event_time": null
+      },
+      {
+        "id": "artwork:secret garden--embodies--concept:site-specific art",
+        "source_id": "artwork:secret garden",
+        "target_id": "concept:site-specific art",
+        "edge_type": "EMBODIES",
+        "confidence": "high",
+        "signal_id": "wikidata-named-anchors-2026-04-28",
+        "created_by": "gatherer-wikidata-named-anchors",
+        "source_evidence": "Wikidata Q113535713 P136 (genre) → 'site-specific art'",
+        "charge": null,
+        "created_at": "2026-04-28T00:00:00Z",
+        "valid_from": "2026-04-28T00:00:00Z",
+        "valid_until": null,
+        "invalidated_by": null,
+        "event_time": null
+      },
+      {
+        "id": "artwork:wet networks--created_by--practitioner:shu lea cheang",
+        "source_id": "artwork:wet networks",
+        "target_id": "practitioner:shu lea cheang",
+        "edge_type": "CREATED_BY",
+        "confidence": "high",
+        "signal_id": "wikidata-named-anchors-2026-04-28",
+        "created_by": "gatherer-wikidata-named-anchors",
+        "source_evidence": "Wikidata Q113665614 P170 (creator) = Q3482619",
+        "charge": null,
+        "created_at": "2026-04-28T00:00:00Z",
+        "valid_from": "2026-04-28T00:00:00Z",
+        "valid_until": null,
+        "invalidated_by": null,
+        "event_time": null
+      },
+      {
+        "id": "artwork:wet networks--exhibited_at--institution:queens museum",
+        "source_id": "artwork:wet networks",
+        "target_id": "institution:queens museum",
+        "edge_type": "EXHIBITED_AT",
+        "confidence": "high",
+        "signal_id": "wikidata-named-anchors-2026-04-28",
+        "created_by": "gatherer-wikidata-named-anchors",
+        "source_evidence": "Wikidata Q113665614 P276 → Q1320229 (Queens Museum)",
+        "charge": null,
+        "created_at": "2026-04-28T00:00:00Z",
+        "valid_from": "2026-04-28T00:00:00Z",
+        "valid_until": null,
+        "invalidated_by": null,
+        "event_time": null
+      },
+      {
+        "id": "artwork:neo geo city--created_by--practitioner:rafaël rozendaal",
+        "source_id": "artwork:neo geo city",
+        "target_id": "practitioner:rafaël rozendaal",
+        "edge_type": "CREATED_BY",
+        "confidence": "high",
+        "signal_id": "wikidata-named-anchors-2026-04-28",
+        "created_by": "gatherer-wikidata-named-anchors",
+        "source_evidence": "Wikidata Q118609686 P170 (creator) = Q3417276",
+        "charge": null,
+        "created_at": "2026-04-28T00:00:00Z",
+        "valid_from": "2026-04-28T00:00:00Z",
+        "valid_until": null,
+        "invalidated_by": null,
+        "event_time": null
+      },
+      {
+        "id": "artwork:all wrongs reversed 1982--created_by--practitioner:jodi",
+        "source_id": "artwork:all wrongs reversed 1982",
+        "target_id": "practitioner:jodi",
+        "edge_type": "CREATED_BY",
+        "confidence": "high",
+        "signal_id": "wikidata-named-anchors-2026-04-28",
+        "created_by": "gatherer-wikidata-named-anchors",
+        "source_evidence": "Wikidata Q132199156 P170 (creator) = Q2915356",
+        "charge": null,
+        "created_at": "2026-04-28T00:00:00Z",
+        "valid_from": "2026-04-28T00:00:00Z",
+        "valid_until": null,
+        "invalidated_by": null,
+        "event_time": null
+      },
+      {
+        "id": "artwork:zyx--created_by--practitioner:jodi",
+        "source_id": "artwork:zyx",
+        "target_id": "practitioner:jodi",
+        "edge_type": "CREATED_BY",
+        "confidence": "high",
+        "signal_id": "wikidata-named-anchors-2026-04-28",
+        "created_by": "gatherer-wikidata-named-anchors",
+        "source_evidence": "Wikidata Q132200275 P170 (creator) = Q2915356",
+        "charge": null,
+        "created_at": "2026-04-28T00:00:00Z",
+        "valid_from": "2026-04-28T00:00:00Z",
+        "valid_until": null,
+        "invalidated_by": null,
+        "event_time": null
+      },
+      {
+        "id": "practitioner:jodi--classified_by--classification_regime:a(dai) seed canon v1 (april 2026)",
+        "source_id": "practitioner:jodi",
+        "target_id": "classification_regime:a(dai) seed canon v1 (april 2026)",
+        "edge_type": "CLASSIFIED_BY",
+        "confidence": "high",
+        "signal_id": "wikidata-named-anchors-2026-04-28",
+        "created_by": "gatherer-wikidata-named-anchors",
+        "source_evidence": "Editorial: named-anchor inclusion in A(DAI) seed canon v1",
+        "charge": null,
+        "created_at": "2026-04-28T00:00:00Z",
+        "valid_from": "2026-04-28T00:00:00Z",
+        "valid_until": null,
+        "invalidated_by": null,
+        "event_time": null
+      },
+      {
+        "id": "practitioner:eva and franco mattes--classified_by--classification_regime:a(dai) seed canon v1 (april 2026)",
+        "source_id": "practitioner:eva and franco mattes",
+        "target_id": "classification_regime:a(dai) seed canon v1 (april 2026)",
+        "edge_type": "CLASSIFIED_BY",
+        "confidence": "high",
+        "signal_id": "wikidata-named-anchors-2026-04-28",
+        "created_by": "gatherer-wikidata-named-anchors",
+        "source_evidence": "Editorial: named-anchor inclusion in A(DAI) seed canon v1",
+        "charge": null,
+        "created_at": "2026-04-28T00:00:00Z",
+        "valid_from": "2026-04-28T00:00:00Z",
+        "valid_until": null,
+        "invalidated_by": null,
+        "event_time": null
+      },
+      {
+        "id": "practitioner:vns matrix--classified_by--classification_regime:a(dai) seed canon v1 (april 2026)",
+        "source_id": "practitioner:vns matrix",
+        "target_id": "classification_regime:a(dai) seed canon v1 (april 2026)",
+        "edge_type": "CLASSIFIED_BY",
+        "confidence": "high",
+        "signal_id": "wikidata-named-anchors-2026-04-28",
+        "created_by": "gatherer-wikidata-named-anchors",
+        "source_evidence": "Editorial: named-anchor inclusion in A(DAI) seed canon v1",
+        "charge": null,
+        "created_at": "2026-04-28T00:00:00Z",
+        "valid_from": "2026-04-28T00:00:00Z",
+        "valid_until": null,
+        "invalidated_by": null,
+        "event_time": null
+      },
+      {
+        "id": "practitioner:rafaël rozendaal--classified_by--classification_regime:a(dai) seed canon v1 (april 2026)",
+        "source_id": "practitioner:rafaël rozendaal",
+        "target_id": "classification_regime:a(dai) seed canon v1 (april 2026)",
+        "edge_type": "CLASSIFIED_BY",
+        "confidence": "high",
+        "signal_id": "wikidata-named-anchors-2026-04-28",
+        "created_by": "gatherer-wikidata-named-anchors",
+        "source_evidence": "Editorial: named-anchor inclusion in A(DAI) seed canon v1",
+        "charge": null,
+        "created_at": "2026-04-28T00:00:00Z",
+        "valid_from": "2026-04-28T00:00:00Z",
+        "valid_until": null,
+        "invalidated_by": null,
+        "event_time": null
+      },
+      {
+        "id": "practitioner:shu lea cheang--classified_by--classification_regime:a(dai) seed canon v1 (april 2026)",
+        "source_id": "practitioner:shu lea cheang",
+        "target_id": "classification_regime:a(dai) seed canon v1 (april 2026)",
+        "edge_type": "CLASSIFIED_BY",
+        "confidence": "high",
+        "signal_id": "wikidata-named-anchors-2026-04-28",
+        "created_by": "gatherer-wikidata-named-anchors",
+        "source_evidence": "Editorial: named-anchor inclusion in A(DAI) seed canon v1",
+        "charge": null,
+        "created_at": "2026-04-28T00:00:00Z",
+        "valid_from": "2026-04-28T00:00:00Z",
+        "valid_until": null,
+        "invalidated_by": null,
+        "event_time": null
+      },
+      {
+        "id": "practitioner:coco fusco--classified_by--classification_regime:a(dai) seed canon v1 (april 2026)",
+        "source_id": "practitioner:coco fusco",
+        "target_id": "classification_regime:a(dai) seed canon v1 (april 2026)",
+        "edge_type": "CLASSIFIED_BY",
+        "confidence": "high",
+        "signal_id": "wikidata-named-anchors-2026-04-28",
+        "created_by": "gatherer-wikidata-named-anchors",
+        "source_evidence": "Editorial: named-anchor inclusion in A(DAI) seed canon v1",
+        "charge": null,
+        "created_at": "2026-04-28T00:00:00Z",
+        "valid_from": "2026-04-28T00:00:00Z",
+        "valid_until": null,
+        "invalidated_by": null,
+        "event_time": null
+      },
+      {
+        "id": "practitioner:rosa menkman--classified_by--classification_regime:a(dai) seed canon v1 (april 2026)",
+        "source_id": "practitioner:rosa menkman",
+        "target_id": "classification_regime:a(dai) seed canon v1 (april 2026)",
+        "edge_type": "CLASSIFIED_BY",
+        "confidence": "high",
+        "signal_id": "wikidata-named-anchors-2026-04-28",
+        "created_by": "gatherer-wikidata-named-anchors",
+        "source_evidence": "Editorial: named-anchor inclusion in A(DAI) seed canon v1",
+        "charge": null,
+        "created_at": "2026-04-28T00:00:00Z",
+        "valid_from": "2026-04-28T00:00:00Z",
+        "valid_until": null,
+        "invalidated_by": null,
+        "event_time": null
+      },
+      {
+        "id": "practitioner:stephanie dinkins--classified_by--classification_regime:a(dai) seed canon v1 (april 2026)",
+        "source_id": "practitioner:stephanie dinkins",
+        "target_id": "classification_regime:a(dai) seed canon v1 (april 2026)",
+        "edge_type": "CLASSIFIED_BY",
+        "confidence": "high",
+        "signal_id": "wikidata-named-anchors-2026-04-28",
+        "created_by": "gatherer-wikidata-named-anchors",
+        "source_evidence": "Editorial: named-anchor inclusion in A(DAI) seed canon v1",
+        "charge": null,
+        "created_at": "2026-04-28T00:00:00Z",
+        "valid_from": "2026-04-28T00:00:00Z",
+        "valid_until": null,
+        "invalidated_by": null,
+        "event_time": null
+      },
+      {
+        "id": "practitioner:john gerrard--classified_by--classification_regime:a(dai) seed canon v1 (april 2026)",
+        "source_id": "practitioner:john gerrard",
+        "target_id": "classification_regime:a(dai) seed canon v1 (april 2026)",
+        "edge_type": "CLASSIFIED_BY",
+        "confidence": "high",
+        "signal_id": "wikidata-named-anchors-2026-04-28",
+        "created_by": "gatherer-wikidata-named-anchors",
+        "source_evidence": "Editorial: named-anchor inclusion in A(DAI) seed canon v1",
+        "charge": null,
+        "created_at": "2026-04-28T00:00:00Z",
+        "valid_from": "2026-04-28T00:00:00Z",
+        "valid_until": null,
+        "invalidated_by": null,
+        "event_time": null
+      },
+      {
+        "id": "practitioner:maurice benayoun--classified_by--classification_regime:a(dai) seed canon v1 (april 2026)",
+        "source_id": "practitioner:maurice benayoun",
+        "target_id": "classification_regime:a(dai) seed canon v1 (april 2026)",
+        "edge_type": "CLASSIFIED_BY",
+        "confidence": "high",
+        "signal_id": "wikidata-named-anchors-2026-04-28",
+        "created_by": "gatherer-wikidata-named-anchors",
+        "source_evidence": "Editorial: named-anchor inclusion in A(DAI) seed canon v1",
+        "charge": null,
+        "created_at": "2026-04-28T00:00:00Z",
+        "valid_from": "2026-04-28T00:00:00Z",
+        "valid_until": null,
+        "invalidated_by": null,
+        "event_time": null
+      },
+      {
+        "id": "practitioner:friedrich kittler--classified_by--classification_regime:a(dai) seed canon v1 (april 2026)",
+        "source_id": "practitioner:friedrich kittler",
+        "target_id": "classification_regime:a(dai) seed canon v1 (april 2026)",
+        "edge_type": "CLASSIFIED_BY",
+        "confidence": "high",
+        "signal_id": "wikidata-named-anchors-2026-04-28",
+        "created_by": "gatherer-wikidata-named-anchors",
+        "source_evidence": "Editorial: named-anchor inclusion in A(DAI) seed canon v1",
+        "charge": null,
+        "created_at": "2026-04-28T00:00:00Z",
+        "valid_from": "2026-04-28T00:00:00Z",
+        "valid_until": null,
+        "invalidated_by": null,
+        "event_time": null
+      },
+      {
+        "id": "practitioner:vilém flusser--classified_by--classification_regime:a(dai) seed canon v1 (april 2026)",
+        "source_id": "practitioner:vilém flusser",
+        "target_id": "classification_regime:a(dai) seed canon v1 (april 2026)",
+        "edge_type": "CLASSIFIED_BY",
+        "confidence": "high",
+        "signal_id": "wikidata-named-anchors-2026-04-28",
+        "created_by": "gatherer-wikidata-named-anchors",
+        "source_evidence": "Editorial: named-anchor inclusion in A(DAI) seed canon v1",
+        "charge": null,
+        "created_at": "2026-04-28T00:00:00Z",
+        "valid_from": "2026-04-28T00:00:00Z",
+        "valid_until": null,
+        "invalidated_by": null,
+        "event_time": null
+      }
+    ]
+  }
+}

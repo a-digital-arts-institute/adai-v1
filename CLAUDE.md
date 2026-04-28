@@ -20,7 +20,7 @@ src/
     api.ts                — JSON API route handlers
 db.sql                    — CR-SQLite schema (CRR tables + local tables)
 seed/                     — canonical seed data (nodes/edges/signals/contributors/aliases JSON)
-  _build/                 — offline Python pipeline that regenerates seed/*.json from upstream sources
+  _build/                 — offline Python pipeline (fetch_moma_csv, fetch_wikidata_artworks/portraits, fetch_fxhash, fetch_artblocks, fetch_met_openaccess + normalisation/dedup tasks); regenerates seed/*.json
 results/                  — 59 legacy per-practitioner research JSONs (kept for reference)
   _drafts/                — bridge practitioners, classification-lens drafts, artwork previews
 pipeline/                 — offline Python scripts (clean_artworks, embed, snapshot)
@@ -62,13 +62,13 @@ Single SQLite file `adai.db` with CR-SQLite CRDT extensions (`@shards-lang/crsql
 - `intake_queue` — contribution review pipeline (pending/approved/rejected)
 - `settings` — key-value config
 
-**Node types**: practitioner, artwork, concept, scene, related, collective, institution, platform, publication, project, event, `classification_regime` (one per ingesting source; makes how an institution/market/platform classifies visible as a structural actor)
+**Node types** — live in Seed Canon v1 (1,007 nodes total): artwork (399), concept (318), institution (121), practitioner (117), scene (25), collective (8), platform (8), `classification_regime` (6 — one per ingesting source; makes how an institution/market/platform classifies visible as a structural actor), publication (3), project (2). Schema also reserves `event` and `related` but neither has rows yet.
 
-**Edge types**: PRACTICES, BELONGS_TO, RELATED_TO, COLLABORATES_WITH, CREATED_BY, EXHIBITED_AT, CLASSIFIED_BY (any node → classification_regime that actively positioned it), LEGIBLE_TO (any node → classification_regime that could see it)
+**Edge types** — 9 live in seed (2,486 edges total): EMBODIES (621), PRACTICES (461), CREATED_BY (405), EXHIBITED_AT (300), CLASSIFIED_BY (283 — any node → classification_regime that actively positioned it), COLLABORATES_WITH (183), BELONGS_TO (154), USES_TECHNIQUE (75), INFLUENCES (4). The canonical edge-type list lives in [seed/SOURCES.md](seed/SOURCES.md), which adds one intentionally empty edge: **RESPONDS_TO** (artwork → artwork) — left at zero because it requires evidence of artist intent (statements, interviews, practitioner contribution), not thematic similarity. It's the highest-value edge type for Basel-floor practitioner contributions. `db.sql` has no CHECK constraint on `edge_type` — `RELATED_TO` is used by the legacy `seed.ts` path but is not in the canonical seed. When adding rows, prefer the existing 9 unless the relation is genuinely new, and update these counts rather than letting them drift.
 
 **Trust tiers**: `auto` (founding team + practitioner self-report on own data — auto-merge), `reviewed` (established track record — auto-merge + tagged), `probationary` (default for new contributors — queued for review). The auto-approve check in `POST /api/contribute` treats `auto` and `reviewed` as auto-merge; everyone else goes to the review queue.
 
-**A(DAI) absolute-root regime**: `classification_regime:a(dai) seed canon v1 (april 2026)` (slug `adai-seed-canon-v1-2026-04`) is the umbrella lens. Canonical entities declare `CLASSIFIED_BY → classification_regime:a(dai) seed canon v1 (april 2026)` — these edges are authored in `seed/edges.json`, not auto-injected. The earlier auto-injecting loop (removed in the 2026-04-22 enrichment, Task 0e) caused a 483-edge explosion that hid the real relational structure; don't reintroduce it. Renders gold in `/graph`.
+**A(DAI) canonical regime**: `classification_regime:a(dai) seed canon v1 (april 2026)` (slug `adai-seed-canon-v1-2026-04`) is the single canonical lens. Canonical entities declare `CLASSIFIED_BY → classification_regime:a(dai) seed canon v1 (april 2026)` — these edges are authored in `seed/edges.json`, not auto-injected. 295 CLASSIFIED_BY edges point to it (12 of those came from the April 28 named-anchors pass). The earlier `classification_regime:a(dai)` root (which produced a 483-edge explosion that centred the graph on itself) was retired and its auto-injecting loop in `src/seed-consolidated.ts` was disabled — see the comment block around line 184. Do not reintroduce the auto-injection. Five sub-regimes also exist (`academic media-art history`, `asia-pacific institutional`, `crypto market-native`, `euro-american institutional`, `practitioner self-report`) for cross-source classification. Renders gold in `/graph`.
 
 ### Querying rules
 
@@ -125,11 +125,11 @@ The Dockerfile is multi-stage: the builder runs `npm run seed:consolidated` and 
 
 ### Canonical path — `seed/*.json` via `seed-consolidated.ts`
 
-The flat JSON files in `seed/` map 1:1 to schema rows (nodes, edges, signals, contributors, node_aliases). `seed/_build/` contains the offline Python pipeline that regenerates them from MoMA CSV, Met OpenAccess, Wikidata SPARQL, and the Artblocks Hasura API. See `seed/README.md`, `seed/SOURCES.md`, `seed/COVERAGE.md` for methodology and gaps.
+The flat JSON files in `seed/` map 1:1 to schema rows (nodes, edges, signals, contributors, node_aliases). `seed/_build/` contains the offline Python pipeline that regenerates them from upstream sources. As of the Apr 21–22 run: MoMA CSV (image patches merged + 89 KB of net-new artworks staged in `moma_new_artworks.json`, merge into `nodes.json` not yet verified), Wikidata SPARQL (60 aliases merged into `seed/aliases.json`, 35 portrait patches merged; the artwork query returned empty), Art Blocks Hasura (image patches merged), fxhash GraphQL (9.4 KB of net-new artworks staged in `fxhash_new_artworks.json`, image patches returned empty), and Met OpenAccess (returned empty — no data produced). See `seed/README.md`, `seed/SOURCES.md`, `seed/COVERAGE.md` for methodology and gaps.
 
-ID convention: `<type>:<name>` with spaces preserved and lowercase (e.g. `practitioner:casey reas`, `artwork:fidenza`, `classification_regime:a(dai)`). The `slug` field is the kebab-case URL-safe form.
+ID convention: `<type>:<name>` with spaces preserved and lowercase (e.g. `practitioner:casey reas`, `artwork:fidenza`, `classification_regime:a(dai) seed canon v1 (april 2026)`). The `slug` field is the kebab-case URL-safe form.
 
-Seed signals: `signal:seed-taxonomy-2026-04` (full commons, attributed, human_secondary) for the taxonomy consolidation; `signal:artblocks-api-2026-04` for API-ingested artwork drafts; `signal:adai-root-2026-04-21` for the A(DAI) root bootstrap. The migration contributor (`contributor:migration`) is trust tier `reviewed` — meaning contributions attributed to it auto-approve.
+Seed signals (currently 2 in `seed/signals.json`): `signal:seed-taxonomy-2026-04` (full commons, attributed, human_secondary, status `active`) for the taxonomy consolidation; `signal:artblocks-api-2026-04` (source_origin `api`, status `processed`) for API-ingested artwork drafts. The earlier `signal:adai-root-2026-04-21` was removed when the A(DAI) root regime was retired in Task 0e. The migration contributor (`contributor:migration`) is trust tier `reviewed` — meaning contributions attributed to it auto-approve.
 
 Node status in metadata: `confirmed` (vetted), `bridge` (partial research — Harold Cohen, Lillian Schwartz, Prema Murthy, Waldemar Cordeiro), `draft` (new entries and auto-generated stubs from collaborator/concept references).
 

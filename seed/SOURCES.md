@@ -4,7 +4,7 @@
 
 This file documents how the A(DAI) seed canon was assembled — the selection criteria, the sources consulted, the methodology applied, and the gaps acknowledged. It exists to make the canon's provenance transparent and its editorial decisions defensible.
 
-The seed canon is a starting point. It is *a* canon, not *the* canon — the indefinite article is load-bearing. Every entry carries a `status` field (`confirmed`, `draft`, or `bridge`) to track editorial confidence. Every category is a versioned hypothesis, not a permanent claim. The graph will reveal whether the categories hold up, need splitting, merging, or replacing as practitioner knowledge enters the system.
+The seed canon is a starting point. It is *a* canon, not *the* canon — the indefinite article is load-bearing. Every entry carries a `source_origin` field (`human_secondary` or `ai_assisted`) to track how the profile was produced. Every category is a versioned hypothesis, not a permanent claim. The graph will reveal whether the categories hold up, need splitting, merging, or replacing as practitioner knowledge enters the system. When practitioners contribute their own profiles, those enter at `human_primary` — the highest trust level — and supersede any existing profile.
 
 ---
 
@@ -37,7 +37,7 @@ The 12 categories used in this pass:
 
 ### 2. Source convergence (with declared bias)
 
-Practitioners in the `confirmed` tier appear across multiple independent field sources. This guards against the selection reflecting any single editorial voice. Practitioners in the `draft` tier may enter on a single source if they fill a documented practice or source-coverage gap — and their single-source status is visible in their `status` field.
+Practitioners in the `confirmed` tier appear across multiple independent field sources. This guards against the selection reflecting any single editorial voice. Practitioners may enter on a single source if they fill a documented practice or source-coverage gap — and their single-source status is visible in provenance metadata.
 
 **Bias declaration.** The sources consulted for this seed share an English-language, Euro-American, market-adjacent orientation. Source convergence within this set confirms visibility to these specific networks, not field significance universally. Practitioners significant to scenes our sources cannot see — non-English-speaking communities, non-institutional practices, emerging scenes without editorial coverage — require different evidence: practitioner testimony, scene-level knowledge, or signals from sources listed in `sources.yaml` that have not yet been ingested.
 
@@ -47,7 +47,7 @@ A(DAI)'s principle #6 says the system watches for what's forming, not what's alr
 
 Practitioners who built tools, platforms, or frameworks that other practitioners use are included regardless of other criteria. They are load-bearing nodes in the graph — remove them and entire regions of the field lose their connective tissue.
 
-Examples: Casey Reas and Ben Fry (Processing), Zach Lieberman (openFrameworks), Snowfro (Art Blocks), Kevin McCoy (first NFT), Olia Lialina (web preservation). These are not just artists; they are infrastructure that made other artists' work possible. This is a deliberate exception to other criteria — a tool-builder who doesn't meet the source convergence threshold still belongs in the seed because their structural role is self-evident.
+Examples: Casey Reas and Ben Fry (Processing), Zach Lieberman (openFrameworks), Snowfro (Art Blocks), Kevin McCoy (first NFT), Olia Lialina (web preservation), Mark Tribe (founded Rhizome), Ken Perlin (Perlin noise). These are not just artists; they are infrastructure that made other artists' work possible. This is a deliberate exception to other criteria — a tool-builder who doesn't meet the source convergence threshold still belongs in the seed because their structural role is self-evident.
 
 ### 4. Relational significance
 
@@ -61,7 +61,7 @@ This criterion is deliberately framed as *articulable relationships*, not as con
 
 The seed must draw from sources and scenes across world regions, not only the Euro-American institutional circuit. The gap being measured is in what the graph can *sense* — which sources it draws from, which scenes it has visibility into, which institutional edges it can trace — not in the demographic composition of its practitioner list.
 
-Practitioners are not classified by geography. Where a practitioner was born, where they live, where they work, and where their practice is epistemologically rooted may be four different places. The graph tracks scenes and institutional affiliations as edges, not as properties of people. Source-coverage gaps are documented as deficiencies in what the graph can sense, not as demographic gaps in who it contains.
+Practitioners are not classified by geography or demographic categories. Where a practitioner was born, where they live, where they work, and where their practice is epistemologically rooted may be four different places. The graph tracks scenes and institutional affiliations as edges, not as properties of people. Scene names describe practices and intellectual traditions, not identities. Source-coverage gaps are documented as deficiencies in what the graph can sense, not as demographic gaps in who it contains.
 
 The current seed draws primarily from English-language, Euro-American sources. This is a documented deficiency in source coverage. Subsequent ingestion passes will draw from the non-Western sources listed in `sources.yaml` (Asia Art Archive, ARTLINKART, FILE Festival, NTT ICC, Chronus Art Center, African Digital Art Network, Sharjah Art Foundation, and others) to expand what the graph can sense.
 
@@ -85,16 +85,47 @@ The seed was assembled through a multi-source cross-referencing process, not dra
 The 12 categories were identified by surveying how multiple independent sources partition the digital art field. The ADIN taxonomy, Right Click Save editorial coverage, Rhizome ArtBase archive structure, Art Basel editorial framing, Sotheby's historical overview, and the Ostachowski chronology all converge on substantially similar categories — early computer art, net art, generative/code art, crypto/NFT art, AI art, immersive/installation, game art, and glitch art appear across all of them, with variation at the edges. The 12-category structure used here represents the union of those sources, held as a hypothesis.
 
 **Step 2 — Populate from original research.**
-59 practitioners from A(DAI)'s own deep research (2025–2026) were assigned to categories. These form the `confirmed` tier. Each has a detailed profile covering practice, key works, institutional presence, commons orientation, and relevance to the knowledge graph.
+45 practitioners from A(DAI)'s own deep research (2025–2026) were the founding editorial pass. Each has a detailed profile covering practice, methodology, key works, institutional presence, commons orientation, and governance model. Source origin: `human_secondary`.
 
 **Step 3 — Cross-reference against external sources.**
-The ADIN taxonomy, Right Click Save A-Z, Rhizome ArtBase, Ostachowski chronology, Art Basel and Sotheby's overviews were cross-referenced to identify practitioners with field-wide significance who were absent from the confirmed set. 45 practitioners were added at `draft` status. 3 additional practitioners (Ben Fry, Jesse Kanda, Golan Levin) were added to close specific gaps identified through cross-referencing.
+The ADIN taxonomy, Right Click Save A-Z, Rhizome ArtBase, Ostachowski chronology, Art Basel and Sotheby's overviews were cross-referenced to identify practitioners with field-wide significance who were absent from the confirmed set. 42 practitioners were added to close specific gaps identified through cross-referencing.
 
 **Step 4 — Apply selection criteria.**
-Every entry was evaluated against the six criteria. Practitioners who met only the market/hype criterion without relational significance were excluded. Practitioners who filled practice breadth or source-coverage gaps were included even on single-source evidence, with their status reflecting the lower confidence.
+Every entry was evaluated against the six criteria. Practitioners who met only the market/hype criterion without relational significance were excluded. Practitioners who filled practice breadth or source-coverage gaps were included even on single-source evidence.
 
 **Step 5 — Document gaps.**
 Categories with thin coverage, source-coverage blind spots, and missing artwork data are documented in `COVERAGE.md` and the Known Gaps section of this file. Gaps are editorial agenda items for subsequent ingestion passes, not hidden deficiencies.
+
+**Step 6 — Enrichment pass (April 22, 2026).**
+All practitioner profiles were normalised to a consistent structure. The 42 cross-referenced practitioners were deepened to full editorial depth — practice summary, methodology, key works with paragraph descriptions, exhibition history, scene affiliation, collaborators with typed relationships, commons orientation, and governance. Source origin: `ai_assisted` (generated by Claude from training knowledge and structured data, reviewed by a human editor). Additionally, 29 auto-generated stub nodes that were real practitioners (Lev Manovich, Georg Nees, Carsten Nicolai, Golan Levin, Trevor Paglen, LaTurbo Avedon, Lu Yang, Ana María Caballero, Eduardo Kac, Stelarc, and others) were promoted to full profiles, filling documented gaps in pioneers, sound art, non-Western coverage, net art, and bio-digital practice.
+
+The enrichment pass also:
+- Extracted 300 EXHIBITED_AT edges from practitioner exhibition histories, creating 121 institution nodes
+- Reclassified polluted COLLABORATES_WITH edges into proper types (EXHIBITED_AT, INFLUENCES, BELONGS_TO)
+- Added 621 EMBODIES edges connecting artworks to concepts (what works are *about*, not just what techniques they use)
+- Created 26 scene nodes with 155 BELONGS_TO edges, grounded against SOURCES.md categories and `sources.yaml` traditions
+- Merged two classification regimes into one: `A(DAI) Seed Canon v1 (April 2026)`
+- Ingested 58 new artworks with CC0 images from MoMA Collection CSV and 8 from fxhash API
+- Added 35 practitioner portraits from Wikidata P18
+
+All enrichment edges are marked `confidence: "medium"` and documented in `seed/enrichment-trace.json`. The EMBODIES edges were produced by heuristic keyword matching, not per-artwork editorial reading. The 564 heuristic EMBODIES were always editorial scaffolding; they were superseded in Step 7 below.
+
+**Step 7 — Real-source pass (April 28, 2026).**
+The April 22 heuristic-keyword EMBODIES were replaced with source-attested edges from public APIs and linked-open-data:
+
+- `gatherer-objkt-tags-v3` — objkt.com Hasura GraphQL: 975 EMBODIES + 179 CREATED_BY edges from artist-applied tags across NFT tokens.
+- `gatherer-fxhash-tags-v3` — fxhash GraphQL: 37 EMBODIES from artist-set tags on generative tokens.
+- `gatherer-wikidata-v3b` — Wikidata SPARQL (P170 → P180/P136): 23 EMBODIES + 82 CREATED_BY from depicts/genre statements.
+- `gatherer-moma-digital-v3` — MoMA Artworks.csv filtered to digital department: 27 USES_TECHNIQUE + 26 CREATED_BY.
+- `gatherer-rhizome-artbase-v1` — Rhizome ArtBase SPARQL: 49 CREATED_BY for net.art works. Practitioner reconciliation used name-normalised exact equality (NFKD + diacritic-strip + lowercase + alphanumerics-only); explicitly NOT substring matching, the failure mode that produced the "Beeple Fan" false-match in earlier passes.
+- `gatherer-paul-canon-v1` — Wikidata pull keyed on Christiane Paul's *Digital Art* practitioner index: 22 new practitioners + 5 missing scenes (bio art and artificial life, telematic art, virtual environments, locative and mobile art, software art) + 31 BELONGS_TO edges.
+
+Net effect on the graph: −564 heuristic EMBODIES, +1,442 source-attested edges, +21 image-bearing artworks (artwork image coverage went from 23% to 46%). Each contributing signal carries `consent_scope: "public"` (data was already publicly licensed) and is recorded in `signals.json` with the source URL, method, and edge counts.
+
+**Step 8 — Named-anchors pass (April 28, 2026).**
+A hand-curated 12-entry pass closed specific canonical-figure gaps surfaced during Step 7 review: JODI, Eva & Franco Mattes, VNS Matrix, Rafaël Rozendaal, Shu Lea Cheang, Coco Fusco, Rosa Menkman, Stephanie Dinkins, John Gerrard, Maurice Benayoun (10 practitioners) plus theorist-anchor stubs Friedrich Kittler and Vilém Flusser. `gatherer-wikidata-named-anchors` verified each QID first, then queried P170 for artworks and P135/P136 for movement/genre. Adds 12 practitioners + 9 artworks + 3 concepts + 27 edges.
+
+The two registries — `signals.json` (12 records, every ingest batch) and `contributors.json` (10 records, every staking agent) — close: every `signal_id` and every `created_by`/`updated_by` reference resolves to a real record, and every record is referenced. This is the provenance trail.
 
 ---
 
@@ -102,13 +133,15 @@ Categories with thin coverage, source-coverage blind spots, and missing artwork 
 
 Artworks are the gravitational centre of the A(DAI) graph. Their selection follows from the practitioner criteria rather than requiring a parallel framework — an artwork enters the seed because of the practitioner whose work it represents and the role it plays in the field.
 
-Artworks enter through two paths:
+Artworks enter through three paths:
 
-**Key works from practitioner research.** The `key_works` field in each confirmed practitioner profile identifies the works the A(DAI) team assessed as most significant to that practitioner's position in the field. This is the founding team's informed editorial position, drawn from publicly available documentation and the team's own field knowledge. It is declared bias — which is what principle #1 asks for. It becomes higher-quality data when practitioners enter the system and confirm, contest, or expand their own profiles.
+**Key works from practitioner research.** The `key_works` field in each practitioner profile identifies the works the A(DAI) team assessed as most significant to that practitioner's position in the field. This is the founding team's informed editorial position, drawn from publicly available documentation and the team's own field knowledge. It is declared bias — which is what principle #1 asks for. It becomes higher-quality data when practitioners enter the system and confirm, contest, or expand their own profiles.
 
-**Works referenced across sources.** Artworks explicitly named in the cross-referenced sources — Fidenza, Ringers, AARON, "My Boyfriend Came Back from the War", Holly+, "Quantum", "Digital Zones of Immaterial Pictorial Sensibility" — enter because their field-inflection role is independently documented. These are works that changed what was possible or thinkable in their category: AARON opened machine authorship decades early, Quantum created the NFT category, Fidenza demonstrated that algorithmic systems could carry emotional weight.
+**Works referenced across sources.** Artworks explicitly named in the cross-referenced sources — Fidenza, Ringers, AARON, "My Boyfriend Came Back from the War", Holly+, "Quantum", "Digital Zones of Immaterial Pictorial Sensibility" — enter because their field-inflection role is independently documented. These are works that changed what was possible or thinkable in their category.
 
-Current seed: 254 artwork nodes, 21 with images (all from Art Blocks).
+**Institutional collection data.** Artworks ingested from Tier 1 licensed sources — MoMA Collection CSV (CC0), Art Blocks Hasura API, fxhash API — enter with institutional provenance and, where available, images. Source origin: `human_secondary`.
+
+Current seed: 728 artwork nodes, 335 with images (46%) — sources include MoMA, Art Blocks, fxhash, Wikidata P18 + depicts, objkt thumbnails, and the Rhizome ArtBase pass.
 
 ---
 
@@ -120,9 +153,9 @@ The selection criteria require practice breadth, source convergence, and source 
 
 **Ingestion is deterministic and cost-controlled.** Raw data enters through parsers for structured sources (APIs, datasets, SPARQL endpoints). No agent runs at ingestion. Agent-assisted classification, concept linking, and edge typing happen post-ingestion as a deliberate batch operation, controlled for cost and reviewed before merge.
 
-This means the seed draws first from sources that offer structured, queryable data with clear licensing — what we call Tier A. Sources that require custom HTML parsing — institutional archive pages with consistent but non-API structure — form Tier B. Both tiers enter through deterministic ingestion with full provenance.
+This means the seed draws first from sources that offer structured, queryable data with clear licensing — what we call Tier 1. Sources that require institutional outreach and explicit permission form Tier 2. No scraping.
 
-### Tier A — API and structured dataset sources
+### Tier 1 — API and licensed sources (used in this seed pass)
 
 These have queryable endpoints. Parsers exist or are trivial to write.
 
@@ -135,18 +168,26 @@ These have queryable endpoints. Parsers exist or are trivial to write.
 | fxhash API | Tezos generative artwork data | Platform data | Generative |
 | Rhizome ArtBase SPARQL | Net art metadata (2,200+ works) | Open access | Net Art, Glitch |
 
-### Tier B — Institutional archive sources requiring custom parsers
+### Tier 2 — Institutional partnerships (future work, no scraping)
 
-Data exists as structured HTML on institutional pages — consistent formats with title, artist, date, description. Requires a parser per source, but each parser is a bounded task. These are published institutional records intended for public reference.
+Sources with important practitioner and artwork data that do not offer public APIs. Rather than scraping their websites, A(DAI) will reach out to these institutions directly, request data access or partnership, and ingest only with explicit permission. This is both an ethical position and a strategic one — it builds real relationships with the institutions whose knowledge A(DAI) depends on, and it makes A(DAI)'s data provenance defensible.
 
 | Source | What it provides | Categories it fills |
 |---|---|---|
-| e-flux | Exhibition records, journal articles | Installation, Video, Post-Internet |
-| ZKM | 8,000+ artworks, largest computer art collection | Pioneers, Installation, Generative |
-| CAN (Creative Applications Network) | 4,000+ curated projects | Generative, AI, Robotic |
-| ADA (Archive of Digital Art) | 650 artist profiles, 3,000 artworks | Installation, AI, Robotic |
 | Ars Electronica | 173,900+ archive entries since 1987 | Performance, Installation, Robotic |
+| ZKM | 8,000+ artworks, largest computer art collection | Pioneers, Installation, Generative |
+| ELMCIP | Electronic literature and digital writing | Writing, Net Art |
+| ADA (Archive of Digital Art) | 650 artist profiles, 3,000 artworks | Installation, AI, Robotic |
 | ISEA Archives | 21,000+ cross-referenced entries | All |
+| e-flux | Exhibition records, journal articles | Installation, Video, Post-Internet |
+| CAN (Creative Applications Network) | 4,000+ curated projects | Generative, AI, Robotic |
+| Asia Art Archive | Non-Western digital arts documentation | Non-Western coverage |
+| ARTLINKART | Chinese contemporary art documentation | Non-Western coverage |
+| Chronus Art Center | Chinese new media art | Non-Western coverage |
+| FILE Festival | Brazilian electronic arts | Non-Western coverage |
+| NTT ICC | Japanese media art | Non-Western coverage |
+| African Digital Art Network | African digital arts | Non-Western coverage |
+| Sharjah Art Foundation | Middle Eastern digital arts | Non-Western coverage |
 
 ### Why not scrape everything
 
@@ -154,13 +195,13 @@ The broader digital art field is documented across gallery websites, institution
 
 **Consent.** A(DAI)'s signal pipeline requires source origin typing and provenance tracking on every signal. Scraping a gallery's exhibition page for artwork metadata produces `human_secondary` data that enters through the merge boundary — legitimate, but it needs review, attribution, and a consent pathway back to the source. A curator writing a wall text for an exhibition didn't consent to that text becoming a training signal for how A(DAI) maps the field. A(DAI) distinguishes between data published for reference and data contributed for graph intelligence. The former enters as `human_secondary` through the merge boundary with review. The latter enters as `human_primary` with practitioner authority. The seed prioritises sources where the data was explicitly made available for reuse (CC0, open access APIs) because the consent pathway is unambiguous.
 
-**Intentionality.** A(DAI) does not optimise for volume. 254 artworks selected through a declared research process carry more graph intelligence than 10,000 artworks scraped without editorial judgment. The gatherer skill exists to do this work properly — scouting with declared bias, producing processing traces, flagging frontier signals. That infrastructure is designed for scale but the seed pass is about quality, not quantity. Scaling comes through the gatherer skill and the contribution pipeline, with the consent and provenance infrastructure in place.
+**Intentionality.** A(DAI) does not optimise for volume. 399 artworks selected through a declared research process carry more graph intelligence than 10,000 artworks scraped without editorial judgment. The gatherer skill exists to do this work properly — scouting with declared bias, producing processing traces, flagging frontier signals. That infrastructure is designed for scale but the seed pass is about quality, not quantity. Scaling comes through the gatherer skill and the contribution pipeline, with the consent and provenance infrastructure in place.
 
 ### The visibility gradient this creates
 
 Sources that have structured APIs tend to be institutional and Western — MoMA, Met, Wikidata, Art Blocks. Sources that *don't* have clean APIs are often the ones documenting non-Western practice, emerging scenes, and experimental work. "We only ingest from structured, licensed sources" sounds principled but in practice means "we ingest first from institutions wealthy enough to build APIs."
 
-This is a real bias and we name it rather than hide it. The visibility gradient is addressed in two ways: Tier B sources (e-flux, ZKM, ADA, CAN) extend coverage beyond the API-first set, and the non-Western sources listed in `sources.yaml` — Asia Art Archive, ARTLINKART, FILE Festival, NTT ICC, Chronus Art Center, African Digital Art Network, Sharjah Art Foundation — are the explicit agenda for subsequent ingestion passes.
+This is a real bias and we name it rather than hide it. The visibility gradient is addressed through Tier 2 institutional outreach — direct relationships with the archives and institutions whose knowledge the graph needs but whose data isn't API-accessible. The non-Western sources listed above are the explicit agenda for subsequent ingestion passes.
 
 ---
 
@@ -169,13 +210,20 @@ This is a real bias and we name it rather than hide it. The visibility gradient 
 ### Primary sources
 
 **A(DAI) original research (2025–2026)**
-Internal. 59 practitioner profiles produced by the A(DAI) team. Source of the `confirmed` tier.
+Internal. 45 practitioner profiles produced by the A(DAI) team. Source origin: `human_secondary`.
+
+**A(DAI) enrichment pass (April 22, 2026)**
+Internal. 70 practitioner profiles deepened or created by Claude from training knowledge and structured data. Source origin: `ai_assisted`. Reviewed by human editor. Documented in `seed/enrichment-trace.json`.
 
 **ADIN / Tribute Labs. "Digital Art Is the Art of Our Age." ADIN ONLINE (Substack), April 18, 2026.**
 https://adinonline.substack.com/p/digital-art-is-the-art-of-our-age
 12-category taxonomy naming ~50 unique practitioners with an evaluative framework. Published by ADIN, an AI-native venture platform operated by Tribute Labs (Aaron Wright). One of several sources informing category structure and draft-tier selections.
 
 ### Cross-reference and validation sources
+
+**Christiane Paul. *Digital Art.* Thames & Hudson World of Art series.**
+First edition 2003; updated editions 2008, 2015, 2023 (4th edition).
+The standard field-survey textbook — the most widely assigned introductory text on digital art in art-school curricula globally. Covers net art, software art, AI art, generative and algorithmic art, game art, virtual reality, bioart, and more across its ~300 illustrated pages. Paul is adjunct curator of digital art at the Whitney Museum and director of Artport (the Whitney's online exhibition platform). Practitioners named across successive editions of this text are the primary candidate set for the next ingestion pass — the book's cumulative index is the single best source for "who the field treats as canonical" across two decades of editorial revision. Note: Paul herself is a candidate for inclusion in the graph as an infrastructure practitioner (see Known Gaps).
 
 **Right Click Save. "A-Z of Digital Art 2026." January 2026.**
 https://www.rightclicksave.com/article/a-z-of-digital-art-2026-art-and-technology-a-to-z
@@ -193,6 +241,14 @@ Detailed timeline of crypto art milestones 2011–present.
 https://artblocks.io
 Generative art platform (est. 2020). Public Hasura GraphQL API. MCP server deployed March 2026.
 
+**MoMA Collection**
+https://github.com/MuseumofModernArt/collection
+CC0 dataset. 160,627 artworks. Used for artwork images and institutional crossover data.
+
+**fxhash**
+https://fxhash.xyz
+Tezos generative art platform. Public GraphQL API. Used for generative artwork data and images.
+
 **ArtGraph (Castellano, Digeno, Sansaro, Vessio, 2021–2022)**
 Artistic knowledge graph based on WikiArt + DBpedia (~135,000 resources). "Leveraging Knowledge Graphs and Deep Learning for automatic art analysis," Knowledge-Based Systems, 2022. Dataset: https://zenodo.org/records/6337958.
 
@@ -207,40 +263,97 @@ https://www.sothebys.com/en/articles/a-brief-history-of-nfts-and-digital-art
 
 ---
 
-## Current state (April 21, 2026)
+## Edge structure and design rationale
+
+The graph has 9 edge types. Some are dense, some are deliberately sparse, and some important edge types have zero edges. This is intentional.
+
+### What the seed produces honestly
+
+These edge types can be reliably extracted from editorial research, structured data, and AI-assisted profile deepening:
+
+| Edge type | Count | Direction | What it captures |
+|---|---|---|---|
+| EMBODIES | 621 | artwork → concept | What a work is *about* conceptually |
+| PRACTICES | 461 | practitioner → concept | What someone works *with* |
+| CREATED_BY | 339 | artwork → practitioner | Who made it |
+| EXHIBITED_AT | 300 | practitioner → institution | Where they've shown |
+| CLASSIFIED_BY | 283 | any → classification regime | Provenance: which research lens saw this node |
+| COLLABORATES_WITH | 183 | practitioner ↔ practitioner | Actual creative collaboration |
+| BELONGS_TO | 155 | practitioner → scene | Which community or practice tradition |
+| USES_TECHNIQUE | 75 | artwork → concept | What method/tool the work employs |
+| INFLUENCES | 4 | practitioner → practitioner | Who shaped whose practice |
+
+### What the seed intentionally leaves empty
+
+**RESPONDS_TO** (artwork → artwork) — zero edges. This edge says "this work directly references or responds to that work." These relationships are real and documented, but they require evidence of artist intent, not thematic similarity. That evidence lives in artist statements, exhibition texts, interviews, and practitioner knowledge — the intimate layer that comes from sensing conversations and practitioner contribution, not from editorial research or API data.
+
+**INFLUENCES** — only 4 edges. Influence is directional and claims something specific: this person's practice was shaped by that person's work. Making that claim from the outside, without the practitioner confirming it, is editorially risky. More will come from practitioner contributions.
+
+**CONTESTS / TENSION_WITH** — zero edges. Contestation and tension between practitioners or between artworks and concepts are the most editorially sensitive edges in the vocabulary. They require practitioner voice — you don't tell two artists they're in tension with each other, they tell you.
+
+### The logic
+
+The seed is structured so that everything the founding team can honestly claim is in the graph, and everything that requires practitioner voice is visibly absent. The gaps are not failures — they're invitations. The graph says: here's what we can see from our position. The RESPONDS_TO edges are empty because we're not the ones who should fill them. The INFLUENCES edges are sparse because we're not the ones who should claim them. The CONTESTS edges don't exist because we're not the ones who should name them.
+
+The seed is the provocation. The practitioner's response is the intelligence.
+
+---
+
+## Current state (April 28, 2026 — post real-source + named-anchors passes)
 
 | Metric | Value |
 |---|---|
-| Canonical practitioners | 87 (41 confirmed, 4 bridge, 42 draft) |
-| Total artworks | 254 |
-| Artworks with images | 21 (all Art Blocks) |
-| Total nodes | 738 |
-| Total edges | 1,327 |
-| Wikidata QIDs | 60 |
-| Validation | 0 errors, 0 warnings |
+| Confirmed practitioners | 141 |
+| Stub practitioners (INFLUENCES anchors) | 3 (Sol LeWitt, Gilbert Simondon, Augusto de Campos) |
+| Theorist-anchor stubs | 2 (Friedrich Kittler, Vilém Flusser) |
+| Total artworks | 728 |
+| Artworks with images | 335 (46%) |
+| Practitioners with portraits | 35 (Wikidata P18) |
+| Total nodes | 1,530 |
+| Total edges | 3,371 |
+| Edge types | 9 |
+| Institutions | 121 |
+| Scenes | 30 |
+| Concepts | 474 |
+| Classification regimes | 1 active + 5 placeholder |
+| Signals (provenance batches) | 12 |
+| Contributors (staking agents) | 10 — 1 script, 9 agents (gatherers) |
+| Source origins | human_secondary, ai_assisted, platform_api, webscrape — see `signals.json` |
 
 ---
 
 ## Known gaps
 
-1. **Source-coverage skew.** The seed draws primarily from English-language, Euro-American sources. This is a source-coverage deficiency, not an acceptable baseline. Subsequent ingestion passes will draw from non-Western sources listed in `sources.yaml`.
+1. **Source-coverage skew.** The seed draws primarily from English-language, Euro-American sources. This is a source-coverage deficiency, not an acceptable baseline. Subsequent ingestion passes will draw from non-Western sources listed in `sources.yaml`. Tier 1 API queries for non-Western practitioners (Wikidata SPARQL filtering by non-Euro-American nationality) have been drafted but not yet run.
 
-2. **fxhash/Tezos generative artists.** Iskra Velitchkova, Michaël Zancan, and others significant to the generative art field are absent because the primary sources skew toward Ethereum/Art Blocks.
+2. **fxhash/Tezos generative artists.** Partially addressed — 8 fxhash artworks ingested (Jonas Lund, Kim Asendorf). Iskra Velitchkova, Michaël Zancan, and others significant to the generative art field remain absent. fxhash API queries drafted for next pass.
 
-3. **Second-wave AI art.** Anna Ridler is in the confirmed set but Sasha Stiles and others who gained institutional prominence 2024–2025 are absent from the draft tier.
+3. **Second-wave AI art.** Post-2020 practitioners working with diffusion models and LLMs remain underrepresented. Wikidata queries drafted.
 
-4. **Pre-boom conceptual blockchain.** Sarah Meyohas ("BitchCoin", 2015) is historically significant to the crypto art lineage but absent. Rhea Myers is in the draft tier.
+4. **Pre-boom conceptual blockchain.** Rhea Myers and Kevin McCoy are now in the graph. Sarah Meyohas ("BitchCoin", 2015) remains absent. Wikidata-sourceable.
 
-5. **Artwork images.** 21 of 254 artworks have images (all Art Blocks). Institutional sources (Wikidata, MoMA, Met) are being run separately. The generative/crypto gap will persist until fxhash and additional Art Blocks passes.
+5. **Artwork images.** 335 of 728 artworks have images (46%) after the April 28 real-source pass. Coverage roughly tripled via objkt thumbnails, MoMA digital, Wikidata depicts, and fxhash tag art. Remaining gap requires Met Open Access API pass and Tier 2 institutional sourcing.
 
-6. **EXHIBITED_AT edges.** No institutional layer in the graph yet. Requires an institution dedup pass.
+6. **RESPONDS_TO edges.** Zero artwork-to-artwork edges. Intentionally empty — requires practitioner contribution. This is the highest-value edge type practitioners can add at Basel.
 
-7. **Uncategorized confirmed practitioners.** 30 of the confirmed practitioners predate the 12-category taxonomy and lack explicit category assignments. A retroactive categorization pass is needed.
+7. **INFLUENCES edges.** Only 4. Conservative by design — requires practitioner confirmation. Will grow through sensing conversations and contribution interface.
 
-8. **Thin categories.** Video Art Extended, Digital Installation, Speculative Practice, Web3/DAO Art, and Sound Art each have 1–2 explicit entries. The recategorization pass (gap #7) will partially address this.
+8. **Concept vocabulary overlap.** 318 concepts with significant overlap (18 AI variants, 16 installation variants, 11 generative variants). Diversity preserved intentionally for AI concepts; consolidation deferred for others.
+
+9. **Robotic/physical-computing and bio-digital traditions.** Stelarc and Eduardo Kac now in graph. Moon Ribas, Amy Karle absent. Wikidata-sourceable.
+
+10. **Sound art.** Boosted from 2 to 6 practitioners (Nicolai, Fell, Ablinger, Haswell, Xenakis, Amacher added). Target is 10+. Pan Daijing, AGF absent. Wikidata queries drafted.
+
+11. **EMBODIES edge quality.** Closed in the April 28 real-source pass. The 564 heuristic-keyword EMBODIES (April 22 editorial scaffolding) were superseded by 1,035 source-attested EMBODIES from objkt, fxhash, and Wikidata depicts. 57 hand-assigned EMBODIES (medium confidence) survive. Total EMBODIES: 1,096, all from named ingest signals.
+
+12. **Exhibitions gap for 28 practitioners.** Pass 1+2 practitioners whose exhibition data was in prose format rather than venue lists. Partially recovered through COLLABORATES_WITH reclassification. Remaining gap requires manual research or Tier 2 institutional data.
+
+13. **Christiane Paul's *Digital Art* canon — partially closed.** The April 28 `gatherer-paul-canon-v1` pass added 22 practitioners + 5 missing scenes from Paul's index (Paik, Kac, Stelarc, the Vasulkas, Davies, Rokeby, Shaw, Ascott, Utterback, Sommerer, Mignonneau, Goldberg, Rubin, Hayles, Galloway, Chun, Paul herself, and others). Remaining: full diff against the 2023 4th-edition index for any missed Tier-1-sourceable absences.
+
+14. **fxhash full coverage.** Two passes (`fxhash-api-ingest-2026-04-22`, `fxhash-tags-ingest-2026-04-28`) cover ~45 works. A schema-deeper fxhash pass would close more gaps for artists like Iskra Velitchkova, Michaël Zancan.
 
 ---
 
 ## How to cite this seed
 
-> A(DAI) Seed Canon v1 (April 2026). 87 canonical practitioners, 254 artworks across 12 categories of digital art practice. Assembled through multi-source cross-referencing: original A(DAI) research, validated against ADIN/Tribute Labs taxonomy, Right Click Save editorial archive, Rhizome ArtBase, Ostachowski Digital & Crypto Art Chronology, and institutional sources (Art Blocks, MoMA, Wikidata, Met Open Access). Selection criteria: practice breadth, source convergence with declared bias, infrastructure contribution, relational significance with frontier clause, source and scene diversity, exclusion of market-only significance. Commons-licensed under A(DAI) full commons consent scope.
+> A(DAI) Seed Canon v1 (April 2026). 141 confirmed practitioners, 728 artworks (46% with images), 9 edge types across 30 scenes and 121 institutions. Assembled through multi-source cross-referencing: original A(DAI) research (45 profiles, `human_secondary`), AI-assisted profile deepening (`ai_assisted`), and source-attested ingests from public APIs and linked-open-data — objkt.com tags, fxhash artist-set tags, Wikidata depicts/genre, MoMA digital department CSV, Rhizome ArtBase SPARQL, Christiane Paul's *Digital Art* canon (via Wikidata), and a hand-curated named-anchors pass. Validated against ADIN/Tribute Labs taxonomy, Right Click Save editorial archive, and the Ostachowski Digital & Crypto Art Chronology. Selection criteria: practice breadth, source convergence with declared bias, infrastructure contribution, relational significance with frontier clause, source and scene diversity, exclusion of market-only significance. 12 ingest signals + 10 staking contributors recorded as the provenance trail. Tier 1 sources only — no scraping. Tier 2 institutional outreach planned. Commons-licensed under A(DAI) full commons consent scope.

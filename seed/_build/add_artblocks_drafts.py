@@ -56,7 +56,7 @@ PROJECTS_QUERY = """query Projects($contracts: [String!]!, $artist: String!) {
 }"""
 
 SIGNAL_ID = "signal:artblocks-api-2026-04"
-CONTRIBUTOR = "contributor:artblocks-import"
+CONTRIBUTOR = "gatherer-artblocks-v1"
 NOW_ISO = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
