@@ -53,8 +53,8 @@ Every confirmed practitioner has the canonical top-level metadata fields populat
 | **COLLABORATES_WITH** | 183 | 183 | Unchanged. |
 | **USES_TECHNIQUE** | 75 | **102** | +27 from MoMA digital department CSV (technique metadata). |
 | **INFLUENCES** | 4 | 4 | **Deliberately sparse by design** — see SOURCES.md §"Why the seed is structured this way". Sol LeWitt → Casey Reas; Stiegler → Yuk Hui; Simondon → Yuk Hui; de Campos → Cordeiro. |
-| RESPONDS_TO | 0 | 0 | Architecturally reserved for practitioner contribution. See SOURCES.md. |
-| CONTESTS / TENSION_WITH | 0 | 0 | Architecturally reserved for practitioner contribution. |
+| RESPONDS_TO | 0 | 0 | **The second reading.** Reserved for first-person practitioner testimony — "this work answers that one." Zero is not incomplete; it marks where the loop closes. See SOURCES.md §"Two readings". |
+| CONTESTS / TENSION_WITH | 0 | 0 | **The second reading.** Reserved for first-person practitioner contribution — corrections, refusals, frontier framings the machine couldn't see. Zero by design. |
 
 ## Image coverage
 
@@ -175,3 +175,13 @@ Earlier limitations about noisy concepts, missing institution nodes, and heurist
 ## Citation
 
 See `seed/SOURCES.md` § "How to cite this seed" for the v1 citation paragraph. Every claim in this report is backed by per-task reports at `seed/_build/task{1..5}_report.json`, the top-level trace at `seed/enrichment-trace.json`, the merge bundles `seed/_build/real_source_merge_2026-04-28.json` and `seed/_build/wikidata_named_anchors_2026-04-28.json`, and the provenance registry at `seed/signals.json` + `seed/contributors.json`.
+
+---
+
+## Read this honestly
+
+The numbers above describe a machine reading of the field. They are dense, source-attested, and incomplete *on purpose*. The practitioner reading is what closes the loop: `RESPONDS_TO`, `CONTESTS`, `TENSION_WITH`, and any edge entering at `lived_experience: 1`.
+
+A useful test for whether A(DAI) is working: do those columns start filling up after Basel? If they don't, the system is mirroring its founders, not sensing the field. If they do — and especially if they contradict what's here — the protocol is doing what it was designed to do.
+
+**Come sense with us.**

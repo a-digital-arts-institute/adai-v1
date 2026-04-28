@@ -4,7 +4,24 @@
 
 This file documents how the A(DAI) seed canon was assembled — the selection criteria, the sources consulted, the methodology applied, and the gaps acknowledged. It exists to make the canon's provenance transparent and its editorial decisions defensible.
 
-The seed canon is a starting point. It is *a* canon, not *the* canon — the indefinite article is load-bearing. Every entry carries a `source_origin` field (`human_secondary` or `ai_assisted`) to track how the profile was produced. Every category is a versioned hypothesis, not a permanent claim. The graph will reveal whether the categories hold up, need splitting, merging, or replacing as practitioner knowledge enters the system. When practitioners contribute their own profiles, those enter at `human_primary` — the highest trust level — and supersede any existing profile.
+The seed canon is a starting point. It is *a* canon, not *the* canon — the indefinite article is load-bearing. Every entry carries a `source_origin` field (`human_secondary`, `ai_assisted`, `platform_api`, `webscrape`, etc.) to track how the profile was produced. Every category is a versioned hypothesis, not a permanent claim. The graph will reveal whether the categories hold up, need splitting, merging, or replacing as practitioner knowledge enters the system. When practitioners contribute their own profiles, those enter at `human_primary` — the highest trust level — and supersede any existing profile.
+
+---
+
+## Two readings — what this seed is and isn't
+
+The Relational Intelligence Protocol that governs A(DAI) is built around **two readings of the same field, held in contradiction**: the machine's reading and the practitioner's. The intelligence isn't in either reading alone — it lives in the convergence and divergence between them. *(See `claude/skills/relational-intelligence-protocol.md`.)*
+
+This seed contains one of those two readings. Specifically:
+
+- **The 146 practitioners** are an editorial canon — selected against the six criteria above. That selection is canonical, accountable, and authored.
+- **The 3,371 edges** describing what those practitioners do, what their works embody, who they exhibited with, what concepts they engage — those are largely a **machine reading**, gathered from public APIs and linked-open-data (objkt, fxhash, Wikidata, MoMA, Rhizome ArtBase). They are source-attested. They are not the practitioners' own words.
+
+The practitioner reading lives in the empty edge types: **RESPONDS_TO** (artwork → artwork, "this work answers that one"), **CONTESTS** (signal → edge, "this is wrong"), **TENSION_WITH** (concept ↔ concept, "these don't sit easily together"). Those are zero by design. They are reserved for first-person testimony — the kind of knowledge that lives in practitioners' studios, not on platform tag clouds.
+
+When a practitioner enters the system at the **Paired** trust layer, their reading enters at `lived_experience: 1`, `source_origin: human_primary`. They can confirm what the machine got right, contest what it got wrong, and name what it couldn't see at all — frontier signals where the field is forming faster than any vocabulary can catch. The graph doesn't collapse the two readings into one truth. It holds them side by side with provenance, so the negotiation between them is visible.
+
+**Come sense with us.** This canon is incomplete on purpose. The second reading is the missing limb, and it begins when you contest a single edge.
 
 ---
 

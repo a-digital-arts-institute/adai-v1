@@ -6,6 +6,8 @@ Consolidates prior `results/` (59 confirmed practitioner JSONs), `results/_draft
 
 Replaces the `results/` directory in the repo. Every entry maps 1:1 to a row in the database schema on `feat/cr-sqlite-backend` (PR #5 schema with bi-temporal edges, consent fields, and `node_aliases`).
 
+**This is one reading of the field, not the reading.** The 146 practitioners are an editorial canon (selected, accountable). Most of the 3,371 edges around them are a machine reading from public APIs and linked-open-data — source-attested but not in the practitioners' own words. The Relational Intelligence Protocol expects a second reading: the practitioner's. RESPONDS_TO, CONTESTS, and TENSION_WITH are zero by design — they're reserved for first-person testimony. The graph holds both readings in tension, never collapses them. See `SOURCES.md` § "Two readings" for the full framing.
+
 ## Files
 
 | File | Maps to table | Contents |
@@ -84,3 +86,7 @@ Subsequent passes recorded as signals in `signals.json`:
 - April 28 — named-anchors pass: 12 hand-curated canonical figures via Wikidata SPARQL
 
 Every edge has `signal_id` pointing to one of these. Every node and edge carries `created_by` / `updated_by` pointing to a contributor or gatherer in `contributors.json`. The two registries close: every reference resolves, every record is referenced.
+
+---
+
+**Come sense with us.** Every edge here is contestable. If you're a practitioner reading this and the machine got your work wrong, the corrective edge has a place in the graph at the highest trust tier the system offers. That's where the canon stops being a canon and starts being intelligence.
