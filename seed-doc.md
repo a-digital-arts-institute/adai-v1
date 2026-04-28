@@ -291,7 +291,7 @@ CR-SQLite extends SQLite with CRDT capabilities — databases that merge without
 
 CRDTs guarantee syntactic merge. When a fork re-merges and contradictory edges appear, both persist with full provenance. The merge boundary flags the contradiction. Resolution is human, not mechanical.
 
-**Current state:** Single-DB deployment (774 nodes, 929 edges). Per-practitioner split designed, not implemented. Not a blocker for the prototype.
+**Current state:** Single-DB deployment (1,007 nodes / 2,486 edges / 9 edge types / 1 canonical lens — see CLAUDE.md for the live counts). Per-practitioner split designed, not implemented. Not a blocker for the prototype.
 
 **Decision: single DB first, Matryoshka later.** The full nested architecture is the destination. For the prototype, one database handles everything. The schema is the same either way — the split is a deployment change, not a data model change. Don't build distribution before the data is worth distributing.
 
@@ -317,12 +317,21 @@ Plus local tables: `intake_queue` (staging before merge), `settings`.
 
 | Edge type | From → To | What it means |
 |---|---|---|
-| PRACTICES | Practitioner → Concept | Works with this concept |
-| BELONGS_TO | Practitioner → Scene | Part of this scene |
-| EXHIBITED_AT | Practitioner → Institution | Exhibition record |
-| COLLABORATES_WITH | Practitioner → Practitioner | Active collaboration |
-| CREATED_BY | Artwork → Practitioner | Made this work |
-| RELATED_TO | Any → Any | Catch-all — flag for vocabulary expansion |
+| EMBODIES | Artwork → Concept | The work manifests this concept (621) |
+| PRACTICES | Practitioner → Concept | Works with this concept (461) |
+| CREATED_BY | Artwork → Practitioner | Made this work (405) |
+| EXHIBITED_AT | Practitioner/Artwork → Institution | Exhibition record (300) |
+| CLASSIFIED_BY | Any → Classification regime | The lens that positioned this node (283) |
+| COLLABORATES_WITH | Practitioner → Practitioner | Active collaboration (183) |
+| BELONGS_TO | Practitioner → Scene | Part of this scene (154) |
+| USES_TECHNIQUE | Artwork → Concept | Technique or medium used (75) |
+| INFLUENCES | Practitioner → Practitioner | Directional influence (4) |
+
+**Reserved (zero rows by design):**
+
+| Edge type | From → To | What it means |
+|---|---|---|
+| RESPONDS_TO | Artwork → Artwork | Requires evidence of artist intent — practitioner-contributed only, not inferred |
 
 **Deploy when signal volume justifies:**
 
@@ -330,16 +339,11 @@ Plus local tables: `intake_queue` (staging before merge), `settings`.
 |---|---|---|
 | PIONEERED | Practitioner → Concept | Originated or significantly advanced |
 | CRITIQUES | Practitioner → Concept | Actively challenges or works against |
-| INFLUENCES | Practitioner → Practitioner | Directional influence |
 | TENSION_WITH | Concept → Concept | Productive tension |
 | EMERGED_FROM | Concept → Scene | Originated in or tied to this scene |
-| EMBODIES | Artwork → Concept | The work manifests this concept |
-| RESPONDS_TO | Artwork → Artwork | Direct dialogue between works |
-| USES_TECHNIQUE | Artwork → Concept | Technique or medium used |
-| EXHIBITED_IN | Artwork → Institution/Event | Where the work was shown |
 | CONTESTS | Signal → Signal | Explicit disagreement |
 
-This vocabulary is provisional. Accumulation of RELATED_TO edges is the agenda for expanding the vocabulary — what the system can't classify marks where the field is moving.
+Counts reflect the canonical seed (`seed-canon-v1`, April 2026 enrichment). The vocabulary is provisional — what the system can't classify is the agenda for expansion.
 
 ### Edge classification rules
 
@@ -580,7 +584,7 @@ CR-SQLite backend (Gio, Shards) deployed at [adai-basel.fly.dev](https://adai-ba
 | CR-SQLite schema (4 CRR tables, composite PK on edges) | ✅ Live |
 | Shards HTTP server (all endpoints) | ✅ Live |
 | Fly.io deployment (Docker) | ✅ Live |
-| Seed data pipeline (59 JSON → 774 nodes, 929 edges) | ✅ Done |
+| Seed data pipeline (59 JSON + April enrichment → 1,007 nodes / 2,486 edges) | ✅ Done |
 | Contribution flow (`/contribute` → intake_queue → `/review`) | ✅ Working |
 | Practitioner profiles (`/practitioner/:slug`) | ✅ Working |
 | Data export (`/practitioner/:slug/data` as JSON) | ✅ Working |
@@ -631,8 +635,8 @@ CR-SQLite backend (Gio, Shards) deployed at [adai-basel.fly.dev](https://adai-ba
 
 ### Critical gaps
 
-1. **Artwork nodes do not exist.** 774 nodes, 0 artworks. The graph, the narrative engine, and the visual interface all depend on artworks. **The public layer's first runs must bring them in** — platform APIs (fxhash/Tezos) are the fastest path.
-2. **Only 3 edge types in use.** 929 edges but only PRACTICES, BELONGS_TO, RELATED_TO. Need CREATED_BY, EXHIBITED_AT, COLLABORATES_WITH minimum. Without them the graph reads as co-occurrence, not semantics.
+1. **Artwork image coverage.** 399 artwork nodes are now in the graph (MoMA CSV + Wikidata SPARQL + Art Blocks Hasura + fxhash GraphQL, April 21–22 enrichment). Wikidata image patches covered 32% of practitioners but 0% of artworks; image sourcing for artworks remains a follow-up pass.
+2. **Cross-source dedup not yet verified.** Net-new artworks from MoMA (~89 KB) and fxhash (~9.4 KB) are staged in `seed/_build/*_new_artworks.json` — merge into `nodes.json` is not yet verified. The Met OpenAccess fetch returned empty.
 3. **Editorial guidance docs unwritten.** This is the highest-risk gap. Without skills files, Claude classifies with its own defaults — safe, generic, Western-institutional. The editorial lens that makes A(DAI) different from a search engine lives in these documents. They must be authored and injected in every API call.
 4. **No authentication system.** Critical if practitioners are onboarded live at Basel. Doesn't need to be complex — invite-link tokens would work to start.
 5. **Geographic intake bias.** 47 of 59 practitioners are North American/European. The public layer should intentionally diversify through source selection.
@@ -646,11 +650,10 @@ If any of these are true, the system is failing:
 - No frontier signals visible → merge boundary too tight
 - Every auto-merge confirms the founding team's map → system mirrors its founders
 - The narrative sounds the same every session → the generative interface isn't generative
-- 500 nodes, 3 edge types → semantic layer is cosmetic
-- Graph has practitioners but no artworks → directory, not a canon
+- Graph collapses to a handful of edge types → semantic layer is cosmetic
+- Artworks exist but have no edges → illustrations, not first-class nodes
 - Nobody asks for a different perspective → the system isn't provoking curiosity
 - Visitors can't tell what the system left out → the partiality isn't honest
-- Artworks are present but have no edges → illustrations, not first-class nodes
 - No contribution receipt → system takes without showing what it did
 - People listen but never speak → interaction model isn't inviting challenge
 - Challenges always get agreeable responses → anti-sycophancy has failed
