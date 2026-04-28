@@ -1,0 +1,15 @@
+{
+  "signal_id": "fxhash-api-block-finding-2026-04-28",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "finding": "fxhash GraphQL has blocked filtered queries (users(filters:...), generativeTokens(filters:...)) for our application — HTTP 403 with message 'This operation cannot be processed, the application is blocked. Contact us to unblock it.'",
+  "verified_working": [
+    "user(id: <tz address>) — direct lookup",
+    "generativeToken(id: <int>) — direct lookup"
+  ],
+  "verified_blocked": [
+    "users(filters: { searchQuery_eq: ... })",
+    "generativeTokens(filters: { ... })"
+  ],
+  "impact": "Cannot expand fxhash coverage to new practitioners by name search. Limited to 2 verified accounts already in seed (Jonas Lund, Kim Asendorf). To deepen, contact fxhash to unblock the application or obtain an API key.",
+  "next_action": "Iri or JB to email fxhash team requesting unblock for A(DAI) at https://www.fxhash.xyz/contact (non-commercial knowledge commons use case)."
+}
