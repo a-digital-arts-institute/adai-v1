@@ -63,6 +63,14 @@ conn.commit()
 
 `seed.shs` (the current Shards ingest script) reads `results/*.json` directly — it will need a small rewrite to read `seed/*.json` instead, since the shape is flattened rather than nested per-file.
 
+## Exporting from the database (the inverse direction)
+
+`seed-consolidated.ts` is JSON → DB. The inverse — DB → JSON — is `src/seed-export.ts` (run via `npm run seed:export`). Use it whenever the live graph has drifted ahead of the static seed (enrichment passes, contributions, regime additions) and a downstream consumer (the vault wiki, frontend fixtures, audits) needs a current snapshot.
+
+The exporter is symmetric with the importer: roundtrip via `npm run seed:export && rm adai.db && npm run seed:consolidated` reproduces the same row counts. Metadata is written as parsed JSON (post-enrichment style); the importer accepts both string and object forms.
+
+`enrichment-trace.json` and `normalisation-report.json` are *history* artefacts, not derived from current DB state — the exporter does not regenerate them.
+
 ## What this does NOT include
 
 - **Artwork images** — Wikidata lookups covered 32% of practitioners but 0% of artworks. Artwork image sourcing is a follow-up pass (Wikidata creator→work, MoMA CSV, Art Blocks subgraph, fxhash API, Met API).
