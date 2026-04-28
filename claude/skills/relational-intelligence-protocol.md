@@ -24,6 +24,10 @@ AI agents crawl sources and propose nodes and edges. Humans contribute through s
 
 The graph holds both readings — the machine's and the human's — without collapsing them. Where they converge, confidence rises. Where they diverge, you have a visible tension. Contradictions are data, not errors.
 
+> **Note for Gio:** Classification regimes added April 15. Context: Lange's argument that classification infrastructure is becoming the hidden architecture of cultural power. A(DAI)'s response: make it visible. Each source that enters the graph carries an implicit classification logic (MoMA classifies through curatorial taxonomy, fxhash through algorithmic metrics, practitioners through lived experience). These logics are now modeled as `classification_regime` nodes. When the same artwork is classified differently by different regimes, both `CLASSIFIED_BY` edges exist — the divergence between regimes is structural intelligence, same as divergence between machine and human readings. See [`claude/SCHEMA.md` → Classification regimes](../SCHEMA.md#classification-regimes) for full rationale and pipeline details.
+
+**Classification regimes as structural actors.** Every source that feeds the graph carries an implicit classification logic. MoMA's curatorial taxonomy, fxhash's algorithmic metrics, a practitioner's lived vocabulary — these are not neutral data pipes, they are lenses that shape what becomes legible. The graph models these as `classification_regime` nodes with `CLASSIFIED_BY` edges. When the same node is classified differently by different regimes, both edges exist. The divergence between regimes is the same kind of intelligence as the divergence between machine and human readings — hold it open, track the provenance, let the graph make the negotiation visible.
+
 ### 3. RENDER
 
 The frontend reads the graph and turns it into physics. Typed edges become gravitational pull. Edge type diversity becomes brightness. The visitor sees the field's topology.
@@ -152,25 +156,36 @@ The divergence between how an AI reads the field and how a practitioner names th
 
 ## Influences and attribution
 
-This protocol is shaped by specific intellectual debts. The ideas have been adapted into A(DAI)'s own vocabulary and context, but the sources deserve explicit acknowledgment.
+This protocol is shaped by specific intellectual debts. The ideas have been adapted into A(DAI)'s own vocabulary and context, but the sources deserve explicit acknowledgment. Per-concept best fit; the four-protocol structure, four-stage cycle, and three-tier trust mapping are A(DAI)'s synthesis — the sources below are the intellectual debts the synthesis rests on, not 1:1 mappings.
 
-| A(DAI) term | Influenced by | Source |
-|-------------|--------------|--------|
-| Four agent protocols (Diversify, Connect, Interact, Adapt) | Operating protocols for agents in complex adaptive systems | Yunkaporta, *Sand Talk* (2019), Ch. 7 |
-| Intake cycle (Respect, Connect, Reflect, Direct) | RCRD knowledge creation protocol | Yunkaporta, *Sand Talk* (2019) |
-| Trust-layer mapping (Paired / Circle / Commons) | Relational ontology encoded in Aboriginal pronoun systems (first person dual, exclusive, inclusive) | Yunkaporta, *Sand Talk* (2019); Jim Rutt Show Ep. 65 |
-| Tending the graph (agents maintain, don't own) | Custodial relationship to complex living systems | Yunkaporta, *Sand Talk* (2019); Garland Magazine essay |
-| Wrong-story detection | Wrong-story traps; naming your own reductions | Yunkaporta, *Right Story, Wrong Story* (2023) |
-| Sensing conversations | Yarning protocol — non-linear, relational, pattern-seeking dialogue | Aboriginal knowledge systems; IKS Lab practice |
-| Frontier signals as agenda | What the system can't classify marks where the field is moving | Yunkaporta on frontier knowledge; also native to A(DAI)'s design |
+| A(DAI) term | Influenced by | Primary source | Secondary readings |
+|-------------|--------------|----------------|---------------------|
+| Four agent protocols (Diversify, Connect, Interact, Adapt) | Behavioural constraints for distributed actors in commons + regenerative systems | Ostrom, *Governing the Commons* (1990) — 8 design principles for commons | Holmgren, *Permaculture: Principles and Pathways* (2002) — 12 design principles + earth care / people care / fair share ethics; Ostrom & Hess, *Understanding Knowledge as a Commons* (2007) |
+| Intake cycle (Respect, Connect, Reflect, Direct) | Dialogic knowledge-creation cycle that suspends assumptions and reflects in/on action | Bohm, *On Dialogue* (1996) | Schön, *The Reflective Practitioner* (1983); Depraz, Varela & Vermersch, *On Becoming Aware* (2003) |
+| Trust-layer mapping (Paired / Circle / Commons) | Polycentric, nested governance + commons-based peer production typology | Ostrom, *Governing the Commons* (1990) — polycentric governance / nested enterprises | Benkler, *The Wealth of Networks* (2006); Ada Lovelace Institute, *Legal mechanisms for data stewardship* (2024); EU Data Act (Sept 2025) + UK Data (Use and Access) Act (2025) for live legal grounding |
+| Tending the graph (agents maintain, don't own) | Care ethics extended to sociotechnical assemblages — labour / affect / ethico-politics | Puig de la Bellacasa, *Matters of Care* (2017) | Tronto, *Moral Boundaries* (1993); Iris Marion Young, *Responsibility for Justice* (2011) — social connection model |
+| Wrong-story detection | Partial perspective + the "god trick" (vision from nowhere/everywhere); operational principles for naming reductions | Haraway, "Situated Knowledges" (1988), *Feminist Studies* 14(3) | Haraway, *Staying with the Trouble* (2016) — sympoiesis; D'Ignazio & Klein, *Data Feminism* (2020) — seven operational principles |
+| Sensing conversations | Suspension discipline + non-extractive dialogic interview practice | Bohm, *On Dialogue* (1996) | Despret, *What Would Animals Say If We Asked the Right Questions?* (2016); Depraz, Varela & Vermersch, *On Becoming Aware* (2003) — microphenomenological interview method |
+| Frontier signals as agenda | Inability to assimilate other-knowledge into a universal frame as the politically/epistemically significant signal | Stengers, "The Cosmopolitical Proposal" (2005) | Schön, *The Reflective Practitioner* (1983) — surprise-as-data; Kauffman on the adjacent possible |
+
+**Adjacent Indigenous lineage acknowledgement:** Several of the sources above themselves draw on Indigenous scholarship — permaculture (First Peoples land-care practice), Tsing's *patchy assemblage* (Sumatran Karo and Yunnan ethnographic fieldwork), *Data Feminism* (Indigenous refusal scholarship via Tuck & Yang; Indigenous Data Sovereignty / CARE Principles). When invoking these sources, acknowledge the Indigenous lineage they themselves draw on. The re-rooting cites non-Indigenous primary sources whose accountability demands the team can meet — it does not claim to escape Indigenous influence on the broader intellectual ecosystem.
 
 **Further reading:**
-- Yunkaporta, T. (2019). *Sand Talk: How Indigenous Thinking Can Save the World.* Text Publishing.
-- Yunkaporta, T. (2023). *Right Story, Wrong Story.* Text Publishing.
-- Abdilla, A., Kelleher, M., & Yunkaporta, T. (2021). *Out of the Black Box: Indigenous Protocols for AI.* UNESCO/ANAT.
-- IKS Labs / AIME / Indigenous Commons. (2024). *Protocols for Non-Indigenous People Working with Indigenous Knowledge.*
+- Ostrom, E. (1990). *Governing the Commons.* Cambridge University Press.
+- Bohm, D. (1996). *On Dialogue.* Routledge.
+- Schön, D. (1983). *The Reflective Practitioner.* Basic Books.
+- Haraway, D. (1988). "Situated Knowledges: The Science Question in Feminism and the Privilege of Partial Perspective." *Feminist Studies* 14(3).
+- Puig de la Bellacasa, M. (2017). *Matters of Care: Speculative Ethics in More Than Human Worlds.* University of Minnesota Press.
+- Stengers, I. (2005). "The Cosmopolitical Proposal." In Latour & Weibel, *Making Things Public.* MIT Press.
+- D'Ignazio, C. & Klein, L. (2020). *Data Feminism.* MIT Press.
 
-**What this is not:** This protocol does not claim to be "Indigenous AI." That work belongs to Indigenous-led initiatives operating under Indigenous governance (e.g. the Indigenous Protocols and AI Laboratory). This is non-Indigenous practitioners learning from Indigenous systems thinking to build better commons infrastructure — with citation and accountability. These skills files are experimental prototypes for team testing, not a finished framework.
+### Historical influence (superseded)
+
+Until 2026-04-28 this protocol was rooted in Yunkaporta's articulation of Indigenous knowledge systems (*Sand Talk*, 2019; *Right Story, Wrong Story*, 2023) and adjacent Indigenous-protocol scholarship (Abdilla, Kelleher & Yunkaporta, *Out of the Black Box*, UNESCO/ANAT 2021; IKS Labs / AIME / Indigenous Commons, *Protocols for Non-Indigenous People Working with Indigenous Knowledge*, 2024). The team's thinking did pass through that lineage; the supersession is recorded but the historical influence is not erased.
+
+The decision to re-root is documented in `adai-vault/wiki/editorial/editorial-protocol-relineage.md` (active) and `editorial-indigenous-attribution.md` (superseded). Reason in brief: the accountability demands of the Indigenous-protocol lineage (named relationship, benefit-sharing, revocation pathway, attribution travelling into the product surface) are demands a non-Indigenous team operating under a public-deployment deadline cannot meet, and "cite + refuse" was judged too low an ethical floor for a system about to ship. The 1:1 historical-to-current mapping per concept is in the editorial decision page.
+
+**What this is not:** This protocol is non-Indigenous practitioners working with non-Indigenous frameworks (Ostrom, Bohm, Haraway, Puig de la Bellacasa, Stengers), citing the lineages they actually rest on. It does not claim neutrality — these sources are positioned, contestable bodies of work. It does not claim to be the only valid framing — the seven slots admit other strong candidates (Federici, Latour, Bateson, Le Guin) and remain open to revision. The skills files are experimental prototypes for team testing, not a finished framework.
 
 ---
 
