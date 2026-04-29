@@ -86,14 +86,14 @@ router.get("/explore", (_req, res) => {
   let body = `<h2>Explore</h2><p class='meta'>${rows.length} entities — practitioners, artworks, collectives, platforms, institutions, and projects</p>`;
 
   for (const r of rows) {
-    body += `<div class='card'><h3><a href='/practitioner/${r.slug}'>${r.name}</a></h3><span class='tag'>${r.type}</span></div>`;
+    body += `<div class='card'><h3><a href='/${r.type}/${r.slug}'>${r.name}</a></h3><span class='tag'>${r.type}</span></div>`;
   }
 
   res.set(HTML_HEADERS).send(htmlPage("Explore", body));
 });
 
-// GET /practitioner/:slug — profile page
-router.get("/practitioner/:slug", (req, res) => {
+// GET /:type/:slug — polymorphic profile page (slug-only lookup, type ignored for resolution)
+function profileHandler(req: any, res: any) {
   const db = getDb();
   const slug = req.params.slug;
 
@@ -265,7 +265,18 @@ router.get("/practitioner/:slug", (req, res) => {
   body += `<p style='margin-top:2rem'><a href='/practitioner/${encodeURIComponent(slug)}/data' class='btn'>Export JSON</a></p>`;
 
   res.set(HTML_HEADERS).send(htmlPage(node.name, body));
-});
+}
+
+router.get("/practitioner/:slug", profileHandler);
+router.get("/artwork/:slug", profileHandler);
+router.get("/concept/:slug", profileHandler);
+router.get("/scene/:slug", profileHandler);
+router.get("/collective/:slug", profileHandler);
+router.get("/institution/:slug", profileHandler);
+router.get("/platform/:slug", profileHandler);
+router.get("/publication/:slug", profileHandler);
+router.get("/project/:slug", profileHandler);
+router.get("/classification_regime/:slug", profileHandler);
 
 // GET /practitioner/:slug/data — JSON data export
 router.get("/practitioner/:slug/data", (req, res) => {

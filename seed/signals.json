@@ -250,5 +250,26 @@
     "batch_id": "fxhash-api-2026-04-22",
     "status": "active",
     "provenance_chain": null
+  },
+  {
+    "id": "theorist-edge-completion-2026-04-29",
+    "title": "Theorist edge completion — April 29, 2026",
+    "source_url": null,
+    "source_type": "editorial",
+    "cla_layer": null,
+    "summary": "Closed a 5-edge gap from the April 28 Paul-canon pass: Galloway, Hayles, and Chun were added as practitioner nodes but no BELONGS_TO edges were authored. Hand-assigned scene affiliations matching their primary critical lens.",
+    "content": null,
+    "submitted_by": "gatherer-theorist-completion",
+    "confidence": "high",
+    "lived_experience": 0,
+    "created_at": "2026-04-29T14:13:52Z",
+    "consent_scope": "full_commons",
+    "consent_attribution": "attributed",
+    "consent_revocable": 1,
+    "processing_trace": null,
+    "source_origin": "human_secondary",
+    "batch_id": "theorist-edge-completion-2026-04-29",
+    "status": "active",
+    "provenance_chain": null
   }
 ]
