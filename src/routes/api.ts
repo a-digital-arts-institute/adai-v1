@@ -30,8 +30,11 @@ router.get("/api/graph", (req, res) => {
 
   let nodeRows: any[];
   if (!typeFilter) {
+    // Include scenes in the default view — they are the primary connective
+    // tissue for ~22 practitioners (Paul-canon pass, April 28). Filtering
+    // them out makes those practitioners appear orphan when zoomed out.
     nodeRows = db
-      .prepare("SELECT id, name, type, slug FROM nodes WHERE type NOT IN ('related', 'scene') ORDER BY name")
+      .prepare("SELECT id, name, type, slug FROM nodes WHERE type != 'related' ORDER BY name")
       .all();
   } else if (typeFilter === "_all") {
     nodeRows = db
@@ -47,7 +50,7 @@ router.get("/api/graph", (req, res) => {
   if (!typeFilter) {
     edgeRows = db
       .prepare(
-        "SELECT e.source_id, e.target_id, e.edge_type, e.confidence FROM edges e WHERE e.valid_until IS NULL AND e.source_id IN (SELECT id FROM nodes WHERE type NOT IN ('related','scene')) AND e.target_id IN (SELECT id FROM nodes WHERE type NOT IN ('related','scene'))"
+        "SELECT e.source_id, e.target_id, e.edge_type, e.confidence FROM edges e WHERE e.valid_until IS NULL AND e.source_id IN (SELECT id FROM nodes WHERE type != 'related') AND e.target_id IN (SELECT id FROM nodes WHERE type != 'related')"
       )
       .all();
   } else if (typeFilter === "_all") {
