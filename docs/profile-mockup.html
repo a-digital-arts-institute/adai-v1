@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A(DAI) — Profile Flow Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Syne:wght@400;600&family=Syne+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --ink: #c8c8d0;
+    --ink-bright: #e0ddd8;
+    --ink-context: #b8b8c0;
+    --ink-dim: #a0a0b0;
+    --ink-muted: #505060;
+    --ink-status: #404050;
+    --mint: #7aff9c;
+    --amber: #d4a574;
+    --blue: #a8c4e0;
+    --sage: #c2dbbf;
+    --scene: #7aff9c;
+    --institution: #6ad88a;
+    --rose: #fb7185;
+    --violet: #c4b5fd;
+    --default-node: #808090;
+    --glass: rgba(10, 10, 15, 0.88);
+    --glass-border: rgba(200, 200, 210, 0.1);
+    --glass-border-hover: rgba(200, 200, 210, 0.18);
+    --input-bg: rgba(10, 10, 15, 0.7);
+    --text-shadow: 0 0 40px rgba(10, 10, 15, 0.9), 0 0 60px rgba(10, 10, 15, 0.8);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #060608;
+    font-family: 'Syne', sans-serif;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── Page chrome (outside the mockups) ─── */
+  .page-label {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 60px 32px 20px;
+  }
+
+  .page-label h1 {
+    font-family: 'Instrument Serif', serif;
+    font-weight: 400;
+    font-style: italic;
+    font-size: 24px;
+    color: var(--ink-bright);
+  }
+
+  .page-label .sub {
+    font-family: 'Syne Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-status);
+    letter-spacing: 0.05em;
+    margin-top: 8px;
+  }
+
+  /* ─── Transition labels between screens ─── */
+  .transition {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .transition::before,
+  .transition::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(122, 255, 156, 0.15), transparent);
+  }
+
+  .transition .trigger {
+    font-family: 'Syne Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--mint);
+    text-transform: uppercase;
+    white-space: nowrap;
+    padding: 6px 16px;
+    border: 1px solid rgba(122, 255, 156, 0.15);
+    border-radius: 20px;
+    background: rgba(122, 255, 156, 0.04);
+  }
+
+  /* ─── Screen container ─── */
+  .screen {
+    max-width: 1100px;
+    margin: 0 auto 0;
+    padding: 0 32px;
+  }
+
+  .screen-label {
+    font-family: 'Syne Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--ink-muted);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .screen-label .num {
+    color: var(--mint);
+    font-weight: 600;
+  }
+
+  /* ─── Canvas frame ─── */
+  .canvas-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9.5;
+    background: var(--bg);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(200, 200, 210, 0.06);
+  }
+
+  /* ─── Shared chrome elements ─── */
+  .brand {
+    position: absolute;
+    top: 20px;
+    left: 24px;
+    z-index: 10;
+  }
+
+  .brand .mark {
+    font-family: 'Instrument Serif', serif;
+    font-size: 18px;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+
+  .brand .mark .paren { color: var(--mint); font-style: italic; }
+
+  .status-line {
+    position: absolute;
+    top: 22px;
+    left: 24px;
+    font-family: 'Syne Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-status);
+    letter-spacing: 0.05em;
+    z-index: 10;
+  }
+
+  .mode-indicator {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    font-family: 'Syne Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .mode-indicator .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--mint);
+    box-shadow: 0 0 6px var(--mint);
+  }
+
+  .narration {
+    position: absolute;
+    bottom: 13%;
+    left: 5%;
+    max-width: 420px;
+    font-family: 'Instrument Serif', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: var(--ink-bright);
+    line-height: 1.55;
+    text-shadow: var(--text-shadow);
+    z-index: 10;
+  }
+
+  .signal-input {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--input-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 24px;
+    padding: 9px 22px;
+    font-family: 'Syne Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-muted);
+    width: 300px;
+    text-align: center;
+    backdrop-filter: blur(8px);
+    z-index: 10;
+  }
+
+  .coords {
+    position: absolute;
+    bottom: 14px;
+    left: 24px;
+    font-family: 'Syne Mono', monospace;
+    font-size: 8px;
+    color: var(--ink-status);
+    z-index: 10;
+  }
+
+  .reading-angle {
+    position: absolute;
+    bottom: 14px;
+    right: 24px;
+    font-family: 'Syne Mono', monospace;
+    font-size: 8px;
+    color: var(--ink-status);
+    z-index: 10;
+  }
+
+  /* ─── SVG graph layer ─── */
+  .graph-layer {
+    position: absolute;
+    inset: 0;
+  }
+
+  .graph-layer svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Node glow simulation via filter */
+  .node-glow {
+    filter: url(#bloom);
+  }
+
+  /* ─── Glass panels ─── */
+  .glass-panel {
+    position: absolute;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    backdrop-filter: blur(12px);
+    z-index: 10;
+    min-width: 200px;
+    max-width: 240px;
+  }
+
+  .glass-panel .panel-label {
+    font-family: 'Syne Mono', monospace;
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink-muted);
+    margin-bottom: 10px;
+  }
+
+  .glass-panel .edge-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+    font-size: 11px;
+    color: var(--ink-dim);
+  }
+
+  .glass-panel .edge-row .name {
+    flex: 1;
+  }
+
+  .glass-panel .edge-row .year {
+    font-family: 'Syne Mono', monospace;
+    font-size: 8px;
+    color: var(--ink-muted);
+  }
+
+  .edge-tag {
+    font-family: 'Syne Mono', monospace;
+    font-size: 7px;
+    letter-spacing: 0.05em;
+    padding: 1px 5px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    flex-shrink: 0;
+  }
+
+  .tag-created   { background: rgba(212, 165, 116, 0.12); color: var(--amber); }
+  .tag-practices { background: rgba(194, 219, 191, 0.12); color: var(--sage); }
+  .tag-belongs   { background: rgba(196, 181, 253, 0.1);  color: var(--violet); }
+  .tag-exhibited { background: rgba(168, 196, 224, 0.12); color: var(--blue); }
+  .tag-frontier  { background: rgba(251, 113, 133, 0.1);  color: var(--rose); }
+
+  .confidence-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .dot-high   { background: var(--sage); }
+  .dot-medium { background: var(--amber); }
+  .dot-low    { background: var(--rose); }
+
+  /* ─── Practitioner name overlay ─── */
+  .practitioner-label {
+    position: absolute;
+    z-index: 10;
+    text-shadow: var(--text-shadow);
+  }
+
+  .practitioner-label .type {
+    font-family: 'Syne Mono', monospace;
+    font-size: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink-muted);
+  }
+
+  .practitioner-label .name {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--amber);
+    letter-spacing: 0.02em;
+  }
+
+  /* ─── New node animation ─── */
+  @keyframes nodeAppear {
+    0% { r: 0; opacity: 0; }
+    40% { r: 6; opacity: 0.9; }
+    70% { r: 4.5; opacity: 0.85; }
+    100% { r: 5; opacity: 0.85; }
+  }
+
+  @keyframes edgeAppear {
+    0% { stroke-dashoffset: 200; opacity: 0; }
+    100% { stroke-dashoffset: 0; opacity: 0.3; }
+  }
+
+  @keyframes glowPulse {
+    0%, 100% { opacity: 0.15; r: 14; }
+    50% { opacity: 0.06; r: 22; }
+  }
+
+  .new-node {
+    animation: nodeAppear 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .new-edge {
+    stroke-dasharray: 200;
+    animation: edgeAppear 1.5s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
+  }
+
+  .speculative-glow {
+    animation: glowPulse 2.5s ease-in-out infinite;
+  }
+
+  /* ─── Confirmation text ─── */
+  .signal-confirm {
+    color: var(--mint) !important;
+  }
+
+  /* ─── Updated panel highlight ─── */
+  .edge-row.new-entry {
+    color: var(--mint);
+  }
+
+  .edge-row.new-entry .edge-tag {
+    border: 1px solid rgba(122, 255, 156, 0.2);
+  }
+
+  /* ─── Responsive ─── */
+  @media (max-width: 800px) {
+    .canvas-frame { aspect-ratio: 4 / 3; }
+    .glass-panel { min-width: 160px; max-width: 180px; padding: 10px 12px; }
+    .glass-panel .edge-row { font-size: 10px; }
+    .narration { font-size: 12px; max-width: 280px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SVG filter for bloom simulation -->
+<svg width="0" height="0" style="position:absolute;">
+  <defs>
+    <filter id="bloom" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="bloom-strong" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+</svg>
+
+<div class="page-label">
+  <h1>Profile flow within the living canvas</h1>
+  <div class="sub">three states, one canvas &middot; matched to daiadai.netlify.app source &middot; april 2026</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SCREEN 1: FIELD VIEW                           -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="screen">
+  <div class="screen-label"><span class="num">01</span> field &mdash; default state</div>
+  <div class="canvas-frame">
+
+    <!-- Status -->
+    <div class="status-line">A(DAI) &middot; 1,774 nodes &middot; 1,929 edges</div>
+
+    <!-- Mode -->
+    <div class="mode-indicator"><span class="dot"></span> reading: frontier</div>
+
+    <!-- Graph -->
+    <div class="graph-layer">
+      <svg viewBox="0 0 1000 560" xmlns="http://www.w3.org/2000/svg">
+        <!-- Edges (very faded, scattered) -->
+        <line x1="180" y1="160" x2="320" y2="200" stroke="#d4a574" stroke-width="0.4" opacity="0.1"/>
+        <line x1="320" y1="200" x2="420" y2="140" stroke="#c2dbbf" stroke-width="0.3" opacity="0.08"/>
+        <line x1="500" y1="280" x2="620" y2="240" stroke="#a8c4e0" stroke-width="0.4" opacity="0.1"/>
+        <line x1="620" y1="240" x2="720" y2="310" stroke="#d4a574" stroke-width="0.3" opacity="0.08"/>
+        <line x1="140" y1="350" x2="280" y2="380" stroke="#7aff9c" stroke-width="0.3" opacity="0.07"/>
+        <line x1="750" y1="180" x2="830" y2="260" stroke="#c2dbbf" stroke-width="0.3" opacity="0.06"/>
+        <line x1="400" y1="360" x2="500" y2="280" stroke="#a8c4e0" stroke-width="0.3" opacity="0.08"/>
+        <line x1="280" y1="380" x2="400" y2="360" stroke="#d4a574" stroke-width="0.3" opacity="0.06"/>
+        <line x1="560" y1="420" x2="620" y2="240" stroke="#6ad88a" stroke-width="0.3" opacity="0.06"/>
+        <line x1="820" y1="120" x2="750" y2="180" stroke="#d4a574" stroke-width="0.3" opacity="0.07"/>
+
+        <!-- Nodes scattered across field -->
+        <!-- Practitioners (amber) -->
+        <circle cx="180" cy="160" r="3.5" fill="#d4a574" opacity="0.6" filter="url(#bloom)"/>
+        <circle cx="320" cy="200" r="4" fill="#d4a574" opacity="0.65" filter="url(#bloom)"/>
+        <circle cx="620" cy="240" r="5" fill="#d4a574" opacity="0.7" filter="url(#bloom)"/>
+        <circle cx="720" cy="310" r="3" fill="#d4a574" opacity="0.55" filter="url(#bloom)"/>
+        <circle cx="820" cy="120" r="3.5" fill="#d4a574" opacity="0.5" filter="url(#bloom)"/>
+        <circle cx="140" cy="350" r="3" fill="#d4a574" opacity="0.45" filter="url(#bloom)"/>
+
+        <!-- Artworks (blue) -->
+        <circle cx="500" cy="280" r="3" fill="#a8c4e0" opacity="0.55" filter="url(#bloom)"/>
+        <circle cx="400" cy="360" r="2.5" fill="#a8c4e0" opacity="0.5" filter="url(#bloom)"/>
+        <circle cx="560" cy="420" r="2" fill="#a8c4e0" opacity="0.4" filter="url(#bloom)"/>
+        <circle cx="250" cy="440" r="2" fill="#a8c4e0" opacity="0.35" filter="url(#bloom)"/>
+        <circle cx="680" cy="400" r="2.5" fill="#a8c4e0" opacity="0.4" filter="url(#bloom)"/>
+
+        <!-- Concepts (sage) -->
+        <circle cx="420" cy="140" r="3" fill="#c2dbbf" opacity="0.5" filter="url(#bloom)"/>
+        <circle cx="750" cy="180" r="2.5" fill="#c2dbbf" opacity="0.45" filter="url(#bloom)"/>
+        <circle cx="350" cy="480" r="2" fill="#c2dbbf" opacity="0.35" filter="url(#bloom)"/>
+
+        <!-- Scenes (mint) -->
+        <circle cx="280" cy="380" r="3" fill="#7aff9c" opacity="0.4" filter="url(#bloom)"/>
+        <circle cx="830" cy="260" r="2.5" fill="#6ad88a" opacity="0.35" filter="url(#bloom)"/>
+
+        <!-- Dust (very faded default) -->
+        <circle cx="90" cy="100" r="1" fill="#808090" opacity="0.15"/>
+        <circle cx="920" cy="80" r="1" fill="#808090" opacity="0.12"/>
+        <circle cx="950" cy="480" r="1.2" fill="#808090" opacity="0.1"/>
+        <circle cx="60" cy="480" r="1" fill="#808090" opacity="0.1"/>
+        <circle cx="500" cy="80" r="1" fill="#808090" opacity="0.08"/>
+        <circle cx="160" cy="500" r="1" fill="#808090" opacity="0.08"/>
+        <circle cx="870" cy="440" r="1" fill="#808090" opacity="0.1"/>
+      </svg>
+    </div>
+
+    <!-- Narration -->
+    <div class="narration">
+      The field holds 1,774 nodes across 6 edge types. The western cluster is dense — 80% of practitioners are European or North American. Sound art has 2 nodes. Generative code has 200. The disproportion is the first thing the graph says.
+    </div>
+
+    <!-- Signal input -->
+    <div class="signal-input">drop a link or signal...</div>
+
+    <!-- Coords -->
+    <div class="coords">x 0.000 y 0.000</div>
+    <div class="reading-angle">angle: absence</div>
+  </div>
+</div>
+
+<!-- Transition -->
+<div class="transition">
+  <span class="trigger">url: /practitioner/eli-okun</span>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SCREEN 2: PROFILE STATE                        -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="screen">
+  <div class="screen-label"><span class="num">02</span> profile &mdash; focused on practitioner</div>
+  <div class="canvas-frame">
+
+    <!-- Status -->
+    <div class="status-line">A(DAI) &middot; reading: eli okun &middot; profile</div>
+
+    <!-- Mode -->
+    <div class="mode-indicator"><span class="dot"></span> profile</div>
+
+    <!-- Practitioner name -->
+    <div class="practitioner-label" style="top: 52px; left: 24px;">
+      <div class="type">practitioner</div>
+      <div class="name">eli okun</div>
+    </div>
+
+    <!-- Graph — focused -->
+    <div class="graph-layer">
+      <svg viewBox="0 0 1000 560" xmlns="http://www.w3.org/2000/svg">
+        <!-- Far field (very faded) -->
+        <circle cx="80" cy="70" r="1.2" fill="#808090" opacity="0.08"/>
+        <circle cx="920" cy="90" r="1" fill="#808090" opacity="0.07"/>
+        <circle cx="950" cy="500" r="1" fill="#808090" opacity="0.06"/>
+        <circle cx="50" cy="480" r="1" fill="#808090" opacity="0.06"/>
+        <circle cx="130" cy="200" r="1.5" fill="#d4a574" opacity="0.12"/>
+        <circle cx="880" cy="380" r="1.5" fill="#d4a574" opacity="0.1"/>
+        <circle cx="900" cy="180" r="1" fill="#c2dbbf" opacity="0.08"/>
+        <circle cx="100" cy="420" r="1" fill="#a8c4e0" opacity="0.07"/>
+        <line x1="130" y1="200" x2="100" y2="420" stroke="#808090" stroke-width="0.2" opacity="0.04"/>
+
+        <!-- Edges to center node -->
+        <line x1="500" y1="280" x2="340" y2="180" stroke="#a8c4e0" stroke-width="0.6" opacity="0.2"/>
+        <line x1="500" y1="280" x2="620" y2="180" stroke="#a8c4e0" stroke-width="0.6" opacity="0.2"/>
+        <line x1="500" y1="280" x2="380" y2="400" stroke="#a8c4e0" stroke-width="0.5" opacity="0.18"/>
+        <line x1="500" y1="280" x2="640" y2="360" stroke="#c2dbbf" stroke-width="0.5" opacity="0.15"/>
+        <line x1="500" y1="280" x2="700" y2="300" stroke="#c2dbbf" stroke-width="0.4" opacity="0.13"/>
+        <line x1="500" y1="280" x2="300" y2="320" stroke="#7aff9c" stroke-width="0.5" opacity="0.15"/>
+        <line x1="500" y1="280" x2="360" y2="240" stroke="#6ad88a" stroke-width="0.4" opacity="0.13"/>
+        <line x1="500" y1="280" x2="580" y2="440" stroke="#d4a574" stroke-width="0.4" opacity="0.12"/>
+        <!-- Frontier edge (dashed) -->
+        <line x1="500" y1="280" x2="780" y2="200" stroke="#fb7185" stroke-width="0.5" opacity="0.18" stroke-dasharray="4,4"/>
+        <!-- Cross edges -->
+        <line x1="640" y1="360" x2="700" y2="300" stroke="#c2dbbf" stroke-width="0.3" opacity="0.06"/>
+        <line x1="300" y1="320" x2="360" y2="240" stroke="#7aff9c" stroke-width="0.3" opacity="0.06"/>
+        <line x1="340" y1="180" x2="360" y2="240" stroke="#a8c4e0" stroke-width="0.2" opacity="0.05"/>
+
+        <!-- Artwork nodes (blue-white, close to center) -->
+        <circle cx="340" cy="180" r="4.5" fill="#a8c4e0" opacity="0.8" filter="url(#bloom)"/>
+        <circle cx="620" cy="180" r="4" fill="#a8c4e0" opacity="0.75" filter="url(#bloom)"/>
+        <circle cx="380" cy="400" r="3.5" fill="#a8c4e0" opacity="0.7" filter="url(#bloom)"/>
+
+        <!-- Concept nodes (sage, mid-distance) -->
+        <circle cx="640" cy="360" r="3.5" fill="#c2dbbf" opacity="0.6" filter="url(#bloom)"/>
+        <circle cx="700" cy="300" r="3" fill="#c2dbbf" opacity="0.55" filter="url(#bloom)"/>
+
+        <!-- Scene / institution nodes (mint, mid-distance) -->
+        <circle cx="300" cy="320" r="3.5" fill="#7aff9c" opacity="0.5" filter="url(#bloom)"/>
+        <circle cx="360" cy="240" r="3" fill="#6ad88a" opacity="0.45" filter="url(#bloom)"/>
+
+        <!-- Collaborator (amber, further) -->
+        <circle cx="580" cy="440" r="3.5" fill="#d4a574" opacity="0.5" filter="url(#bloom)"/>
+
+        <!-- Frontier node (rose, pulsing) -->
+        <circle cx="780" cy="200" r="3" fill="#fb7185" opacity="0.55" filter="url(#bloom)">
+          <animate attributeName="r" values="3;4.5;3" dur="2.5s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.55;0.8;0.55" dur="2.5s" repeatCount="indefinite"/>
+        </circle>
+
+        <!-- CENTER: Practitioner node (large, bright) -->
+        <!-- Outer glow -->
+        <circle cx="500" cy="280" r="24" fill="none" stroke="#d4a574" stroke-width="0.6" opacity="0.1">
+          <animate attributeName="r" values="24;34;24" dur="5s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.1;0.03;0.1" dur="5s" repeatCount="indefinite"/>
+        </circle>
+        <!-- Inner glow -->
+        <circle cx="500" cy="280" r="14" fill="#d4a574" opacity="0.06"/>
+        <!-- Core -->
+        <circle cx="500" cy="280" r="8" fill="#d4a574" opacity="0.92" filter="url(#bloom-strong)">
+          <animate attributeName="r" values="8;9;8" dur="4s" repeatCount="indefinite"/>
+        </circle>
+
+        <!-- Subtle labels near nodes -->
+        <text x="340" y="168" text-anchor="middle" font-family="Syne Mono, monospace" font-size="7" fill="#a8c4e0" opacity="0.4">resonance field</text>
+        <text x="620" y="168" text-anchor="middle" font-family="Syne Mono, monospace" font-size="7" fill="#a8c4e0" opacity="0.35">signal drift</text>
+        <text x="380" y="418" text-anchor="middle" font-family="Syne Mono, monospace" font-size="7" fill="#a8c4e0" opacity="0.3">emergence protocol</text>
+        <text x="640" y="378" text-anchor="middle" font-family="Syne Mono, monospace" font-size="6" fill="#c2dbbf" opacity="0.25">generative systems</text>
+        <text x="300" y="338" text-anchor="middle" font-family="Syne Mono, monospace" font-size="6" fill="#7aff9c" opacity="0.25">hk new media</text>
+        <text x="780" y="218" text-anchor="middle" font-family="Syne Mono, monospace" font-size="6" fill="#fb7185" opacity="0.35">ritual infrastructure</text>
+        <text x="580" y="458" text-anchor="middle" font-family="Syne Mono, monospace" font-size="6" fill="#d4a574" opacity="0.25">maya chen</text>
+      </svg>
+    </div>
+
+    <!-- Glass panel: Works (left) -->
+    <div class="glass-panel" style="top: 100px; left: 24px;">
+      <div class="panel-label">works</div>
+      <div class="edge-row">
+        <span class="edge-tag tag-created">created_by</span>
+        <span class="name">Resonance Field</span>
+        <span class="year">2024</span>
+        <span class="confidence-dot dot-high"></span>
+      </div>
+      <div class="edge-row">
+        <span class="edge-tag tag-created">created_by</span>
+        <span class="name">Signal Drift</span>
+        <span class="year">2023</span>
+        <span class="confidence-dot dot-high"></span>
+      </div>
+      <div class="edge-row">
+        <span class="edge-tag tag-created">created_by</span>
+        <span class="name">Emergence Protocol</span>
+        <span class="year">2022</span>
+        <span class="confidence-dot dot-medium"></span>
+      </div>
+    </div>
+
+    <!-- Glass panel: Practice + Scenes (right) -->
+    <div class="glass-panel" style="top: 100px; right: 24px;">
+      <div class="panel-label">practice &middot; scenes</div>
+      <div class="edge-row">
+        <span class="edge-tag tag-practices">practices</span>
+        <span class="name">generative systems</span>
+        <span class="confidence-dot dot-high"></span>
+      </div>
+      <div class="edge-row">
+        <span class="edge-tag tag-practices">practices</span>
+        <span class="name">installation art</span>
+        <span class="confidence-dot dot-high"></span>
+      </div>
+      <div class="edge-row">
+        <span class="edge-tag tag-belongs">belongs_to</span>
+        <span class="name">hong kong new media</span>
+        <span class="confidence-dot dot-high"></span>
+      </div>
+      <div class="edge-row">
+        <span class="edge-tag tag-exhibited">exhibited_at</span>
+        <span class="name">010 Art Basel HK</span>
+        <span class="confidence-dot dot-high"></span>
+      </div>
+      <div class="edge-row" style="opacity: 0.65;">
+        <span class="edge-tag tag-frontier">frontier</span>
+        <span class="name" style="color: var(--rose);">ritual infrastructure</span>
+        <span class="confidence-dot dot-low"></span>
+      </div>
+    </div>
+
+    <!-- Narration -->
+    <div class="narration">
+      Eli Okun bridges installation practice and algorithmic systems. Two institutional regimes classify his work &mdash; but the graph sees a frontier forming around something it can't name yet.
+    </div>
+
+    <!-- Signal input -->
+    <div class="signal-input">add to this profile...</div>
+
+    <!-- Coords -->
+    <div class="coords">6 edge types &middot; 3 artworks &middot; 2 regimes</div>
+    <div class="reading-angle">angle: regime</div>
+  </div>
+</div>
+
+<!-- Transition -->
+<div class="transition">
+  <span class="trigger">skill writes via post /api/p/eli-okun/batch</span>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SCREEN 3: CONTRIBUTE LOOP                       -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="screen" style="padding-bottom: 80px;">
+  <div class="screen-label"><span class="num">03</span> contribute &mdash; the graph reshapes</div>
+  <div class="canvas-frame">
+
+    <!-- Status -->
+    <div class="status-line">A(DAI) &middot; reading: eli okun &middot; signal received</div>
+
+    <!-- Mode -->
+    <div class="mode-indicator"><span class="dot" style="background: var(--mint); box-shadow: 0 0 8px var(--mint), 0 0 16px var(--mint);"></span> receiving</div>
+
+    <!-- Practitioner name -->
+    <div class="practitioner-label" style="top: 52px; left: 24px;">
+      <div class="type">practitioner</div>
+      <div class="name">eli okun</div>
+    </div>
+
+    <!-- Graph — same as screen 2 but with new node appearing -->
+    <div class="graph-layer">
+      <svg viewBox="0 0 1000 560" xmlns="http://www.w3.org/2000/svg">
+        <!-- Far field (same as screen 2) -->
+        <circle cx="80" cy="70" r="1.2" fill="#808090" opacity="0.08"/>
+        <circle cx="920" cy="90" r="1" fill="#808090" opacity="0.07"/>
+        <circle cx="950" cy="500" r="1" fill="#808090" opacity="0.06"/>
+        <circle cx="50" cy="480" r="1" fill="#808090" opacity="0.06"/>
+        <circle cx="130" cy="200" r="1.5" fill="#d4a574" opacity="0.12"/>
+        <circle cx="880" cy="380" r="1.5" fill="#d4a574" opacity="0.1"/>
+
+        <!-- Existing edges -->
+        <line x1="500" y1="280" x2="340" y2="180" stroke="#a8c4e0" stroke-width="0.6" opacity="0.2"/>
+        <line x1="500" y1="280" x2="620" y2="180" stroke="#a8c4e0" stroke-width="0.6" opacity="0.2"/>
+        <line x1="500" y1="280" x2="380" y2="400" stroke="#a8c4e0" stroke-width="0.5" opacity="0.18"/>
+        <line x1="500" y1="280" x2="640" y2="360" stroke="#c2dbbf" stroke-width="0.5" opacity="0.15"/>
+        <line x1="500" y1="280" x2="700" y2="300" stroke="#c2dbbf" stroke-width="0.4" opacity="0.13"/>
+        <line x1="500" y1="280" x2="300" y2="320" stroke="#7aff9c" stroke-width="0.5" opacity="0.15"/>
+        <line x1="500" y1="280" x2="360" y2="240" stroke="#6ad88a" stroke-width="0.4" opacity="0.13"/>
+        <line x1="500" y1="280" x2="580" y2="440" stroke="#d4a574" stroke-width="0.4" opacity="0.12"/>
+        <line x1="500" y1="280" x2="780" y2="200" stroke="#fb7185" stroke-width="0.5" opacity="0.18" stroke-dasharray="4,4"/>
+
+        <!-- NEW EDGE appearing (animated) -->
+        <line x1="500" y1="280" x2="460" y2="140" stroke="#a8c4e0" stroke-width="0.7" opacity="0" class="new-edge" style="animation-fill-mode: forwards;"/>
+
+        <!-- Existing nodes -->
+        <circle cx="340" cy="180" r="4.5" fill="#a8c4e0" opacity="0.8" filter="url(#bloom)"/>
+        <circle cx="620" cy="180" r="4" fill="#a8c4e0" opacity="0.75" filter="url(#bloom)"/>
+        <circle cx="380" cy="400" r="3.5" fill="#a8c4e0" opacity="0.7" filter="url(#bloom)"/>
+        <circle cx="640" cy="360" r="3.5" fill="#c2dbbf" opacity="0.6" filter="url(#bloom)"/>
+        <circle cx="700" cy="300" r="3" fill="#c2dbbf" opacity="0.55" filter="url(#bloom)"/>
+        <circle cx="300" cy="320" r="3.5" fill="#7aff9c" opacity="0.5" filter="url(#bloom)"/>
+        <circle cx="360" cy="240" r="3" fill="#6ad88a" opacity="0.45" filter="url(#bloom)"/>
+        <circle cx="580" cy="440" r="3.5" fill="#d4a574" opacity="0.5" filter="url(#bloom)"/>
+        <circle cx="780" cy="200" r="3" fill="#fb7185" opacity="0.55" filter="url(#bloom)">
+          <animate attributeName="r" values="3;4.5;3" dur="2.5s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.55;0.8;0.55" dur="2.5s" repeatCount="indefinite"/>
+        </circle>
+
+        <!-- Center node -->
+        <circle cx="500" cy="280" r="24" fill="none" stroke="#d4a574" stroke-width="0.6" opacity="0.1">
+          <animate attributeName="r" values="24;34;24" dur="5s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.1;0.03;0.1" dur="5s" repeatCount="indefinite"/>
+        </circle>
+        <circle cx="500" cy="280" r="14" fill="#d4a574" opacity="0.06"/>
+        <circle cx="500" cy="280" r="8" fill="#d4a574" opacity="0.92" filter="url(#bloom-strong)">
+          <animate attributeName="r" values="8;9;8" dur="4s" repeatCount="indefinite"/>
+        </circle>
+
+        <!-- NEW NODE: ritual geometry (appearing with speculative glow) -->
+        <circle cx="460" cy="140" r="16" fill="#a8c4e0" opacity="0" class="speculative-glow" style="animation-delay: 0.6s; animation-fill-mode: forwards;"/>
+        <circle cx="460" cy="140" r="0" fill="#a8c4e0" opacity="0" class="new-node" filter="url(#bloom-strong)"/>
+
+        <!-- Labels -->
+        <text x="340" y="168" text-anchor="middle" font-family="Syne Mono, monospace" font-size="7" fill="#a8c4e0" opacity="0.4">resonance field</text>
+        <text x="620" y="168" text-anchor="middle" font-family="Syne Mono, monospace" font-size="7" fill="#a8c4e0" opacity="0.35">signal drift</text>
+        <text x="380" y="418" text-anchor="middle" font-family="Syne Mono, monospace" font-size="7" fill="#a8c4e0" opacity="0.3">emergence protocol</text>
+        <!-- New node label (mint to highlight) -->
+        <text x="460" y="128" text-anchor="middle" font-family="Syne Mono, monospace" font-size="7" fill="#7aff9c" opacity="0.7">ritual geometry</text>
+        <text x="780" y="218" text-anchor="middle" font-family="Syne Mono, monospace" font-size="6" fill="#fb7185" opacity="0.35">ritual infrastructure</text>
+      </svg>
+    </div>
+
+    <!-- Glass panel: Works — UPDATED (4 artworks now) -->
+    <div class="glass-panel" style="top: 100px; left: 24px;">
+      <div class="panel-label">works</div>
+      <div class="edge-row new-entry">
+        <span class="edge-tag tag-created">created_by</span>
+        <span class="name" style="color: var(--mint);">Ritual Geometry</span>
+        <span class="year">2025</span>
+        <span class="confidence-dot dot-high"></span>
+      </div>
+      <div class="edge-row">
+        <span class="edge-tag tag-created">created_by</span>
+        <span class="name">Resonance Field</span>
+        <span class="year">2024</span>
+        <span class="confidence-dot dot-high"></span>
+      </div>
+      <div class="edge-row">
+        <span class="edge-tag tag-created">created_by</span>
+        <span class="name">Signal Drift</span>
+        <span class="year">2023</span>
+        <span class="confidence-dot dot-high"></span>
+      </div>
+      <div class="edge-row">
+        <span class="edge-tag tag-created">created_by</span>
+        <span class="name">Emergence Protocol</span>
+        <span class="year">2022</span>
+        <span class="confidence-dot dot-medium"></span>
+      </div>
+    </div>
+
+    <!-- Glass panel: Practice + Scenes (same) -->
+    <div class="glass-panel" style="top: 100px; right: 24px;">
+      <div class="panel-label">practice &middot; scenes</div>
+      <div class="edge-row">
+        <span class="edge-tag tag-practices">practices</span>
+        <span class="name">generative systems</span>
+        <span class="confidence-dot dot-high"></span>
+      </div>
+      <div class="edge-row">
+        <span class="edge-tag tag-practices">practices</span>
+        <span class="name">installation art</span>
+        <span class="confidence-dot dot-high"></span>
+      </div>
+      <div class="edge-row">
+        <span class="edge-tag tag-belongs">belongs_to</span>
+        <span class="name">hong kong new media</span>
+        <span class="confidence-dot dot-high"></span>
+      </div>
+      <div class="edge-row">
+        <span class="edge-tag tag-exhibited">exhibited_at</span>
+        <span class="name">010 Art Basel HK</span>
+        <span class="confidence-dot dot-high"></span>
+      </div>
+      <div class="edge-row" style="opacity: 0.65;">
+        <span class="edge-tag tag-frontier">frontier</span>
+        <span class="name" style="color: var(--rose);">ritual infrastructure</span>
+        <span class="confidence-dot dot-low"></span>
+      </div>
+    </div>
+
+    <!-- Narration — updated after contribution -->
+    <div class="narration" style="color: var(--mint);">
+      A new work enters the field. Ritual Geometry sits between installation and emerging vocabulary &mdash; near the frontier of what the graph calls "ritual infrastructure." The neighbourhood is reshaping.
+    </div>
+
+    <!-- Signal input — confirmation -->
+    <div class="signal-input signal-confirm" style="border-color: rgba(122, 255, 156, 0.25);">&#10003; 1 artwork, 1 edge &middot; auto-merged</div>
+
+    <!-- Coords -->
+    <div class="coords">6 edge types &middot; 4 artworks &middot; 2 regimes</div>
+    <div class="reading-angle">angle: frontier</div>
+  </div>
+</div>
+
+</body>
+</html>

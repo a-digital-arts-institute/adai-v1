@@ -1,28 +1,66 @@
-# A(DAI) — Digital Arts Knowledge Commons
+# A(DAI) — A Digital Arts Institute
 
-A semantic graph of digital arts practitioners, scenes, concepts, and their relationships. Built with [Shards](https://github.com/fragcolor-xyz/shards) and [CR-SQLite](https://github.com/shards-lang/cr-sqlite).
+Field intelligence infrastructure for the digital arts. A knowledge commons and semantic graph where practitioner intelligence, lived experience, artworks, and field signals accumulate into something the field can query, traverse, challenge, and build on.
+
+*A* canon, not *the* canon. The indefinite article is load-bearing.
 
 ## Architecture
 
-- **Database:** SQLite + CR-SQLite (CRDT-enabled, merge-ready)
-- **Server:** Shards HTTP server on port 8080
-- **Schema:** `db.sql` — 4 CRR tables (nodes, edges, signals, contributors) + 2 local tables (intake_queue, settings)
+CR-SQLite Matryoshka — every practitioner, scene, and the field itself gets its own SQLite database file, synced via CRDTs.
 
-## Running
+```
+┌──────────────────────────────────────────────────┐
+│  FIELD DB (full commons — fat materialized view)  │
+│  ┌────────────────────────────────────────────┐   │
+│  │  SCENE DB ("Berlin generative art")        │   │
+│  │  ┌──────────────────────────────────────┐  │   │
+│  │  │  PRACTITIONER DB (artist-rafael)     │  │   │
+│  │  └──────────────────────────────────────┘  │   │
+│  └────────────────────────────────────────────┘   │
+└──────────────────────────────────────────────────┘
+```
 
-```bash
-# First run: seed the database from JSON research data
-shards seed.shs
+**Signal flow:** Arrive → classify source origin → extract entities/edges → intake queue → merge boundary check → CRDT merge → contribution receipt
 
-# Start the server
-shards run.shs
-# → http://localhost:8080
+## Current State (April 2026)
+
+- **Live at** [adai-basel.fly.dev](https://adai-basel.fly.dev)
+- 774 nodes, 929 edges, 3 edge types (PRACTICES 284, BELONGS_TO 366, RELATED_TO 279)
+- Single-DB deployment (per-practitioner split designed, not yet implemented)
+
+## Three-Layer Prototype
+
+1. **Landing page** (in progress) — generative particle viz, North Star text, email capture → Netlify
+2. **Public data layer** (starts April 9) — automated runs from curated sources, target 2,000–5,000+ nodes, first artwork nodes
+3. **Intimate layer** — practitioner sovereign DBs, LLM-assisted interviews, qualitative input
+4. **Audio layer** — deferred until foundation is solid
+
+## Stack
+
+CR-SQLite (Gio's C port), Shards (HTTP server + scripting), Claude API (processing, classification, narrative), Fly.io (backend), Netlify (landing page), D3 (graph viz), TouchDesigner (particle/gravitational viz), Docker (deployment)
+
+## Repos
+
+GitHub org: `a-digital-arts-institute`
+
+- **`adai-v1`** — live codebase, branch `feat/cr-sqlite-backend`. Deployed at adai-basel.fly.dev
+- **`seed-doc`** — single `index.html`, the living specification
+
+```
+adai-v1/
+├── adai-digital-arts-report-research/   # Field/outline schemas (reference)
+├── docs/                                # Spec gap analysis
+├── results/                             # 59 JSON research files (seed input)
+├── db.sql                               # Database schema
+├── Dockerfile / fly.toml / entrypoint.sh  # Fly.io deployment
+├── run.shs / seed.shs / server.shs      # Shards server + seed scripts
+└── CLAUDE.md
 ```
 
 ## Endpoints
 
 | Route | Description |
-|---|---|
+|-------|-------------|
 | `/` | Home — stats + recent additions |
 | `/explore` | Browse all entities |
 | `/practitioner/:slug` | Practitioner profile with graph connections |
@@ -31,18 +69,17 @@ shards run.shs
 | `/review` | Curator review queue |
 | `/api/stats` | JSON stats |
 
-## Data
+## Entity IDs
 
-- `results/` — 59 JSON research files (seed input)
-- `adai-digital-arts-report-research/` — field/outline schemas (reference)
-- `db.sql` — database schema
+Human-readable with type prefix: `artwork:fidenza`, `practitioner:casey reas`, `concept:generative code`
 
-## Current Stats
+## Team
 
-- **774 nodes** (practitioners, concepts, scenes, platforms, etc.)
-- **929 edges** (284 PRACTICES, 366 BELONGS_TO, 279 RELATED_TO)
-- Single-DB deployment (Matryoshka per-practitioner split designed, not yet implemented)
+- **Iri** — strategy, editorial, signal source curation, value framework for agents
+- **JB** — market development, artist relations, sensing conversations
+- **Gio** — backend architecture, CR-SQLite, protocol, public layer data collection
+- **Piyush** — frontend, generative landing page, brand system, particle/gravitational visualization
 
-## License
+## Full Reference
 
-CC-BY-SA 4.0 (Mode 1 — commons)
+See [`claude/CLAUDE.md`](claude/CLAUDE.md) for the authoritative specification — architecture, principles, edge types, gravity model, trust model, agentic risk map, critical gaps, and core rules.

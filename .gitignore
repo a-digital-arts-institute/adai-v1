@@ -1,3 +1,11 @@
+# Environment & secrets
+.env
+.env.*
+.env.py
+
+# Recovery keys
+proton-recovery-kit.pdf
+
 # Runtime databases
 *.db
 *.db-shm
@@ -7,20 +15,44 @@
 node_modules/
 dist/
 
-# Shards runtime
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Logs
+/tmp/
+*.log
+errors.log
+pipeline.log
 shards.log
 
-# macOS
+# Caches
+concepts_cache.json
+
+# Claude Code project memory
+.claude/
+
+# OS
 .DS_Store
+Thumbs.db
 
 # Editors
 *.swp
 *.swo
 *~
 
-# Logs
-/tmp/
-*.log
+# Large binary files — keep in local folder, not in git
+Brief/
+Meeting notes/
+*.mp4
+*.pptx
+*.docx
+*.pdf
+
+# Notion setup artifacts (one-time scripts, keep for reference but ignore logs)
+schema_update_log.txt
+notion_ids.txt
 
 # Seed enrichment intermediate artifacts — not for commit
 seed/*.bak

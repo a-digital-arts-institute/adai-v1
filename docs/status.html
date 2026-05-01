@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A(DAI) Mission Control — April 18, 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --font-body: 'DM Sans', system-ui, sans-serif;
+    --font-mono: 'Fira Code', 'SF Mono', Consolas, monospace;
+    --bg: #0a0e14;
+    --surface: #111820;
+    --surface2: #161e28;
+    --surface-elevated: #1a2332;
+    --border: rgba(255, 255, 255, 0.06);
+    --border-bright: rgba(255, 255, 255, 0.12);
+    --text: #e0e6ed;
+    --text-dim: #6b7d8f;
+    --green: #00EA6D;
+    --green-dim: rgba(0, 234, 109, 0.10);
+    --green-deep: rgba(0, 234, 109, 0.06);
+    --red: #ff4d6a;
+    --red-dim: rgba(255, 77, 106, 0.10);
+    --amber: #ffb020;
+    --amber-dim: rgba(255, 176, 32, 0.10);
+    --blue: #3b9eff;
+    --blue-dim: rgba(59, 158, 255, 0.10);
+    --dim: #2a3544;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f0f2f5;
+      --surface: #ffffff;
+      --surface2: #f7f8fa;
+      --surface-elevated: #ffffff;
+      --border: rgba(0, 0, 0, 0.08);
+      --border-bright: rgba(0, 0, 0, 0.15);
+      --text: #1a1f26;
+      --text-dim: #6b7280;
+      --green: #059650;
+      --green-dim: rgba(5, 150, 80, 0.08);
+      --green-deep: rgba(5, 150, 80, 0.04);
+      --red: #dc2626;
+      --red-dim: rgba(220, 38, 38, 0.08);
+      --amber: #d97706;
+      --amber-dim: rgba(217, 119, 6, 0.08);
+      --blue: #2563eb;
+      --blue-dim: rgba(37, 99, 235, 0.08);
+      --dim: #e2e5e9;
+    }
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    background-image:
+      radial-gradient(ellipse at 20% 0%, var(--green-deep) 0%, transparent 50%),
+      radial-gradient(circle at 90% 90%, rgba(255, 77, 106, 0.03) 0%, transparent 40%);
+    color: var(--text);
+    font-family: var(--font-body);
+    padding: 32px;
+    min-height: 100vh;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeScale {
+    from { opacity: 0; transform: scale(0.92); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes countUp {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .animate { animation: fadeUp 0.4s ease-out both; animation-delay: calc(var(--i, 0) * 0.06s); }
+  .animate-scale { animation: fadeScale 0.4s ease-out both; animation-delay: calc(var(--i, 0) * 0.06s); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+
+  /* ---- HEADER ---- */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .header-left h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 4px;
+  }
+  .header-left h1 span { color: var(--green); }
+  .header-left .subtitle {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .countdown {
+    background: var(--surface);
+    border: 1px solid var(--border-bright);
+    border-radius: 12px;
+    padding: 16px 24px;
+    text-align: center;
+    min-width: 180px;
+  }
+  .countdown .number {
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--amber);
+    line-height: 1;
+    font-family: var(--font-mono);
+  }
+  .countdown .label {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 4px;
+    font-family: var(--font-mono);
+  }
+
+  /* ---- KPI ROW ---- */
+  .kpi-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+  .kpi {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .kpi--green::before { background: var(--green); }
+  .kpi--red::before { background: var(--red); }
+  .kpi--amber::before { background: var(--amber); }
+  .kpi--blue::before { background: var(--blue); }
+  .kpi .val {
+    font-size: 28px;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    line-height: 1.1;
+  }
+  .kpi .val--green { color: var(--green); }
+  .kpi .val--red { color: var(--red); }
+  .kpi .val--amber { color: var(--amber); }
+  .kpi .val--blue { color: var(--blue); }
+  .kpi .desc {
+    font-size: 11px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+    font-family: var(--font-mono);
+  }
+
+  /* ---- RISK BANNER ---- */
+  .risk-banner {
+    background: var(--red-dim);
+    border: 1px solid rgba(255, 77, 106, 0.2);
+    border-radius: 10px;
+    padding: 14px 20px;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+  }
+  .risk-banner .dot {
+    width: 8px; height: 8px;
+    background: var(--red);
+    border-radius: 50%;
+    animation: pulse 1.5s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  .risk-banner strong { color: var(--red); }
+
+  /* ---- TRACK LANES ---- */
+  .tracks { display: flex; flex-direction: column; gap: 20px; }
+
+  .track {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .track-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .track-num {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-dim);
+    background: var(--bg);
+    border: 1px solid var(--border-bright);
+    border-radius: 6px;
+    padding: 2px 8px;
+    letter-spacing: 0.5px;
+  }
+  .track-title {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+  }
+  .track-progress {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .track-progress span { color: var(--green); font-weight: 600; }
+
+  .track-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1px;
+    background: var(--border);
+  }
+  .item {
+    background: var(--surface);
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+  }
+  .item-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .status-dot--done { background: var(--green); }
+  .status-dot--live { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .status-dot--progress { background: var(--blue); }
+  .status-dot--risk { background: var(--amber); }
+  .status-dot--critical { background: var(--red); animation: pulse 1.5s ease-in-out infinite; }
+  .status-dot--blocked { background: var(--red); }
+  .status-dot--not-started { background: var(--dim); }
+
+  .item-name {
+    font-size: 13px;
+    font-weight: 500;
+    flex: 1;
+    min-width: 0;
+  }
+  .item-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .badge--done { background: var(--green-dim); color: var(--green); }
+  .badge--live { background: var(--green-dim); color: var(--green); }
+  .badge--wip { background: var(--blue-dim); color: var(--blue); }
+  .badge--risk { background: var(--amber-dim); color: var(--amber); }
+  .badge--critical { background: var(--red-dim); color: var(--red); }
+  .badge--blocked { background: var(--red-dim); color: var(--red); }
+  .badge--pending { background: rgba(255,255,255,0.04); color: var(--text-dim); }
+
+  .item-detail {
+    font-size: 11px;
+    color: var(--text-dim);
+    line-height: 1.4;
+    font-family: var(--font-mono);
+  }
+  .item-detail code {
+    background: var(--bg);
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-size: 10px;
+  }
+
+  /* ---- SCHEMA SECTION ---- */
+  .schema-section {
+    margin-top: 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .schema-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .schema-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+  }
+  .schema-col {
+    background: var(--surface);
+    padding: 16px 20px;
+  }
+  .schema-col h4 {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+  .schema-col h4 .ct { font-weight: 700; }
+  .schema-col h4 .ct--green { color: var(--green); }
+  .schema-col h4 .ct--red { color: var(--red); }
+
+  .schema-list { list-style: none; }
+  .schema-list li {
+    font-size: 12px;
+    font-family: var(--font-mono);
+    padding: 4px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .schema-list li::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .schema-list--in li::before { background: var(--green); }
+  .schema-list--out li::before { background: var(--red); }
+
+  /* ---- TEAM SECTION ---- */
+  .team-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin-top: 28px;
+  }
+  .team-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .team-card .name {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 2px;
+  }
+  .team-card .role {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 8px;
+  }
+  .team-card .focus {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  /* ---- FOOTER ---- */
+  .footer {
+    margin-top: 32px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* ---- INGESTION PLAN ---- */
+  .ingestion-section {
+    margin-top: 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .ingestion-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .ingestion-header .title {
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .ingestion-header .tag {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    background: var(--green-dim);
+    color: var(--green);
+  }
+  .source-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1px;
+    background: var(--border);
+  }
+  .source-card {
+    background: var(--surface);
+    padding: 18px 20px;
+  }
+  .source-card .source-num {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .source-card .source-name {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .source-card .source-tier {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+  .source-card .source-method {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-bottom: 10px;
+    word-break: break-all;
+  }
+  .source-card .source-why {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+  .source-card .edge-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .edge-tag {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .edge-tag--created { background: var(--green-dim); color: var(--green); }
+  .edge-tag--exhibited { background: var(--blue-dim); color: var(--blue); }
+  .edge-tag--practices { background: var(--amber-dim); color: var(--amber); }
+  .edge-tag--belongs { background: rgba(168, 130, 255, 0.10); color: #a882ff; }
+  .edge-tag--collaborates { background: rgba(255, 130, 168, 0.10); color: #ff82a8; }
+  .edge-tag--related { background: rgba(255,255,255,0.04); color: var(--text-dim); }
+
+  /* ---- EDGE COVERAGE TABLE ---- */
+  .edge-table-wrap {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    overflow-x: auto;
+  }
+  .edge-table-wrap h4 {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+  }
+  .edge-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  .edge-table th {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-dim);
+    text-align: left;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border-bright);
+    white-space: nowrap;
+  }
+  .edge-table td {
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  .edge-table tr:last-child td { border-bottom: none; }
+  .edge-table .edge-name {
+    font-family: var(--font-mono);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .edge-table .check { color: var(--green); font-weight: 700; }
+  .edge-table .dash { color: var(--dim); }
+
+  /* ---- PIPELINE ---- */
+  .pipeline-row {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    font-family: var(--font-mono);
+    color: var(--text-dim);
+  }
+  .pipeline-arrow { color: var(--green); font-weight: 700; }
+  .pipeline-step {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    white-space: nowrap;
+  }
+  .pipeline-step--highlight {
+    border-color: var(--green);
+    color: var(--green);
+    background: var(--green-dim);
+  }
+
+  @media (max-width: 700px) {
+    body { padding: 16px; }
+    .header { flex-direction: column; }
+    .schema-grid { grid-template-columns: 1fr; }
+    .track-items { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header animate" style="--i:0">
+  <div class="header-left">
+    <h1><span>A(DAI)</span> Mission Control</h1>
+    <div class="subtitle">Project Status &middot; April 18, 2026 &middot; Notion ↔ Codebase Audit</div>
+  </div>
+  <div class="countdown animate-scale" style="--i:1">
+    <div class="number" id="days">--</div>
+    <div class="label">Days to Basel</div>
+  </div>
+</div>
+
+<!-- KPI ROW -->
+<div class="kpi-row">
+  <div class="kpi kpi--green animate-scale" style="--i:2">
+    <div class="val val--green">774</div>
+    <div class="desc">Nodes Live</div>
+  </div>
+  <div class="kpi kpi--green animate-scale" style="--i:3">
+    <div class="val val--green">929</div>
+    <div class="desc">Edges Live</div>
+  </div>
+  <div class="kpi kpi--red animate-scale" style="--i:4">
+    <div class="val val--red">0</div>
+    <div class="desc">Artwork Nodes</div>
+  </div>
+  <div class="kpi kpi--red animate-scale" style="--i:5">
+    <div class="val val--red">3/8</div>
+    <div class="desc">Edge Types</div>
+  </div>
+  <div class="kpi kpi--blue animate-scale" style="--i:6">
+    <div class="val val--blue">70</div>
+    <div class="desc">Sources Curated</div>
+  </div>
+  <div class="kpi kpi--green animate-scale" style="--i:7">
+    <div class="val val--green">3</div>
+    <div class="desc">Editorial Engines</div>
+  </div>
+  <div class="kpi kpi--blue animate-scale" style="--i:8">
+    <div class="val val--blue">2/4</div>
+    <div class="desc">Persona Skills · Basel/Total</div>
+  </div>
+</div>
+
+<!-- RISK BANNER -->
+<div class="risk-banner animate" style="--i:9; background: var(--amber-dim); border-color: rgba(255, 176, 32, 0.25);">
+  <div class="dot" style="background: var(--amber); box-shadow: 0 0 6px var(--amber);"></div>
+  <div><strong style="color: var(--amber);">Schema locked. Storage resolved (fly.io + Cloudflare R2).</strong> This week&rsquo;s axis is the <strong>practitioner profile architecture</strong> (<a href="profile-user-flow.html" style="color:var(--amber)">profile-user-flow.html</a>) &mdash; bearer-token onboarding, adai-contribute + adai-view personas, ~22 endpoints at <code style="background:rgba(255,176,32,0.08); padding:1px 5px; border-radius:3px; font-family:var(--font-mono); font-size:12px;">/p/:slug</code>. Build sequence: Schema+API &rarr; Personas + Engines &rarr; Frontend Profile Page &rarr; 5-practitioner pre-Basel rehearsal (Noah, Eli/Benny, Alex, +2).</div>
+</div>
+
+<!-- POST-WEB STANCE INSET -->
+<div style="margin:-16px 0 12px 0; padding:12px 20px; border-left:3px solid var(--blue); background:rgba(59,158,255,0.04); font-family:var(--font-mono); font-size:12px; color:var(--text-dim); line-height:1.5;">
+  &ldquo;The skill <em>is</em> the interface. No WordPress CRM, no admin pages, no edit forms &mdash; practitioners talk to Claude and the graph updates.&rdquo;
+  <span style="color:var(--text); opacity:0.55;">&mdash; Gio, Apr 16 call. Framing: <strong style="color:var(--blue);">decoupled, not decentralized</strong>.</span>
+</div>
+
+<!-- SKILL STACK + ON-DEMAND GATHERER INSET -->
+<div style="margin:0 0 28px 0; padding:14px 20px; border-left:3px solid var(--green); background:rgba(0,234,109,0.04); font-family:var(--font-mono); font-size:12px; color:var(--text-dim); line-height:1.6;">
+  <div style="color:var(--text); opacity:0.8; margin-bottom:6px;"><strong style="color:var(--green);">Every A(DAI) Claude call is a 3-layer stack:</strong></div>
+  <div style="padding-left:8px; margin-bottom:10px;">
+    <div><span style="color:var(--green);">&#9642;</span> <code style="color:var(--text);">relational-intelligence-protocol.md</code> <span style="opacity:0.6;">&mdash; always, the grammar of the system</span></div>
+    <div><span style="color:var(--green);">&#9642;</span> <code style="color:var(--text);">gatherer.md</code> or <code style="color:var(--text);">reader.md</code> <span style="opacity:0.6;">&mdash; editorial engine (extract / interpret)</span></div>
+    <div><span style="color:var(--green);">&#9642;</span> <code style="color:var(--text);">adai-contribute</code> &middot; <code style="color:var(--text);">adai-view</code> &middot; <code style="color:var(--text);">adai-curate</code> &middot; <code style="color:var(--text);">adai-research</code> <span style="opacity:0.6;">&mdash; persona (conversation, tone, what practitioners see)</span></div>
+  </div>
+  <div style="color:var(--text); opacity:0.8; border-top:1px dashed rgba(0,234,109,0.2); padding-top:10px;">
+    <strong style="color:var(--green);">The gatherer is a tool, not a pipeline stage.</strong>
+    <span style="opacity:0.75;">You point it at a batch and say &ldquo;go.&rdquo; No event hooks, no automatic post-ingest trigger. <code style="color:var(--text);">processing_trace = NULL</code> means &ldquo;raw, unenriched&rdquo; &mdash; a valid, expected state.</span>
+  </div>
+</div>
+
+<!-- TRACKS -->
+<div class="tracks">
+
+  <!-- TRACK 1: EDITORIAL -->
+  <div class="track animate" style="--i:9">
+    <div class="track-header">
+      <span class="track-num">01</span>
+      <span class="track-title">Editorial &amp; Conceptual</span>
+      <span class="track-progress"><span>4</span>/4 complete</span>
+    </div>
+    <div class="track-items">
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--done"></div>
+          <span class="item-name">North Star article</span>
+          <span class="item-badge badge--done">Done</span>
+        </div>
+        <div class="item-detail">Draft in Notion. Public-facing vision for Substack.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--done"></div>
+          <span class="item-name">Skills files (editorial guidance)</span>
+          <span class="item-badge badge--done">Done Apr 9</span>
+        </div>
+        <div class="item-detail">3 files: <code>relational-intelligence-protocol.md</code>, <code>gatherer.md</code>, <code>reader.md</code>. Was #1 risk &mdash; now resolved.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--done"></div>
+          <span class="item-name">Sources curation</span>
+          <span class="item-badge badge--done">Done</span>
+        </div>
+        <div class="item-detail"><code>sources.yaml</code> &mdash; 70 sources, 5 tiers, 9 groups. Ingestion phases defined.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--done"></div>
+          <span class="item-name">CLAUDE.md</span>
+          <span class="item-badge badge--done">Done</span>
+        </div>
+        <div class="item-detail">24.9 KB. More current than Notion docs. Updated April 9.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRACK 2: INFRASTRUCTURE -->
+  <div class="track animate" style="--i:10">
+    <div class="track-header">
+      <span class="track-num">02</span>
+      <span class="track-title">Infrastructure &amp; Backend</span>
+      <span class="track-progress"><span>2</span>/8 complete</span>
+    </div>
+    <div class="track-items">
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--live"></div>
+          <span class="item-name">CR-SQLite backend</span>
+          <span class="item-badge badge--live">Live</span>
+        </div>
+        <div class="item-detail">adai-basel.fly.dev &mdash; Shards + CR-SQLite on Fly.io. All endpoints working.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--not-started"></div>
+          <span class="item-name">Branch merge to main</span>
+          <span class="item-badge badge--pending">Pending</span>
+        </div>
+        <div class="item-detail">feat/cr-sqlite-backend still separate. First action item from Team Brief.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--done"></div>
+          <span class="item-name">Schema freeze</span>
+          <span class="item-badge badge--done">Locked Apr 18</span>
+        </div>
+        <div class="item-detail">Locked with Gio. 10 columns across 2 tables &mdash; consent (&times;3) + processing_trace + source_origin + provenance_chain on signals; event_time + valid_from / valid_until / invalidated_by on edges. Plus classification_regime node type + CLASSIFIED_BY / LEGIBLE_TO edge types (no DDL). 3 items (batch_id, node_aliases, signal status) still Priority 2 for discussion. Pipeline: Scenario B.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--not-started"></div>
+          <span class="item-name">Gatherer runner</span>
+          <span class="item-badge badge--pending">Not Built</span>
+        </div>
+        <div class="item-detail">Trigger tool for on-demand enrichment passes against imported batches. <strong>Not an event-driven automation</strong> &mdash; the gatherer is a callable, not a listener. Build Guide Steps 1&ndash;6 done. Step 7 (runner + scheduler) is Gio's primary task.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--progress"></div>
+          <span class="item-name">Authentication</span>
+          <span class="item-badge badge--wip">Designed</span>
+        </div>
+        <div class="item-detail">Bearer token design confirmed Apr 15&ndash;16. Token = identity. One token per practitioner, generated at 1:1 onboarding. See profile-user-flow.html &sect;2.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--progress"></div>
+          <span class="item-name">Asset storage</span>
+          <span class="item-badge badge--wip">Decided Apr 16</span>
+        </div>
+        <div class="item-detail">Cloudflare R2 for big assets (images, video, 3D) + fly.io for database. JB setting up R2 account. Framing: &ldquo;decoupled, not decentralized.&rdquo; Only practitioner-uploaded assets; metadata stays in CR-SQLite.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--not-started"></div>
+          <span class="item-name">Rate limiting</span>
+          <span class="item-badge badge--pending">Not Built</span>
+        </div>
+        <div class="item-detail">DoS defence for /contribute endpoint. Agentic risk #5.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--not-started"></div>
+          <span class="item-name">Constrained mutations</span>
+          <span class="item-badge badge--pending">Not Enforced</span>
+        </div>
+        <div class="item-detail">Top agentic risk mitigation. Pipeline can still execute raw SQL.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRACK 3: DATA -->
+  <div class="track animate" style="--i:11">
+    <div class="track-header">
+      <span class="track-num">03</span>
+      <span class="track-title">Data</span>
+      <span class="track-progress"><span>1</span>/5 complete</span>
+    </div>
+    <div class="track-items">
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--done"></div>
+          <span class="item-name">Seed data (94 research JSONs)</span>
+          <span class="item-badge badge--done">Done</span>
+        </div>
+        <div class="item-detail">774 nodes, 929 edges seeded. Qualitative field profiles, not structured entity data.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--critical"></div>
+          <span class="item-name">Artwork nodes</span>
+          <span class="item-badge badge--critical">0 / 2,000+</span>
+        </div>
+        <div class="item-detail">Critical gap. First artwork nodes from MoMA (~1&ndash;3K filtered digital/new media) + fxhash GraphQL.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--risk"></div>
+          <span class="item-name">Edge types in use</span>
+          <span class="item-badge badge--risk">3 of 8</span>
+        </div>
+        <div class="item-detail">Have: PRACTICES, BELONGS_TO, RELATED_TO. First 3 imports + triggered gatherer runs activate CREATED_BY, EXHIBITED_AT, COLLABORATES_WITH. CLASSIFIED_BY + LEGIBLE_TO (classification regime edges, added Apr 15) populated mechanically at import, then enriched when the gatherer is pointed at the batch. See CLAUDE.md, skills/gatherer.md.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--risk"></div>
+          <span class="item-name">Geographic diversity</span>
+          <span class="item-badge badge--risk">Poor</span>
+        </div>
+        <div class="item-detail">47/59 practitioners North American/European. Wikidata SPARQL will intentionally query non-Western artists.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--not-started"></div>
+          <span class="item-name">First automated ingestion</span>
+          <span class="item-badge badge--pending">Planned</span>
+        </div>
+        <div class="item-detail">3 sources selected, 1 per tier. Pipeline: JS/Node ingestion &rarr; Claude + gatherer.md &rarr; JSON for Piyush.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRACK 4: FRONTEND -->
+  <div class="track animate" style="--i:12">
+    <div class="track-header">
+      <span class="track-num">04</span>
+      <span class="track-title">Frontend &amp; Brand</span>
+      <span class="track-progress"><span>1</span>/5 complete</span>
+    </div>
+    <div class="track-items">
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--live"></div>
+          <span class="item-name">Brand system</span>
+          <span class="item-badge badge--live">Live</span>
+        </div>
+        <div class="item-detail">daiadai.netlify.app/brand &mdash; notation logos, keyboard controls, spatial logic.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--progress"></div>
+          <span class="item-name">Particle / gravitational viz</span>
+          <span class="item-badge badge--wip">In Progress</span>
+        </div>
+        <div class="item-detail">Piyush building. Aesthetic approved. Three design directions explored.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--progress"></div>
+          <span class="item-name">Frontend-backend connection</span>
+          <span class="item-badge badge--wip">In Progress</span>
+        </div>
+        <div class="item-detail">Unblocked by schema lock + endpoint spec (profile-user-flow.html &sect;4). Piyush building 3 interaction views: (a) hover &rarr; info card; (b) zoom &rarr; node mini-profile; (c) click &rarr; full page at <code>/p/:slug</code>. Then connect one artist end-to-end.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--not-started"></div>
+          <span class="item-name">Email collection CTA</span>
+          <span class="item-badge badge--pending">Not Built</span>
+        </div>
+        <div class="item-detail">"Join the first to test the graph." Landing page flywheel.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--not-started"></div>
+          <span class="item-name">Blog section on daiadai.netlify.app</span>
+          <span class="item-badge badge--pending">Decided Apr 16</span>
+        </div>
+        <div class="item-detail">Blog on main site (not Substack-only). Articles can read the graph. Pipeline of articles drafted by Iri + JB.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRACK 5: PRACTITIONER PROFILES -->
+  <div class="track animate" style="--i:13">
+    <div class="track-header">
+      <span class="track-num">05</span>
+      <span class="track-title">Practitioner Profiles</span>
+      <span class="track-progress"><span>2</span>/7 complete</span>
+    </div>
+    <div class="track-items">
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--done"></div>
+          <span class="item-name">Profile architecture designed</span>
+          <span class="item-badge badge--done">Done Apr 15</span>
+        </div>
+        <div class="item-detail">Gio &times; Iri call. Profile = view, not page. One DB, three surfaces (human frontend, adai-contribute skill, adai-view skill). See profile-user-flow.html v0.1.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--done"></div>
+          <span class="item-name">Open questions resolved</span>
+          <span class="item-badge badge--done">Done Apr 16</span>
+        </div>
+        <div class="item-detail">Frontier signals public &middot; <code>/p/:slug</code> URL &middot; storage = R2 + fly.io &middot; contest own edges auto / others queued.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--not-started"></div>
+          <span class="item-name">adai-contribute (persona)</span>
+          <span class="item-badge badge--pending">Basel v1</span>
+        </div>
+        <div class="item-detail">Practitioner-facing conversation design. Token auth, read + write, merge-boundary aware. Runs on <code>gatherer.md</code> in sensing mode &mdash; persona handles what to ask &amp; how to talk; engine handles what to extract &amp; how to classify. Custom variants per practitioner possible.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--not-started"></div>
+          <span class="item-name">adai-view (persona)</span>
+          <span class="item-badge badge--pending">Basel v1</span>
+        </div>
+        <div class="item-detail">Visitor-facing narration persona. No auth, read-only. Runs on <code>reader.md</code> in narrating mode &mdash; persona handles tone; engine decides what to surface &amp; what absence to name.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--progress"></div>
+          <span class="item-name">Frontend profile page</span>
+          <span class="item-badge badge--wip">WIP</span>
+        </div>
+        <div class="item-detail">3 interaction views in design (Piyush): hover &middot; zoom &middot; click-through to <code>/p/:slug</code>. Panels A&ndash;D consuming the API.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--not-started"></div>
+          <span class="item-name">Pre-Basel onboarding cohort</span>
+          <span class="item-badge badge--pending">Pending</span>
+        </div>
+        <div class="item-detail">5 practitioners: Noah, Eli or Benny (010), Alex (Right Click Save), Piyush, team-internal. Live rehearsal before Basel as a showcase.</div>
+      </div>
+      <div class="item">
+        <div class="item-top">
+          <div class="status-dot status-dot--not-started"></div>
+          <span class="item-name">File upload (R2) + image panel</span>
+          <span class="item-badge badge--pending">Pending</span>
+        </div>
+        <div class="item-detail">Needed for artwork documentation. Blocked on R2 account + endpoint wiring.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- SCHEMA FREEZE DETAIL -->
+<div class="schema-section animate" style="--i:14">
+  <div class="schema-header">Schema Freeze &mdash; Locked Apr 18</div>
+  <div class="schema-grid">
+    <div class="schema-col">
+      <h4>In schema now <span class="ct ct--green">(6 tables)</span></h4>
+      <ul class="schema-list schema-list--in">
+        <li>nodes (id, type, name, slug, metadata, created_at, updated_by)</li>
+        <li>edges (id, source_id, target_id, edge_type, signal_id, confidence, charge)</li>
+        <li>signals (id, title, source_url, source_type, cla_layer, content, confidence)</li>
+        <li>contributors (id, name, type, trust_tier, contributions, approved_count)</li>
+        <li>intake_queue (id, signal_id, submitted_by, status, proposed_nodes/edges)</li>
+        <li>settings (key, value)</li>
+      </ul>
+    </div>
+    <div class="schema-col">
+      <h4>Locked &mdash; confirmed with Gio <span class="ct ct--green">(10 columns + 2 conventions)</span></h4>
+      <ul class="schema-list schema-list--in">
+        <li>signals.consent_scope / consent_attribution / consent_revocable (GDPR)</li>
+        <li>signals.processing_trace (JSON &mdash; enrichment audit trail)</li>
+        <li>signals.source_origin (ouroboros defense &mdash; human_primary | platform_api | ...)</li>
+        <li>signals.provenance_chain (JSON &mdash; regime influence tracking)</li>
+        <li>edges.event_time (when relationship was true in the field)</li>
+        <li>edges.valid_from / valid_until / invalidated_by (bi-temporal + corrections)</li>
+        <li style="color:var(--text-dim); font-style:italic;">+ classification_regime node type &middot; CLASSIFIED_BY / LEGIBLE_TO edge types (no DDL)</li>
+      </ul>
+      <h4 style="margin-top:14px;">Priority 2 &mdash; still for discussion <span class="ct" style="color:var(--amber);">(3 items)</span></h4>
+      <ul class="schema-list schema-list--out" style="opacity:0.7;">
+        <li>signals.batch_id (import run tracking &amp; rollback)</li>
+        <li>node_aliases table (cross-source entity dedup)</li>
+        <li>signals.status (active | revoked | superseded)</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- FIRST-PASS INGESTION PLAN -->
+<div class="ingestion-section animate" style="--i:15">
+  <div class="ingestion-header">
+    <span class="title">First-Pass Ingestion Plan &mdash; 3 Sources, 3 Tiers, All 6 Edge Types</span>
+    <span class="tag">Decided Apr 13</span>
+  </div>
+  <div class="source-cards">
+    <div class="source-card">
+      <div class="source-num">Run 1 &mdash; Easiest Win</div>
+      <div class="source-name">MoMA Collection Data</div>
+      <div class="source-tier">Tier 2 (Institutional) &middot; Phase 1 &middot; Priority: High</div>
+      <div class="source-method">git clone &rarr; CSV &middot; CC0 &middot; No auth<br>github.com/MuseumofModernArt/collection</div>
+      <div class="source-why">15.8K artists + 160K total artworks. <strong>Must filter to digital/new media only</strong> (Classification: Video, Software, Digital, Installation, Media + Medium keywords). ~1,000&ndash;3,000 relevant works. Wikidata QID + Getty ULAN for reconciliation. Produces <strong>first artwork nodes</strong>.</div>
+      <div class="edge-tags">
+        <span class="edge-tag edge-tag--created">CREATED_BY</span>
+        <span class="edge-tag edge-tag--exhibited">EXHIBITED_AT</span>
+        <span class="edge-tag edge-tag--practices">PRACTICES</span>
+        <span class="edge-tag edge-tag--belongs">BELONGS_TO</span>
+      </div>
+    </div>
+    <div class="source-card">
+      <div class="source-num">Run 2 &mdash; Platform Layer</div>
+      <div class="source-name">fxhash (Tezos)</div>
+      <div class="source-tier">Tier 3 (Platform-verified) &middot; Phase 3 &middot; Priority: High</div>
+      <div class="source-method">GraphQL &middot; No auth<br>api.fxhash.xyz/graphql</div>
+      <div class="source-why">Tezos-native generative art. Different practitioner pool from institutional sources &mdash; lower price point, more diverse artists. Produces <strong>non-institutional artwork nodes</strong>. Co-authored tokens give collaboration evidence.</div>
+      <div class="edge-tags">
+        <span class="edge-tag edge-tag--created">CREATED_BY</span>
+        <span class="edge-tag edge-tag--practices">PRACTICES</span>
+        <span class="edge-tag edge-tag--collaborates">COLLABORATES_WITH</span>
+        <span class="edge-tag edge-tag--belongs">BELONGS_TO</span>
+      </div>
+    </div>
+    <div class="source-card">
+      <div class="source-num">Run 3 &mdash; Enrichment</div>
+      <div class="source-name">Wikidata SPARQL</div>
+      <div class="source-tier">Tier 1 (Linked Open Data) &middot; Phase 2 &middot; Priority: High</div>
+      <div class="source-method">SPARQL &middot; No auth<br>query.wikidata.org/sparql</div>
+      <div class="source-why">Enriches existing nodes with structured properties. Only source that directly addresses <strong>geographic diversity gap</strong> &mdash; intentional queries for non-Western digital artists. Reconciliation IDs link all future sources.</div>
+      <div class="edge-tags">
+        <span class="edge-tag edge-tag--exhibited">EXHIBITED_AT</span>
+        <span class="edge-tag edge-tag--collaborates">COLLABORATES_WITH</span>
+        <span class="edge-tag edge-tag--practices">PRACTICES</span>
+        <span class="edge-tag edge-tag--belongs">BELONGS_TO</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edge coverage table -->
+  <div class="edge-table-wrap">
+    <h4>Edge type coverage across first 3 runs</h4>
+    <table class="edge-table">
+      <thead>
+        <tr>
+          <th>Edge Type</th>
+          <th>MoMA</th>
+          <th>fxhash</th>
+          <th>Wikidata</th>
+          <th>How</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="edge-name">CREATED_BY</td>
+          <td class="check">&#10003;</td>
+          <td class="check">&#10003;</td>
+          <td class="dash">&mdash;</td>
+          <td>Artworks.csv &rarr; ConstituentID &middot; Token &rarr; author</td>
+        </tr>
+        <tr>
+          <td class="edge-name">EXHIBITED_AT</td>
+          <td class="check">&#10003;</td>
+          <td class="dash">&mdash;</td>
+          <td class="check">&#10003;</td>
+          <td>MoMA collection = exhibited fact &middot; wdt:P6379 collections worldwide</td>
+        </tr>
+        <tr>
+          <td class="edge-name">PRACTICES</td>
+          <td class="check">&#10003;</td>
+          <td class="check">&#10003;</td>
+          <td class="check">&#10003;</td>
+          <td>Medium/classification fields &middot; Token tags &middot; wdt:P101 field of work</td>
+        </tr>
+        <tr>
+          <td class="edge-name">BELONGS_TO</td>
+          <td class="check">&#10003;</td>
+          <td class="check">&#10003;</td>
+          <td class="check">&#10003;</td>
+          <td>Nationality/period clustering &middot; Tezos scene &middot; wdt:P937 work location</td>
+        </tr>
+        <tr>
+          <td class="edge-name">COLLABORATES_WITH</td>
+          <td class="dash">&mdash;</td>
+          <td class="check">&#10003;</td>
+          <td class="check">&#10003;</td>
+          <td>Co-authored tokens/split contracts &middot; wdt:P1327 collaborator</td>
+        </tr>
+        <tr>
+          <td class="edge-name">RELATED_TO</td>
+          <td class="check">&#10003;</td>
+          <td class="check">&#10003;</td>
+          <td class="check">&#10003;</td>
+          <td>Catch-all &mdash; anything gatherer.md can't classify. Vocabulary expansion agenda.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pipeline — Scenario B (post-processing, on-demand gatherer) -->
+  <div class="pipeline-row">
+    <span class="pipeline-step">Source (CSV/GraphQL/SPARQL)</span>
+    <span class="pipeline-arrow">&rarr;</span>
+    <span class="pipeline-step">Deterministic parser (no LLM)</span>
+    <span class="pipeline-arrow">&rarr;</span>
+    <span class="pipeline-step">Nodes + factual edges in DB</span>
+    <span class="pipeline-arrow" style="color:var(--amber); opacity:0.7;" title="on-demand trigger, not automatic">&hellip;&rarr;</span>
+    <span class="pipeline-step pipeline-step--highlight" style="border-style:dashed;">Gatherer enrichment (triggered per batch)</span>
+    <span class="pipeline-arrow">&rarr;</span>
+    <span class="pipeline-step">intake_queue + JSON for Piyush</span>
+  </div>
+  <div style="font-size:10px; font-family:var(--font-mono); color:var(--text-dim); text-align:center; margin-top:6px;">
+    Scenario B &mdash; bulk structured data this week. Scenario A (agent during ingestion) for intimate layer later.
+  </div>
+  <div style="font-size:10px; font-family:var(--font-mono); color:var(--amber); text-align:center; margin-top:4px; opacity:0.85;">
+    The dashed step is <strong>on-demand</strong> &mdash; someone triggers the gatherer on a batch. No event hooks. Raw data can live in the DB indefinitely without enrichment.
+  </div>
+  <div style="font-size:10px; font-family:var(--font-mono); color:var(--text-dim); text-align:center; margin-top:4px; padding:8px 20px 14px;">
+    X (Twitter) deferred &mdash; API cost (~$5K/mo or per-post token billing). Revisit for dynamic signals post-Basel.
+  </div>
+</div>
+
+<!-- REFERENCE FILES -->
+<div class="schema-section animate" style="--i:16">
+  <div class="schema-header">Reference Files &mdash; Schema, Profile Architecture &amp; Pipeline</div>
+  <div style="padding:16px 20px;">
+    <table style="width:100%; font-size:12px; font-family:var(--font-mono); border-collapse:collapse;">
+      <thead>
+        <tr style="text-align:left; color:var(--text-dim); font-size:10px; text-transform:uppercase; letter-spacing:0.5px;">
+          <th style="padding:4px 8px 8px 0;">File</th>
+          <th style="padding:4px 8px 8px 0;">Location</th>
+          <th style="padding:4px 8px 8px 0;">What it covers</th>
+        </tr>
+      </thead>
+      <tbody style="color:var(--text);">
+        <tr style="border-top:1px solid var(--border);">
+          <td style="padding:6px 8px 6px 0; white-space:nowrap;">profile-user-flow.html</td>
+          <td style="padding:6px 8px 6px 0;"><a href="profile-user-flow.html" style="color:var(--blue);">docs/profile-user-flow.html &nearr;</a></td>
+          <td style="padding:6px 8px 6px 0; color:var(--text-dim);">Profile architecture, ~22 endpoints, 4 skills, merge boundary, open questions.</td>
+        </tr>
+        <tr style="border-top:1px solid var(--border);">
+          <td style="padding:6px 8px 6px 0; white-space:nowrap;">schema-proposal.md</td>
+          <td style="padding:6px 8px 6px 0;"><code>claude/schema-proposal.md</code></td>
+          <td style="padding:6px 8px 6px 0; color:var(--text-dim);">4 proposed additions + 5 discussion items. Source of truth.</td>
+        </tr>
+        <tr style="border-top:1px solid var(--border);">
+          <td style="padding:6px 8px 6px 0; white-space:nowrap;">Schema Freeze Proposal (Notion)</td>
+          <td style="padding:6px 8px 6px 0;"><a href="https://www.notion.so/3417b5c8702081e89a07c6c7a1fef9d6" style="color:var(--blue);">Notion &nearr;</a></td>
+          <td style="padding:6px 8px 6px 0; color:var(--text-dim);">Mirror of schema-proposal.md. Gio comments here.</td>
+        </tr>
+        <tr style="border-top:1px solid var(--border);">
+          <td style="padding:6px 8px 6px 0; white-space:nowrap;">schema-handoff.md</td>
+          <td style="padding:6px 8px 6px 0;"><code>claude/schema-handoff.md</code></td>
+          <td style="padding:6px 8px 6px 0; color:var(--text-dim);">Full context: current schema, decisions, open questions.</td>
+        </tr>
+        <tr style="border-top:1px solid var(--border);">
+          <td style="padding:6px 8px 6px 0; white-space:nowrap;">db.sql</td>
+          <td style="padding:6px 8px 6px 0;"><code>adai-v1/db.sql</code> (feat/cr-sqlite-backend)</td>
+          <td style="padding:6px 8px 6px 0; color:var(--text-dim);">Live schema. 6 tables, 774 nodes, 929 edges.</td>
+        </tr>
+        <tr style="border-top:1px solid var(--border);">
+          <td style="padding:6px 8px 6px 0; white-space:nowrap;">Schema Definition (Notion)</td>
+          <td style="padding:6px 8px 6px 0;"><a href="https://www.notion.so/3367b5c8702081f68371dabbd5b1281c" style="color:var(--blue);">Notion &nearr;</a></td>
+          <td style="padding:6px 8px 6px 0; color:var(--text-dim);">7 open decisions. Pre-existing schema discussion.</td>
+        </tr>
+        <tr style="border-top:1px solid var(--border);">
+          <td style="padding:6px 8px 6px 0; white-space:nowrap;">gatherer.md</td>
+          <td style="padding:6px 8px 6px 0;"><code>claude/skills/gatherer.md</code></td>
+          <td style="padding:6px 8px 6px 0; color:var(--text-dim);">Edge classification rules, source_origin values, bias report spec.</td>
+        </tr>
+        <tr style="border-top:1px solid var(--border);">
+          <td style="padding:6px 8px 6px 0; white-space:nowrap;">Backend &amp; Storage Idea (Notion)</td>
+          <td style="padding:6px 8px 6px 0;"><a href="https://www.notion.so/3247b5c8702080c9b40ef2ba4fcc71f2" style="color:var(--blue);">Notion &nearr;</a></td>
+          <td style="padding:6px 8px 6px 0; color:var(--text-dim);">Gio&rsquo;s CR-SQLite Matryoshka proposal + April update.</td>
+        </tr>
+        <tr style="border-top:1px solid var(--border);">
+          <td style="padding:6px 8px 6px 0; white-space:nowrap;">SOURCES (Notion)</td>
+          <td style="padding:6px 8px 6px 0;"><a href="https://www.notion.so/3377b5c8702081459238e2171499f5af" style="color:var(--blue);">Notion &nearr;</a></td>
+          <td style="padding:6px 8px 6px 0; color:var(--text-dim);">First-pass ingestion plan. MoMA + fxhash + Wikidata.</td>
+        </tr>
+        <tr style="border-top:1px solid var(--border);">
+          <td style="padding:6px 8px 6px 0; white-space:nowrap;">CLAUDE.md</td>
+          <td style="padding:6px 8px 6px 0;"><code>claude/CLAUDE.md</code></td>
+          <td style="padding:6px 8px 6px 0; color:var(--text-dim);">Authoritative project spec. Principles, architecture, gaps.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- TEAM -->
+<div class="team-row">
+  <div class="team-card animate" style="--i:17">
+    <div class="name">Iri</div>
+    <div class="role">Strategy &amp; Editorial</div>
+    <div class="focus">Profile flow co-designed with Gio (Apr 15&ndash;16). Classification regime edges + Reader regime angle shipped. Next: article pipeline, Basel onboarding rehearsal, North Star final pass.</div>
+  </div>
+  <div class="team-card animate" style="--i:18">
+    <div class="name">Gio</div>
+    <div class="role">Backend (full-time from Sicily)</div>
+    <div class="focus">Schema locked Apr 18. Next: branch merge, read endpoints, token middleware, <code>/p/:slug</code> routes, scout pipeline (Step 7).</div>
+  </div>
+  <div class="team-card animate" style="--i:19">
+    <div class="name">Piyush</div>
+    <div class="role">Frontend &amp; Brand</div>
+    <div class="focus">Brand + particle viz continuing. Designing 3 interaction views: hover &middot; zoom &middot; click &rarr; <code>/p/:slug</code>. Then connect one artist end-to-end against live API.</div>
+  </div>
+  <div class="team-card animate" style="--i:20">
+    <div class="name">JB</div>
+    <div class="role">Artist Relations</div>
+    <div class="focus">Setting up Cloudflare R2. Coordinating pre-Basel cohort (Noah, Eli/Benny, Alex). Article pipeline with Iri. LLM interview concept still under evaluation.</div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer animate" style="--i:21">
+  <span>Audit performed April 18, 2026 &mdash; incorporates Apr 15 architecture call + Apr 16 team call (storage, URLs, cohort) + schema lock</span>
+  <span>Schema locked &middot; Profile architecture v0.1 &middot; Storage = fly.io + Cloudflare R2 &middot; Ingestion: MoMA + fxhash + Wikidata &middot; 4 Claude skills planned &middot; &ldquo;decoupled, not decentralized&rdquo;</span>
+</div>
+
+<script>
+  // Basel countdown — June 15, 2026 (approximate)
+  const basel = new Date('2026-06-15T00:00:00');
+  const now = new Date();
+  const days = Math.ceil((basel - now) / (1000 * 60 * 60 * 24));
+  document.getElementById('days').textContent = days > 0 ? days : '0';
+</script>
+
+</body>
+</html>

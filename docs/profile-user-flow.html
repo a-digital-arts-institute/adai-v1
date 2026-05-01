@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A(DAI) — Practitioner Profile: User Flow & Endpoint Architecture</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface-2: #1a1a26;
+    --surface-3: #222233;
+    --border: #2a2a3a;
+    --border-accent: #3d3d55;
+    --text: #e8e8f0;
+    --text-dim: #8888a0;
+    --text-muted: #5a5a72;
+    --accent-blue: #5b8def;
+    --accent-purple: #9b6dff;
+    --accent-green: #4ecdc4;
+    --accent-amber: #f0a830;
+    --accent-rose: #e8587a;
+    --accent-cyan: #00d4ff;
+    --frontier: #ff6b9d;
+    --glow-blue: rgba(91, 141, 239, 0.15);
+    --glow-purple: rgba(155, 109, 255, 0.15);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  .page-header {
+    padding: 60px 40px 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .page-header h1 {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+
+  .page-header .subtitle {
+    font-size: 14px;
+    color: var(--text-dim);
+    font-weight: 400;
+  }
+
+  .page-header .meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    margin-top: 16px;
+  }
+
+  .section {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 48px 40px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--accent-blue);
+    margin-bottom: 24px;
+  }
+
+  .section h2 {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    letter-spacing: -0.3px;
+  }
+
+  .section p {
+    font-size: 14px;
+    color: var(--text-dim);
+    max-width: 720px;
+    margin-bottom: 20px;
+  }
+
+  /* ─── Flow Diagram ─── */
+
+  .flow-container {
+    position: relative;
+    width: 100%;
+    overflow-x: auto;
+    padding: 40px 0;
+  }
+
+  .flow-diagram {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    min-width: 1200px;
+    position: relative;
+  }
+
+  .flow-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    padding: 0 12px;
+  }
+
+  .flow-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .flow-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    width: 100%;
+    max-width: 240px;
+    position: relative;
+    transition: all 0.3s ease;
+  }
+
+  .flow-card:hover {
+    border-color: var(--border-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+
+  .flow-card .icon {
+    font-size: 24px;
+    margin-bottom: 12px;
+  }
+
+  .flow-card h4 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .flow-card .desc {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+  }
+
+  .flow-card .badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--surface-3);
+    color: var(--text-muted);
+  }
+
+  .flow-card .badge.live { background: rgba(78, 205, 196, 0.15); color: var(--accent-green); }
+  .flow-card .badge.build { background: rgba(240, 168, 48, 0.15); color: var(--accent-amber); }
+  .flow-card .badge.spec { background: rgba(155, 109, 255, 0.15); color: var(--accent-purple); }
+
+  .flow-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 20px;
+    padding: 0 4px;
+    flex-shrink: 0;
+    width: 40px;
+    margin-top: 80px;
+  }
+
+  /* ─── Profile Panels ─── */
+
+  .profile-mock {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .profile-header-mock {
+    padding: 32px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(135deg, var(--surface-2) 0%, var(--surface) 100%);
+  }
+
+  .profile-header-mock .name {
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+  }
+
+  .profile-header-mock .slug {
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--accent-blue);
+    margin-top: 4px;
+  }
+
+  .profile-header-mock .badges-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+
+  .profile-header-mock .hbadge {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 1px solid;
+  }
+
+  .hbadge.consent { border-color: var(--accent-green); color: var(--accent-green); }
+  .hbadge.origin { border-color: var(--accent-purple); color: var(--accent-purple); }
+  .hbadge.confidence { border-color: var(--accent-amber); color: var(--accent-amber); }
+
+  .profile-header-mock .position-stmt {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-top: 16px;
+    padding: 12px 16px;
+    background: var(--surface-3);
+    border-radius: 8px;
+    border-left: 3px solid var(--accent-blue);
+    font-style: italic;
+  }
+
+  .panel-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+  }
+
+  .panel {
+    background: var(--surface);
+    padding: 24px;
+  }
+
+  .panel.full-width {
+    grid-column: 1 / -1;
+  }
+
+  .panel-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .panel-label .letter {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  .panel-label .letter.a { background: var(--glow-blue); color: var(--accent-blue); }
+  .panel-label .letter.b { background: rgba(240, 168, 48, 0.15); color: var(--accent-amber); }
+  .panel-label .letter.c { background: rgba(78, 205, 196, 0.15); color: var(--accent-green); }
+  .panel-label .letter.d { background: rgba(155, 109, 255, 0.15); color: var(--accent-purple); }
+  .panel-label .letter.e { background: rgba(232, 88, 122, 0.15); color: var(--accent-rose); }
+  .panel-label .letter.f { background: rgba(255, 107, 157, 0.15); color: var(--frontier); }
+
+  .edge-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    background: var(--surface-2);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-size: 12px;
+  }
+
+  .edge-type {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    font-weight: 500;
+    padding: 2px 6px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+
+  .edge-type.created { background: rgba(240, 168, 48, 0.15); color: var(--accent-amber); }
+  .edge-type.practices { background: rgba(78, 205, 196, 0.15); color: var(--accent-green); }
+  .edge-type.belongs { background: rgba(155, 109, 255, 0.15); color: var(--accent-purple); }
+  .edge-type.exhibited { background: rgba(91, 141, 239, 0.15); color: var(--accent-blue); }
+  .edge-type.collab { background: rgba(232, 88, 122, 0.15); color: var(--accent-rose); }
+  .edge-type.classified { background: rgba(0, 212, 255, 0.15); color: var(--accent-cyan); }
+  .edge-type.related { background: rgba(255, 107, 157, 0.15); color: var(--frontier); }
+
+  .confidence-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .confidence-dot.high { background: var(--accent-green); }
+  .confidence-dot.medium { background: var(--accent-amber); }
+  .confidence-dot.low { background: var(--accent-rose); }
+
+  .empty-state {
+    padding: 20px;
+    background: var(--surface-2);
+    border-radius: 8px;
+    border: 1px dashed var(--border-accent);
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .provenance-footer {
+    padding: 20px 24px;
+    background: var(--surface-2);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .provenance-bar {
+    display: flex;
+    height: 4px;
+    border-radius: 2px;
+    overflow: hidden;
+    width: 200px;
+    gap: 1px;
+  }
+
+  .provenance-bar .seg { height: 100%; }
+  .provenance-bar .seg.api { background: var(--accent-blue); }
+  .provenance-bar .seg.human { background: var(--accent-green); }
+  .provenance-bar .seg.ai { background: var(--accent-purple); }
+
+  /* ─── Endpoint Table ─── */
+
+  .endpoint-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+    margin-top: 24px;
+  }
+
+  @media (max-width: 1200px) {
+    .endpoint-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  @media (max-width: 800px) {
+    .endpoint-grid { grid-template-columns: 1fr; }
+  }
+
+  .endpoint-group {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .endpoint-group-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .endpoint-group-header h3 {
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .endpoint-group-header .tag {
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+
+  .tag.public { background: rgba(78, 205, 196, 0.15); color: var(--accent-green); }
+  .tag.auth { background: rgba(240, 168, 48, 0.15); color: var(--accent-amber); }
+  .tag.agent { background: rgba(155, 109, 255, 0.15); color: var(--accent-purple); }
+
+  .endpoint-row {
+    padding: 10px 20px;
+    border-bottom: 1px solid rgba(42, 42, 58, 0.5);
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .endpoint-row:last-child { border-bottom: none; }
+
+  .method {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    width: 40px;
+    text-align: center;
+  }
+
+  .method.get { background: rgba(78, 205, 196, 0.15); color: var(--accent-green); }
+  .method.post { background: rgba(91, 141, 239, 0.15); color: var(--accent-blue); }
+  .method.patch { background: rgba(240, 168, 48, 0.15); color: var(--accent-amber); }
+  .method.delete { background: rgba(232, 88, 122, 0.15); color: var(--accent-rose); }
+
+  .endpoint-path {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text);
+    flex: 1;
+  }
+
+  .endpoint-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* ─── Skill Flow ─── */
+
+  .skill-flow {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    max-width: 900px;
+    margin: 32px auto 0;
+  }
+
+  .skill-flow-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .skill-flow-header .terminal-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+
+  .terminal-dot.red { background: #ff5f57; }
+  .terminal-dot.yellow { background: #febc2e; }
+  .terminal-dot.green { background: #28c840; }
+
+  .skill-flow-header .title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-left: 8px;
+  }
+
+  .conversation {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .msg {
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .msg.human {
+    background: var(--surface-3);
+    border: 1px solid var(--border-accent);
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+  }
+
+  .msg.agent {
+    background: linear-gradient(135deg, rgba(91,141,239,0.08), rgba(155,109,255,0.08));
+    border: 1px solid rgba(91,141,239,0.2);
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+  }
+
+  .msg .sender {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+
+  .msg.human .sender { color: var(--text-muted); }
+  .msg.agent .sender { color: var(--accent-blue); }
+
+  .api-calls {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 4px 0 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    line-height: 1.8;
+  }
+
+  .api-calls .call {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+  }
+
+  .api-calls .call .m { color: var(--accent-blue); font-weight: 600; }
+  .api-calls .call .p { color: var(--text); }
+  .api-calls .call .check { color: var(--accent-green); }
+
+  /* ─── Merge Boundary ─── */
+
+  .merge-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    font-size: 13px;
+  }
+
+  .merge-table th {
+    text-align: left;
+    padding: 10px 16px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .merge-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(42, 42, 58, 0.4);
+    color: var(--text-dim);
+  }
+
+  .merge-table tr:hover td {
+    background: var(--surface-2);
+  }
+
+  .merge-result {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+  }
+
+  .merge-result.auto { color: var(--accent-green); }
+  .merge-result.queue { color: var(--accent-amber); }
+  .merge-result.always { color: var(--accent-cyan); }
+
+  /* ─── Architecture ─── */
+
+  .arch-diagram {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    gap: 24px;
+    align-items: start;
+    margin-top: 24px;
+  }
+
+  .arch-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+  }
+
+  .arch-box h4 {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .arch-box .items {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .arch-box .item {
+    font-size: 11px;
+    padding: 6px 10px;
+    background: var(--surface-2);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .arch-box .item .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .arch-center {
+    grid-row: span 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .db-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--glow-blue), var(--glow-purple));
+    border: 2px solid var(--border-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+  }
+
+  .arch-arrows {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 8px 0;
+  }
+
+  .note-box {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent-amber);
+    border-radius: 0 8px 8px 0;
+    padding: 16px 20px;
+    margin-top: 24px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .note-box strong {
+    color: var(--accent-amber);
+    font-weight: 600;
+  }
+
+  .open-q {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 12px;
+  }
+
+  .open-q h4 {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--accent-amber);
+  }
+
+  .open-q p {
+    font-size: 12px;
+    color: var(--text-dim);
+    margin: 0;
+  }
+
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 20px;
+  }
+
+  @media (max-width: 900px) {
+    .skills-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  .skill-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .skill-card .skill-icon {
+    font-size: 28px;
+    margin-bottom: 10px;
+  }
+
+  .skill-card h4 {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .skill-card .skill-desc {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .skill-card .skill-scope {
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+
+  .skill-card .skill-scope.v1 { background: rgba(78, 205, 196, 0.15); color: var(--accent-green); }
+  .skill-card .skill-scope.v2 { background: rgba(155, 109, 255, 0.15); color: var(--accent-purple); }
+
+  .timeline-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+    margin-top: 24px;
+    background: var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .timeline-col {
+    background: var(--surface);
+    padding: 20px;
+  }
+
+  .timeline-col h4 {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+
+  .timeline-col .t-item {
+    font-size: 11px;
+    color: var(--text-dim);
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(42,42,58,0.3);
+  }
+
+  .timeline-col .t-item:last-child { border-bottom: none; }
+
+  .timeline-col .t-item .check-icon { color: var(--accent-green); margin-right: 4px; }
+  .timeline-col .t-item .build-icon { color: var(--accent-amber); margin-right: 4px; }
+  .timeline-col .t-item .spec-icon { color: var(--accent-purple); margin-right: 4px; }
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<div class="page-header">
+  <h1>A(DAI) Practitioner Profile</h1>
+  <div class="subtitle">User flow, endpoint surface & skill architecture — for team review before build</div>
+  <div class="meta">v0.1 &middot; April 16, 2026 &middot; Grounded in Gio x Irina call (Apr 15) + schema-proposal.md + live schema</div>
+</div>
+
+<!-- ═══ 1. ARCHITECTURE OVERVIEW ═══ -->
+<div class="section">
+  <div class="section-title">01 &mdash; Architecture</div>
+  <h2>The profile is a view, not a page</h2>
+  <p>One shared database (single-DB deployment today, Matryoshka per-practitioner split later). Three surfaces read the same data. No duplication. No CMS. The practitioner never touches SQL &mdash; they speak to a Claude skill that knows the endpoints.</p>
+
+  <div class="arch-diagram">
+    <!-- Left: Inputs -->
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div class="arch-box">
+        <h4><span style="color: var(--accent-green);">&#9679;</span> Human Frontend</h4>
+        <div class="items">
+          <div class="item"><div class="dot" style="background: var(--accent-green);"></div> Read-only, beautiful</div>
+          <div class="item"><div class="dot" style="background: var(--accent-green);"></div> Piyush's particle viz</div>
+          <div class="item"><div class="dot" style="background: var(--accent-green);"></div> /practitioner/:slug</div>
+          <div class="item"><div class="dot" style="background: var(--text-muted);"></div> No login, no edit</div>
+        </div>
+      </div>
+      <div class="arch-box">
+        <h4><span style="color: var(--accent-blue);">&#9679;</span> adai-contribute skill</h4>
+        <div class="items">
+          <div class="item"><div class="dot" style="background: var(--accent-blue);"></div> Bearer token auth</div>
+          <div class="item"><div class="dot" style="background: var(--accent-blue);"></div> Read + Write</div>
+          <div class="item"><div class="dot" style="background: var(--accent-blue);"></div> Claude Code cowork</div>
+          <div class="item"><div class="dot" style="background: var(--accent-blue);"></div> Merge boundary aware</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Center: DB -->
+    <div class="arch-center">
+      <div class="arch-arrows">GET /api/&hellip; &larr; reads<br>POST /api/&hellip; &rarr; writes</div>
+      <div class="db-icon">&#9741;</div>
+      <div style="font-size: 14px; font-weight: 600;">CR-SQLite</div>
+      <div style="font-size: 11px; color: var(--text-muted); text-align: center;">774 nodes &middot; 929 edges<br>adai-basel.fly.dev</div>
+      <div class="arch-arrows" style="margin-top: 12px;">
+        nodes &middot; edges &middot; signals<br>
+        contributors &middot; intake_queue
+      </div>
+    </div>
+
+    <!-- Right: Outputs -->
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <div class="arch-box">
+        <h4><span style="color: var(--accent-purple);">&#9679;</span> adai-view skill</h4>
+        <div class="items">
+          <div class="item"><div class="dot" style="background: var(--accent-purple);"></div> No auth needed</div>
+          <div class="item"><div class="dot" style="background: var(--accent-purple);"></div> Read-only queries</div>
+          <div class="item"><div class="dot" style="background: var(--accent-purple);"></div> Any Claude user</div>
+          <div class="item"><div class="dot" style="background: var(--accent-purple);"></div> Bias queries, explore</div>
+        </div>
+      </div>
+      <div class="arch-box">
+        <h4><span style="color: var(--accent-amber);">&#9679;</span> Data Export</h4>
+        <div class="items">
+          <div class="item"><div class="dot" style="background: var(--accent-amber);"></div> /practitioner/:slug/data</div>
+          <div class="item"><div class="dot" style="background: var(--accent-amber);"></div> Full JSON export</div>
+          <div class="item"><div class="dot" style="background: var(--accent-amber);"></div> "Give me my data"</div>
+          <div class="item"><div class="dot" style="background: var(--accent-amber);"></div> Data sovereignty</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 2. ONBOARDING FLOW ═══ -->
+<div class="section">
+  <div class="section-title">02 &mdash; Onboarding Flow</div>
+  <h2>One-to-one, then sovereign</h2>
+  <p>No self-registration. Each practitioner is onboarded in a call. They receive a token. From that point, they own their data through the skill.</p>
+
+  <div class="flow-container">
+    <div class="flow-diagram">
+      <div class="flow-column">
+        <div class="flow-label">1. Call</div>
+        <div class="flow-card">
+          <span class="badge build">Basel</span>
+          <div class="icon">&#128222;</div>
+          <h4>1:1 onboarding call</h4>
+          <div class="desc">Team meets practitioner. Shows A(DAI). Creates profile together during the call.</div>
+        </div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-column">
+        <div class="flow-label">2. Create</div>
+        <div class="flow-card">
+          <span class="badge build">Build</span>
+          <div class="icon">&#128273;</div>
+          <h4>Generate token</h4>
+          <div class="desc">Server creates practitioner node + contributor record. Returns bearer token. Token = identity.</div>
+        </div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-column">
+        <div class="flow-label">3. Populate</div>
+        <div class="flow-card">
+          <span class="badge build">Build</span>
+          <div class="icon">&#127912;</div>
+          <h4>Add artworks + edges</h4>
+          <div class="desc">During the call: add 3-5 artworks, practice concepts, scene affiliations, exhibition history. All via Claude skill.</div>
+        </div>
+      </div>
+      <div class="flow-arrow">&rarr;</div>
+      <div class="flow-column">
+        <div class="flow-label">4. Live</div>
+        <div class="flow-card">
+          <span class="badge live">Live</span>
+          <div class="icon">&#127759;</div>
+          <h4>Profile is public</h4>
+          <div class="desc">Immediately visible on the frontend. Practitioner can continue adding via their own Claude session.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="note-box">
+    <strong>Key decision from the call:</strong> No staging environment. No private preview. When you contribute, it's public. "We don't need a traditional Facebook page... we just have this skill... I'm contributing, that means it's going to be there for everybody." &mdash; Gio
+  </div>
+</div>
+
+<!-- ═══ 3. PROFILE PANELS ═══ -->
+<div class="section">
+  <div class="section-title">03 &mdash; Profile Structure</div>
+  <h2>What the profile shows</h2>
+  <p>Six panels, ordered by gravitational centrality. Artworks first &mdash; they're the centre of relational weight. Each field justifies itself against the schema or it doesn't belong.</p>
+
+  <div class="profile-mock">
+    <!-- Header -->
+    <div class="profile-header-mock">
+      <div class="name">Eli Okun</div>
+      <div class="slug">adai.io/practitioner/eli-okun</div>
+      <div class="badges-row">
+        <span class="hbadge consent">public &middot; full commons</span>
+        <span class="hbadge origin">human_primary</span>
+        <span class="hbadge confidence">6 edge types &middot; high diversity</span>
+      </div>
+      <div class="position-stmt">
+        "Bridges installation art and algorithmic systems. Legible to 2 institutional regimes. 1 frontier connection forming around 'ritual infrastructure.'"
+      </div>
+    </div>
+
+    <!-- Panels -->
+    <div class="panel-grid">
+      <!-- Panel B: Artworks -->
+      <div class="panel full-width">
+        <div class="panel-label"><span class="letter b">B</span> Artworks <span style="color: var(--text-muted); font-weight: 400;">&mdash; gravitational centre</span></div>
+        <div class="edge-item">
+          <span class="edge-type created">CREATED_BY</span>
+          <span>Resonance Field</span>
+          <span style="color: var(--text-muted); margin-left: auto; font-size: 11px;">2024 &middot; Installation</span>
+          <span class="confidence-dot high" title="high confidence"></span>
+        </div>
+        <div class="edge-item">
+          <span class="edge-type created">CREATED_BY</span>
+          <span>Signal Drift</span>
+          <span style="color: var(--text-muted); margin-left: auto; font-size: 11px;">2023 &middot; Software</span>
+          <span class="confidence-dot high" title="high confidence"></span>
+        </div>
+        <div class="edge-item">
+          <span class="edge-type created">CREATED_BY</span>
+          <span>Emergence Protocol</span>
+          <span style="color: var(--text-muted); margin-left: auto; font-size: 11px;">2022 &middot; Performance</span>
+          <span class="confidence-dot medium" title="medium confidence"></span>
+        </div>
+      </div>
+
+      <!-- Panel C: Practices -->
+      <div class="panel">
+        <div class="panel-label"><span class="letter c">C</span> Practices</div>
+        <div class="edge-item">
+          <span class="edge-type practices">PRACTICES</span>
+          <span>generative systems</span>
+          <span class="confidence-dot high"></span>
+        </div>
+        <div class="edge-item">
+          <span class="edge-type practices">PRACTICES</span>
+          <span>installation art</span>
+          <span class="confidence-dot high"></span>
+        </div>
+        <div class="edge-item" style="border-left: 2px solid var(--frontier);">
+          <span class="edge-type related">FRONTIER</span>
+          <span style="color: var(--frontier);">ritual infrastructure</span>
+          <span class="confidence-dot low"></span>
+        </div>
+      </div>
+
+      <!-- Panel D: Scenes + Institutions -->
+      <div class="panel">
+        <div class="panel-label"><span class="letter d">D</span> Scenes & Institutions</div>
+        <div class="edge-item">
+          <span class="edge-type belongs">BELONGS_TO</span>
+          <span>Hong Kong new media</span>
+          <span class="confidence-dot high"></span>
+        </div>
+        <div class="edge-item">
+          <span class="edge-type exhibited">EXHIBITED_AT</span>
+          <span>010 Art Basel HK 2025</span>
+          <span class="confidence-dot high"></span>
+        </div>
+        <div class="edge-item">
+          <span class="edge-type exhibited">EXHIBITED_AT</span>
+          <span>ZKM</span>
+          <span class="confidence-dot medium"></span>
+        </div>
+      </div>
+
+      <!-- Panel E: Relations -->
+      <div class="panel">
+        <div class="panel-label"><span class="letter e">E</span> Relations</div>
+        <div class="edge-item">
+          <span class="edge-type collab">COLLABORATES_WITH</span>
+          <span>Maya Chen</span>
+          <span class="confidence-dot high"></span>
+        </div>
+        <div class="edge-item">
+          <span class="edge-type related">RELATED_TO</span>
+          <span>Pixel Symphony</span>
+          <span class="confidence-dot low"></span>
+        </div>
+      </div>
+
+      <!-- Panel F: Frontier -->
+      <div class="panel">
+        <div class="panel-label"><span class="letter f">F</span> Frontier & Self-authored</div>
+        <div class="empty-state">
+          No intimate-layer content yet. This profile is built from public data + practitioner self-report. Sensing conversations would surface what the field can't yet name.
+        </div>
+      </div>
+
+      <!-- Classification Regimes -->
+      <div class="panel full-width" style="background: var(--surface-2);">
+        <div class="panel-label" style="color: var(--accent-cyan);">&#9678; Institutional Legibility</div>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <div class="edge-item" style="flex: 1; min-width: 200px;">
+            <span class="edge-type classified">CLASSIFIED_BY</span>
+            <span>ZKM curatorial</span>
+            <span style="color: var(--text-muted); margin-left: auto; font-size: 10px;">curatorial regime</span>
+          </div>
+          <div class="edge-item" style="flex: 1; min-width: 200px;">
+            <span class="edge-type classified">LEGIBLE_TO</span>
+            <span>fxhash algorithmic</span>
+            <span style="color: var(--text-muted); margin-left: auto; font-size: 10px;">platform regime</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Provenance footer -->
+    <div class="provenance-footer">
+      <div>
+        <span style="font-weight: 500; color: var(--text-dim);">Source origin:</span>
+        <div class="provenance-bar" style="margin-top: 4px;">
+          <div class="seg api" style="width: 30%;"></div>
+          <div class="seg human" style="width: 55%;"></div>
+          <div class="seg ai" style="width: 15%;"></div>
+        </div>
+        <div style="margin-top: 4px; font-size: 10px;">
+          <span style="color: var(--accent-blue);">&#9679;</span> platform_api 30%
+          <span style="color: var(--accent-green); margin-left: 8px;">&#9679;</span> human_primary 55%
+          <span style="color: var(--accent-purple); margin-left: 8px;">&#9679;</span> ai_generated 15%
+        </div>
+      </div>
+      <div style="text-align: right;">
+        <div style="color: var(--text-dim);">Last updated: April 16, 2026</div>
+        <div style="margin-top: 4px;"><a href="#" style="color: var(--accent-blue); text-decoration: none; font-size: 11px;">Export my data (JSON) &darr;</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 4. ENDPOINTS ═══ -->
+<div class="section">
+  <div class="section-title">04 &mdash; Endpoints</div>
+  <h2>API surface</h2>
+  <p>Three categories. Read (for frontend + viewer skill), contribute (for practitioner skill, token-authenticated), query (for research agents). All hit the same backend.</p>
+
+  <div class="endpoint-grid">
+    <!-- Read -->
+    <div class="endpoint-group">
+      <div class="endpoint-group-header">
+        <h3>Read</h3>
+        <span class="tag public">Public</span>
+      </div>
+      <div class="endpoint-row">
+        <span class="method get">GET</span>
+        <span class="endpoint-path">/api/practitioner/:slug</span>
+      </div>
+      <div class="endpoint-row">
+        <span class="method get">GET</span>
+        <span class="endpoint-path">/api/practitioner/:slug/data</span>
+      </div>
+      <div class="endpoint-row">
+        <span class="method get">GET</span>
+        <span class="endpoint-path">/api/practitioner/:slug/artworks</span>
+      </div>
+      <div class="endpoint-row">
+        <span class="method get">GET</span>
+        <span class="endpoint-path">/api/practitioner/:slug/edges</span>
+      </div>
+      <div class="endpoint-row">
+        <span class="method get">GET</span>
+        <span class="endpoint-path">/api/practitioner/:slug/frontier</span>
+      </div>
+      <div class="endpoint-row">
+        <span class="method get">GET</span>
+        <span class="endpoint-path">/api/node/:id</span>
+      </div>
+      <div class="endpoint-row">
+        <span class="method get">GET</span>
+        <span class="endpoint-path">/api/search?q=&type=</span>
+      </div>
+      <div class="endpoint-row">
+        <span class="method get">GET</span>
+        <span class="endpoint-path">/api/stats</span>
+      </div>
+    </div>
+
+    <!-- Contribute -->
+    <div class="endpoint-group">
+      <div class="endpoint-group-header">
+        <h3>Contribute</h3>
+        <span class="tag auth">Token</span>
+      </div>
+      <div class="endpoint-row">
+        <span class="method post">POST</span>
+        <span class="endpoint-path">/api/p/:slug/nodes</span>
+      </div>
+      <div class="endpoint-row">
+        <span class="method post">POST</span>
+        <span class="endpoint-path">/api/p/:slug/edges</span>
+      </div>
+      <div class="endpoint-row">
+        <span class="method post">POST</span>
+        <span class="endpoint-path">/api/p/:slug/artworks</span>
+      </div>
+      <div class="endpoint-row">
+        <span class="method post">POST</span>
+        <span class="endpoint-path">/api/p/:slug/batch</span>
+      </div>
+      <div class="endpoint-row">
+        <span class="method post">POST</span>
+        <span class="endpoint-path">/api/p/:slug/consent</span>
+      </div>
+      <div class="endpoint-row">
+        <span class="method post">POST</span>
+        <span class="endpoint-path">/api/p/:slug/contest</span>
+      </div>
+      <div class="endpoint-row">
+        <span class="method patch">PATCH</span>
+        <span class="endpoint-path">/api/p/:slug/profile</span>
+      </div>
+      <div class="endpoint-row">
+        <span class="method get">GET</span>
+        <span class="endpoint-path">/api/p/:slug/contributions</span>
+      </div>
+    </div>
+
+    <!-- Query -->
+    <div class="endpoint-group">
+      <div class="endpoint-group-header">
+        <h3>Query</h3>
+        <span class="tag agent">Agents</span>
+      </div>
+      <div class="endpoint-row">
+        <span class="method get">GET</span>
+        <span class="endpoint-path">/api/query/nodes</span>
+      </div>
+      <div class="endpoint-row">
+        <span class="method get">GET</span>
+        <span class="endpoint-path">/api/query/edges</span>
+      </div>
+      <div class="endpoint-row">
+        <span class="method get">GET</span>
+        <span class="endpoint-path">/api/query/nearby/:id</span>
+      </div>
+      <div class="endpoint-row">
+        <span class="method get">GET</span>
+        <span class="endpoint-path">/api/query/frontier</span>
+      </div>
+      <div class="endpoint-row">
+        <span class="method get">GET</span>
+        <span class="endpoint-path">/api/query/bias</span>
+      </div>
+      <div class="endpoint-row">
+        <span class="method post">POST</span>
+        <span class="endpoint-path">/api/query/semantic</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 5. SKILL CONVERSATION ═══ -->
+<div class="section">
+  <div class="section-title">05 &mdash; The Skill in Action</div>
+  <h2>What the practitioner actually sees</h2>
+  <p>The practitioner never sees endpoints. They speak naturally. The skill translates utterances to API calls, stamps provenance, and reports back. This is what "post-web" means &mdash; the agent IS the interface.</p>
+
+  <div class="skill-flow">
+    <div class="skill-flow-header">
+      <span class="terminal-dot red"></span>
+      <span class="terminal-dot yellow"></span>
+      <span class="terminal-dot green"></span>
+      <span class="title">Claude Code &mdash; adai-contribute &middot; eli-okun</span>
+    </div>
+    <div class="conversation">
+      <div class="msg human">
+        <div class="sender">Eli</div>
+        Add my three works from the 010 Hong Kong show last month. Resonance Field was an installation, Signal Drift was software-based, and Emergence Protocol was a performance piece.
+      </div>
+      <div class="msg agent">
+        <div class="sender">adai-contribute</div>
+        Creating 3 artworks and linking them to your profile and the 010 show.
+        <div class="api-calls">
+          <div class="call"><span class="m">POST</span> <span class="p">/api/p/eli-okun/batch</span></div>
+          <div class="call" style="padding-left: 16px;">&rarr; node: <span style="color: var(--accent-amber);">artwork:resonance field</span> (Installation, 2024)</div>
+          <div class="call" style="padding-left: 16px;">&rarr; node: <span style="color: var(--accent-amber);">artwork:signal drift</span> (Software, 2023)</div>
+          <div class="call" style="padding-left: 16px;">&rarr; node: <span style="color: var(--accent-amber);">artwork:emergence protocol</span> (Performance, 2022)</div>
+          <div class="call" style="padding-left: 16px;">&rarr; edge: <span style="color: var(--accent-green);">CREATED_BY</span> &times; 3</div>
+          <div class="call" style="padding-left: 16px;">&rarr; edge: <span style="color: var(--accent-blue);">EXHIBITED_AT</span> &times; 3 &rarr; event:010 art basel hk 2025</div>
+          <div class="call" style="padding-left: 16px;">&rarr; signal: source_origin=human_primary, consent=full_commons</div>
+          <div class="call"><span class="check">&#10003;</span> 3 artworks, 6 edges created. Auto-merged (self-report).</div>
+        </div>
+        Done. 3 artworks added, each linked to your profile and the 010 Art Basel Hong Kong show. All auto-merged since this is self-report on your own work.
+        <br><br>
+        I noticed you described Emergence Protocol as a "performance piece." The graph doesn't have <strong style="color: var(--frontier);">concept:performance art</strong> linked to your practice yet. Want me to add a PRACTICES edge?
+        <br><br>
+        Also &mdash; you mentioned "ritual infrastructure" in an earlier conversation. No existing concept matches that. Want to propose it as a frontier concept?
+      </div>
+      <div class="msg human">
+        <div class="sender">Eli</div>
+        Yes to performance art. And yes, propose ritual infrastructure &mdash; it's becoming central to my work.
+      </div>
+      <div class="msg agent">
+        <div class="sender">adai-contribute</div>
+        <div class="api-calls">
+          <div class="call"><span class="m">POST</span> <span class="p">/api/p/eli-okun/edges</span></div>
+          <div class="call" style="padding-left: 16px;">&rarr; PRACTICES(practitioner:eli okun &rarr; concept:performance art) confidence: high</div>
+          <div class="call"><span class="m">POST</span> <span class="p">/api/p/eli-okun/nodes</span></div>
+          <div class="call" style="padding-left: 16px;">&rarr; concept:ritual infrastructure (frontier: true)</div>
+          <div class="call"><span class="m">POST</span> <span class="p">/api/p/eli-okun/edges</span></div>
+          <div class="call" style="padding-left: 16px;">&rarr; PRACTICES(practitioner:eli okun &rarr; concept:ritual infrastructure) confidence: medium</div>
+          <div class="call"><span class="check">&#10003;</span> 1 new concept (frontier), 2 new edges. All auto-merged.</div>
+        </div>
+        Added. "ritual infrastructure" is now a frontier concept in the graph &mdash; the system can't classify it yet, which means it marks where the field's vocabulary is forming. Other practitioners who reach for similar language will cluster around it.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 6. MERGE BOUNDARY ═══ -->
+<div class="section">
+  <div class="section-title">06 &mdash; Merge Boundary</div>
+  <h2>What auto-merges vs. what queues for review</h2>
+  <p>Determined at the endpoint, not by the client. Self-report = no friction. Speaking for others = review. Contests = always accepted.</p>
+
+  <table class="merge-table">
+    <thead>
+      <tr>
+        <th>Action</th>
+        <th>Example</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Writing about yourself</td>
+        <td>Eli adds his own bio, artworks, practice concepts</td>
+        <td><span class="merge-result auto">Auto-merge</span></td>
+      </tr>
+      <tr>
+        <td>Adding your own artworks</td>
+        <td>CREATED_BY edge pointing to yourself</td>
+        <td><span class="merge-result auto">Auto-merge</span></td>
+      </tr>
+      <tr>
+        <td>Creating new concepts / scenes / institutions</td>
+        <td>Eli proposes concept:ritual infrastructure</td>
+        <td><span class="merge-result auto">Auto-merge</span></td>
+      </tr>
+      <tr>
+        <td>Linking yourself to existing nodes</td>
+        <td>EXHIBITED_AT, BELONGS_TO, PRACTICES from yourself</td>
+        <td><span class="merge-result auto">Auto-merge</span></td>
+      </tr>
+      <tr>
+        <td>Creating edges TO other practitioners</td>
+        <td>COLLABORATES_WITH(eli &rarr; maya) &mdash; needs Maya's confirmation</td>
+        <td><span class="merge-result queue">Intake queue</span></td>
+      </tr>
+      <tr>
+        <td>Creating edges FROM others</td>
+        <td>PRACTICES(maya &rarr; concept:X) &mdash; can't speak for someone else</td>
+        <td><span class="merge-result queue">Intake queue</span></td>
+      </tr>
+      <tr>
+        <td>Edges between unrelated nodes</td>
+        <td>EXHIBITED_AT(casey reas &rarr; ZKM) &mdash; not Eli's data</td>
+        <td><span class="merge-result queue">Intake queue</span></td>
+      </tr>
+      <tr>
+        <td>Filing a contest</td>
+        <td>CONTESTS edge against any existing edge</td>
+        <td><span class="merge-result always">Always accepted</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══ 7. SKILLS ═══ -->
+<div class="section">
+  <div class="section-title">07 &mdash; Skills</div>
+  <h2>Four skills, two ship now</h2>
+  <p>Start simple. Contribute + View for Basel. Curate + Research are post-Basel extensions for institutional partners and research agents.</p>
+
+  <div class="skills-grid">
+    <div class="skill-card">
+      <div class="skill-icon">&#128296;</div>
+      <h4>adai-contribute</h4>
+      <div class="skill-desc">Practitioner skill. Token auth. Read + write. Merge-boundary aware. The primary interface.</div>
+      <span class="skill-scope v1">Basel v1</span>
+    </div>
+    <div class="skill-card">
+      <div class="skill-icon">&#128065;</div>
+      <h4>adai-view</h4>
+      <div class="skill-desc">Viewer skill. No auth. Read-only queries. For any Claude user who wants to explore the graph.</div>
+      <span class="skill-scope v1">Basel v1</span>
+    </div>
+    <div class="skill-card">
+      <div class="skill-icon">&#127963;</div>
+      <h4>adai-curate</h4>
+      <div class="skill-desc">Institutional skill. Custom queries, export, report generation. For 010, Whitney, etc.</div>
+      <span class="skill-scope v2">Post-Basel</span>
+    </div>
+    <div class="skill-card">
+      <div class="skill-icon">&#128300;</div>
+      <h4>adai-research</h4>
+      <div class="skill-desc">Research agents. Bias scans, frontier tracking, scene comparison, embedding queries.</div>
+      <span class="skill-scope v2">Post-Basel</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 8. OPEN QUESTIONS ═══ -->
+<div class="section">
+  <div class="section-title">08 &mdash; Open Questions</div>
+  <h2>For the team call</h2>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+    <div class="open-q">
+      <h4>1. Panel F visibility</h4>
+      <p>Do frontier signals and self-reported tensions show publicly? Instinct: yes, with per-signal opt-in. It's the differentiator. But practitioners must consent.</p>
+    </div>
+    <div class="open-q">
+      <h4>2. Contest surfacing</h4>
+      <p>When someone files CONTESTS against a profile edge &mdash; immediate (with provenance) or after curator review? Principle says immediate. Practice may say review.</p>
+    </div>
+    <div class="open-q">
+      <h4>3. URL format</h4>
+      <p>/practitioner/:slug (existing) vs /p/:slug (shorter for sharing). Keep canonical and add alias? Or migrate?</p>
+    </div>
+    <div class="open-q">
+      <h4>4. File uploads</h4>
+      <p>Essential for onboarding (install photos, documentation)? Or defer to post-v0.1? Adds storage infrastructure (S3/R2).</p>
+    </div>
+    <div class="open-q">
+      <h4>5. Reader position statement</h4>
+      <p>The one-liner in the profile header ("Bridges installation art and..."). Pre-computed + cached? Or live Reader agent call? Cost vs. freshness.</p>
+    </div>
+    <div class="open-q">
+      <h4>6. Schema freeze: 5a-5c</h4>
+      <p>batch_id (import rollback), node_aliases (cross-source dedup), signal status (revocation mechanism). Include in freeze or defer?</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ 9. WHAT NEEDS TO BE BUILT ═══ -->
+<div class="section" style="border-bottom: none;">
+  <div class="section-title">09 &mdash; What needs to be built</div>
+  <h2>Four layers, in order of dependency</h2>
+  <p>Each layer unlocks the next. No time estimates &mdash; just the sequence.</p>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin-top: 24px; background: var(--border); border-radius: 12px; overflow: hidden;">
+
+    <div style="background: var(--surface); padding: 24px;">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+        <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(78, 205, 196, 0.15); color: var(--accent-green); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700;">1</div>
+        <h4 style="font-size: 14px; font-weight: 600;">Schema + API</h4>
+        <span style="font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; padding: 3px 8px; border-radius: 4px; background: rgba(78, 205, 196, 0.15); color: var(--accent-green); margin-left: auto;">Foundation</span>
+      </div>
+      <div class="t-item" style="font-size: 12px; color: var(--text-dim); padding: 6px 0; border-bottom: 1px solid rgba(42,42,58,0.3);">Confirm schema freeze (10 new columns)</div>
+      <div class="t-item" style="font-size: 12px; color: var(--text-dim); padding: 6px 0; border-bottom: 1px solid rgba(42,42,58,0.3);">Token generation + validation middleware</div>
+      <div class="t-item" style="font-size: 12px; color: var(--text-dim); padding: 6px 0; border-bottom: 1px solid rgba(42,42,58,0.3);">Read endpoints (profile, search, node, edges)</div>
+      <div class="t-item" style="font-size: 12px; color: var(--text-dim); padding: 6px 0; border-bottom: 1px solid rgba(42,42,58,0.3);">Write endpoints (node, edge, batch, profile)</div>
+      <div class="t-item" style="font-size: 12px; color: var(--text-dim); padding: 6px 0;">Merge boundary logic at the endpoint layer</div>
+    </div>
+
+    <div style="background: var(--surface); padding: 24px;">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+        <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(240, 168, 48, 0.15); color: var(--accent-amber); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700;">2</div>
+        <h4 style="font-size: 14px; font-weight: 600;">Claude Skills</h4>
+        <span style="font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; padding: 3px 8px; border-radius: 4px; background: rgba(240, 168, 48, 0.15); color: var(--accent-amber); margin-left: auto;">Interface</span>
+      </div>
+      <div class="t-item" style="font-size: 12px; color: var(--text-dim); padding: 6px 0; border-bottom: 1px solid rgba(42,42,58,0.3);">Write <code style="font-size: 11px; color: var(--accent-blue);">adai-contribute.md</code> (token + full API)</div>
+      <div class="t-item" style="font-size: 12px; color: var(--text-dim); padding: 6px 0; border-bottom: 1px solid rgba(42,42,58,0.3);">Write <code style="font-size: 11px; color: var(--accent-blue);">adai-view.md</code> (read-only)</div>
+      <div class="t-item" style="font-size: 12px; color: var(--text-dim); padding: 6px 0; border-bottom: 1px solid rgba(42,42,58,0.3);">Test onboarding flow with 2 team members</div>
+      <div class="t-item" style="font-size: 12px; color: var(--text-dim); padding: 6px 0;">Iterate skill from real conversation patterns</div>
+    </div>
+
+    <div style="background: var(--surface); padding: 24px;">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+        <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(91, 141, 239, 0.15); color: var(--accent-blue); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700;">3</div>
+        <h4 style="font-size: 14px; font-weight: 600;">Frontend Profile Page</h4>
+        <span style="font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; padding: 3px 8px; border-radius: 4px; background: rgba(91, 141, 239, 0.15); color: var(--accent-blue); margin-left: auto;">Visual</span>
+      </div>
+      <div class="t-item" style="font-size: 12px; color: var(--text-dim); padding: 6px 0; border-bottom: 1px solid rgba(42,42,58,0.3);">Profile page consuming the API (panels A&ndash;D)</div>
+      <div class="t-item" style="font-size: 12px; color: var(--text-dim); padding: 6px 0; border-bottom: 1px solid rgba(42,42,58,0.3);">Mini graph visualization (1-hop neighbourhood)</div>
+      <div class="t-item" style="font-size: 12px; color: var(--text-dim); padding: 6px 0; border-bottom: 1px solid rgba(42,42,58,0.3);">Honest empty states with contextual text</div>
+      <div class="t-item" style="font-size: 12px; color: var(--text-dim); padding: 6px 0;">Provenance footer + source origin bar</div>
+    </div>
+
+    <div style="background: var(--surface); padding: 24px;">
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+        <div style="width: 28px; height: 28px; border-radius: 6px; background: rgba(155, 109, 255, 0.15); color: var(--accent-purple); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700;">4</div>
+        <h4 style="font-size: 14px; font-weight: 600;">Practitioner Onboarding</h4>
+        <span style="font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; padding: 3px 8px; border-radius: 4px; background: rgba(155, 109, 255, 0.15); color: var(--accent-purple); margin-left: auto;">Live</span>
+      </div>
+      <div class="t-item" style="font-size: 12px; color: var(--text-dim); padding: 6px 0; border-bottom: 1px solid rgba(42,42,58,0.3);">First 3&ndash;5 practitioner 1:1 sessions</div>
+      <div class="t-item" style="font-size: 12px; color: var(--text-dim); padding: 6px 0; border-bottom: 1px solid rgba(42,42,58,0.3);">Iterate skill + endpoints from feedback</div>
+      <div class="t-item" style="font-size: 12px; color: var(--text-dim); padding: 6px 0; border-bottom: 1px solid rgba(42,42,58,0.3);">Panel E (relations) + Panel F (frontier)</div>
+      <div class="t-item" style="font-size: 12px; color: var(--text-dim); padding: 6px 0;">Curate + Research skills for institutions</div>
+    </div>
+
+  </div>
+
+  <div class="note-box" style="margin-top: 32px;">
+    <strong>Grounding:</strong> This diagram maps to the live schema at <code>adai-basel.fly.dev</code> (774 nodes, 929 edges, 3 edge types). The schema freeze proposal (Notion) adds 10 columns across 2 tables + 2 new edge type conventions. The profile structure uses only what the frozen schema will support. Panels E and F use edge types from the "later deployment" list &mdash; they ship when signal volume justifies them.
+  </div>
+</div>
+
+</body>
+</html>

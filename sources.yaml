@@ -1,0 +1,1588 @@
+# A(DAI) Knowledge Graph — Source Registry
+# Exported from Notion SOURCES doc, 2026-04-03
+# ~70 sources across 9 groups, 5 validation tiers
+# Developer reference for building ingestion connectors
+
+metadata:
+  version: "2026-04-03"
+  source_doc: "https://www.notion.so/3377b5c8702081459238e2171499f5af"
+  interoperability_standard: "Linked Art 1.0 (JSON-LD serialization of CIDOC-CRM)"
+  reconciliation_key: "Wikidata QID"
+  total_sources: 70
+
+selection_principles:
+  plurality_over_comprehensiveness: "128 artists across 25 countries; sources at least as diverse"
+  layered_verification: "Every entity confirmable from at least two sources at different tiers"
+  relationship_density: "Prefer sources that give edges (Are.na channels, exhibition records, GitHub graphs, co-authorship), not just isolated nodes"
+  temporal_coverage: "Pioneers (1950s–1980s) through Integration (2016–present)"
+  anti_monoculture: "No single source type exceeds 30% of total ingested nodes"
+
+tiers:
+  1:
+    label: "Linked Open Data"
+    sources: "Wikidata, Getty, Europeana, Rhizome ArtBase LOD, NFDI4Culture, Rijksmuseum"
+    validation: "Machine-readable provenance, institutional editorial process, versioned"
+    merge: "confidence: high — auto-merge after dedup"
+  2:
+    label: "Institutional databases"
+    sources: "MoMA, Met, AIC, Tate, ZKM, ADA, SIGGRAPH, ISEA, museum APIs"
+    validation: "Curated by institutional staff, structured metadata, verifiable"
+    merge: "confidence: high for artwork/exhibition facts; medium for interpretive claims"
+  3:
+    label: "Platform-verified"
+    sources: "fxhash, Art Blocks, SuperRare, Sedition, e-flux, Artsy, CAN"
+    validation: "Platform-level verification, structured data, but commercial incentives"
+    merge: "confidence: medium — human review before merge"
+  4:
+    label: "Community-curated"
+    sources: "Are.na, GitHub, OpenProcessing, Mastodon, Monoskop, ARTLINKART"
+    validation: "Practitioner-generated, high signal but no editorial gate"
+    merge: "confidence: medium — require cross-reference against Tier 1–2"
+  5:
+    label: "Social/ephemeral"
+    sources: "BlueSky, X/Twitter, Discord, YouTube comments"
+    validation: "Real-time signal, lowest verification, highest noise"
+    merge: "confidence: low — signals only, never auto-merged"
+
+ingestion_phases:
+  1:
+    label: "Easiest wins"
+    description: "GitHub datasets — download CSVs, parse, load. Get initial nodes + Wikidata QIDs."
+  2:
+    label: "Core APIs"
+    description: "Wikidata SPARQL + Met/AIC REST APIs — enrich Phase 1 nodes, add edges, reconcile via QID."
+  3:
+    label: "Specialized APIs"
+    description: "Art Blocks/fxhash (on-chain), Getty (disambiguation), Europeana (European breadth)."
+  4:
+    label: "Archives"
+    description: "Rhizome ArtBase SPARQL, Rijksmuseum OAI-PMH, V&A API."
+  5:
+    label: "Scrape sources"
+    description: "e-flux, CAN, Are.na, ARTLINKART, Ars Electronica — highest effort, manual curation for hardest."
+
+# ════════════════════════════════════════════════════════════════
+# SOURCES
+# ════════════════════════════════════════════════════════════════
+
+sources:
+
+  # ── Group 1: Foundation layer (Linked Open Data + APIs) ──────
+
+  - name: "Wikipedia / Wikidata"
+    group: foundation_lod
+    tier: 1
+    priority: high
+    ingestion_phase: 2
+    description: "Base knowledge, canonical practitioners, structured linked data. 97M+ items. WikiProject Visual Arts actively ingesting museum data."
+    access:
+      method: sparql
+      endpoint: "https://query.wikidata.org/sparql"
+      format: json-ld
+      auth: null
+      recipe: |
+        # SPARQL query for digital artists with structured data
+        SELECT ?item ?itemLabel ?ulan ?moma WHERE {
+          ?item wdt:P31 wd:Q5 .          # human
+          ?item wdt:P106 wd:Q483501 .     # occupation: artist
+          OPTIONAL { ?item wdt:P245 ?ulan }  # Getty ULAN
+          OPTIONAL { ?item wdt:P7669 ?moma } # MoMA artist ID
+          SERVICE wikibase:label { bd:serviceParam wikibase:language "en" }
+        } LIMIT 1000
+    record_count: "97M+"
+    reconciliation_ids: [wikidata_qid, getty_ulan, moma_id, aat]
+    traditions_covered: [all]
+    notes: "Universal entity reconciliation hub — QID links Getty ULAN, MoMA IDs, AAT concepts. Start here."
+
+  - name: "Getty Vocabularies (ULAN, AAT, TGN)"
+    group: foundation_lod
+    tier: 1
+    priority: high
+    ingestion_phase: 3
+    description: "650K+ names (ULAN), 57K concepts (AAT) as LOD. Disambiguation layer."
+    access:
+      method: sparql
+      endpoint: "https://vocab.getty.edu/sparql"
+      format: [n-triples, json-ld, turtle]
+      auth: null
+      recipe: |
+        # Query ULAN for artist by name
+        PREFIX gvp: <http://vocab.getty.edu/ontology#>
+        SELECT ?subject ?name WHERE {
+          ?subject a gvp:PersonConcept ;
+                   gvp:prefLabelGVP/xl:literalForm ?name .
+          FILTER(CONTAINS(LCASE(?name), "casey reas"))
+        }
+    record_count: "707K+"
+    reconciliation_ids: [getty_ulan, aat, tgn]
+    traditions_covered: [all]
+    notes: "XML/relational downloads retiring end 2025 — LOD (N-Triples, JSON-LD, Turtle) is the only future-proof path."
+
+  - name: "Europeana"
+    group: foundation_lod
+    tier: 1
+    priority: medium
+    ingestion_phase: 3
+    description: "60M items aggregated from EU cultural heritage institutions. EDM-based."
+    access:
+      method: rest_api
+      endpoint: "https://api.europeana.eu/record/v2/"
+      format: json
+      auth: api_key
+      recipe: |
+        # Register for API key at https://pro.europeana.eu/page/get-api
+        # Search endpoint:
+        curl "https://api.europeana.eu/record/v2/search.json?query=digital+art&wskey=YOUR_KEY"
+    record_count: "60M+"
+    reconciliation_ids: [europeana_id]
+    traditions_covered: [immersive_spatial, video_electronic, net_art]
+    notes: "REST APIs, LOD under CC0. API key registration migrated May 2025."
+
+  - name: "NFDI4Culture Knowledge Graph"
+    group: foundation_lod
+    tier: 1
+    priority: medium
+    ingestion_phase: 4
+    description: "German/EU research data. Splits into Research Information Graph + Research Data Graph. Own ontology (CTO)."
+    access:
+      method: sparql
+      endpoint: "https://nfdi4culture.de/sparql"
+      format: json-ld
+      auth: null
+      recipe: |
+        # Hydra API — last modified Jan 2026
+        # SPARQL endpoint for Research Information Graph
+        # Check https://nfdi4culture.de for current endpoint status
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [immersive_spatial, video_electronic]
+    notes: "Hydra API (last modified Jan 2026). Own ontology (CTO) — may need mapping to Linked Art."
+
+  # ── Group 2: Digital art archives (structured databases) ─────
+
+  - name: "Rhizome ArtBase"
+    group: digital_art_archives
+    tier: 1
+    priority: high
+    ingestion_phase: 4
+    description: "LOD via Wikibase — born-digital/net art specialty. Shape Expressions (ShEx) validation."
+    access:
+      method: sparql
+      endpoint: "https://artbase.rhizome.org/wiki/Query"
+      format: json-ld
+      auth: null
+      recipe: |
+        # Wikibase SPARQL — similar syntax to Wikidata
+        # Query for artworks with medium, date, artist
+        # ShEx validation available for data quality checks
+    record_count: "hundreds (curated, not thousands)"
+    reconciliation_ids: [wikidata_qid]
+    traditions_covered: [net_art, glitch_post_digital]
+    notes: "Architecturally closest to what A(DAI) is building. LD4 2024 presentation on ShEx validation."
+
+  - name: "Archive of Digital Art (ADA)"
+    group: digital_art_archives
+    tier: 2
+    priority: high
+    ingestion_phase: 5
+    description: "25 years of media art data — 650 artist profiles, 3,000 artworks, 4,000 literature entries, 10,500 total documents."
+    access:
+      method: scrape
+      endpoint: "https://digitalartarchive.at"
+      format: html
+      auth: null
+      recipe: |
+        # Also at https://archive-digitalart.eu
+        # ADA-Thesaurus for semantic navigation
+        # Structured browse by artist, artwork, event, literature
+        # No public API — scrape structured pages
+    record_count: "10,500 documents"
+    reconciliation_ids: []
+    traditions_covered: [immersive_spatial, ai_machine_learning, robotic_physical]
+    notes: "Active at both digitalartarchive.at and archive-digitalart.eu. ADA-Thesaurus useful for concept mapping."
+
+  - name: "ZKM collections database"
+    group: digital_art_archives
+    tier: 2
+    priority: high
+    ingestion_phase: 5
+    description: "~8,000 artworks, largest computer art collection in the world. Includes IDEAMA (international electro-acoustic music archive)."
+    access:
+      method: scrape
+      endpoint: "https://zkm.de/en/collection"
+      format: html
+      auth: null
+      recipe: |
+        # Extensive online catalog — browse by artist, artwork, medium
+        # No public API — scrape structured collection pages
+    record_count: "~8,000 artworks"
+    reconciliation_ids: []
+    traditions_covered: [algorithmic_generative, immersive_spatial, video_electronic, robotic_physical]
+    notes: "Largest computer art collection in the world."
+
+  - name: "Ars Electronica Archive"
+    group: digital_art_archives
+    tier: 2
+    priority: medium
+    ingestion_phase: 5
+    description: "173,900+ entries, Prix archive fully searchable since 1987. 62TB storage."
+    access:
+      method: scrape
+      endpoint: "https://archive.arstelectronica.art"
+      format: html
+      auth: null
+      recipe: |
+        # No API — Prix archive is fully searchable
+        # Browse by year, category, artist
+        # Archive Relaunch Project underway — may get API eventually
+    record_count: "173,900+"
+    reconciliation_ids: []
+    traditions_covered: [performance_live_coding, immersive_spatial, robotic_physical]
+    notes: "No API. Archive Relaunch Project underway. Critical for Performance, Immersive, and Robotic traditions."
+
+  - name: "compArt daDA"
+    group: digital_art_archives
+    tier: 2
+    priority: medium
+    ingestion_phase: 5
+    description: "Structured DB focused on early digital/algorithmic art 1950–1979. University of Bremen."
+    access:
+      method: scrape
+      endpoint: "http://dada.compart-bremen.de"
+      format: html
+      auth: null
+      recipe: |
+        # Browse by people, works, events, publications
+        # Structured pages — parseable HTML
+        # No API
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [algorithmic_generative]
+    notes: "Critical for Pioneers era (1950–1979). No API."
+
+  - name: "ISEA Symposium Archives"
+    group: digital_art_archives
+    tier: 2
+    priority: medium
+    ingestion_phase: 5
+    description: "21,000+ cross-referenced entries since 1988. Version 3.0 with cross-connections."
+    access:
+      method: scrape
+      endpoint: "https://isea-archives.siggraph.org"
+      format: html
+      auth: null
+      recipe: |
+        # Cross-referenced entries — good for relationship edges
+        # No API
+    record_count: "21,000+"
+    reconciliation_ids: []
+    traditions_covered: [all]
+    notes: "ISEA2026 will host 6th Summit on New Media Art Archiving."
+
+  - name: "SIGGRAPH Art Show Archives"
+    group: digital_art_archives
+    tier: 2
+    priority: medium
+    ingestion_phase: 5
+    description: "1,783 people, 1,455 artworks, 111 writings — computer graphics art since 1980."
+    access:
+      method: scrape
+      endpoint: null
+      format: html
+      auth: null
+      recipe: |
+        # WordPress-based, no API
+        # Browse by person, artwork, writing
+    record_count: "1,783 people, 1,455 artworks"
+    reconciliation_ids: []
+    traditions_covered: [algorithmic_generative, data_visualization]
+    notes: "WordPress-based, no API."
+
+  - name: "ELMCIP Knowledge Base"
+    group: digital_art_archives
+    tier: 2
+    priority: medium
+    ingestion_phase: 5
+    description: "9,000+ cross-referenced records on electronic literature — authors, creative works, critical writing, events, organizations."
+    access:
+      method: scrape
+      endpoint: "https://elmcip.net"
+      format: html
+      auth: null
+      recipe: |
+        # University of Bergen
+        # Cross-referenced records — good for relationship edges
+    record_count: "9,000+"
+    reconciliation_ids: []
+    traditions_covered: [net_art, algorithmic_generative]
+    notes: "University of Bergen. Strong cross-referencing between authors, works, events."
+
+  - name: "Electronic Arts Intermix (EAI)"
+    group: digital_art_archives
+    tier: 2
+    priority: medium
+    ingestion_phase: 5
+    description: "Experimental video/media art catalog since 1971."
+    access:
+      method: scrape
+      endpoint: "https://www.eai.org"
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [video_electronic]
+    notes: "Since 1971 — deep history for video/electronic tradition."
+
+  - name: "Daniel Langlois Foundation"
+    group: digital_art_archives
+    tier: 2
+    priority: medium
+    ingestion_phase: 5
+    description: "Documentation DB for electronic/digital media arts + DOCAM preservation methodology."
+    access:
+      method: scrape
+      endpoint: "https://www.interieur.gouv.qc.ca/en/fondation-daniel-langlois"
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [video_electronic, immersive_spatial]
+    notes: "DOCAM preservation methodology useful for A(DAI) archival approach."
+
+  - name: "V2_ Lab for the Unstable Media"
+    group: digital_art_archives
+    tier: 2
+    priority: medium
+    ingestion_phase: 5
+    description: "10+ years of electronic/unstable media art. Public archive portal (XML/RDF-based). Rotterdam."
+    access:
+      method: scrape
+      endpoint: "https://v2.nl"
+      format: [xml, rdf]
+      auth: null
+      recipe: |
+        # Public archive portal — XML/RDF-based
+        # May be harvestable as structured data
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [robotic_physical, immersive_spatial]
+    notes: "XML/RDF-based — closer to machine-readable than most archives. Key for Robotic/Physical Computing."
+
+  - name: "Furtherfield"
+    group: digital_art_archives
+    tier: 4
+    priority: medium
+    ingestion_phase: 5
+    description: "30 years (1996–present) of net art, DIWO practice, networked arts."
+    access:
+      method: scrape
+      endpoint: "https://archive.furtherfield.org"
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [net_art, glitch_post_digital]
+    notes: "Key for Glitch/Post-Digital and Net Art traditions. 30 years of DIWO practice."
+
+  - name: "runme.org"
+    group: digital_art_archives
+    tier: 4
+    priority: low
+    ingestion_phase: 5
+    description: "Moderated taxonomy-based classification of software art."
+    access:
+      method: scrape
+      endpoint: "http://runme.org"
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [net_art]
+    notes: "Archive mode — may be static."
+
+  - name: "Net Art Anthology (Rhizome)"
+    group: digital_art_archives
+    tier: 2
+    priority: low
+    ingestion_phase: 5
+    description: "100 key net art works restaged, organized chronologically."
+    access:
+      method: scrape
+      endpoint: "https://anthology.rhizome.org"
+      format: html
+      auth: null
+    record_count: "100 works"
+    reconciliation_ids: []
+    traditions_covered: [net_art]
+    notes: "Curated subset — useful as a seed list, not comprehensive."
+
+  # ── Group 3: Institutional archives (museum open data) ───────
+
+  - name: "MoMA Collection Data"
+    group: institutional_archives
+    tier: 2
+    priority: high
+    ingestion_phase: 1
+    description: "15,833 artist records + 160K total artworks. CC0."
+    access:
+      method: github_csv
+      endpoint: "https://github.com/MuseumofModernArt/collection"
+      format: csv
+      auth: null
+      recipe: |
+        git clone https://github.com/MuseumofModernArt/collection
+        # Artists.csv columns: ConstituentID, DisplayName, ArtistBio,
+        #   Nationality, Gender, BeginDate, EndDate, Wiki QID, ULAN
+        # Artworks.csv links to ConstituentID
+        # CC0 license
+    record_count: "160K artworks, 15.8K artists"
+    reconciliation_ids: [wikidata_qid, getty_ulan]
+    traditions_covered: [all]
+    notes: "Updated September 2025. Includes Wikidata QID + Getty ULAN per artist — trivial reconciliation. Start here."
+
+  - name: "Metropolitan Museum Open Access"
+    group: institutional_archives
+    tier: 2
+    priority: high
+    ingestion_phase: 2
+    description: "470K+ artworks. RESTful JSON API. CC0. Monthly auto-refresh."
+    access:
+      method: rest_api
+      endpoint: "https://collectionapi.metmuseum.org/public/collection/v1/"
+      format: json
+      auth: null
+      recipe: |
+        # List all object IDs:
+        curl https://collectionapi.metmuseum.org/public/collection/v1/objects
+        # Get single object:
+        curl https://collectionapi.metmuseum.org/public/collection/v1/objects/45734
+        # Search:
+        curl "https://collectionapi.metmuseum.org/public/collection/v1/search?q=digital+art"
+    record_count: "470K+"
+    reconciliation_ids: []
+    traditions_covered: [all]
+    notes: "Among the most mature museum APIs. Monthly auto-refresh. CC0."
+
+  - name: "Art Institute of Chicago API"
+    group: institutional_archives
+    tier: 2
+    priority: high
+    ingestion_phase: 2
+    description: "100K+ artworks. Unified API. CC0 for 50K+ images. IIIF support."
+    access:
+      method: rest_api
+      endpoint: "https://api.artic.edu/api/v1/"
+      format: json
+      auth: null
+      recipe: |
+        # Artworks endpoint:
+        curl "https://api.artic.edu/api/v1/artworks?limit=10"
+        # Artists endpoint:
+        curl "https://api.artic.edu/api/v1/artists?limit=10"
+        # Search with Elasticsearch syntax:
+        curl "https://api.artic.edu/api/v1/artworks/search?q=generative"
+    record_count: "100K+"
+    reconciliation_ids: []
+    traditions_covered: [all]
+    notes: "Monthly refresh. Key adopter of Linked Art + feminist data modeling scholarship."
+
+  - name: "Rijksmuseum Data Services"
+    group: institutional_archives
+    tier: 1
+    priority: high
+    ingestion_phase: 4
+    description: "800K objects, high-res images. OAI-PMH harvesting. Most technically mature museum data."
+    access:
+      method: oai_pmh
+      endpoint: "https://www.rijksmuseum.nl/api/"
+      format: [edm, linked_art]
+      auth: api_key
+      recipe: |
+        # REST API + OAI-PMH harvesting
+        # Register for API key at https://data.rijksmuseum.nl
+        # Data modeled in BOTH Europeana Data Model AND Linked Art 1.0
+        # Ideal multi-source reconciliation test case
+    record_count: "800K objects"
+    reconciliation_ids: [europeana_id]
+    traditions_covered: [all]
+    notes: "Publishes in both EDM AND Linked Art 1.0 — ideal test case for multi-format reconciliation. Expanded open data policy 2024."
+
+  - name: "V&A Collections API v2"
+    group: institutional_archives
+    tier: 2
+    priority: medium
+    ingestion_phase: 4
+    description: "1.2M objects, 500K+ images. OpenAPI spec, 470K IIIF manifests."
+    access:
+      method: rest_api
+      endpoint: "https://api.vam.ac.uk/v2/"
+      format: json
+      auth: null
+      recipe: |
+        # OpenAPI spec available
+        # 470K IIIF manifests
+        curl "https://api.vam.ac.uk/v2/objects/search?q=digital+art"
+    record_count: "1.2M objects"
+    reconciliation_ids: []
+    traditions_covered: [video_electronic, immersive_spatial]
+    notes: "Covers photography, video, film, digital."
+
+  - name: "M+ Museum Hong Kong"
+    group: institutional_archives
+    tier: 2
+    priority: medium
+    ingestion_phase: 4
+    description: "API + GitHub collection-data repo. GraphQL WIP. CC0 metadata goal."
+    access:
+      method: rest_api
+      endpoint: "https://api.mplus.org.hk"
+      format: json
+      auth: null
+      recipe: |
+        # Also: GitHub collection-data repo (updated Jan 2025)
+        # GraphQL WIP
+        # CC0 metadata goal
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [global_decolonial, video_electronic]
+    notes: "Critical for Asian contemporary art + moving image. GraphQL in development."
+
+  - name: "Tate Collection Data"
+    group: institutional_archives
+    tier: 2
+    priority: medium
+    ingestion_phase: 1
+    description: "70K artworks, 3,500 artists. CC0."
+    access:
+      method: github_csv
+      endpoint: "https://github.com/tategallery/collection"
+      format: csv
+      auth: null
+      recipe: |
+        git clone https://github.com/tategallery/collection
+        # artist_data.csv + artwork_data.csv
+        # CC0 license
+    record_count: "70K artworks, 3.5K artists"
+    reconciliation_ids: []
+    traditions_covered: [all]
+    notes: "CAVEAT: GitHub repo last updated October 2014, no plans to resume. Useful as historical snapshot only."
+
+  - name: "Whitney Museum"
+    group: institutional_archives
+    tier: 2
+    priority: medium
+    ingestion_phase: 1
+    description: "CC0 CSV datasets on GitHub since 2021. API available. Artport net art portal since 2001."
+    access:
+      method: github_csv
+      endpoint: "https://github.com/whitneymuseum"
+      format: csv
+      auth: null
+      recipe: |
+        # GitHub CSV datasets since 2021
+        # Also: API at https://whitney.org/about/website/api
+        # Artport (since 2001) — dedicated net art portal with commissioned works
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [net_art, all]
+    notes: "Artport is a dedicated net art portal with commissioned works since 2001."
+
+  - name: "Smithsonian"
+    group: institutional_archives
+    tier: 2
+    priority: medium
+    ingestion_phase: 4
+    description: "5.1M items across all Smithsonian. American Art Museum publishes LOD since 2014 (CC0)."
+    access:
+      method: rest_api
+      endpoint: "https://api.si.edu/openaccess/api/v3.0/"
+      format: json
+      auth: api_key
+      recipe: |
+        # Register at https://api.data.gov
+        # American Art Collaborative — 14 US institutions
+        curl "https://api.si.edu/openaccess/api/v3.0/search?q=digital+art&api_key=YOUR_KEY"
+    record_count: "5.1M items"
+    reconciliation_ids: []
+    traditions_covered: [all]
+    notes: "American Art Museum publishes LOD since 2014. American Art Collaborative — 14 US institutions."
+
+  - name: "Cleveland Museum of Art Open Access"
+    group: institutional_archives
+    tier: 2
+    priority: medium
+    ingestion_phase: 4
+    description: "64K+ artwork records, 37K+ images. Open API. CC0."
+    access:
+      method: rest_api
+      endpoint: "https://openaccess-api.clevelandart.org/api/artworks/"
+      format: json
+      auth: null
+      recipe: |
+        curl "https://openaccess-api.clevelandart.org/api/artworks/?q=digital"
+    record_count: "64K+"
+    reconciliation_ids: []
+    traditions_covered: [all]
+    notes: "Among the most accessible open museum APIs."
+
+  - name: "National Gallery of Art Open Data"
+    group: institutional_archives
+    tier: 2
+    priority: medium
+    ingestion_phase: 1
+    description: "GitHub repo. Engaged with Linked Art standard. CC0."
+    access:
+      method: github_csv
+      endpoint: "https://github.com/NationalGalleryOfArt/opendata"
+      format: csv
+      auth: null
+      recipe: |
+        git clone https://github.com/NationalGalleryOfArt/opendata
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [all]
+    notes: "Engaged with Linked Art standard."
+
+  - name: "Harvard Art Museums API"
+    group: institutional_archives
+    tier: 2
+    priority: medium
+    ingestion_phase: 4
+    description: "REST API, structured collection data, developer-friendly docs."
+    access:
+      method: rest_api
+      endpoint: "https://api.harvardartmuseums.org/"
+      format: json
+      auth: api_key
+      recipe: |
+        # Register for API key at https://harvardartmuseums.org/collections/api
+        curl "https://api.harvardartmuseums.org/object?apikey=YOUR_KEY&q=digital"
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [all]
+    notes: "Developer-friendly docs."
+
+  - name: "HEK Basel"
+    group: institutional_archives
+    tier: 2
+    priority: medium
+    ingestion_phase: 5
+    description: "Exhibition archive — directly relevant to Basel June 2026."
+    access:
+      method: scrape
+      endpoint: "https://www.hek.ch"
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [immersive_spatial, net_art]
+    notes: "Directly relevant to A(DAI) Basel June 2026."
+
+  - name: "KADIST"
+    group: institutional_archives
+    tier: 2
+    priority: medium
+    ingestion_phase: 5
+    description: "2,200 artworks by 1,400 artists across 5 global regions. Explicitly transnational."
+    access:
+      method: scrape
+      endpoint: "https://kadist.org"
+      format: html
+      auth: null
+    record_count: "2,200 artworks, 1,400 artists"
+    reconciliation_ids: []
+    traditions_covered: [global_decolonial]
+    notes: "Middle East & Africa, Asia, Latin America — explicitly transnational."
+
+  - name: "LI-MA + mediakunst.net"
+    group: institutional_archives
+    tier: 2
+    priority: medium
+    ingestion_phase: 5
+    description: "500+ artists, 3,000 works unified catalog from 5 Dutch collections."
+    access:
+      method: scrape
+      endpoint: "https://www.li-ma.nl"
+      format: html
+      auth: null
+    record_count: "500+ artists, 3,000 works"
+    reconciliation_ids: []
+    traditions_covered: [video_electronic, net_art, glitch_post_digital]
+    notes: "Annual Transformation Digital Art symposium (10th edition April 2026)."
+
+  - name: "New Museum Digital Archive"
+    group: institutional_archives
+    tier: 2
+    priority: medium
+    ingestion_phase: 5
+    description: "7,500 materials, 4,000 artists/curators/organizations. Covers exhibitions, performances, publications."
+    access:
+      method: scrape
+      endpoint: "https://archive.newmuseum.org"
+      format: html
+      auth: null
+    record_count: "7,500 materials"
+    reconciliation_ids: []
+    traditions_covered: [all]
+    notes: "NEW INC connections."
+
+  - name: "iMAL Brussels"
+    group: institutional_archives
+    tier: 2
+    priority: low
+    ingestion_phase: 5
+    description: "Program archive, digital heritage documentation."
+    access:
+      method: scrape
+      endpoint: "https://www.imal.org"
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [immersive_spatial]
+    notes: null
+
+  # ── Group 4: On-chain / platform data ────────────────────────
+
+  - name: "fxhash (Tezos)"
+    group: on_chain
+    tier: 3
+    priority: high
+    ingestion_phase: 3
+    description: "First artwork nodes, on-chain provenance. Fully on-chain generative art."
+    access:
+      method: blockchain_indexer
+      endpoint: "https://api.tzkt.io"
+      format: json
+      auth: null
+      recipe: |
+        # Tezos indexers: TzKT (https://api.tzkt.io), DipDup
+        # fxhash contract addresses for token metadata
+        # Token metadata stored on-chain or IPFS — get via indexer
+        # Also: fxhash API at https://api.fxhash.xyz/graphql
+    record_count: null
+    reconciliation_ids: [tezos_address]
+    traditions_covered: [algorithmic_generative, crypto_blockchain]
+    notes: "Fills the 0-artwork gap. Fully on-chain. TzKT and DipDup indexers provide structured metadata."
+
+  - name: "Art Blocks"
+    group: on_chain
+    tier: 3
+    priority: high
+    ingestion_phase: 3
+    description: "On-chain generative art metadata. The Graph Network subgraphs + Hasura GraphQL API."
+    access:
+      method: graphql
+      endpoint: "https://api.thegraph.com/subgraphs/name/artblocks/art-blocks"
+      format: json
+      auth: null
+      recipe: |
+        # The Graph subgraph query:
+        {
+          projects(first: 10, orderBy: createdAt, orderDirection: desc) {
+            id
+            name
+            artistName
+            description
+            license
+            scriptJSON
+          }
+        }
+        # Also: Hasura GraphQL API for richer queries
+    record_count: null
+    reconciliation_ids: [ethereum_address]
+    traditions_covered: [algorithmic_generative, crypto_blockchain]
+    notes: "Largest body of generative art metadata outside traditional institutions."
+
+  - name: "Sedition"
+    group: on_chain
+    tier: 3
+    priority: medium
+    ingestion_phase: 5
+    description: "Digital limited edition artworks with structured catalog."
+    access:
+      method: scrape
+      endpoint: "https://www.seditionart.com"
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [crypto_blockchain]
+    notes: null
+
+  - name: "SuperRare"
+    group: on_chain
+    tier: 3
+    priority: medium
+    ingestion_phase: 5
+    description: "On-chain artwork metadata, artist profiles."
+    access:
+      method: rest_api
+      endpoint: "https://superrare.com/api"
+      format: json
+      auth: null
+    record_count: null
+    reconciliation_ids: [ethereum_address]
+    traditions_covered: [crypto_blockchain]
+    notes: null
+
+  - name: "Niio Art"
+    group: on_chain
+    tier: 3
+    priority: medium
+    ingestion_phase: 5
+    description: "30,000 artworks from 7,500+ artists/galleries (18,000+ premium). Commercial distribution platform."
+    access:
+      method: none
+      endpoint: null
+      format: null
+      auth: null
+    record_count: "30,000 artworks"
+    reconciliation_ids: []
+    traditions_covered: [algorithmic_generative, immersive_spatial]
+    notes: "No public research API. Commercial distribution platform."
+
+  # ── Group 5: Structured art data (curatorial + critical) ─────
+
+  - name: "e-flux"
+    group: curatorial_critical
+    tier: 3
+    priority: high
+    ingestion_phase: 5
+    description: "Exhibition announcements since 2000, journal, institutional directory, Agency of Unrealized Projects (~2,000 unrealized works). 50,000+ daily reach."
+    access:
+      method: scrape
+      endpoint: "https://www.e-flux.com"
+      format: html
+      auth: null
+      recipe: |
+        # Structured HTML — exhibition announcements, journal articles
+        # Browse by institution, artist, date
+        # Agency of Unrealized Projects — ~2,000 works
+        # Relatively scrapable structured data
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [all]
+    notes: "Richest institutional signal. 50,000+ daily reach."
+
+  - name: "Creative Applications Network (CAN)"
+    group: curatorial_critical
+    tier: 3
+    priority: high
+    ingestion_phase: 5
+    description: "4,000+ curated projects with metadata, artist profiles."
+    access:
+      method: scrape
+      endpoint: "https://www.creativeapplications.net"
+      format: html
+      auth: null
+      recipe: |
+        # Structured project pages with tags, artists, tools
+        # Good for creative coding coverage
+    record_count: "4,000+ projects"
+    reconciliation_ids: []
+    traditions_covered: [algorithmic_generative, ai_machine_learning, robotic_physical]
+    notes: "Best creative coding coverage."
+
+  - name: "Art21"
+    group: curatorial_critical
+    tier: 3
+    priority: medium
+    ingestion_phase: 5
+    description: "Artist interviews, process docs, bios."
+    access:
+      method: scrape
+      endpoint: "https://art21.org"
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [all]
+    notes: null
+
+  - name: "Artsy API"
+    group: curatorial_critical
+    tier: 3
+    priority: medium
+    ingestion_phase: 5
+    description: "Artist bios, exhibition records, Art Genome Project (1,000+ genes, 220,000+ genomed artworks)."
+    access:
+      method: rest_api
+      endpoint: "https://api.artsy.net/api"
+      format: json
+      auth: oauth
+      recipe: |
+        # API active — access terms ambiguous for research
+        # Art Genome Project: 1,000+ classification genes
+        # OAuth authentication required
+    record_count: "220,000+ genomed artworks"
+    reconciliation_ids: []
+    traditions_covered: [all]
+    notes: "Access terms ambiguous for research use. Art Genome Project is unique classification data."
+
+  - name: "Leonardo / MIT Press"
+    group: curatorial_critical
+    tier: 2
+    priority: medium
+    ingestion_phase: 5
+    description: "Peer-reviewed journal archive since 1968 — art-science-technology intersection."
+    access:
+      method: scrape
+      endpoint: "https://www.leonardo.info"
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [bio_digital, ai_machine_learning]
+    notes: "Since 1968 — deep history for art-science-technology."
+
+  - name: "Neural Magazine"
+    group: curatorial_critical
+    tier: 3
+    priority: medium
+    ingestion_phase: 5
+    description: "Archive of 1,916 publications since 1993 — media art, electronic music, hacktivism."
+    access:
+      method: scrape
+      endpoint: "https://neural.it"
+      format: html
+      auth: null
+    record_count: "1,916 publications"
+    reconciliation_ids: []
+    traditions_covered: [net_art, glitch_post_digital]
+    notes: "Since 1993."
+
+  - name: "Transmediale archive"
+    group: curatorial_critical
+    tier: 3
+    priority: medium
+    ingestion_phase: 5
+    description: "30+ years of media/digital culture."
+    access:
+      method: scrape
+      endpoint: "https://transmediale.de/archive"
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [net_art, glitch_post_digital]
+    notes: "Covers net art, software art, post-digital aesthetics, activism."
+
+  - name: "Monoskop"
+    group: curatorial_critical
+    tier: 4
+    priority: medium
+    ingestion_phase: 5
+    description: "Wiki-structured genealogical bibliographies — technofeminism, decolonial aesthetics, East Central European art histories."
+    access:
+      method: scrape
+      endpoint: "https://monoskop.org"
+      format: html
+      auth: null
+      recipe: |
+        # MediaWiki — potentially harvestable via MediaWiki API
+        # Digital library with PDFs/EPUBs
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [global_decolonial, net_art]
+    notes: "MediaWiki-based — may be harvestable via MediaWiki API."
+
+  - name: "Biennial Foundation"
+    group: curatorial_critical
+    tier: 3
+    priority: low
+    ingestion_phase: 5
+    description: "Directory/map of global biennials with profiles."
+    access:
+      method: scrape
+      endpoint: "https://www.biennialfoundation.org"
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [all]
+    notes: null
+
+  # ── Group 6: Non-Western / Global sources ────────────────────
+
+  - name: "Asia Art Archive (AAA)"
+    group: non_western_global
+    tier: 2
+    priority: high
+    ingestion_phase: 5
+    description: "100,000+ records (library: 48,000+, AAA India: 50,000+). Pan-Asian contemporary art."
+    access:
+      method: scrape
+      endpoint: "https://aaa.org.hk"
+      format: html
+      auth: null
+      recipe: |
+        # AAA Keywords + interactive Event Database available
+        # Structured browse — may be partially scrapable
+    record_count: "100,000+"
+    reconciliation_ids: []
+    traditions_covered: [global_decolonial]
+    notes: "Largest gap filler for non-Western coverage."
+
+  - name: "ARTLINKART"
+    group: non_western_global
+    tier: 4
+    priority: high
+    ingestion_phase: 5
+    description: "48,787 persons (45,412 artists, 4,636 curators, 318 critics), 43,700 exhibitions, 2,341 art spaces — bilingual Chinese/English."
+    access:
+      method: scrape
+      endpoint: "http://www.artlinkart.com"
+      format: html
+      auth: null
+      recipe: |
+        # Bilingual Chinese/English
+        # Updated daily
+        # Browse by person, exhibition, art space
+    record_count: "48,787 persons, 43,700 exhibitions"
+    reconciliation_ids: []
+    traditions_covered: [global_decolonial]
+    notes: "Chinese ecosystem — bilingual, updated daily."
+
+  - name: "FILE Festival (Brazil)"
+    group: non_western_global
+    tier: 3
+    priority: medium
+    ingestion_phase: 5
+    description: "2,000+ works, Latin American digital art focus since 2000."
+    access:
+      method: scrape
+      endpoint: "https://file.org.br"
+      format: html
+      auth: null
+    record_count: "2,000+ works"
+    reconciliation_ids: []
+    traditions_covered: [global_decolonial, immersive_spatial]
+    notes: "Latin American focus since 2000."
+
+  - name: "ICAA Documents Project (MFAH)"
+    group: non_western_global
+    tier: 2
+    priority: medium
+    ingestion_phase: 5
+    description: "Latin American primary sources — letters, manifestos, articles."
+    access:
+      method: scrape
+      endpoint: "https://icaa.mfah.org"
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [global_decolonial]
+    notes: "Primary sources — deep historical value."
+
+  - name: "NTT ICC (Tokyo)"
+    group: non_western_global
+    tier: 2
+    priority: medium
+    ingestion_phase: 5
+    description: "Interactive chronology of media art post-1991. HIVE video archive."
+    access:
+      method: scrape
+      endpoint: "https://www.ntticc.or.jp"
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [immersive_spatial, global_decolonial]
+    notes: "HIVE video archive available online and on-site."
+
+  - name: "YCAM (Yamaguchi)"
+    group: non_western_global
+    tier: 2
+    priority: medium
+    ingestion_phase: 5
+    description: "Japanese media art + international collaboration documentation."
+    access:
+      method: scrape
+      endpoint: "https://www.ycam.jp"
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [immersive_spatial, global_decolonial]
+    notes: null
+
+  - name: "Chronus Art Center (Shanghai)"
+    group: non_western_global
+    tier: 3
+    priority: medium
+    ingestion_phase: 5
+    description: "China's first nonprofit for media art, exhibition archive."
+    access:
+      method: scrape
+      endpoint: "http://www.chronusartcenter.org"
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [global_decolonial, immersive_spatial]
+    notes: "China's first nonprofit for media art."
+
+  - name: "Nam June Paik Art Center"
+    group: non_western_global
+    tier: 2
+    priority: medium
+    ingestion_phase: 5
+    description: "2,285 digitized videos, 700+ clips — Korean media art history."
+    access:
+      method: scrape
+      endpoint: "https://njp.ggcf.kr"
+      format: html
+      auth: null
+    record_count: "2,285 digitized videos"
+    reconciliation_ids: []
+    traditions_covered: [video_electronic, global_decolonial]
+    notes: null
+
+  - name: "African Digital Art Network"
+    group: non_western_global
+    tier: 4
+    priority: medium
+    ingestion_phase: 5
+    description: "Platform/archive of projects and artists from Africa and diaspora."
+    access:
+      method: scrape
+      endpoint: "https://africandigitalart.com"
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [global_decolonial]
+    notes: null
+
+  - name: "Ibraaz"
+    group: non_western_global
+    tier: 3
+    priority: medium
+    ingestion_phase: 5
+    description: "400+ original contributions on visual culture in MENA region."
+    access:
+      method: scrape
+      endpoint: "https://www.ibraaz.org"
+      format: html
+      auth: null
+    record_count: "400+ contributions"
+    reconciliation_ids: []
+    traditions_covered: [global_decolonial]
+    notes: "MENA region focus."
+
+  - name: "Sharjah Art Foundation"
+    group: non_western_global
+    tier: 2
+    priority: medium
+    ingestion_phase: 5
+    description: "Collection and exhibition documentation, Middle Eastern/international."
+    access:
+      method: scrape
+      endpoint: "https://sharjahart.org"
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [global_decolonial]
+    notes: null
+
+  - name: "MAAP (Media Art Asia Pacific)"
+    group: non_western_global
+    tier: 3
+    priority: low
+    ingestion_phase: 5
+    description: "Asia-Pacific media art since 2000."
+    access:
+      method: scrape
+      endpoint: "https://www.maap.org.au"
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [global_decolonial]
+    notes: null
+
+  - name: "ASEF culture360"
+    group: non_western_global
+    tier: 3
+    priority: low
+    ingestion_phase: 5
+    description: "Asia-Europe cultural exchange directory."
+    access:
+      method: scrape
+      endpoint: "https://culture360.asef.org"
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [global_decolonial]
+    notes: null
+
+  - name: "Art Base Africa"
+    group: non_western_global
+    tier: 4
+    priority: low
+    ingestion_phase: 5
+    description: "Online database for contemporary African art."
+    access:
+      method: scrape
+      endpoint: "https://www.artbaseafrica.org"
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [global_decolonial]
+    notes: null
+
+  - name: "Asia Digital Art Award Fukuoka"
+    group: non_western_global
+    tier: 3
+    priority: low
+    ingestion_phase: 5
+    description: "Award archive, Asia-Pacific digital art since 2001."
+    access:
+      method: scrape
+      endpoint: null
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [global_decolonial, algorithmic_generative]
+    notes: "Since 2001."
+
+  # ── Group 7: Practitioner-generated (relationship-rich) ──────
+
+  - name: "Are.na"
+    group: practitioner_generated
+    tier: 4
+    priority: high
+    ingestion_phase: 5
+    description: "Curated channels with explicit reference connections — relationship edges pre-labeled."
+    access:
+      method: rest_api
+      endpoint: "https://api.are.na/v2/"
+      format: json
+      auth: null
+      recipe: |
+        # REST API — no auth needed for public channels
+        # Get channel:
+        curl "https://api.are.na/v2/channels/digital-art"
+        # Channels contain blocks with connections — edges pre-labeled
+        # Pagination: ?page=1&per=50
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [all]
+    notes: "Unique relationship data — channels are pre-labeled edge collections. Has REST API despite being listed as community-curated."
+
+  - name: "GitHub"
+    group: practitioner_generated
+    tier: 4
+    priority: medium
+    ingestion_phase: 5
+    description: "Open-source creative coding repos, collaboration graphs, tool lineage, forks."
+    access:
+      method: rest_api
+      endpoint: "https://api.github.com"
+      format: json
+      auth: api_key
+      recipe: |
+        # GitHub API v4 (GraphQL) or REST v3
+        # Search repos by topic: creative-coding, generative-art, p5js
+        # Collaboration graph from contributors, forks, stars
+        # Rate limit: 5000 req/hr with auth
+    record_count: null
+    reconciliation_ids: [github_username]
+    traditions_covered: [algorithmic_generative, data_visualization]
+    notes: "Collaboration graphs from contributors, forks. Tool lineage via dependency analysis."
+
+  - name: "OpenProcessing"
+    group: practitioner_generated
+    tier: 4
+    priority: low
+    ingestion_phase: 5
+    description: "Sketches with attribution, forks — 20 years of creative coding community."
+    access:
+      method: scrape
+      endpoint: "https://openprocessing.org"
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [algorithmic_generative]
+    notes: "20 years of creative coding community."
+
+  - name: "Processing Foundation / p5.js contributors"
+    group: practitioner_generated
+    tier: 4
+    priority: low
+    ingestion_phase: 5
+    description: "Creative coding community structure."
+    access:
+      method: rest_api
+      endpoint: "https://api.github.com/repos/processing/p5.js"
+      format: json
+      auth: api_key
+    record_count: null
+    reconciliation_ids: [github_username]
+    traditions_covered: [algorithmic_generative]
+    notes: null
+
+  - name: "awesome-creative-coding (GitHub)"
+    group: practitioner_generated
+    tier: 4
+    priority: low
+    ingestion_phase: 5
+    description: "Curated list of tools, frameworks, communities."
+    access:
+      method: github_csv
+      endpoint: "https://github.com/terkelg/awesome-creative-coding"
+      format: markdown
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [algorithmic_generative]
+    notes: "Reference only — curated list, not a data source."
+
+  # ── Group 8: Signal / activity (real-time discourse) ─────────
+
+  - name: "RSS feeds (art publications)"
+    group: signal_activity
+    tier: 5
+    priority: medium
+    ingestion_phase: 5
+    description: "Dynamic signal flow, current field activity."
+    access:
+      method: rss
+      endpoint: null
+      format: xml
+      auth: null
+      recipe: |
+        # Aggregate RSS from: e-flux, CAN, Rhizome, Neural, Hyperallergic
+        # Parse with feedparser (Python) or similar
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [all]
+    notes: "Dynamic signal — complements static archives."
+
+  - name: "BlueSky"
+    group: signal_activity
+    tier: 5
+    priority: medium
+    ingestion_phase: 5
+    description: "Practitioner discourse, emerging connections."
+    access:
+      method: rest_api
+      endpoint: "https://bsky.social/xrpc/"
+      format: json
+      auth: api_key
+      recipe: |
+        # AT Protocol API
+        # Search posts, follow graphs
+        # Free API access
+    record_count: null
+    reconciliation_ids: [bluesky_handle]
+    traditions_covered: [all]
+    notes: "Free API, growing practitioner community."
+
+  - name: "Mastodon creative coding instances"
+    group: signal_activity
+    tier: 5
+    priority: medium
+    ingestion_phase: 5
+    description: "Free API, active practitioner discourse."
+    access:
+      method: rest_api
+      endpoint: null
+      format: json
+      auth: null
+      recipe: |
+        # Key instances: creative.social, post.lurk.org
+        # Mastodon REST API — no auth for public posts
+        # GET https://creative.social/api/v1/timelines/public
+    record_count: null
+    reconciliation_ids: [mastodon_handle]
+    traditions_covered: [performance_live_coding, algorithmic_generative]
+    notes: "Free API. Key instances: creative.social, post.lurk.org."
+
+  - name: "YouTube / Vimeo"
+    group: signal_activity
+    tier: 5
+    priority: low
+    ingestion_phase: 5
+    description: "Artist talks, process videos, conference recordings (metadata only)."
+    access:
+      method: rest_api
+      endpoint: "https://www.googleapis.com/youtube/v3/"
+      format: json
+      auth: api_key
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [all]
+    notes: "Metadata only — video content not ingested."
+
+  - name: "X/Twitter"
+    group: signal_activity
+    tier: 5
+    priority: low
+    ingestion_phase: 5
+    description: "Richest practitioner signal."
+    access:
+      method: rest_api
+      endpoint: "https://api.twitter.com/2/"
+      format: json
+      auth: paid
+    record_count: null
+    reconciliation_ids: [twitter_handle]
+    traditions_covered: [all]
+    notes: "API costs ~$5k/mo. Richest signal but cost-prohibitive."
+
+  - name: "Discord servers"
+    group: signal_activity
+    tier: 5
+    priority: low
+    ingestion_phase: 5
+    description: "Community signal (Generative Artists Club, fxhash, Art Blocks)."
+    access:
+      method: none
+      endpoint: null
+      format: null
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [algorithmic_generative, crypto_blockchain]
+    notes: "No API for community servers."
+
+  # ── Group 9: Academic / discourse ────────────────────────────
+
+  - name: "SIGGRAPH proceedings"
+    group: academic_discourse
+    tier: 2
+    priority: medium
+    ingestion_phase: 5
+    description: "Art-technology intersection — concept nodes, scholarly edges."
+    access:
+      method: scrape
+      endpoint: "https://dl.acm.org"
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [algorithmic_generative, data_visualization]
+    notes: "ACM Digital Library — may need institutional access."
+
+  - name: "ResearchCatalogue (RC)"
+    group: academic_discourse
+    tier: 4
+    priority: low
+    ingestion_phase: 5
+    description: "Artistic research expositions."
+    access:
+      method: scrape
+      endpoint: "https://www.researchcatalogue.net"
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [all]
+    notes: null
+
+  - name: "Google Scholar profiles"
+    group: academic_discourse
+    tier: 4
+    priority: low
+    ingestion_phase: 5
+    description: "Co-authorship = collaboration edges."
+    access:
+      method: scrape
+      endpoint: "https://scholar.google.com"
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [all]
+    notes: "Scraping restricted — use Semantic Scholar API as alternative."
+
+  - name: "EMAP"
+    group: academic_discourse
+    tier: 3
+    priority: low
+    ingestion_phase: 5
+    description: "European media art residency network — 16 organizations."
+    access:
+      method: scrape
+      endpoint: "https://emare.eu"
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [all]
+    notes: "16 organizations."
+
+  - name: "Digital Art History Directory"
+    group: academic_discourse
+    tier: 4
+    priority: low
+    ingestion_phase: 5
+    description: "Meta-directory of open data collections and digital art history projects."
+    access:
+      method: scrape
+      endpoint: null
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [all]
+    notes: "Reference layer — use to discover new sources."
+
+  - name: "ArtGraph (Zenodo/Neo4j)"
+    group: academic_discourse
+    tier: 4
+    priority: low
+    ingestion_phase: 5
+    description: "Academic KG combining WikiArt + DBpedia: 135,038 resources. Artist, artwork, style, media, genre classifications."
+    access:
+      method: github_csv
+      endpoint: "https://zenodo.org"
+      format: [json, neo4j]
+      auth: null
+      recipe: |
+        # Published on Zenodo — downloadable dump
+        # Neo4j format — can be imported directly
+    record_count: "135,038 resources"
+    reconciliation_ids: [dbpedia_id]
+    traditions_covered: [all]
+    notes: "Academic layer. WikiArt + DBpedia combined."
+
+  - name: "Open GLAM Survey"
+    group: academic_discourse
+    tier: 4
+    priority: low
+    ingestion_phase: 5
+    description: "Tracks CC0/open access activity across GLAM sector since 2018."
+    access:
+      method: scrape
+      endpoint: "https://openglam.org"
+      format: html
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [all]
+    notes: "Meta-source — discover new institutional data as it emerges."
+
+  - name: "DAAP (Digital Archive of Artists' Publishing)"
+    group: academic_discourse
+    tier: 4
+    priority: low
+    ingestion_phase: 5
+    description: "Linked data RDF database for non-standard artist publications — books, zines, experimental publications."
+    access:
+      method: sparql
+      endpoint: null
+      format: rdf
+      auth: null
+    record_count: null
+    reconciliation_ids: []
+    traditions_covered: [net_art, glitch_post_digital]
+    notes: "Community-driven ontology. Linked data RDF."
