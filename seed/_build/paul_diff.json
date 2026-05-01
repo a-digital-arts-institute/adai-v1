@@ -1,0 +1,651 @@
+{
+  "method": "strict last-token + length-gated substring",
+  "missing_practitioners": [
+    {
+      "name": "Nam June Paik",
+      "confidence": "high",
+      "chapters": [
+        "Intro",
+        "Sculpture",
+        "Networks"
+      ],
+      "note": "Foundational — cited as precursor to the entire field"
+    },
+    {
+      "name": "A. Michael Noll",
+      "confidence": "high",
+      "chapters": [
+        "Imaging"
+      ],
+      "note": "1965 originals — Bell Labs"
+    },
+    {
+      "name": "Herbert W. Franke",
+      "confidence": "high",
+      "chapters": [
+        "Imaging"
+      ],
+      "note": "Austrian early computer art (1956!)"
+    },
+    {
+      "name": "John Whitney",
+      "confidence": "high",
+      "chapters": [
+        "Imaging"
+      ],
+      "note": "Early computer animation"
+    },
+    {
+      "name": "Ben Laposky",
+      "confidence": "medium",
+      "chapters": [
+        "Imaging"
+      ],
+      "note": "Oscilloscope art pioneer"
+    },
+    {
+      "name": "Myron Krueger",
+      "confidence": "high",
+      "chapters": [
+        "VR",
+        "Interactive"
+      ],
+      "note": "Videoplace 1975 — founding interactive installation"
+    },
+    {
+      "name": "David Rokeby",
+      "confidence": "high",
+      "chapters": [
+        "Interactive",
+        "Sound"
+      ],
+      "note": "Very Nervous System"
+    },
+    {
+      "name": "Char Davies",
+      "confidence": "high",
+      "chapters": [
+        "VR"
+      ],
+      "note": "Osmose 1995 — foundational VR art"
+    },
+    {
+      "name": "Jeffrey Shaw",
+      "confidence": "high",
+      "chapters": [
+        "VR",
+        "Networks"
+      ],
+      "note": "Legible City 1989; ZKM co-founder"
+    },
+    {
+      "name": "Christa Sommerer",
+      "confidence": "high",
+      "chapters": [
+        "Bioart",
+        "VR"
+      ],
+      "note": "A-Life installation, with Mignonneau"
+    },
+    {
+      "name": "Laurent Mignonneau",
+      "confidence": "high",
+      "chapters": [
+        "Bioart",
+        "VR"
+      ],
+      "note": "A-Life installation, with Sommerer"
+    },
+    {
+      "name": "Mouchette (Martine Neddam)",
+      "confidence": "high",
+      "chapters": [
+        "Net Art"
+      ],
+      "note": "Single-work net artist — mouchette.org"
+    },
+    {
+      "name": "Shu Lea Cheang",
+      "confidence": "high",
+      "chapters": [
+        "Net Art"
+      ],
+      "note": "Brandon 1998 (Guggenheim)"
+    },
+    {
+      "name": "Young-Hae Chang Heavy Industries",
+      "confidence": "high",
+      "chapters": [
+        "Net Art",
+        "Text"
+      ],
+      "note": "Korean-American Flash-text duo"
+    },
+    {
+      "name": "Ken Goldberg",
+      "confidence": "high",
+      "chapters": [
+        "Networks",
+        "Bioart"
+      ],
+      "note": "Telegarden — telerobotics"
+    },
+    {
+      "name": "Eduardo Kac",
+      "confidence": "high",
+      "chapters": [
+        "Bioart",
+        "Networks"
+      ],
+      "note": "Bioart founder — GFP Bunny"
+    },
+    {
+      "name": "John Maeda",
+      "confidence": "medium",
+      "chapters": [
+        "Software"
+      ],
+      "note": "ACG / MIT Media Lab influence"
+    },
+    {
+      "name": "Karl Sims",
+      "confidence": "high",
+      "chapters": [
+        "Bioart",
+        "Evolutionary"
+      ],
+      "note": "Evolved Virtual Creatures 1994"
+    },
+    {
+      "name": "Heather Dewey-Hagborg",
+      "confidence": "high",
+      "chapters": [
+        "Bioart",
+        "AI"
+      ],
+      "note": "Stranger Visions — DNA portraiture"
+    },
+    {
+      "name": "Oron Catts / SymbioticA",
+      "confidence": "medium",
+      "chapters": [
+        "Bioart"
+      ],
+      "note": "Tissue culture art"
+    },
+    {
+      "name": "Stelarc",
+      "confidence": "high",
+      "chapters": [
+        "Bioart",
+        "Body"
+      ],
+      "note": "Body augmentation performance"
+    },
+    {
+      "name": "Critical Art Ensemble",
+      "confidence": "medium",
+      "chapters": [
+        "Bioart",
+        "Tactical"
+      ],
+      "note": "Biopolitical tactical media"
+    },
+    {
+      "name": "Mary Flanagan",
+      "confidence": "high",
+      "chapters": [
+        "Games"
+      ],
+      "note": "Critical games + game theory"
+    },
+    {
+      "name": "Eddo Stern",
+      "confidence": "medium",
+      "chapters": [
+        "Games"
+      ],
+      "note": "Game mods"
+    },
+    {
+      "name": "George Legrady",
+      "confidence": "high",
+      "chapters": [
+        "Databases"
+      ],
+      "note": "Pockets Full of Memories"
+    },
+    {
+      "name": "Martin Wattenberg",
+      "confidence": "high",
+      "chapters": [
+        "Databases"
+      ],
+      "note": "IBM Many Eyes + Google"
+    },
+    {
+      "name": "Fernanda Viégas",
+      "confidence": "high",
+      "chapters": [
+        "Databases"
+      ],
+      "note": "Paired with Wattenberg"
+    },
+    {
+      "name": "Aaron Koblin",
+      "confidence": "high",
+      "chapters": [
+        "Databases",
+        "Crowd"
+      ],
+      "note": "Flight Patterns, The Johnny Cash Project"
+    },
+    {
+      "name": "W. Bradford Paley",
+      "confidence": "medium",
+      "chapters": [
+        "Databases"
+      ],
+      "note": "Code as visualization"
+    },
+    {
+      "name": "Mark Hansen",
+      "confidence": "medium",
+      "chapters": [
+        "Databases",
+        "Sound"
+      ],
+      "note": "Listening Post (with Ben Rubin)"
+    },
+    {
+      "name": "Ben Rubin",
+      "confidence": "medium",
+      "chapters": [
+        "Databases",
+        "Sound"
+      ],
+      "note": "Listening Post"
+    },
+    {
+      "name": "Roman Verostko",
+      "confidence": "high",
+      "chapters": [
+        "Algorithmic"
+      ],
+      "note": "Algorists founder — pen-plotter mystic"
+    },
+    {
+      "name": "Mark Wilson",
+      "confidence": "medium",
+      "chapters": [
+        "Algorithmic"
+      ],
+      "note": "1970s algo art"
+    },
+    {
+      "name": "Ken Goldberg",
+      "confidence": "high",
+      "chapters": [
+        "Networks"
+      ],
+      "note": "Already listed"
+    },
+    {
+      "name": "Rachel Rossin",
+      "confidence": "high",
+      "chapters": [
+        "VR"
+      ],
+      "note": "VR painting"
+    },
+    {
+      "name": "Jakob Kudsk Steensen",
+      "confidence": "medium",
+      "chapters": [
+        "VR"
+      ],
+      "note": "VR ecosystems"
+    },
+    {
+      "name": "Laurie Anderson",
+      "confidence": "medium",
+      "chapters": [
+        "VR"
+      ],
+      "note": "Chalkroom, To the Moon"
+    },
+    {
+      "name": "Sarah Meyohas",
+      "confidence": "high",
+      "chapters": [
+        "NFT"
+      ],
+      "note": "BitchCoin"
+    },
+    {
+      "name": "Sara Ludy",
+      "confidence": "medium",
+      "chapters": [
+        "NFT"
+      ],
+      "note": "NFT-native practice"
+    },
+    {
+      "name": "Olafur Eliasson",
+      "confidence": "medium",
+      "chapters": [
+        "Installation"
+      ],
+      "note": "Weather Project — mixed analog/digital"
+    }
+  ],
+  "missing_theorists": [
+    {
+      "name": "Katherine Hayles",
+      "confidence": "high",
+      "note": "How We Became Posthuman — paradigmatic reference"
+    },
+    {
+      "name": "Wendy Hui Kyong Chun",
+      "confidence": "medium",
+      "note": "Programmed Visions"
+    },
+    {
+      "name": "Matthew Kirschenbaum",
+      "confidence": "medium",
+      "note": "Mechanisms — digital-archive theory"
+    },
+    {
+      "name": "Mark Hansen",
+      "confidence": "medium",
+      "note": "New Philosophy for New Media"
+    },
+    {
+      "name": "Margaret Morse",
+      "confidence": "low",
+      "note": "Virtualities"
+    },
+    {
+      "name": "Sean Cubitt",
+      "confidence": "low",
+      "note": "Digital Aesthetics"
+    },
+    {
+      "name": "Vilém Flusser",
+      "confidence": "medium",
+      "note": "Towards a Philosophy of Photography"
+    }
+  ],
+  "already_in_graph_practitioners": [
+    {
+      "paul_name": "Harold Cohen",
+      "confidence": "high",
+      "graph_name": "Harold Cohen"
+    },
+    {
+      "paul_name": "Vera Molnár",
+      "confidence": "high",
+      "graph_name": "Vera Molnár"
+    },
+    {
+      "paul_name": "Frieder Nake",
+      "confidence": "high",
+      "graph_name": "Frieder Nake"
+    },
+    {
+      "paul_name": "Georg Nees",
+      "confidence": "high",
+      "graph_name": "Georg Nees"
+    },
+    {
+      "paul_name": "Manfred Mohr",
+      "confidence": "high",
+      "graph_name": "Manfred Mohr"
+    },
+    {
+      "paul_name": "Charles Csuri",
+      "confidence": "high",
+      "graph_name": "Charles Csuri"
+    },
+    {
+      "paul_name": "Lillian Schwartz",
+      "confidence": "high",
+      "graph_name": "Lillian Schwartz"
+    },
+    {
+      "paul_name": "Kenneth Knowlton",
+      "confidence": "high",
+      "graph_name": "Kenneth Knowlton"
+    },
+    {
+      "paul_name": "JODI",
+      "confidence": "high",
+      "graph_name": "JODI"
+    },
+    {
+      "paul_name": "Olia Lialina",
+      "confidence": "high",
+      "graph_name": "Olia Lialina"
+    },
+    {
+      "paul_name": "Vuk Ćosić",
+      "confidence": "high",
+      "graph_name": "Vuk Ćosić"
+    },
+    {
+      "paul_name": "Heath Bunting",
+      "confidence": "high",
+      "graph_name": "Heath Bunting"
+    },
+    {
+      "paul_name": "Alexei Shulgin",
+      "confidence": "high",
+      "graph_name": "Alexei Shulgin"
+    },
+    {
+      "paul_name": "Cornelia Sollfrank",
+      "confidence": "high",
+      "graph_name": "Cornelia Sollfrank"
+    },
+    {
+      "paul_name": "Mark Tribe",
+      "confidence": "high",
+      "graph_name": "Mark Tribe"
+    },
+    {
+      "paul_name": "Casey Reas",
+      "confidence": "high",
+      "graph_name": "Casey Reas"
+    },
+    {
+      "paul_name": "Ben Fry",
+      "confidence": "high",
+      "graph_name": "Ben Fry"
+    },
+    {
+      "paul_name": "Golan Levin",
+      "confidence": "high",
+      "graph_name": "Golan Levin"
+    },
+    {
+      "paul_name": "Zach Lieberman",
+      "confidence": "high",
+      "graph_name": "Zach Lieberman"
+    },
+    {
+      "paul_name": "Cory Arcangel",
+      "confidence": "high",
+      "graph_name": "Cory Arcangel"
+    },
+    {
+      "paul_name": "Auriea Harvey",
+      "confidence": "medium",
+      "graph_name": "Auriea Harvey"
+    },
+    {
+      "paul_name": "Lev Manovich",
+      "confidence": "high",
+      "graph_name": "Lev Manovich"
+    },
+    {
+      "paul_name": "Manfred Mohr",
+      "confidence": "high",
+      "graph_name": "Manfred Mohr"
+    },
+    {
+      "paul_name": "Harold Cohen",
+      "confidence": "high",
+      "graph_name": "Harold Cohen"
+    },
+    {
+      "paul_name": "Ryoji Ikeda",
+      "confidence": "high",
+      "graph_name": "Ryoji Ikeda"
+    },
+    {
+      "paul_name": "Carsten Nicolai / Alva Noto",
+      "confidence": "high",
+      "graph_name": "Carsten Nicolai/Alva Noto"
+    },
+    {
+      "paul_name": "Refik Anadol",
+      "confidence": "high",
+      "graph_name": "Refik Anadol"
+    },
+    {
+      "paul_name": "Mario Klingemann",
+      "confidence": "high",
+      "graph_name": "Mario Klingemann"
+    },
+    {
+      "paul_name": "Anna Ridler",
+      "confidence": "high",
+      "graph_name": "Anna Ridler"
+    },
+    {
+      "paul_name": "Trevor Paglen",
+      "confidence": "high",
+      "graph_name": "Trevor Paglen"
+    },
+    {
+      "paul_name": "Kate Crawford",
+      "confidence": "medium",
+      "graph_name": "Kate Crawford"
+    },
+    {
+      "paul_name": "Holly Herndon",
+      "confidence": "high",
+      "graph_name": "Holly Herndon"
+    },
+    {
+      "paul_name": "Mat Dryhurst",
+      "confidence": "high",
+      "graph_name": "Mat Dryhurst"
+    },
+    {
+      "paul_name": "Sougwen Chung",
+      "confidence": "high",
+      "graph_name": "Sougwen Chung"
+    },
+    {
+      "paul_name": "Memo Akten",
+      "confidence": "high",
+      "graph_name": "Memo Akten"
+    },
+    {
+      "paul_name": "Sofia Crespo",
+      "confidence": "high",
+      "graph_name": "Sofia Crespo / Entangled Others"
+    },
+    {
+      "paul_name": "Jake Elwes",
+      "confidence": "medium",
+      "graph_name": "Jake Elwes"
+    },
+    {
+      "paul_name": "Lynn Hershman Leeson",
+      "confidence": "high",
+      "graph_name": "Lynn Hershman Leeson"
+    },
+    {
+      "paul_name": "Ian Cheng",
+      "confidence": "high",
+      "graph_name": "Ian Cheng"
+    },
+    {
+      "paul_name": "Beeple",
+      "confidence": "high",
+      "graph_name": "Beeple"
+    },
+    {
+      "paul_name": "Kevin McCoy",
+      "confidence": "high",
+      "graph_name": "Kevin McCoy"
+    },
+    {
+      "paul_name": "Rhea Myers",
+      "confidence": "high",
+      "graph_name": "Rhea Myers"
+    },
+    {
+      "paul_name": "Tyler Hobbs",
+      "confidence": "high",
+      "graph_name": "Tyler Hobbs"
+    },
+    {
+      "paul_name": "Hito Steyerl",
+      "confidence": "high",
+      "graph_name": "Hito Steyerl"
+    },
+    {
+      "paul_name": "Amalia Ulman",
+      "confidence": "high",
+      "graph_name": "Amalia Ulman"
+    },
+    {
+      "paul_name": "Jon Rafman",
+      "confidence": "high",
+      "graph_name": "Jon Rafman"
+    },
+    {
+      "paul_name": "Petra Cortright",
+      "confidence": "high",
+      "graph_name": "Petra Cortright"
+    },
+    {
+      "paul_name": "Ed Atkins",
+      "confidence": "medium",
+      "graph_name": "Ed Atkins"
+    },
+    {
+      "paul_name": "Katja Novitskova",
+      "confidence": "medium",
+      "graph_name": "Katja Novitskova"
+    },
+    {
+      "paul_name": "Forensic Architecture",
+      "confidence": "high",
+      "graph_name": "Forensic Architecture"
+    },
+    {
+      "paul_name": "teamLab",
+      "confidence": "high",
+      "graph_name": "teamLab"
+    },
+    {
+      "paul_name": "Random International",
+      "confidence": "high",
+      "graph_name": "Random International"
+    },
+    {
+      "paul_name": "Rafael Lozano-Hemmer",
+      "confidence": "high",
+      "graph_name": "Rafael Lozano-Hemmer"
+    },
+    {
+      "paul_name": "Lawrence Abu Hamdan",
+      "confidence": "medium",
+      "graph_name": "Lawrence Abu Hamdan"
+    }
+  ]
+}

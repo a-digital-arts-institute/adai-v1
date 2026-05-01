@@ -1,0 +1,484 @@
+{
+  "alexei shulgin": [
+    {
+      "title": "Form Art",
+      "year": "1997",
+      "description": "Browser-native generative artwork using HTML form elements — checkboxes, radio buttons, drop-down menus — as primary visual material. Shulgin treats the form as the overlooked aesthetic substrate of the administered web, and Form Art competitions (1997) invited peers to submit works made only of these ostensibly utilitarian elements. The piece argues that bureaucratic UI is already expressive, and that net.art can locate its medium in the browser's structural vocabulary rather than in image or video."
+    },
+    {
+      "title": "386DX",
+      "year": "1998-present",
+      "description": "Long-running cybernetic-punk performance project in which an obsolete 386DX PC equipped with Microsoft SAM text-to-speech covers rock and punk songs live. The obsolete machine as performance instrument stages computational obsolescence as continuing labour rather than disposal; the covers' flat, affectless speech foregrounds the gap between machine-reproduced and live performance. The work has toured internationally for over two decades, treating a single ageing computer as durational co-performer."
+    },
+    {
+      "title": "Remedy for Information Disease",
+      "year": "1995",
+      "description": "Early web-native work diagnosing informational overload as a somatic condition, predating most discourse on digital burnout by a decade. Structured as a mock-clinical protocol distributed via HTTP, the piece uses the medium's immediacy to enact rather than describe its subject. An important early reference for net.art's diagnostic mode."
+    }
+  ],
+
+  "auriea harvey": [
+    {
+      "title": "Entropy8Zuper!",
+      "year": "1999-2002",
+      "description": "Net.art and hypertextual Flash collaboration with Michaël Samyn that treated the browser as architectural and erotic space. Works including 'Skinonskinonskin' and 'Wirefire' used layered SWFs, evocative audio, and slow-revealing narrative to build intimate online environments at a moment when most web design was shedding such intimacy for utility. The practice was pivotal in establishing net.art as a medium of affect rather than only critique."
+    },
+    {
+      "title": "The Path",
+      "year": "2009",
+      "description": "Commercial art game developed as Tale of Tales (with Samyn) that reframed Little Red Riding Hood as a meditation on rule-breaking, death, and feminine interior life. The game asked players to disobey its central instruction — don't leave the path — and punished conformity with vacuity. It became one of the canonical 'art games' of the late-2000s independent-games moment and helped establish the form as exhibitable beyond gaming contexts."
+    },
+    {
+      "title": "Minotaur sculpture series",
+      "year": "2020-present",
+      "description": "Ongoing 3D-sculpture practice distributed across physical casts, high-resolution digital files, and NFTs. Harvey treats the figure of the minotaur as a stand-in for the hybrid body of the digital artist — classical sculpture's myth-figures reimagined in mesh geometry. Each work exists in multiple registers at once, proposing that digital-native sculpture can share the ontological weight of the physical tradition it converses with."
+    }
+  ],
+
+  "bernard stiegler": [
+    {
+      "title": "Technics and Time, 1: The Fault of Epimetheus",
+      "year": "1994",
+      "description": "Foundational text arguing that human life is originally technical — that we exist only through the 'tertiary retentions' of external memory supports, from flint to film to database. The book reframes the philosophy of technology against both Heidegger and classical humanism, insisting that the technical object is the condition of possibility for thought, not its instrument. It is one of the most-cited works in contemporary digital-art theory because it gives a philosophical vocabulary for treating media as constitutive rather than merely representational."
+    },
+    {
+      "title": "Taking Care of Youth and the Generations",
+      "year": "2008",
+      "description": "Essay on attention as an ecological and political substrate under threat from the digital-industrial capture of consciousness. Stiegler argues that the attention economy is a literal consumption of psychic resources, and that taking care of attention is a task at the level of education, institution, and aesthetics. The work's framing of attention as commons under threat is widely used in digital-arts and AI-ethics discourse."
+    },
+    {
+      "title": "The Neganthropocene",
+      "year": "2018",
+      "description": "Late collection proposing 'neganthropy' as an artistic-philosophical exit from the entropic trajectory of the Anthropocene. Stiegler treats art as a practice that can make time local and reversible against the global drift towards entropic flattening. The book's call for a 'contributive economy' of knowledge has had direct uptake in commons-oriented digital-art practice."
+    }
+  ],
+
+  "carsten nicolai alva noto": [
+    {
+      "title": "syn chron",
+      "year": "2005",
+      "description": "Audio-visual installation that treats a cubic architectural object as co-signal: LEDs, sine tones, and structural geometry phase-lock so that sound, light, and form become one flickering unit. Commissioned for the Hamburger Bahnhof in Berlin, it is one of the canonical works of 2000s audio-visual installation and a reference for how precisely synchronised multimodal work can produce a single perceptual object rather than image-plus-sound."
+    },
+    {
+      "title": "Vrioon (with Ryuichi Sakamoto)",
+      "year": "2002",
+      "description": "First of a long-running duo series with Sakamoto pairing Nicolai's clicked-and-granular electronics with Sakamoto's piano and processed field recordings. The collaboration — continued across Insen, Revep, utp_, and Glass — articulated a rare register between contemporary classical, ambient, and minimal-electronic that has had durable influence across both art music and club contexts. The duo work is foundational for how electronic-music labels (Raster, Noton) entered museum and concert-hall institutional spaces."
+    },
+    {
+      "title": "unicolor",
+      "year": "2014",
+      "description": "Ultra-wide-format monochrome video installation at Palais de Tokyo using sequenced still colour-fields and spatialised sine-tone pulses. The piece tests the limits at which colour and sound stop being distinct inputs to perception — a minimal, rigorous extension of his long-running research into the psychophysical thresholds of audio-visual synchrony."
+    }
+  ],
+
+  "constant": [
+    {
+      "title": "Worksessions",
+      "year": "1997-present",
+      "description": "Long-running format in which Constant convenes artists, programmers, researchers, and writers for intense multi-day collaborative research on specific questions — from feminist server architectures to vernacular image-making to libre-licensing practices. Each worksession produces publications, software experiments, and performance, released under free-culture licences. The format itself is a proposition: that artistic production is collective research-as-practice, not individual output."
+    },
+    {
+      "title": "Libre Graphics Research Unit",
+      "year": "2010-2013",
+      "description": "European-funded research collaboration examining free-software graphics tools (GIMP, Inkscape, Scribus) as sites of both aesthetic and political intervention. The unit produced publications, tool critiques, and workshops, arguing that the licensing and development practices of software shape what images can be thought of at all. Core reference point for free-culture digital-arts practice."
+    }
+  ],
+
+  "cornelia sollfrank": [
+    {
+      "title": "Female Extension",
+      "year": "1997",
+      "description": "Intervention into the 'Extension' net.art competition held by Hamburger Kunsthalle: Sollfrank submitted 289 fabricated female-artist profiles to a show that had otherwise received few entries from women, exposing both the infrastructural gender gap and the reception-logic of the net.art curatorial circuit. The piece is a foundational work of cyberfeminist net.art and is cited in virtually every scholarly survey of the field's institutional politics."
+    },
+    {
+      "title": "net.art generators",
+      "year": "1999-2003",
+      "description": "Series of browser-based generators that automatically produce new net.art works by recombining fragments from an archive of net.art material. The generators implicitly argue that authorship in net.art is already algorithmic and collective, and that the conventions of signature and original work are inadequate to the medium. They anticipate by two decades the generative-AI debates about authorship, training data, and recombinatorial aesthetics."
+    },
+    {
+      "title": "Giving What You Don't Have",
+      "year": "2012-2015",
+      "description": "PhD research project and artistic practice examining contemporary artists' engagement with copyright, free culture, and the politics of giving what you don't own. The work combines interviews, documentation, and artworks into an unfolding investigation, published openly. A rigorous synthesis of artistic and legal-theoretical material."
+    }
+  ],
+
+  "darius kazemi": [
+    {
+      "title": "Two Headlines",
+      "year": "2013-present",
+      "description": "Twitter (later Mastodon) bot that combines subject of one current news headline with predicate of another, posting hourly. The bot has run continuously for over a decade, producing a persistent low-level commentary on how news discourse works at the level of sentence-structure. Often cited as a foundational bot-art example because it does so much with such structural simplicity."
+    },
+    {
+      "title": "NaNoGenMo",
+      "year": "2013-present",
+      "description": "Annual National Novel Generation Month — a parody of NaNoWriMo in which participants produce 50,000-word novels by computational means and share the code and output openly on GitHub. Co-founded by Kazemi, the event has become a durable community ritual for generative text practice, and its archives document a decade of experimental computational literature."
+    },
+    {
+      "title": "Hometown",
+      "year": "2018-present",
+      "description": "Small-scale fork of Mastodon designed around intimate, local-first federation — an explicit counter-proposal to the scale-obsessed dominant social-media architectures. Kazemi maintains Hometown as infrastructural practice, arguing that decentralised social software is a design/aesthetics problem as much as a technical one. Widely adopted by small communities seeking non-viral social formats."
+    }
+  ],
+
+  "dragan espenschied": [
+    {
+      "title": "One Terabyte of Kilobyte Age",
+      "year": "2013-present",
+      "description": "Collaborative project with Olia Lialina in which screenshots from the archived GeoCities webring are released on Tumblr and Twitter at a slow algorithmic cadence — roughly one image per twenty minutes — so that the amateur web of the 1990s returns into the contemporary feed as durational recovery. The work reframes the amateur web as serious cultural record, and the slow release as a preservation gesture against the attention economy's speed. A foundational reference for vernacular-web scholarship."
+    },
+    {
+      "title": "Webrecorder / Conifer",
+      "year": "2016-present",
+      "description": "Open-source web-archiving suite developed at Rhizome that captures dynamic, interactive web pages as working preserved artefacts rather than flat screenshots. Espenschied has led much of its design, treating the preservation of artist-web-works as itself a form of practice. Webrecorder is now the dominant tool for artist-and-institution-led web preservation and is a significant infrastructural contribution to digital-art conservation."
+    },
+    {
+      "title": "Bodenständig 2000",
+      "year": "1995-2004",
+      "description": "Net.art duo with Sandra Hastenteufel producing MIDI-based, web-embedded performance and music-software pieces. Works such as 'Dear Jen' and the 'DOS-90' series treated amateur hardware and software — the MIDI format, the TextMate-era web — as expressive rather than transitional. The duo's outputs are among the earliest long-form net-native musical works."
+    }
+  ],
+
+  "georg nees": [
+    {
+      "title": "Schotter (Gravel)",
+      "year": "1968",
+      "description": "Plotter drawing of a grid of squares whose position and rotation are progressively randomised row-by-row, from orderly top to chaotic bottom. The piece is one of the most widely cited works of early computer art because it states the generative-art thesis at its minimum: rule plus controlled randomness produces emergent form. Schotter has been reimplemented thousands of times and functions as a pedagogical kernel for generative art from Processing to on-chain.",
+      "relevance": "Embodies the generative-art thesis of rule + controlled randomness; foundational reference for subsequent generative art."
+    },
+    {
+      "title": "23-Ecke (23-gon)",
+      "year": "1965",
+      "description": "Plotter drawing from the February 1965 exhibition at Studiengalerie der Technischen Hochschule Stuttgart — widely cited as the first public exhibition of computer-generated art. The work constructs a 23-sided polygon through programmatic perturbation, instantiating the shift from computed geometry to computed aesthetic decision. Its primacy is the argument that computer art begins with the exhibition of algorithmically-produced form, not with the availability of hardware."
+    }
+  ],
+
+  "giorgio moscati": [
+    {
+      "title": "Untitled (with Waldemar Cordeiro)",
+      "year": "1968-1969",
+      "description": "Series of plotter drawings produced collaboratively with the Brazilian concrete artist Waldemar Cordeiro at the University of São Paulo. The works bring the rigorous formalism of Brazilian concrete art — its attention to rule, series, and mathematical relation — into contact with the mainframe computer, producing some of the earliest computer-art works made outside the Euro-American circuit. The collaboration is a foundational data-point for the historical argument that early computer art was not only a Stuttgart-Bell Labs phenomenon."
+    }
+  ],
+
+  "iannis xenakis": [
+    {
+      "title": "Metastaseis",
+      "year": "1953-1954",
+      "description": "Orchestral work composed using techniques derived from the graphical projections Xenakis developed as Le Corbusier's architectural collaborator, translating the architectural hyperbolic paraboloids of the Philips Pavilion into massed string glissandi. The piece is his first statement that musical composition could be geometric in substrate, and it predates and underwrites everything that follows — stochastic music, UPIC, the algorithmic composition tradition. Widely cited as the origin point of sonic-architectural thinking."
+    },
+    {
+      "title": "Philips Pavilion (with Le Corbusier)",
+      "year": "1958",
+      "description": "Temporary pavilion for the Brussels World's Fair whose hyperbolic-paraboloid architecture and interior audio-visual work ('Poème électronique', with Varèse) co-produced a single audio-visual-architectural event. Xenakis designed the shell and contributed an interstitial piece ('Concret PH'). The work argues that architecture, composition, and computation share a single geometric substrate — the thesis the rest of his career operationalises."
+    },
+    {
+      "title": "UPIC system",
+      "year": "1977",
+      "description": "Graphical computer-music system developed at CEMAMu allowing composers to draw sonic structures that the computer realises as sound. UPIC treats the drawing as score and the computer as executor, anticipating by decades the user-interface assumptions of contemporary digital-audio workstations. The first generation of computer music studios outside IRCAM/Stanford often traces directly to UPIC-style graphical-score thinking."
+    }
+  ],
+
+  "ken perlin": [
+    {
+      "title": "Perlin Noise",
+      "year": "1983",
+      "description": "Procedural-texture algorithm developed for the film 'Tron' that produces continuous, organic-looking pseudo-random fields from low-cost mathematical functions. The algorithm became the underlying substrate of almost all subsequent procedural content generation — terrain, cloud, fluid, and generative-art texture — and is deliberately unencumbered by patent, released as commons. Perlin won an Academy Award for Technical Achievement for the algorithm in 1997, and its presence in contemporary generative art is so pervasive that it operates as default infrastructure rather than as quoted technique."
+    },
+    {
+      "title": "Simplex noise",
+      "year": "2001",
+      "description": "Successor to Perlin noise with improved computational properties (better scaling to higher dimensions, fewer directional artefacts) that further extended the reach of the original algorithm into real-time 3D and generative practice. Alongside curl noise and related variants, simplex forms the computational texture-library that contemporary generative and 3D art takes for granted."
+    }
+  ],
+
+  "kenneth knowlton": [
+    {
+      "title": "Studies in Perception I (with Leon Harmon)",
+      "year": "1966",
+      "description": "Twelve-foot-wide reclining nude (Deborah Hay) reassembled from electronic symbols — diodes, transistors, mathematical glyphs — produced at Bell Labs using BEFLIX-era software. The work scandalised and provoked by installing in 'Bit international' and Bell Labs public spaces, arguing with its body that the computational image could carry the weight of the figurative tradition. One of the foundational works of computer art, and a touchstone for every subsequent translation of figurative representation into computed form."
+    },
+    {
+      "title": "BEFLIX",
+      "year": "1963",
+      "description": "First specifically designed computer-animation programming language, developed at Bell Labs. BEFLIX (Bell Flicks) allowed the description of animation frames and transitions in a high-level syntax, and produced many of the foundational computer-animated works of the 1960s. The language's pedagogical and art-historical importance is that it made computer animation into authorial practice rather than ad-hoc programming labour."
+    },
+    {
+      "title": "Seashell mosaics",
+      "year": "1980s-2000s",
+      "description": "Late body of work in which portraits — of Richard Feynman, Andy Warhol, and others — are composed from arrangements of physical objects (seashells, dominoes, Lego) selected algorithmically to approximate greyscale image values. The mosaics bring his earliest Bell Labs computational-image logic into an entirely non-electronic material register, arguing that the algorithm is medium-independent."
+    }
+  ],
+
+  "laturbo avedon": [
+    {
+      "title": "Club Rothko",
+      "year": "2013-present",
+      "description": "Persistent virtual gallery-and-performance-space, originally in Second Life, through which Avedon curates exhibitions, hosts discussions, and stages performances. The space argues that a gallery is a social-technical assemblage whose digital instantiation is fully legitimate — not a 'virtual version' of a physical original. Over its decade-plus run it has become an infrastructural reference for avatar-native exhibition practice."
+    },
+    {
+      "title": "Home",
+      "year": "2014-present",
+      "description": "Ongoing series of CGI self-portraits — each a rendered image, animation, or short loop of Avedon in domestic or gallery interiors — that insist that the avatar's self-portrait is as indexical as a photographic one. The series' long duration turns the avatar's persistence over time into its own content, a pointed counter-argument to the assumption that digital identity is weightless."
+    },
+    {
+      "title": "The Zizi Show (cameo, with Jake Elwes)",
+      "year": "2020",
+      "description": "Collaboration with Jake Elwes for his AI-drag work 'The Zizi Show', in which Avedon's avatar performs as one of the cast of AI-generated drag performers. The collaboration extends Avedon's argument that avatar-presence and AI-generation occupy the same ontological register, putting her persistent character in dialogue with emergent generated ones."
+    }
+  ],
+
+  "lev manovich": [
+    {
+      "title": "The Language of New Media",
+      "year": "2001",
+      "description": "Book arguing that the conventions of cinema, not print, are the structural language of digital media — and that digital media's distinguishing features (modular, variable, automatable, transcodable) can be specified precisely against this lineage. The book is the most-cited scholarly text in digital-art theory, and 'numerical representation, modularity, automation, variability, transcoding' — its five principles of new media — continue to structure how the field talks about itself. Required reading across digital-arts curricula for two decades and counting."
+    },
+    {
+      "title": "Software Takes Command",
+      "year": "2013",
+      "description": "Long follow-up to 'Language of New Media' arguing that software is now the dominant layer of cultural production — that a cultural theory that cannot read software is inadequate to contemporary life. The book introduces 'media software' as distinct analytical object and does detailed close-readings of tools like Photoshop, After Effects, and Processing. A foundational text for the software-studies turn in digital-art theory."
+    },
+    {
+      "title": "Selfiecity",
+      "year": "2014",
+      "description": "Cultural-analytics project, produced at City University of New York, analysing 3,200 Instagram self-portraits from five cities using computer-vision tools and public-facing visualisation. The work argues that the selfie is a genuine subject of cultural research at data scale — and that the tools of computer vision can be turned on cultural production itself. A canonical example of how Manovich's Cultural Analytics Lab translates its theoretical programme into visible, reproducible research."
+    }
+  ],
+
+  "lu yang": [
+    {
+      "title": "Uterus Man",
+      "year": "2013",
+      "description": "Short animated film plus CGI action-figure character — a superhero whose skeleton is based on Lu Yang's own uterus — staged in the idiom of Japanese tokusatsu and anime. The work uses the body-horror and camp of those genres to detach the uterus from its traditional symbolic burden, proposing that reproductive organs can be computationally resculpted into speculative heroism. Widely shown in the Asia-Pacific digital-art circuit and foundational for Lu Yang's avatar-universe practice."
+    },
+    {
+      "title": "Delusional Mandala",
+      "year": "2015",
+      "description": "Multi-channel video installation combining medical imaging, Buddhist iconography, and game-engine animation to stage consciousness as a diagnosable-yet-liberatory substrate. Selected for the Chinese pavilion at the 56th Venice Biennale, the work argued for a non-Western digital aesthetic rooted in religious image-making. A key moment in Asia-Pacific digital art's entry into major Western exhibition circuits on its own terms."
+    },
+    {
+      "title": "DOKU — Digital Alaya",
+      "year": "2020-present",
+      "description": "Ongoing multi-media universe centred on 'DOKU', a non-binary digital avatar derived from Lu Yang's own motion-captured body and reworked across film, music video, installation, and live performance. The project proposes that gender-fluid digital embodiment is itself a cosmology — not a style — and draws on Tibetan Buddhist alaya-vijñāna (storehouse consciousness) for its metaphysical framing. Recipient of the Deutsche Bank Artist of the Year 2022 partly on its strength."
+    }
+  ],
+
+  "luciana parisi": [
+    {
+      "title": "Abstract Sex: Philosophy, Biotechnology, and the Mutations of Desire",
+      "year": "2004",
+      "description": "Early book arguing that sex is a site of abstraction and technical mutation — that biological reproduction, computational reproduction, and philosophical abstraction are continuous. The book draws on Whitehead, Deleuze, and computational biology to ground a speculative feminist position prior to much current AI-and-gender discourse. A precursor reference for contemporary work on computation, reproduction, and embodiment."
+    },
+    {
+      "title": "Contagious Architecture: Computation, Aesthetics, and Space",
+      "year": "2013",
+      "description": "Major book arguing that computation has its own aesthetic agency — that algorithmic systems are not instruments of human design but participants whose 'incomputable' excess generates unforeseen form. The book's concept of the incomputable — the surplus of computation that exceeds any executable programme — is one of the most influential theoretical imports into digital-art theory from the 2010s. Cited across AI-art, generative-architecture, and philosophy-of-computation discourse."
+    },
+    {
+      "title": "Writings on alien intelligence and AI reason",
+      "year": "2018-present",
+      "description": "Ongoing book and essay project on artificial intelligence as a form of reason that cannot be reduced to human cognition — 'alien reason'. Parisi's current work argues that treating AI either as tool or as anthropomorphic subject misses its actual ontological status, and proposes a speculative framework that many contemporary AI artists cite as closest to what their practices are actually encountering."
+    }
+  ],
+
+  "mario klingemann": [
+    {
+      "title": "Memories of Passersby I",
+      "year": "2018",
+      "description": "Autonomous GAN-based painting machine that continuously generates new 'portraits' of people who never existed, displayed on two period-styled picture-framed screens driven by a custom-built AI system. The piece was sold at Sotheby's in 2019 — one of the earliest autonomous-AI works to enter the major auction circuit — and is a reference work for the argument that an AI system can be the author of a perpetually-new artwork. Its slowness and refusal to cache images makes the non-reproducibility of its outputs part of the content."
+    },
+    {
+      "title": "Neural Glitch series",
+      "year": "2017-2019",
+      "description": "Series of GAN-portraits produced by deliberately damaging the trained models — truncating weights, feeding noise, perturbing latent vectors — to elicit eerie, melted, unstable faces. The series argued that AI image-making's aesthetic heart was in the breakdowns and edge-cases, not the clean outputs, and it shaped the first generation of AI-art visual vocabulary substantially before the diffusion-model era."
+    },
+    {
+      "title": "Botto (artistic direction)",
+      "year": "2021-present",
+      "description": "Decentralised-autonomous-artist project for which Klingemann serves as primary artistic director and technical lead. Botto generates candidate images weekly; a DAO of token-holders votes on which to mint. The project is an explicit test of whether AI-generated art can be collectively authored, and it is one of the most widely-watched current experiments in AI-DAO governance of aesthetic decisions."
+    }
+  ],
+
+  "mark fell": [
+    {
+      "title": "Multistability",
+      "year": "2010",
+      "description": "Album-length solo statement — after a decade of duo work as SND — deploying strict algorithmic processes to produce stuttered, broken rhythmic material at the edges of what remains recognisably rhythmic. The record's rigour became a reference for a generation of algorithmic-music practitioners and helped crystallise a strand of computer music that refuses both the clean grid and the stochastic blur. Published by Editions Mego."
+    },
+    {
+      "title": "Manifestations",
+      "year": "2014",
+      "description": "Commissioned sound-and-light installation that uses strict algorithmic relations between audio, lighting, and spatial configuration to produce a perceptual object that shifts rather than plays. The work extends Fell's rhythmic-algorithmic concerns into site-specific installation and is a reference point for sound-installation practice that refuses both ambient drift and narrative progression."
+    },
+    {
+      "title": "SND (with Mat Steel)",
+      "year": "1996-present",
+      "description": "Long-running duo project whose minimal, algorithmic, micro-funk aesthetic across Mille Plateaux and Raster-Noton shaped the Sheffield/Mille-Plateaux sound and indirectly influenced broader minimal-electronic production. The duo's output insists that rhythmic complexity can emerge from strict constraint rather than accumulation — a compositional position that has been widely taken up."
+    }
+  ],
+
+  "mark tribe": [
+    {
+      "title": "Rhizome (founding)",
+      "year": "1996",
+      "description": "Founding act of Rhizome — now in its third decade as the leading institution for net-art and digital-art preservation — began as an email list run from Tribe's apartment and scaled into an artist-serving non-profit embedded in the New Museum. Tribe's founding contribution is institution-building treated as artistic practice: the creation of infrastructure that subsequently produces conditions for other artists' work. Few founding gestures in digital art carry more lasting structural weight."
+    },
+    {
+      "title": "Port Huron Project",
+      "year": "2006-2008",
+      "description": "Series of six live re-enactments of New Left speeches — SNCC, SDS, Black Panthers — staged in the American landscapes where the originals were delivered. The work uses performance, video documentation, and archival research to argue that the political speech-act can be re-activated rather than only remembered. An important work of early-2000s research-based political video art."
+    },
+    {
+      "title": "Dystopia Tracker",
+      "year": "2014-present",
+      "description": "Collaborative, crowdsourced database pairing science-fiction predictions with current-events realisations — an archive of the futures-that-have-arrived as they arrive. The project treats predictive fiction as a corpus against which journalism can be read, and invites public contribution. Reflects Tribe's long-running interest in institution-as-artwork."
+    }
+  ],
+
+  "mendi + keith obadike": [
+    {
+      "title": "Blackness for Sale",
+      "year": "2001",
+      "description": "Net.art work in which Keith Obadike auctioned his 'blackness' on eBay, complete with a list of advantages and disadvantages of ownership; eBay removed the listing four days in, citing inappropriate content. The piece is a canonical net-art engagement with race, platform commerce, and the politics of categorisation, and is one of the most-cited works in surveys of early-2000s Black digital art."
+    },
+    {
+      "title": "The Sour Thunder, an Internet Opera",
+      "year": "2005",
+      "description": "Web-distributed opera incorporating live performance, sound files, text, and user-contributed material into a distributed operatic form. Commissioned by Yale Cabaret and released across streaming and web, the work extended opera's conventions into net-native form and is an early and rigorous example of cross-modal Black-diasporic internet art."
+    },
+    {
+      "title": "Four Electric Ghosts",
+      "year": "2009",
+      "description": "Multi-part concert-installation work combining live performance, electronics, and visual projection into a layered meditation on the electrical substrate of African-American music and memory. Commissioned by The Kitchen (NYC), the piece is representative of the duo's move from net.art into sustained concert-scale sound-installation work."
+    }
+  ],
+
+  "mongrel": [
+    {
+      "title": "Heritage Gold",
+      "year": "1997",
+      "description": "Software artwork reskinning Adobe Photoshop as 'Heritage Gold' — a tool for applying and removing racial markings on photographs, with filters such as 'Coon Chicken' and 'Anglo-Saxon'. The piece is a foundational work of tactical-media software art, and is still taught as an example of how software can be treated as critical medium, not only as infrastructure. Made by the Mongrel collective (Graham Harwood, Mervin Jarman, Matsuko Yokokoji, Richard Pierre-Davis)."
+    },
+    {
+      "title": "Linker",
+      "year": "1998-2001",
+      "description": "Community-authoring software distributed to immigrant and working-class groups in London and Jamaica for self-representation on the early web. Linker's argument was that net.art's serious project is not the gallery-facing artwork but the tool given to people outside the art economy's usual audience. Distributed with workshops rather than through galleries; a formative work of tactical-media commons practice."
+    }
+  ],
+
+  "nora khan": [
+    {
+      "title": "Fear of Content",
+      "year": "2018",
+      "description": "Exhibition and essay commissioned by New Inc that examined how 'content' as economic category has reshaped artistic production in the platform era. Khan brought together artists and writers whose work treated content-production as both labour and aesthetic material, and the accompanying essay is a widely-cited diagnosis of the category's collapse. A reference for critical writing on platformed artistic labour."
+    },
+    {
+      "title": "Seeing, Naming, Knowing",
+      "year": "2019",
+      "description": "Exhibition at the Brooklyn Public Library + Hirshhorn on machine vision, classification, and the politics of AI seeing — staged in dialogue with Kate Crawford's 'Excavating AI'. Khan's curatorial work placed the artist into the role of auditor of the training-data and classification logics of contemporary AI, one of the first institutional exhibitions to do so rigorously."
+    },
+    {
+      "title": "Sound | Image: Aesthetics and Ethics (co-editor)",
+      "year": "2021",
+      "description": "Edited volume bringing together essays on the aesthetics and ethics of machine-produced sound and image, including contributions from artists, theorists, and musicians. Khan's editorial work here and across Rhizome, Flash Art, and Mousse has shaped a generation's critical vocabulary around AI art."
+    }
+  ],
+
+  "peter ablinger": [
+    {
+      "title": "Voices and Piano",
+      "year": "1998-present",
+      "description": "Long-running composition cycle in which recorded spoken voices (writers, philosophers, revolutionaries, children) are transcribed into piano pulses performed synchronously with the original recording. The piano operates as a low-resolution analytic of the voice; the piece is a sustained investigation of what of speech remains when its pitched substrate is re-rendered as discrete pulses. One of the canonical works of algorithmic-compositional thinking."
+    },
+    {
+      "title": "A Letter from Schoenberg (Talking Piano)",
+      "year": "2003",
+      "description": "Player-piano work in which the piano, driven by a high-resolution mechanical interface, 'speaks' a letter by Arnold Schoenberg — the instrument forced into phonemic duty by precisely-timed polyphonic attacks. The piece argues that speech and piano share a substrate that can be crossed by sufficient mechanical precision, and is one of the most-cited examples of the speech-as-sound tradition in contemporary computer music."
+    },
+    {
+      "title": "Weiss/Weisslich",
+      "year": "1990-present",
+      "description": "Long-running series of sound installations and environmental works investigating noise, white-ness, and the edge between signal and environment. Ablinger's insistence on the unmeasured environmental sound as compositional substrate has shaped institutional sound-art curation internationally."
+    }
+  ],
+
+  "reza negarestani": [
+    {
+      "title": "Cyclonopedia: Complicity With Anonymous Materials",
+      "year": "2008",
+      "description": "Theory-fiction in which a fictional archaeologist's manuscript merges with Lovecraftian horror, Middle Eastern oil politics, and Deleuzian philosophy to produce a singular hybrid text. The book popularised 'theory-fiction' as a genre and is a standing reference for artists seeking to fold speculative narrative into serious scholarly-philosophical material. Translated, reissued, and taught widely."
+    },
+    {
+      "title": "Intelligence and Spirit",
+      "year": "2018",
+      "description": "Systematic philosophy arguing that genuine intelligence is a normative, inferential practice — and that artificial general intelligence, if possible, would have to be the construction of a normatively-bound mind rather than the scaling of pattern recognition. The book is cited in much contemporary AI-art writing as the most serious philosophical case for intelligence as socially-instituted rather than computationally-given."
+    },
+    {
+      "title": "The Corpus Project (with artists)",
+      "year": "2014-present",
+      "description": "Ongoing collaboration with artists in which Negarestani's philosophical writing enters into direct textual dialogue with artwork — essays for exhibitions, commissions for installations, shared-authored publications. The format treats theory not as commentary but as co-material; has shaped how several AI-art practitioners engage with philosophical writing."
+    }
+  ],
+
+  "robert mallary": [
+    {
+      "title": "Quad III",
+      "year": "1968",
+      "description": "Computer-assisted sculpture produced using TRAN2, a FORTRAN program Mallary developed that generated 3D forms as stacked cross-sections subsequently cut and assembled in plexiglass and wood. The piece is one of the first widely-exhibited computer-generated sculptures and is a canonical data-point for the claim that sculpture, not only drawing, was an early site of computational experiment. Held in major museum collections and documented in early-computer-art histories."
+    },
+    {
+      "title": "Homage to Picasso",
+      "year": "1969",
+      "description": "Computer-generated sculpture explicitly staging the computational re-rendering of Picasso's cubist geometric vocabulary, arguing that the avant-garde's decomposition of volume was already computationally-adjacent. The work is cited in early-computer-art scholarship as an example of how computer sculpture understood its own art-historical lineage."
+    }
+  ],
+
+  "russell haswell": [
+    {
+      "title": "Live Salvage 1997-2000",
+      "year": "2001",
+      "description": "Double album of solo-performance recordings using custom synthesis and signal-processing systems, released on Warp. The record established Haswell's solo practice — already well-known from collaborations and no-fi performances — as rigorous compositional engagement with extreme dynamics and computational noise. A foundational document of the Warp-era computer-music-as-concert tradition."
+    },
+    {
+      "title": "Blackest Ever Black (with Florian Hecker)",
+      "year": "2007",
+      "description": "Collaborative computer-music performance project with Florian Hecker, applying Xenakis-derived stochastic synthesis methods to live performance. The duo's work is widely cited in the algorithmic-computer-music lineage and extended the available performance-vocabulary of that tradition into extreme-dynamics territory."
+    }
+  ],
+
+  "ruth catlow furtherfield": [
+    {
+      "title": "Furtherfield (founding)",
+      "year": "1997",
+      "description": "Co-founded with Marc Garrett, Furtherfield has operated as one of the longest-running artist-led digital-arts organisations — combining gallery space in Finsbury Park, commissioning, research, publication, and community practice. Catlow's founding contribution is institution-building treated as artistic practice, with a distinctly feminist, commons-oriented, and anti-institutional-capture politics. Cited in most serious accounts of artist-led digital-art infrastructure."
+    },
+    {
+      "title": "DIWO (Do It With Others) manifesto",
+      "year": "2006-present",
+      "description": "Framework and manifesto treating collaborative practice itself as a political-aesthetic commitment — a deliberate counter to the art world's DIY / solo-auteur defaults. Catlow has written and practised DIWO across exhibitions, workshops, and publications, and the concept is widely adopted in artist-run and community-tech contexts."
+    },
+    {
+      "title": "Artists Re:Thinking the Blockchain (co-editor)",
+      "year": "2017",
+      "description": "Co-edited volume (with Marc Garrett, Nathan Jones, Sam Skinner) that brought together artists, theorists, and developers on the political-aesthetic possibilities and dangers of blockchain for cultural production. Predating the 2021 NFT moment, the book has shaped how commons-oriented digital-art practice thinks about blockchain, and is still a core reference."
+    }
+  ],
+
+  "susan schuppli": [
+    {
+      "title": "Material Witness: Media, Forensics, Evidence",
+      "year": "2020",
+      "description": "Book and exhibition series arguing that matter — ice cores, bullet-strike patterns, oil spills, satellite imagery — can itself bear testimony, and that the artist-researcher's task is to amplify these material witnesses into legible evidence. Published by MIT Press with a parallel video-installation practice, the work has become a standing reference for research-based art and the forensic turn in contemporary image-making."
+    },
+    {
+      "title": "Cold Cases",
+      "year": "2015-present",
+      "description": "Ongoing investigation into climate-inflected violence in the Arctic and Antarctic — ice as both archive and agent — produced as video essays, installations, and text. The project extends forensic methodology into domains where state actors are largely absent and the evidence is non-human. Key work in the climate-forensics branch of contemporary research-based art."
+    },
+    {
+      "title": "The Missing 18½ Minutes",
+      "year": "2015",
+      "description": "Forensic-artistic investigation of the famous erased segment of the Watergate tapes, combining media archaeology, audio forensics, and video-essay to re-examine the most-cited instance of material testimony in post-war American political culture. The work demonstrates the methodology 'Material Witness' later theorised — that technical media leave their erasures visible in ways political narrative cannot suppress."
+    }
+  ]
+}

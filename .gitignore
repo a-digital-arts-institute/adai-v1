@@ -3,16 +3,32 @@
 .env.*
 .env.py
 
+# Recovery keys
+proton-recovery-kit.pdf
+
+# Runtime databases
+*.db
+*.db-shm
+*.db-wal
+
+# Node
+node_modules/
+dist/
+
 # Python
 __pycache__/
 *.pyc
 *.pyo
+
+# Logs
+/tmp/
+*.log
 errors.log
 pipeline.log
-concepts_cache.json
+shards.log
 
-# Node
-node_modules/
+# Caches
+concepts_cache.json
 
 # Claude Code project memory
 .claude/
@@ -20,6 +36,11 @@ node_modules/
 # OS
 .DS_Store
 Thumbs.db
+
+# Editors
+*.swp
+*.swo
+*~
 
 # Large binary files — keep in local folder, not in git
 Brief/
@@ -29,9 +50,13 @@ Meeting notes/
 *.docx
 *.pdf
 
-# Recovery keys
-proton-recovery-kit.pdf
-
 # Notion setup artifacts (one-time scripts, keep for reference but ignore logs)
 schema_update_log.txt
 notion_ids.txt
+
+# Seed enrichment intermediate artifacts — not for commit
+seed/*.bak
+seed/*.pre-enrichment.bak
+seed/_build/task3_input.json
+seed/_build/fxhash_new_artworks.json
+seed/_build/moma_new_artworks.json

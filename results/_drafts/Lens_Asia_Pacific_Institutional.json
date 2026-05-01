@@ -1,0 +1,35 @@
+{
+  "basic_info": {
+    "name": "Asia-Pacific Institutional",
+    "type": "classification_lens",
+    "slug": "asia-pacific-institutional",
+    "active_years": "1970s-present",
+    "location": "distributed (major centres: Tokyo, Yamaguchi, Seoul, Shanghai, Hong Kong, Singapore, Brisbane)",
+    "url": null
+  },
+  "description": "The canonising logic of East- and South-East-Asian institutional circuits — NTT InterCommunication Center (ICC) Tokyo, YCAM Yamaguchi, Chronus Art Center Shanghai, Nam June Paik Art Center, Sharjah Art Foundation, M+ Hong Kong, Singapore Art Museum, Queensland's Gallery of Modern Art. Related to euro-american-institutional in form (museum acquisition, commissioned installation, survey exhibition) but distinct in inheritance: it traces a lineage from Paik, Gutai, and Mono-ha into contemporary media practice, and places different weight on collective practice, site-specific environmental art, and technologies developed in-region (NHK research partnerships, Sony R&D, Olympus imaging). It reads digital art through a commons-of-technique often rooted in corporate-R&D collaboration, not the lone-studio individualism the Euro-American institutional frame privileges. Japanese audiovisual canon (Ikeda, Kurokawa, Ikegami) sits centrally here. Chinese media-art canon (Cao Fei, Lu Yang, Xu Bing-adjacent) is rapidly consolidating via Chronus and M+.",
+  "exemplars": [
+    "Ryoji Ikeda (NTT ICC, YCAM commissions; canonical within this lens)",
+    "Cao Fei (M+, Chronus; often co-read with Serpentine)",
+    "teamLab (through Japanese institutional path, distinct from its Western tour reading)",
+    "Lu Yang (Chronus, M+; bridge practitioner)",
+    "Ryoichi Kurokawa (NTT ICC, YCAM; bridge practitioner)",
+    "Masao Komura / Computer Technique Group (NTT ICC retrospective; bridge)",
+    "Nam June Paik (foundational; not in first-pass graph but genealogical anchor)"
+  ],
+  "blind_spots": "Asia-Pacific practice that sits outside major Japanese/Chinese institutional circuits — Southeast Asia (Indonesian new media, Thai experimental), Pacific Islander practice, Korean digital art beyond the Paik-institutional axis. Informal-economy platform practice in the region that Euro-American markets don't track. Co-operative and collective practice which this lens tends to flatten into founder-attribution.",
+  "classification_logic": "Apply this lens when a practitioner has been acquired, commissioned, or critically canonised by a major Asia-Pacific institutional venue, OR when the practitioner's primary working context is an Asia-Pacific research-institution-adjacent commissioning circuit (NTT ICC residencies, YCAM lab projects, Chronus exhibitions). A practitioner showing at both Tate and NTT ICC usually carries both lenses — the two readings produce non-trivially different framings of the same work.",
+  "data_provenance": {
+    "source": "curated-2026-04",
+    "authored_by": "ai-draft",
+    "references_consulted": [
+      "CLAUDE.md §classification_regime principles",
+      "sources.yaml §non_western_global (NTT ICC line 1172, YCAM line 1188, Chronus line 1204, ARTLINKART line 1120, Nam June Paik Center line 1220)",
+      "Ikeda / Cao Fei / teamLab JSON files in existing results/"
+    ],
+    "reviewed": false,
+    "reviewed_by": null,
+    "reviewed_date": null,
+    "notes": "Draft for human review. Limitation: this lens name is Asia-Pacific-institutional, but the first-pass graph has only Japanese and Chinese institutional coverage. South / South-East Asia remain explicitly blind-spot-flagged."
+  }
+}

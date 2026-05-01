@@ -1,0 +1,26 @@
+{
+  "name": "adai-v1",
+  "version": "1.0.0",
+  "description": "A(DAI) — Digital Arts Knowledge Commons",
+  "type": "module",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "seed": "tsx src/seed.ts",
+    "seed:consolidated": "tsx src/seed-consolidated.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@shards-lang/crsqlite": "^0.1.0",
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.2",
+    "@types/node": "^22.15.3",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
+}

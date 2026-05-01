@@ -1,0 +1,10 @@
+.git
+*.db
+*.db-shm
+*.db-wal
+*.log
+node_modules/
+dist/
+docs/
+adai-digital-arts-report-research/
+.claude/

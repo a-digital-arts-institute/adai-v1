@@ -1,0 +1,132 @@
+{
+  "signal_id": "moma-digital-ingest-2026-04-28-missing-figures",
+  "generated_at": "2026-04-28T00:00:00Z",
+  "threshold_works": 30,
+  "method_note": "Artists with ≥30 works in MoMA digital-arts-relevant categories who are NOT in the current seed. Editorial review candidates — these are 1960s–1990s media-art lineage figures the seed under-represents.",
+  "candidates": [
+    {
+      "artist_name": "George Maciunas",
+      "moma_works_in_relevant_categories": 324
+    },
+    {
+      "artist_name": "John Jensen, Jerry Lewis",
+      "moma_works_in_relevant_categories": 302
+    },
+    {
+      "artist_name": "Pope.L",
+      "moma_works_in_relevant_categories": 300
+    },
+    {
+      "artist_name": "Roman Signer",
+      "moma_works_in_relevant_categories": 206
+    },
+    {
+      "artist_name": "Francis Alÿs",
+      "moma_works_in_relevant_categories": 182
+    },
+    {
+      "artist_name": "William Wegman",
+      "moma_works_in_relevant_categories": 130
+    },
+    {
+      "artist_name": "Mateo López",
+      "moma_works_in_relevant_categories": 127
+    },
+    {
+      "artist_name": "Patterson Beckwith, Alex Bag",
+      "moma_works_in_relevant_categories": 119
+    },
+    {
+      "artist_name": "Dick Higgins",
+      "moma_works_in_relevant_categories": 106
+    },
+    {
+      "artist_name": "John Hubley, Faith Hubley",
+      "moma_works_in_relevant_categories": 102
+    },
+    {
+      "artist_name": "Steve Reinke",
+      "moma_works_in_relevant_categories": 101
+    },
+    {
+      "artist_name": "Arthur Köpcke",
+      "moma_works_in_relevant_categories": 68
+    },
+    {
+      "artist_name": "Various Artists",
+      "moma_works_in_relevant_categories": 65
+    },
+    {
+      "artist_name": "Dennis Oppenheim",
+      "moma_works_in_relevant_categories": 63
+    },
+    {
+      "artist_name": "VALIE EXPORT",
+      "moma_works_in_relevant_categories": 55
+    },
+    {
+      "artist_name": "Jaime Davidovich",
+      "moma_works_in_relevant_categories": 50
+    },
+    {
+      "artist_name": "Klaus Groh",
+      "moma_works_in_relevant_categories": 48
+    },
+    {
+      "artist_name": "Harun Farocki",
+      "moma_works_in_relevant_categories": 42
+    },
+    {
+      "artist_name": "Lawrence Weiner",
+      "moma_works_in_relevant_categories": 41
+    },
+    {
+      "artist_name": "George Brecht",
+      "moma_works_in_relevant_categories": 40
+    },
+    {
+      "artist_name": "Ben Vautier",
+      "moma_works_in_relevant_categories": 40
+    },
+    {
+      "artist_name": "Nam June Paik",
+      "moma_works_in_relevant_categories": 38
+    },
+    {
+      "artist_name": "Paul Sharits",
+      "moma_works_in_relevant_categories": 38
+    },
+    {
+      "artist_name": "Bruce Nauman",
+      "moma_works_in_relevant_categories": 36
+    },
+    {
+      "artist_name": "Albert M. Fine",
+      "moma_works_in_relevant_categories": 35
+    },
+    {
+      "artist_name": "Andy Warhol",
+      "moma_works_in_relevant_categories": 33
+    },
+    {
+      "artist_name": "Marta Minujín",
+      "moma_works_in_relevant_categories": 33
+    },
+    {
+      "artist_name": "ShadowMachine",
+      "moma_works_in_relevant_categories": 33
+    },
+    {
+      "artist_name": "Keith Haring",
+      "moma_works_in_relevant_categories": 32
+    },
+    {
+      "artist_name": "Robert Watts",
+      "moma_works_in_relevant_categories": 30
+    },
+    {
+      "artist_name": "Eric Andersen",
+      "moma_works_in_relevant_categories": 30
+    }
+  ]
+}
