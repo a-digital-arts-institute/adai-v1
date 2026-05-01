@@ -23,6 +23,7 @@ RUN npm ci --omit=dev
 COPY db.sql entrypoint.sh ./
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/seed.db ./seed.db
+COPY public ./public
 
 VOLUME ["/data"]
 

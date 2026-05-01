@@ -1,8 +1,12 @@
 import express from "express";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { initDb } from "./db.js";
 import pageRoutes from "./routes/pages.js";
 import apiRoutes from "./routes/api.js";
 import { htmlPage, HTML_HEADERS } from "./templates.js";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const dbPath = process.env.DB_PATH || "adai.db";
 const port = parseInt(process.env.PORT || "8080", 10);
@@ -13,6 +17,10 @@ console.log("Database initialized.");
 
 const app = express();
 app.use(express.json());
+
+// /field-static serves the public/field tree (p5-derived data-driven graph view).
+// Mounted before route handlers so /field-static/* never reaches the page router.
+app.use("/field-static", express.static(path.join(__dirname, "..", "public", "field")));
 
 // mount routes
 app.use(pageRoutes);
