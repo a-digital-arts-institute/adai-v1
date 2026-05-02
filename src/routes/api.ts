@@ -28,21 +28,26 @@ router.get("/api/graph", (req, res) => {
   const db = getDb();
   const typeFilter = (req.query.type as string) || "";
 
+  const NODE_COLS =
+    "id, name, type, slug, " +
+    "json_extract(metadata,'$.image_url') AS image_url, " +
+    "json_extract(metadata,'$.cdn_image_url') AS cdn_image_url";
+
   let nodeRows: any[];
   if (!typeFilter) {
     // Include scenes in the default view — they are the primary connective
     // tissue for ~22 practitioners (Paul-canon pass, April 28). Filtering
     // them out makes those practitioners appear orphan when zoomed out.
     nodeRows = db
-      .prepare("SELECT id, name, type, slug FROM nodes WHERE type != 'related' ORDER BY name")
+      .prepare(`SELECT ${NODE_COLS} FROM nodes WHERE type != 'related' ORDER BY name`)
       .all();
   } else if (typeFilter === "_all") {
     nodeRows = db
-      .prepare("SELECT id, name, type, slug FROM nodes WHERE type != 'related' ORDER BY name")
+      .prepare(`SELECT ${NODE_COLS} FROM nodes WHERE type != 'related' ORDER BY name`)
       .all();
   } else {
     nodeRows = db
-      .prepare("SELECT id, name, type, slug FROM nodes WHERE type = ? ORDER BY name")
+      .prepare(`SELECT ${NODE_COLS} FROM nodes WHERE type = ? ORDER BY name`)
       .all(typeFilter);
   }
 
@@ -68,7 +73,14 @@ router.get("/api/graph", (req, res) => {
   }
 
   res.set(JSON_HEADERS).json({
-    nodes: nodeRows.map((n: any) => ({ id: n.id, name: n.name, type: n.type, slug: n.slug })),
+    nodes: nodeRows.map((n: any) => ({
+      id: n.id,
+      name: n.name,
+      type: n.type,
+      slug: n.slug,
+      ...(n.cdn_image_url ? { cdn_image_url: n.cdn_image_url } : {}),
+      ...(n.image_url ? { image_url: n.image_url } : {}),
+    })),
     edges: edgeRows.map((e: any) => ({
       source: e.source_id,
       target: e.target_id,
@@ -84,13 +96,18 @@ router.get("/api/graph/:slug/component", (req, res) => {
   const slug = req.params.slug;
   const maxNodes = Math.min(Math.max(parseInt((req.query.max_nodes as string) || "800", 10) || 800, 1), 5000);
 
-  const start = db.prepare("SELECT id, name, type, slug FROM nodes WHERE slug = ?").get(slug) as any;
+  const NODE_COLS =
+    "id, name, type, slug, " +
+    "json_extract(metadata,'$.image_url') AS image_url, " +
+    "json_extract(metadata,'$.cdn_image_url') AS cdn_image_url";
+
+  const start = db.prepare(`SELECT ${NODE_COLS} FROM nodes WHERE slug = ?`).get(slug) as any;
   if (!start) {
     res.status(404).set(JSON_HEADERS).json({ error: "not found" });
     return;
   }
 
-  const nodeRows = db.prepare("SELECT id, name, type, slug FROM nodes").all() as any[];
+  const nodeRows = db.prepare(`SELECT ${NODE_COLS} FROM nodes`).all() as any[];
   const nodeById = new Map<string, any>();
   for (const n of nodeRows) nodeById.set(n.id, n);
 
@@ -135,7 +152,17 @@ router.get("/api/graph/:slug/component", (req, res) => {
   const nodes: any[] = [];
   for (const id of visited) {
     const n = nodeById.get(id);
-    if (n) nodes.push({ id: n.id, name: n.name, type: n.type, slug: n.slug, center: n.id === start.id });
+    if (n) {
+      nodes.push({
+        id: n.id,
+        name: n.name,
+        type: n.type,
+        slug: n.slug,
+        center: n.id === start.id,
+        ...(n.cdn_image_url ? { cdn_image_url: n.cdn_image_url } : {}),
+        ...(n.image_url ? { image_url: n.image_url } : {}),
+      });
+    }
   }
 
   res.set(JSON_HEADERS).json({ nodes, edges: edgesOut, truncated, start_id: start.id });
@@ -146,13 +173,28 @@ router.get("/api/graph/:slug", (req, res) => {
   const db = getDb();
   const slug = req.params.slug;
 
-  const node = db.prepare("SELECT id, name, type, slug FROM nodes WHERE slug = ?").get(slug) as any;
+  const NODE_COLS =
+    "id, name, type, slug, " +
+    "json_extract(metadata,'$.image_url') AS image_url, " +
+    "json_extract(metadata,'$.cdn_image_url') AS cdn_image_url";
+
+  const node = db.prepare(`SELECT ${NODE_COLS} FROM nodes WHERE slug = ?`).get(slug) as any;
   if (!node) {
     res.status(404).set(JSON_HEADERS).json({ error: "not found" });
     return;
   }
 
-  const nodes: any[] = [{ id: node.id, name: node.name, type: node.type, slug: node.slug, center: true }];
+  const projectNode = (n: any, extra: Record<string, unknown> = {}) => ({
+    id: n.id,
+    name: n.name,
+    type: n.type,
+    slug: n.slug,
+    ...extra,
+    ...(n.cdn_image_url ? { cdn_image_url: n.cdn_image_url } : {}),
+    ...(n.image_url ? { image_url: n.image_url } : {}),
+  });
+
+  const nodes: any[] = [projectNode(node, { center: true })];
 
   const edgeRows = db
     .prepare("SELECT source_id, target_id, edge_type, confidence FROM edges WHERE valid_until IS NULL AND (source_id = ? OR target_id = ?)")
@@ -168,9 +210,9 @@ router.get("/api/graph/:slug", (req, res) => {
     });
 
     const neighborId = e.source_id === node.id ? e.target_id : e.source_id;
-    const nb = db.prepare("SELECT id, name, type, slug FROM nodes WHERE id = ?").get(neighborId) as any;
+    const nb = db.prepare(`SELECT ${NODE_COLS} FROM nodes WHERE id = ?`).get(neighborId) as any;
     if (nb && !nodes.some((n) => n.id === nb.id)) {
-      nodes.push({ id: nb.id, name: nb.name, type: nb.type, slug: nb.slug });
+      nodes.push(projectNode(nb));
     }
   }
 
