@@ -74,6 +74,7 @@ Closed since the April 20 build:
 - **Artwork images** — 335/728 artworks have `image_url` (46%) after the April 28 real-source pass folded in MoMA digital, Wikidata depicts, objkt thumbnails, and fxhash tag art.
 - **Institutional nodes** — 121 institutions present, with 305 EXHIBITED_AT edges.
 - **Heuristic editorial scaffolding** — the 564 keyword-heuristic EMBODIES from the April 22 pass were superseded on April 28 by source-attested EMBODIES from objkt, fxhash, and Wikidata depicts.
+- **Image link rot** — May 2: all 393 `image_url`s mirrored to a Cloudflare R2 bucket and recorded as `cdn_image_url` per node. The cooked DB carries both URLs; profile pages and `/api/graph*` prefer the R2 mirror. The dead `gateway.objkt.com` IPFS gateway was rerouted to `ipfs.io` during the upload. See [CLAUDE.md](../CLAUDE.md) → "Image mirror — Cloudflare R2" and `_build/upload_to_r2.py`.
 
 ## Provenance
 

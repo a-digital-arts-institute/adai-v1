@@ -139,6 +139,23 @@ function profileHandler(req: any, res: any) {
       const meta = JSON.parse(node.metadata);
       const profile = meta.full_profile ?? meta;
 
+      const imgSrc = meta.cdn_image_url || meta.image_url;
+      if (imgSrc) {
+        const isPortrait = node.type === "practitioner" || node.type === "collective";
+        const maxW = isPortrait ? "240px" : "480px";
+        const altText = htmlEscape(`${node.name} — ${node.type}`);
+        body += `<figure style='margin:1rem 0;max-width:${maxW}'>` +
+          `<img src='${htmlEscape(String(imgSrc))}' alt='${altText}' ` +
+          `style='width:100%;height:auto;border-radius:6px;display:block' loading='lazy' />`;
+        if (meta.image_source || meta.image_license) {
+          const parts: string[] = [];
+          if (meta.image_source) parts.push(`source: ${htmlEscape(String(meta.image_source))}`);
+          if (meta.image_license) parts.push(htmlEscape(String(meta.image_license)));
+          body += `<figcaption class='meta' style='font-size:0.8rem;margin-top:0.3rem'>${parts.join(" · ")}</figcaption>`;
+        }
+        body += `</figure>`;
+      }
+
       if (meta.status) {
         body += `<p class='meta'>Status: <span class='tag'>${htmlEscape(String(meta.status))}</span></p>`;
       }
@@ -266,7 +283,7 @@ function profileHandler(req: any, res: any) {
     body += `</ul>`;
   }
 
-  body += `<p style='margin-top:2rem'><a href='/practitioner/${encodeURIComponent(slug)}/data' class='btn'>Export JSON</a></p>`;
+  body += `<p style='margin-top:2rem'><a href='/${encodeURIComponent(node.type)}/${encodeURIComponent(slug)}/data' class='btn'>Export JSON</a></p>`;
 
   res.set(HTML_HEADERS).send(htmlPage(node.name, body));
 }
@@ -282,12 +299,14 @@ router.get("/publication/:slug", profileHandler);
 router.get("/project/:slug", profileHandler);
 router.get("/classification_regime/:slug", profileHandler);
 
-// GET /practitioner/:slug/data — JSON data export
-router.get("/practitioner/:slug/data", (req, res) => {
+// JSON data export — polymorphic over node type, slug-only resolution.
+function dataHandler(req: any, res: any) {
   const db = getDb();
   const slug = req.params.slug;
 
-  const node = db.prepare("SELECT id, name, type, slug, metadata, created_at, updated_by FROM nodes WHERE slug = ?").get(slug) as any;
+  const node = db
+    .prepare("SELECT id, name, type, slug, metadata, created_at, updated_by FROM nodes WHERE slug = ?")
+    .get(slug) as any;
   if (!node) {
     res.status(404).json({ error: "not found" });
     return;
@@ -335,7 +354,18 @@ router.get("/practitioner/:slug/data", (req, res) => {
       submitted_by: s.submitted_by,
     })),
   });
-});
+}
+
+router.get("/practitioner/:slug/data", dataHandler);
+router.get("/artwork/:slug/data", dataHandler);
+router.get("/concept/:slug/data", dataHandler);
+router.get("/scene/:slug/data", dataHandler);
+router.get("/collective/:slug/data", dataHandler);
+router.get("/institution/:slug/data", dataHandler);
+router.get("/platform/:slug/data", dataHandler);
+router.get("/publication/:slug/data", dataHandler);
+router.get("/project/:slug/data", dataHandler);
+router.get("/classification_regime/:slug/data", dataHandler);
 
 // GET /contribute — contribution form
 router.get("/contribute", (_req, res) => {

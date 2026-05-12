@@ -87,10 +87,10 @@ Single SQLite file `adai.db` with CR-SQLite CRDT extensions (`@shards-lang/crsql
 
 ### JSON API
 - `GET /api/stats` — node/edge/signal counts
-- `GET /api/graph` — full graph as D3-compatible `{nodes, edges}`, supports `?type=` filter
-- `GET /api/graph/:slug` — ego graph (1-hop neighborhood)
-- `GET /api/graph/:slug/component` — full connected component reached from `:slug` via BFS over live edges; caps at `?max_nodes=800` (override up to 5000), returns `truncated: true` when hit
-- `GET /practitioner/:slug/data` — full JSON export for a practitioner
+- `GET /api/graph` — full graph as D3-compatible `{nodes, edges}`, supports `?type=` filter. Each node carries `cdn_image_url` and/or `image_url` when present (omitted otherwise).
+- `GET /api/graph/:slug` — ego graph (1-hop neighborhood). Same image projection.
+- `GET /api/graph/:slug/component` — full connected component reached from `:slug` via BFS over live edges; caps at `?max_nodes=800` (override up to 5000), returns `truncated: true` when hit. Same image projection.
+- `GET /:type/:slug/data` — full JSON export (full parsed metadata + edges + approved signals) for any node type. Polymorphic (`practitioner`, `artwork`, `concept`, `scene`, `collective`, `institution`, `platform`, `publication`, `project`, `classification_regime`); slug-only resolution, the type segment is decorative.
 - `POST /api/contribute` — submit a signal (JSON body)
 - `POST /api/review/:id/approve` — approve intake item
 - `POST /api/review/:id/reject` — reject with reason
@@ -132,6 +132,16 @@ ID convention: `<type>:<name>` with spaces preserved and lowercase (e.g. `practi
 Seed signals (currently 2 in `seed/signals.json`): `signal:seed-taxonomy-2026-04` (full commons, attributed, human_secondary, status `active`) for the taxonomy consolidation; `signal:artblocks-api-2026-04` (source_origin `api`, status `processed`) for API-ingested artwork drafts. The earlier `signal:adai-root-2026-04-21` was removed when the A(DAI) root regime was retired in Task 0e. The migration contributor (`contributor:migration`) is trust tier `reviewed` — meaning contributions attributed to it auto-approve.
 
 Node status in metadata: `confirmed` (vetted), `bridge` (partial research — Harold Cohen, Lillian Schwartz, Prema Murthy, Waldemar Cordeiro), `draft` (new entries and auto-generated stubs from collaborator/concept references).
+
+### Image mirror — Cloudflare R2
+
+All node-level image_urls are mirrored into a Cloudflare R2 bucket so the graph stays renderable when upstream URLs rot (MoMA signed URLs, dead IPFS gateways like `gateway.objkt.com`, Wikimedia rate limits, etc.). 393 images live there as of May 2 — covers every artwork (335) and practitioner (57) with a known image plus one collective.
+
+- **Bucket**: `adai` on account `b0b8de38bb6568e28bcd3d7c86940ee5`. Public base: `https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev`. CORS allows `GET`/`HEAD` for `*`.
+- **Key scheme**: content-addressable, `images/{sha256[:2]}/{sha256}.{ext}` — same image under two source URLs dedups automatically. Cache-Control is `public, max-age=31536000, immutable`, so browsers can keep them forever.
+- **Per-node fields** (in `metadata`, both stored, both exposed by the API): `image_url` (upstream provenance) + `cdn_image_url` (R2). Profile pages prefer `cdn_image_url` when rendering. Don't drop `image_url` — provenance matters for an arts knowledge commons.
+- **Uploader**: `seed/_build/upload_to_r2.py` (Python, runs from `seed/_build/.venv/bin/python3`). Idempotent: skips nodes that already carry `cdn_image_url`, and HEAD-checks the R2 key before re-uploading. Includes a fallback for the dead `gateway.objkt.com` IPFS gateway (tries `ipfs.io` → `nftstorage.link` → `dweb.link`) and per-host concurrency caps to dodge Wikimedia 429s. Reads R2 credentials from project-root `.env` (gitignored): `R2_ENDPOINT`, `R2_BUCKET`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_PUBLIC_BASE`. Run with `seed/_build/.venv/bin/python3 seed/_build/upload_to_r2.py`; `--dry-run` and `--limit N` are available for testing.
+- **Workflow**: when ingesting new images via the `seed/_build` fetchers, just write `image_url` into `seed/nodes.json` and re-run the uploader — it'll find the new entries and write `cdn_image_url` back. No runtime R2 dependency: the cooked DB carries the URLs, the server never talks to R2.
 
 ### Legacy path — `results/*.json` via `seed.ts`
 
