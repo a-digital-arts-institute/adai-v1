@@ -282,7 +282,7 @@ https://www.sothebys.com/en/articles/a-brief-history-of-nfts-and-digital-art
 
 ## Edge structure and design rationale
 
-The graph has 9 edge types. Some are dense, some are deliberately sparse, and some important edge types have zero edges. This is intentional.
+The graph has 9 edge types curated by humans, plus 2 auto-derived from the Gemini Embedding 2 multimodal pass. Some are dense, some are deliberately sparse, and some important edge types have zero edges. This is intentional.
 
 ### What the seed produces honestly
 
@@ -299,6 +299,19 @@ These edge types can be reliably extracted from editorial research, structured d
 | BELONGS_TO | 155 | practitioner → scene | Which community or practice tradition |
 | USES_TECHNIQUE | 75 | artwork → concept | What method/tool the work employs |
 | INFLUENCES | 4 | practitioner → practitioner | Who shaped whose practice |
+
+### What the embedding pipeline produces (auto-derived, low-confidence)
+
+The Gemini Embedding 2 multimodal pass (`signal:embedding-multimodal-2026-05`) emits these directly into the live `edges` table, tagged `created_by='embedding-multimodal-v1'` so they're trivially deletable and visually distinguishable (rendered dashed in `/field` and `/graph`). Both are stored bidirectionally so readers don't need to special-case symmetric types. All rows carry `confidence='low'`. Re-running the derive pass replaces them wholesale — never hand-edit these rows.
+
+| Edge type | Count* | Direction | What it captures |
+|---|---|---|---|
+| STYLE_KIN | 746 | practitioner ↔ practitioner | Stylistic adjacency, derived from cosine over each practitioner's style centroid (mean of artwork vectors they `CREATED_BY`). Above τ_kin = 0.91. |
+| VISUALLY_AFFINE | 422 | artwork ↔ artwork | Cross-artist visual rhymes from artwork-vector cosine, gated to different creators. Above τ_visual = 0.84. |
+
+\* Counts as of the May 2026 first derive pass against 1338 multimodal embeddings. Will change on each `npm run embed:derive` re-run.
+
+`SUGGESTS_CREATED_BY` is intentionally **not** an edge type. Practitioner-attribution candidates surfaced by the embedding pass (artwork ↔ practitioner above τ_attribute = 0.88) flow into `intake_queue` with `kind='ai_suggestion'`; the curator's approval at `/review?kind=ai_suggestion` is what turns them into real `CREATED_BY` edges. The auto-derive logic explicitly refuses to write `CREATED_BY` (or `INFLUENCES` or `RESPONDS_TO`) without that human ratification.
 
 ### What the seed intentionally leaves empty
 

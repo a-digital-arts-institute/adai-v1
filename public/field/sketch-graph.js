@@ -42,6 +42,9 @@
     USES_TECHNIQUE: "#aa9a6a",
     INFLUENCES: "#aaaa6a",
     RESPONDS_TO: "#aa6a8a",
+    // Auto-derived from the Gemini embedding pass (rendered dashed in drawBase).
+    STYLE_KIN: "#8a7aa8",       // muted lavender — adjacent to BELONGS_TO
+    VISUALLY_AFFINE: "#a89a7a", // muted ochre — adjacent to CREATED_BY
   };
   const EDGE_DEFAULT = "#5a5a6a";
   const CONFIDENCE_WIDTH = { high: 1.4, medium: 0.9, low: 0.55, unverified: 0.3 };
@@ -197,6 +200,17 @@
   const vEdges = document.getElementById("v-edges");
   const vSignal = document.getElementById("v-signal");
   const vMode = document.getElementById("v-mode");
+  const vEmbedToggle = document.getElementById("v-embed-toggle");
+
+  // Shared toggle implementation — invoked from both keypress 'e' and the
+  // clickable chip in #vitals.
+  function toggleEmbeddingsMode() {
+    window.adaiEmbeddingsMode = !window.adaiEmbeddingsMode;
+    if (vMode) vMode.textContent = window.adaiEmbeddingsMode ? "embeddings [e]" : "orbit [m]";
+    if (vEmbedToggle) vEmbedToggle.textContent = window.adaiEmbeddingsMode ? "derived [e]" : "all [e]";
+    drawBase();
+  }
+  if (vEmbedToggle) vEmbedToggle.addEventListener("click", toggleEmbeddingsMode);
 
   let totalNodes = 0, totalEdges = 0;
   function refreshVitals() {
@@ -278,6 +292,9 @@
         target: e.target,
         type: e.type,
         confidence: e.confidence,
+        // Surface created_by so drawBase() can dash auto-derived edges
+        // (Gemini embedding pipeline → STYLE_KIN, VISUALLY_AFFINE).
+        created_by: e.created_by,
       }))
       .filter((e) => nodeById.has(e.source) && nodeById.has(e.target));
 
@@ -1167,6 +1184,14 @@
       if (FIELD.SPEED_DOWN_KEYS.some((k) => matchesKey(e, k))) {
         e.preventDefault();
         adjustMotionSpeed(-SPEED_STEP);
+        return;
+      }
+      // 'e' toggles embeddings mode — dims curatorial edges and foregrounds
+      // STYLE_KIN / VISUALLY_AFFINE so the auto-derived tissue is the
+      // composition. drawBase() re-reads the flag every call.
+      if (e.key === "e" || e.key === "E") {
+        e.preventDefault();
+        toggleEmbeddingsMode();
       }
     });
 
@@ -1264,6 +1289,17 @@
         width: lit ? baseW + 1.0 : baseW * 0.5,
       };
     }
+    // Embeddings mode (toggle in chrome / hotkey 'e'): foreground the
+    // auto-derived STYLE_KIN + VISUALLY_AFFINE edges; push curatorial
+    // edges into the background so the embedding tissue is what reads.
+    if (window.adaiEmbeddingsMode) {
+      const derived = e.created_by === "embedding-multimodal-v1";
+      if (derived) {
+        return { alpha: 0.55, color: EDGE_COLORS[e.type] || EDGE_DEFAULT, width: baseW + 0.4 };
+      }
+      return { alpha: 0.03, color: "#1a1a1a", width: baseW * 0.4 };
+    }
+
     // Default: edges visible but subdued — the artist's composition reads
     // first; edges layer on top quietly, and brighten on selection.
     return { alpha: 0.12, color: EDGE_DEFAULT, width: baseW * 0.65 };
@@ -1314,11 +1350,21 @@
       baseCtx.globalAlpha = alpha;
       baseCtx.strokeStyle = color;
       baseCtx.lineWidth = width;
+      // Auto-derived edges (Gemini embedding pipeline) render dashed so the
+      // human eye can tell at a glance which connective tissue came from a
+      // curator and which from an embedding model. Reset the dash for every
+      // edge — we share one context across the whole pass.
+      if (e.created_by === "embedding-multimodal-v1") {
+        baseCtx.setLineDash([5, 4]);
+      } else {
+        baseCtx.setLineDash([]);
+      }
       baseCtx.beginPath();
       baseCtx.moveTo(sx, sy);
       baseCtx.quadraticCurveTo(mx, my, tx, ty);
       baseCtx.stroke();
     }
+    baseCtx.setLineDash([]);
 
     // Dots — spiral-filled at the artist's per-placement radius.  Nodes not
     // sampled this load have placedRadius == 0 and are skipped.

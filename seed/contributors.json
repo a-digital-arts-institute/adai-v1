@@ -97,5 +97,14 @@
     "contributions": 5,
     "approved_count": 5,
     "created_at": "2026-04-29T14:13:52Z"
+  },
+  {
+    "id": "contributor:embedding-pipeline",
+    "name": "Gemini Embedding 2 multimodal pipeline",
+    "type": "system",
+    "trust_tier": "probationary",
+    "contributions": 0,
+    "approved_count": 0,
+    "created_at": "2026-05-12T00:00:00Z"
   }
 ]

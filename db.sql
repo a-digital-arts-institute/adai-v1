@@ -113,6 +113,41 @@ CREATE TABLE IF NOT EXISTS intake_queue (
 
 CREATE INDEX IF NOT EXISTS idx_intake_status ON intake_queue(status);
 
+-- Embeddings (Gemini Embedding 2 multimodal pass). Local-only, recomputable.
+-- Two rows per practitioner are possible: kind='identity' (their text vector)
+-- and kind='style_centroid' (mean of artworks they CREATED_BY, L2-normalised).
+-- Only practitioners with live CREATED_BY edges get a style_centroid row;
+-- bridge practitioners and net-new imports without attribution silently
+-- fall out of STYLE_KIN / SUGGESTS_CREATED_BY downstream.
+CREATE TABLE IF NOT EXISTS node_embeddings (
+    node_id    TEXT NOT NULL,
+    kind       TEXT NOT NULL DEFAULT 'identity',     -- 'identity' | 'style_centroid'
+    model      TEXT NOT NULL,
+    dims       INTEGER NOT NULL,
+    vector     BLOB NOT NULL,                         -- f32 LE, L2-normalised
+    has_image  INTEGER DEFAULT 0,
+    image_hash TEXT,
+    text_hash  TEXT,
+    created_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+    PRIMARY KEY (node_id, kind),
+    FOREIGN KEY (node_id) REFERENCES nodes(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_node_embeddings_kind ON node_embeddings(kind);
+
+-- Pairs the curator rejected from the AI suggestion queue. The derive pass
+-- consults this to avoid re-proposing the same attribution every run.
+CREATE TABLE IF NOT EXISTS rejected_ai_suggestions (
+    pair_hash   TEXT PRIMARY KEY NOT NULL,    -- sha256(source_id||edge_type||target_id)
+    source_id   TEXT NOT NULL,
+    target_id   TEXT NOT NULL,
+    edge_type   TEXT NOT NULL,
+    reason      TEXT,
+    rejected_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_rejected_ai_target ON rejected_ai_suggestions(target_id);
+
 CREATE TABLE IF NOT EXISTS settings (
     key TEXT PRIMARY KEY NOT NULL,
     value TEXT NOT NULL
