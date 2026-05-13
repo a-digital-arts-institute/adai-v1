@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { getDb } from "../db.js";
 import { htmlPage, htmlEscape, CSS, HTML_HEADERS } from "../templates.js";
 import { topKByNodeId, withMetadata, type Neighbour } from "../embed/neighbours.js";
+import { buildEmbeddingSections } from "../embed/sections.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.join(__dirname, "..", "..");
@@ -321,129 +322,24 @@ function profileHandler(req: any, res: any) {
 }
 
 // Render the "Style kin", "Visually affine", and "AI-suggested attributions"
-// sections that hang off a profile page. Centralised so each node-type
-// gets only what makes sense and so the rendering is one place to tweak.
+// sections that hang off a profile page. The section selection + neighbour
+// computation lives in `src/embed/sections.ts` and is shared with the JSON
+// endpoint `/api/neighbours/:type/:slug` consumed by the /field overlays,
+// so the HTML and JSON surfaces can never drift apart.
 function renderEmbeddingSections(db: any, node: any): string {
+  const sections = buildEmbeddingSections(db, node);
   let html = "";
-
-  if (node.type === "practitioner" || node.type === "collective") {
-    // Style kin: practitioners closest to this one in style-centroid space.
-    // Only meaningful if this practitioner *has* a centroid (i.e. has at
-    // least one live CREATED_BY edge — bridge practitioners and net-new
-    // imports without attribution silently fall out here).
-    const neighbours = withMetadata(
-      db,
-      topKByNodeId(db, node.id, {
-        queryKind: "style_centroid",
-        candidateKind: "style_centroid",
-        typePrefixes: ["practitioner:", "collective:"],
-        k: 8,
-      })
-    );
-    if (neighbours.length) {
-      html += renderNeighbourSection(
-        "Style kin",
-        "Practitioners closest in style-centroid space (cosine over the mean of their attributed artworks).",
-        neighbours
-      );
-    }
-
-    // Any pending AI-attribution proposals that name this practitioner as
-    // the candidate creator — useful for self-review and for accelerating
-    // the back-of-the-queue curatorial pass.
-    const proposals = db
-      .prepare(
-        `SELECT id, target_node, proposed_edges
-           FROM intake_queue
-          WHERE kind = 'ai_suggestion' AND status = 'pending'`
-      )
-      .all() as Array<{ id: string; target_node: string; proposed_edges: string }>;
-    const matchingProposals: Array<{ id: string; artwork_id: string; sim: number }> = [];
-    for (const p of proposals) {
-      let arr: any[] = [];
-      try { arr = JSON.parse(p.proposed_edges || "[]"); } catch { /* ignore */ }
-      for (const spec of arr) {
-        if (spec.target_id === node.id && spec.edge_type === "CREATED_BY") {
-          matchingProposals.push({ id: p.id, artwork_id: spec.source_id, sim: spec.similarity ?? 0 });
-        }
-      }
-    }
-    if (matchingProposals.length) {
-      // Decorate with metadata via the same helper used for neighbours.
-      matchingProposals.sort((a, b) => b.sim - a.sim);
-      const fake: Neighbour[] = matchingProposals.map((m) => ({
-        node_id: m.artwork_id,
-        similarity: m.sim,
-      }));
-      const decorated = withMetadata(db, fake);
-      html += `<h3 style='margin-top:2rem'>AI-suggested attributions <span class='tag'>${matchingProposals.length}</span></h3>`;
+  for (const s of sections) {
+    if (s.key === "ai_attributions") {
+      // Slightly different chrome for the attribution proposals — the count
+      // is the headline and the blurb links into /review.
+      html += `<h3 style='margin-top:2rem'>${htmlEscape(s.title)} <span class='tag'>${s.neighbours.length}</span></h3>`;
       html += `<p class='meta'>Unattributed artworks the embedding pipeline thinks may be by ${htmlEscape(String(node.name))}. Review at <a href='/review?kind=ai_suggestion'>/review</a>.</p>`;
-      html += renderNeighbourList(decorated);
+      html += renderNeighbourList(s.neighbours);
+      continue;
     }
+    html += renderNeighbourSection(s.title, s.blurb, s.neighbours);
   }
-
-  if (node.type === "artwork") {
-    // Visually affine: nearest artwork neighbours by image+text embedding.
-    const neighbours = withMetadata(
-      db,
-      topKByNodeId(db, node.id, {
-        queryKind: "identity",
-        candidateKind: "identity",
-        typePrefixes: ["artwork:"],
-        k: 8,
-      })
-    );
-    if (neighbours.length) {
-      html += renderNeighbourSection(
-        "Visually affine",
-        "Artworks closest in the embedding space (image + text fused via Gemini Embedding 2).",
-        neighbours
-      );
-    }
-
-    // Also surface the practitioners whose style-centroid this artwork is
-    // closest to — useful diagnostic for attributed artworks, and a head
-    // start on candidates for unattributed ones.
-    const candidates = withMetadata(
-      db,
-      topKByNodeId(db, node.id, {
-        queryKind: "identity",
-        candidateKind: "style_centroid",
-        typePrefixes: ["practitioner:", "collective:"],
-        k: 5,
-        minSimilarity: 0.75,
-      })
-    );
-    if (candidates.length) {
-      html += renderNeighbourSection(
-        "Style proximity",
-        "Practitioners whose style-centroid sits closest to this artwork.",
-        candidates
-      );
-    }
-  }
-
-  if (node.type === "concept" || node.type === "scene") {
-    // For abstract nodes, surface the closest artworks — what works most
-    // strongly carry this concept / belong to this scene per the embedding.
-    const neighbours = withMetadata(
-      db,
-      topKByNodeId(db, node.id, {
-        queryKind: "identity",
-        candidateKind: "identity",
-        typePrefixes: ["artwork:"],
-        k: 8,
-      })
-    );
-    if (neighbours.length) {
-      html += renderNeighbourSection(
-        "Closest artworks in embedding space",
-        "Artworks whose fused text+image vector sits closest to this " + node.type + "'s text embedding.",
-        neighbours
-      );
-    }
-  }
-
   return html;
 }
 
