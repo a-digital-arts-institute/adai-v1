@@ -11,6 +11,11 @@ proton-recovery-kit.pdf
 *.db-shm
 *.db-wal
 
+# Local Python pipeline caches (image_fetch.py writes here at build time)
+seed/_build/.image_cache.sqlite
+seed/_build/.image_cache.sqlite-shm
+seed/_build/.image_cache.sqlite-wal
+
 # Node
 node_modules/
 dist/
@@ -61,3 +66,11 @@ seed/*.pre-enrichment.bak
 seed/_build/task3_input.json
 seed/_build/fxhash_new_artworks.json
 seed/_build/moma_new_artworks.json
+
+# NOTE: seed/embeddings.{bin,json,umap2d.json} are intentionally committed
+# (decision May 2026) so the Docker builder bakes them into seed.db and the
+# runtime image. Re-embed locally via:
+#   seed/_build/.venv/bin/python3 seed/_build/embed_nodes.py
+#   seed/_build/.venv/bin/python3 seed/_build/project_umap.py
+# then commit the diffs. Adding them back here would silently strip
+# embeddings from the next build.

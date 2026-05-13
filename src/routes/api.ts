@@ -1,7 +1,13 @@
 import { Router } from "express";
 import crypto from "node:crypto";
+import { readFileSync, existsSync } from "node:fs";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { getDb } from "../db.js";
 import { HTML_HEADERS, JSON_HEADERS } from "../templates.js";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const PROJECT_ROOT = join(__dirname, "..", "..");
 
 const router = Router();
 
@@ -55,19 +61,19 @@ router.get("/api/graph", (req, res) => {
   if (!typeFilter) {
     edgeRows = db
       .prepare(
-        "SELECT e.source_id, e.target_id, e.edge_type, e.confidence FROM edges e WHERE e.valid_until IS NULL AND e.source_id IN (SELECT id FROM nodes WHERE type != 'related') AND e.target_id IN (SELECT id FROM nodes WHERE type != 'related')"
+        "SELECT e.source_id, e.target_id, e.edge_type, e.confidence, e.created_by FROM edges e WHERE e.valid_until IS NULL AND e.source_id IN (SELECT id FROM nodes WHERE type != 'related') AND e.target_id IN (SELECT id FROM nodes WHERE type != 'related')"
       )
       .all();
   } else if (typeFilter === "_all") {
     edgeRows = db
       .prepare(
-        "SELECT e.source_id, e.target_id, e.edge_type, e.confidence FROM edges e WHERE e.valid_until IS NULL AND e.source_id IN (SELECT id FROM nodes WHERE type != 'related') AND e.target_id IN (SELECT id FROM nodes WHERE type != 'related')"
+        "SELECT e.source_id, e.target_id, e.edge_type, e.confidence, e.created_by FROM edges e WHERE e.valid_until IS NULL AND e.source_id IN (SELECT id FROM nodes WHERE type != 'related') AND e.target_id IN (SELECT id FROM nodes WHERE type != 'related')"
       )
       .all();
   } else {
     edgeRows = db
       .prepare(
-        "SELECT e.source_id, e.target_id, e.edge_type, e.confidence FROM edges e WHERE e.valid_until IS NULL AND e.source_id IN (SELECT id FROM nodes WHERE type = ?) AND e.target_id IN (SELECT id FROM nodes WHERE type = ?)"
+        "SELECT e.source_id, e.target_id, e.edge_type, e.confidence, e.created_by FROM edges e WHERE e.valid_until IS NULL AND e.source_id IN (SELECT id FROM nodes WHERE type = ?) AND e.target_id IN (SELECT id FROM nodes WHERE type = ?)"
       )
       .all(typeFilter, typeFilter);
   }
@@ -86,6 +92,7 @@ router.get("/api/graph", (req, res) => {
       target: e.target_id,
       type: e.edge_type,
       confidence: e.confidence,
+      created_by: e.created_by,
     })),
   });
 });
@@ -112,7 +119,7 @@ router.get("/api/graph/:slug/component", (req, res) => {
   for (const n of nodeRows) nodeById.set(n.id, n);
 
   const edgeRows = db
-    .prepare("SELECT source_id, target_id, edge_type, confidence FROM edges WHERE valid_until IS NULL")
+    .prepare("SELECT source_id, target_id, edge_type, confidence, created_by FROM edges WHERE valid_until IS NULL")
     .all() as any[];
 
   const adj = new Map<string, Array<{ other: string; e: any }>>();
@@ -136,7 +143,7 @@ router.get("/api/graph/:slug/component", (req, res) => {
       const ek = `${e.source_id}|${e.target_id}|${e.edge_type}`;
       if (!seenEdgeKeys.has(ek)) {
         seenEdgeKeys.add(ek);
-        edgesOut.push({ source: e.source_id, target: e.target_id, type: e.edge_type, confidence: e.confidence });
+        edgesOut.push({ source: e.source_id, target: e.target_id, type: e.edge_type, confidence: e.confidence, created_by: e.created_by });
       }
       if (!visited.has(other)) {
         if (visited.size >= maxNodes) {
@@ -197,7 +204,7 @@ router.get("/api/graph/:slug", (req, res) => {
   const nodes: any[] = [projectNode(node, { center: true })];
 
   const edgeRows = db
-    .prepare("SELECT source_id, target_id, edge_type, confidence FROM edges WHERE valid_until IS NULL AND (source_id = ? OR target_id = ?)")
+    .prepare("SELECT source_id, target_id, edge_type, confidence, created_by FROM edges WHERE valid_until IS NULL AND (source_id = ? OR target_id = ?)")
     .all(node.id, node.id) as any[];
 
   const edges: any[] = [];
@@ -207,6 +214,7 @@ router.get("/api/graph/:slug", (req, res) => {
       target: e.target_id,
       type: e.edge_type,
       confidence: e.confidence,
+      created_by: e.created_by,
     });
 
     const neighborId = e.source_id === node.id ? e.target_id : e.source_id;
@@ -265,13 +273,21 @@ router.post("/api/contribute", (req, res) => {
   res.set(HTML_HEADERS).send(responseHtml);
 });
 
+// Hash a rejected (source, edge_type, target) triple so the embedding
+// derive pass can skip pairs the curator has already vetoed. Matches the
+// pairHash convention in src/embed/derive.ts.
+const sha256Hex = (s: string): string =>
+  crypto.createHash("sha256").update(s).digest("hex");
+
 // POST /api/review/:id/approve
 router.post("/api/review/:id/approve", (req, res) => {
   const db = getDb();
   const id = req.params.id;
 
   const item = db
-    .prepare("SELECT id, signal_id, target_node FROM intake_queue WHERE id = ? AND status = 'pending'")
+    .prepare(
+      "SELECT id, signal_id, target_node, submitted_by, kind, proposed_edges FROM intake_queue WHERE id = ? AND status = 'pending'"
+    )
     .get(id) as any;
 
   if (!item) {
@@ -279,16 +295,39 @@ router.post("/api/review/:id/approve", (req, res) => {
     return;
   }
 
+  // For AI-suggestion items, materialise the proposed edge into the live
+  // graph. The `proposed_edges` column carries a JSON array of edge specs
+  // produced by the embedding derive pass.
+  if (item.kind === "ai_suggestion" && item.proposed_edges) {
+    let proposals: Array<{ source_id: string; target_id: string; edge_type: string; similarity?: number }> = [];
+    try {
+      proposals = JSON.parse(item.proposed_edges);
+    } catch {
+      res.status(500).set(JSON_HEADERS).json({ error: "proposed_edges is not valid JSON" });
+      return;
+    }
+    const insertEdge = db.prepare(
+      `INSERT INTO edges (
+         id, source_id, target_id, edge_type, signal_id,
+         confidence, charge, created_at, created_by,
+         event_time, valid_from, valid_until, invalidated_by
+       ) VALUES (?, ?, ?, ?, ?, 'medium', NULL,
+                 strftime('%Y-%m-%dT%H:%M:%SZ','now'), 'curator-from-ai-suggestion',
+                 NULL, strftime('%Y-%m-%dT%H:%M:%SZ','now'), NULL, NULL)`
+    );
+    for (const p of proposals) {
+      const edgeId = `${p.source_id}--${p.edge_type}--${p.target_id}--curator-from-ai-suggestion`;
+      insertEdge.run(edgeId, p.source_id, p.target_id, p.edge_type, item.signal_id);
+    }
+  }
+
   db.prepare(
     "UPDATE intake_queue SET status = 'approved', reviewed_by = 'curator', reviewed_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = ?"
   ).run(id);
 
-  const iq = db.prepare("SELECT submitted_by FROM intake_queue WHERE id = ?").get(id) as any;
-  if (iq) {
-    db.prepare("UPDATE contributors SET approved_count = approved_count + 1 WHERE name = ?").run(iq.submitted_by);
-  }
+  db.prepare("UPDATE contributors SET approved_count = approved_count + 1 WHERE name = ?").run(item.submitted_by);
 
-  res.set(HTML_HEADERS).send("<div class='msg msg-ok'>Signal approved and is now live.</div>");
+  res.set(HTML_HEADERS).send("<div class='msg msg-ok'>Approved and is now live.</div>");
 });
 
 // POST /api/review/:id/reject
@@ -302,17 +341,106 @@ router.post("/api/review/:id/reject", (req, res) => {
     return;
   }
 
-  const item = db.prepare("SELECT id FROM intake_queue WHERE id = ? AND status = 'pending'").get(id) as any;
+  const item = db
+    .prepare(
+      "SELECT id, kind, proposed_edges FROM intake_queue WHERE id = ? AND status = 'pending'"
+    )
+    .get(id) as any;
   if (!item) {
     res.status(404).set(JSON_HEADERS).json({ error: "not found or already reviewed" });
     return;
+  }
+
+  // For AI suggestions, record the rejected pair in rejected_ai_suggestions
+  // so the next derive pass won't re-propose it. Hash is sha256(source||
+  // type||target) — same convention as src/embed/derive.ts.
+  if (item.kind === "ai_suggestion" && item.proposed_edges) {
+    let proposals: Array<{ source_id: string; target_id: string; edge_type: string }> = [];
+    try {
+      proposals = JSON.parse(item.proposed_edges);
+    } catch {
+      proposals = [];
+    }
+    const insertRej = db.prepare(
+      `INSERT OR REPLACE INTO rejected_ai_suggestions
+         (pair_hash, source_id, target_id, edge_type, reason)
+         VALUES (?, ?, ?, ?, ?)`
+    );
+    for (const p of proposals) {
+      const h = sha256Hex(`${p.source_id}|${p.edge_type}|${p.target_id}`);
+      insertRej.run(h, p.source_id, p.target_id, p.edge_type, reason);
+    }
   }
 
   db.prepare(
     "UPDATE intake_queue SET status = 'rejected', rejection_reason = ?, reviewed_by = 'curator', reviewed_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = ?"
   ).run(reason, id);
 
-  res.set(HTML_HEADERS).send("<div class='msg msg-err'>Signal rejected.</div>");
+  res.set(HTML_HEADERS).send("<div class='msg msg-err'>Rejected.</div>");
+});
+
+// GET /api/embed-space — UMAP 2D projection joined with node metadata.
+// Reads the precomputed sidecar `seed/embeddings.umap2d.json` (produced
+// offline by `seed/_build/project_umap.py` — see CLAUDE.md) and joins
+// each point with name/type/slug/cdn_image_url for client rendering.
+//
+// Cached at module scope after first read since the sidecar is static.
+let umapCache: any = null;
+
+router.get("/api/embed-space", (_req, res) => {
+  const db = getDb();
+  if (!umapCache) {
+    const umapPath = join(PROJECT_ROOT, "seed", "embeddings.umap2d.json");
+    if (!existsSync(umapPath)) {
+      res.status(404).set(JSON_HEADERS).json({
+        error: "UMAP projection not available",
+        hint: "Run `seed/_build/.venv/bin/python3 seed/_build/project_umap.py` to produce seed/embeddings.umap2d.json",
+      });
+      return;
+    }
+    const raw = JSON.parse(readFileSync(umapPath, "utf-8"));
+    const ids = raw.items.map((i: any) => i.node_id);
+    // One IN-query for all metadata in one hop (~1300 rows).
+    const placeholders = ids.map(() => "?").join(",");
+    const meta = db
+      .prepare(
+        `SELECT id, name, type, slug,
+                json_extract(metadata,'$.cdn_image_url') AS cdn_image_url,
+                json_extract(metadata,'$.image_url')     AS image_url
+           FROM nodes WHERE id IN (${placeholders})`
+      )
+      .all(...ids) as Array<{
+        id: string; name: string; type: string; slug: string;
+        cdn_image_url: string | null; image_url: string | null;
+      }>;
+    const byId = new Map(meta.map((m) => [m.id, m]));
+    const items = raw.items.map((p: any) => {
+      const m = byId.get(p.node_id);
+      return {
+        id: p.node_id,
+        kind: p.kind,
+        x: p.x,
+        y: p.y,
+        ...(m
+          ? {
+              name: m.name,
+              type: m.type,
+              slug: m.slug,
+              ...(m.cdn_image_url ? { cdn_image_url: m.cdn_image_url } : {}),
+              ...(m.image_url ? { image_url: m.image_url } : {}),
+            }
+          : {}),
+      };
+    });
+    umapCache = {
+      model: raw.model,
+      method: raw.method,
+      params: raw.params,
+      n_items: items.length,
+      items,
+    };
+  }
+  res.set(JSON_HEADERS).json(umapCache);
 });
 
 export default router;

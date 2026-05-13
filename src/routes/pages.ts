@@ -3,6 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { getDb } from "../db.js";
 import { htmlPage, htmlEscape, CSS, HTML_HEADERS } from "../templates.js";
+import { topKByNodeId, withMetadata, type Neighbour } from "../embed/neighbours.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -283,9 +284,175 @@ function profileHandler(req: any, res: any) {
     body += `</ul>`;
   }
 
+  // ----- Embedding-derived sections ------------------------------------
+  // Each section is gated on the node having an appropriate vector; nodes
+  // with no embedding (e.g. institution, publication, regime) get nothing
+  // here, no errors.
+  body += renderEmbeddingSections(db, node);
+
   body += `<p style='margin-top:2rem'><a href='/${encodeURIComponent(node.type)}/${encodeURIComponent(slug)}/data' class='btn'>Export JSON</a></p>`;
 
+  // Direct deep-link into the similarity browser for any node with an
+  // embedding. Cheap to add — it's a query-param page, no per-node cost.
+  body += ` <a href='/neighbours/${encodeURIComponent(node.type)}/${encodeURIComponent(slug)}' class='btn'>Find neighbours</a>`;
+
   res.set(HTML_HEADERS).send(htmlPage(node.name, body));
+}
+
+// Render the "Style kin", "Visually affine", and "AI-suggested attributions"
+// sections that hang off a profile page. Centralised so each node-type
+// gets only what makes sense and so the rendering is one place to tweak.
+function renderEmbeddingSections(db: any, node: any): string {
+  let html = "";
+
+  if (node.type === "practitioner" || node.type === "collective") {
+    // Style kin: practitioners closest to this one in style-centroid space.
+    // Only meaningful if this practitioner *has* a centroid (i.e. has at
+    // least one live CREATED_BY edge — bridge practitioners and net-new
+    // imports without attribution silently fall out here).
+    const neighbours = withMetadata(
+      db,
+      topKByNodeId(db, node.id, {
+        queryKind: "style_centroid",
+        candidateKind: "style_centroid",
+        typePrefixes: ["practitioner:", "collective:"],
+        k: 8,
+      })
+    );
+    if (neighbours.length) {
+      html += renderNeighbourSection(
+        "Style kin",
+        "Practitioners closest in style-centroid space (cosine over the mean of their attributed artworks).",
+        neighbours
+      );
+    }
+
+    // Any pending AI-attribution proposals that name this practitioner as
+    // the candidate creator — useful for self-review and for accelerating
+    // the back-of-the-queue curatorial pass.
+    const proposals = db
+      .prepare(
+        `SELECT id, target_node, proposed_edges
+           FROM intake_queue
+          WHERE kind = 'ai_suggestion' AND status = 'pending'`
+      )
+      .all() as Array<{ id: string; target_node: string; proposed_edges: string }>;
+    const matchingProposals: Array<{ id: string; artwork_id: string; sim: number }> = [];
+    for (const p of proposals) {
+      let arr: any[] = [];
+      try { arr = JSON.parse(p.proposed_edges || "[]"); } catch { /* ignore */ }
+      for (const spec of arr) {
+        if (spec.target_id === node.id && spec.edge_type === "CREATED_BY") {
+          matchingProposals.push({ id: p.id, artwork_id: spec.source_id, sim: spec.similarity ?? 0 });
+        }
+      }
+    }
+    if (matchingProposals.length) {
+      // Decorate with metadata via the same helper used for neighbours.
+      matchingProposals.sort((a, b) => b.sim - a.sim);
+      const fake: Neighbour[] = matchingProposals.map((m) => ({
+        node_id: m.artwork_id,
+        similarity: m.sim,
+      }));
+      const decorated = withMetadata(db, fake);
+      html += `<h3 style='margin-top:2rem'>AI-suggested attributions <span class='tag'>${matchingProposals.length}</span></h3>`;
+      html += `<p class='meta'>Unattributed artworks the embedding pipeline thinks may be by ${htmlEscape(String(node.name))}. Review at <a href='/review?kind=ai_suggestion'>/review</a>.</p>`;
+      html += renderNeighbourList(decorated);
+    }
+  }
+
+  if (node.type === "artwork") {
+    // Visually affine: nearest artwork neighbours by image+text embedding.
+    const neighbours = withMetadata(
+      db,
+      topKByNodeId(db, node.id, {
+        queryKind: "identity",
+        candidateKind: "identity",
+        typePrefixes: ["artwork:"],
+        k: 8,
+      })
+    );
+    if (neighbours.length) {
+      html += renderNeighbourSection(
+        "Visually affine",
+        "Artworks closest in the embedding space (image + text fused via Gemini Embedding 2).",
+        neighbours
+      );
+    }
+
+    // Also surface the practitioners whose style-centroid this artwork is
+    // closest to — useful diagnostic for attributed artworks, and a head
+    // start on candidates for unattributed ones.
+    const candidates = withMetadata(
+      db,
+      topKByNodeId(db, node.id, {
+        queryKind: "identity",
+        candidateKind: "style_centroid",
+        typePrefixes: ["practitioner:", "collective:"],
+        k: 5,
+        minSimilarity: 0.75,
+      })
+    );
+    if (candidates.length) {
+      html += renderNeighbourSection(
+        "Style proximity",
+        "Practitioners whose style-centroid sits closest to this artwork.",
+        candidates
+      );
+    }
+  }
+
+  if (node.type === "concept" || node.type === "scene") {
+    // For abstract nodes, surface the closest artworks — what works most
+    // strongly carry this concept / belong to this scene per the embedding.
+    const neighbours = withMetadata(
+      db,
+      topKByNodeId(db, node.id, {
+        queryKind: "identity",
+        candidateKind: "identity",
+        typePrefixes: ["artwork:"],
+        k: 8,
+      })
+    );
+    if (neighbours.length) {
+      html += renderNeighbourSection(
+        "Closest artworks in embedding space",
+        "Artworks whose fused text+image vector sits closest to this " + node.type + "'s text embedding.",
+        neighbours
+      );
+    }
+  }
+
+  return html;
+}
+
+function renderNeighbourSection(title: string, blurb: string, neighbours: Neighbour[]): string {
+  let s = `<h3 style='margin-top:2rem'>${htmlEscape(title)} <span class='tag'>${neighbours.length}</span></h3>`;
+  s += `<p class='meta'>${htmlEscape(blurb)}</p>`;
+  s += renderNeighbourList(neighbours);
+  return s;
+}
+
+function renderNeighbourList(neighbours: Neighbour[]): string {
+  // Compact grid: thumbnail (for artworks) + name + type tag + similarity.
+  let s = `<div style='display:flex;flex-wrap:wrap;gap:0.8rem;margin-top:0.5rem'>`;
+  for (const n of neighbours) {
+    const url = n.slug && n.type ? `/${encodeURIComponent(n.type)}/${encodeURIComponent(n.slug)}` : "#";
+    const img = n.cdn_image_url || n.image_url;
+    const sim = n.similarity.toFixed(3);
+    const nameEsc = htmlEscape(String(n.name ?? n.node_id));
+    const typeEsc = htmlEscape(String(n.type ?? "?"));
+    const thumb = img
+      ? `<img src='${htmlEscape(String(img))}' alt='${nameEsc}' style='width:96px;height:96px;object-fit:cover;border-radius:4px;display:block' loading='lazy' />`
+      : `<div style='width:96px;height:96px;background:#181818;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:#666;text-align:center;padding:0.4rem;box-sizing:border-box'>${nameEsc.slice(0, 40)}</div>`;
+    s += `<a href='${url}' style='display:block;width:108px;text-decoration:none;color:inherit'>
+${thumb}
+<div style='font-size:0.78rem;margin-top:0.3rem;line-height:1.2'>${nameEsc}</div>
+<div class='meta' style='font-size:0.7rem;margin-top:0.15rem'>${typeEsc} · <span class='tag'>${sim}</span></div>
+</a>`;
+  }
+  s += `</div>`;
+  return s;
 }
 
 router.get("/practitioner/:slug", profileHandler);
@@ -367,6 +534,122 @@ router.get("/publication/:slug/data", dataHandler);
 router.get("/project/:slug/data", dataHandler);
 router.get("/classification_regime/:slug/data", dataHandler);
 
+// GET /neighbours/:type/:slug — similarity browser. Shows the top-K cosine
+// neighbours of a node across any kind+candidate combination. Useful for
+// curators evaluating AI suggestions and for general "what does this thing
+// sit next to in embedding space" exploration.
+router.get("/neighbours/:type/:slug", (req, res) => {
+  const db = getDb();
+  const slug = req.params.slug;
+  const node = db.prepare("SELECT id, name, type, slug, metadata FROM nodes WHERE slug = ?").get(slug) as any;
+  if (!node) {
+    res.status(404).set(HTML_HEADERS).send(htmlPage("not found", "<p>node not found</p>"));
+    return;
+  }
+
+  // Query knobs (URL-overridable) — sensible defaults pick the most useful
+  // comparison for each node type.
+  const defaultsByType: Record<string, { queryKind: string; candidateKind: string; prefixes: string }> = {
+    practitioner: { queryKind: "style_centroid", candidateKind: "style_centroid", prefixes: "practitioner:,collective:" },
+    collective: { queryKind: "style_centroid", candidateKind: "style_centroid", prefixes: "practitioner:,collective:" },
+    artwork: { queryKind: "identity", candidateKind: "identity", prefixes: "artwork:" },
+    concept: { queryKind: "identity", candidateKind: "identity", prefixes: "artwork:,concept:" },
+    scene: { queryKind: "identity", candidateKind: "identity", prefixes: "artwork:,practitioner:" },
+  };
+  const def = defaultsByType[node.type] ?? { queryKind: "identity", candidateKind: "identity", prefixes: "" };
+
+  const queryKind = String(req.query.qkind ?? def.queryKind);
+  const candidateKind = String(req.query.ckind ?? def.candidateKind);
+  const prefixesRaw = String(req.query.prefixes ?? def.prefixes);
+  const k = Math.min(Math.max(parseInt(String(req.query.k ?? "20"), 10) || 20, 1), 100);
+  const prefixes = prefixesRaw ? prefixesRaw.split(",").map((s) => s.trim()).filter(Boolean) : undefined;
+
+  const neighbours = withMetadata(
+    db,
+    topKByNodeId(db, node.id, {
+      queryKind: queryKind as any,
+      candidateKind: candidateKind as any,
+      typePrefixes: prefixes,
+      k,
+    })
+  );
+
+  // Render the page.
+  const escName = htmlEscape(String(node.name));
+  const escType = htmlEscape(String(node.type));
+  let body = `<h2>Neighbours of <a href='/${encodeURIComponent(node.type)}/${encodeURIComponent(node.slug)}'>${escName}</a></h2>`;
+  body += `<p class='meta'><span class='tag'>${escType}</span>
+ · query vector: <span class='tag'>${htmlEscape(queryKind)}</span>
+ · candidates: <span class='tag'>${htmlEscape(candidateKind)}</span>
+ · filter: <span class='tag'>${htmlEscape(prefixesRaw || "(any)")}</span>
+ · k=${k}</p>`;
+
+  // Filter chips — let the curator swap query/candidate kind in one click.
+  // The "switch" form lives at the top, GET-based so URLs are shareable.
+  body += `<form method='get' style='margin:1rem 0;padding:0.75rem;background:#111;border:1px solid #2a2a2a;border-radius:6px;font-size:0.85rem'>
+  <label style='margin-right:1rem'>query kind:
+    <select name='qkind' style='background:#1a1a1a;color:#d4d4d4;border:1px solid #333;padding:0.2rem'>
+      <option value='identity'${queryKind === "identity" ? " selected" : ""}>identity (this node's own vector)</option>
+      <option value='style_centroid'${queryKind === "style_centroid" ? " selected" : ""}>style_centroid (practitioner mean)</option>
+    </select>
+  </label>
+  <label style='margin-right:1rem'>candidate kind:
+    <select name='ckind' style='background:#1a1a1a;color:#d4d4d4;border:1px solid #333;padding:0.2rem'>
+      <option value='identity'${candidateKind === "identity" ? " selected" : ""}>identity</option>
+      <option value='style_centroid'${candidateKind === "style_centroid" ? " selected" : ""}>style_centroid</option>
+    </select>
+  </label>
+  <label style='margin-right:1rem'>prefixes:
+    <input type='text' name='prefixes' value='${htmlEscape(prefixesRaw)}'
+           style='background:#1a1a1a;color:#d4d4d4;border:1px solid #333;padding:0.2rem;width:14rem'
+           placeholder='e.g. artwork: or practitioner:,collective:' />
+  </label>
+  <label style='margin-right:1rem'>k:
+    <input type='number' name='k' min='1' max='100' value='${k}'
+           style='background:#1a1a1a;color:#d4d4d4;border:1px solid #333;padding:0.2rem;width:4rem' />
+  </label>
+  <button type='submit' class='btn'>refresh</button>
+</form>`;
+
+  if (!neighbours.length) {
+    body += `<p>No neighbours — this node has no vector of kind <span class='tag'>${htmlEscape(queryKind)}</span> (likely a node without an embedding, or a practitioner with no <code>CREATED_BY</code> artworks for the centroid).</p>`;
+  } else {
+    body += renderNeighbourTable(neighbours);
+  }
+
+  res.set(HTML_HEADERS).send(htmlPage(`Neighbours of ${node.name}`, body));
+});
+
+// Larger table variant for /neighbours/: shows name + type + similarity
+// + thumbnail in a denser layout than the profile-page card grid.
+function renderNeighbourTable(neighbours: Neighbour[]): string {
+  let s = `<table style='width:100%;border-collapse:collapse;margin-top:1rem;font-size:0.88rem'>`;
+  s += `<thead><tr style='border-bottom:1px solid #2a2a2a;text-align:left'>
+    <th style='padding:0.4rem 0.6rem;width:88px'></th>
+    <th style='padding:0.4rem 0.6rem'>name</th>
+    <th style='padding:0.4rem 0.6rem;width:90px'>type</th>
+    <th style='padding:0.4rem 0.6rem;width:80px;text-align:right'>cosine</th>
+  </tr></thead><tbody>`;
+  for (const n of neighbours) {
+    const url = n.slug && n.type ? `/${encodeURIComponent(n.type)}/${encodeURIComponent(n.slug)}` : "#";
+    const img = n.cdn_image_url || n.image_url;
+    const sim = n.similarity.toFixed(4);
+    const nameEsc = htmlEscape(String(n.name ?? n.node_id));
+    const typeEsc = htmlEscape(String(n.type ?? "?"));
+    const thumb = img
+      ? `<img src='${htmlEscape(String(img))}' alt='' style='width:72px;height:72px;object-fit:cover;border-radius:3px;display:block' loading='lazy' />`
+      : `<div style='width:72px;height:72px;background:#181818;border-radius:3px'></div>`;
+    s += `<tr style='border-bottom:1px solid #1a1a1a'>
+  <td style='padding:0.4rem 0.6rem'>${thumb}</td>
+  <td style='padding:0.4rem 0.6rem'><a href='${url}'>${nameEsc}</a></td>
+  <td style='padding:0.4rem 0.6rem'><span class='tag'>${typeEsc}</span></td>
+  <td style='padding:0.4rem 0.6rem;text-align:right;font-variant-numeric:tabular-nums'>${sim}</td>
+</tr>`;
+  }
+  s += `</tbody></table>`;
+  return s;
+}
+
 // GET /contribute — contribution form
 router.get("/contribute", (_req, res) => {
   const db = getDb();
@@ -421,21 +704,78 @@ fetch('/api/contribute',{method:'POST',headers:{'Content-Type':'application/json
   res.set(HTML_HEADERS).send(htmlPage("Contribute", formBody));
 });
 
-// GET /review — review queue
-router.get("/review", (_req, res) => {
+// GET /review — review queue. The default tab shows human-signal contributions
+// (intake_queue.kind='human_signal'). The AI tab shows ai_suggestion rows
+// from the embedding derive pipeline; mixing them in one feed swamped the
+// curator's attention so we keep them separate by URL.
+router.get("/review", (req, res) => {
   const db = getDb();
-  const { count: qCount } = db
-    .prepare("SELECT COUNT(*) as count FROM intake_queue WHERE status = 'pending'")
-    .get() as any;
+  const tab = String(req.query.kind ?? "human_signal");
+  const tabKind = tab === "ai_suggestion" ? "ai_suggestion" : "human_signal";
 
-  let body = `<h2>Review Queue</h2><p class='meta'>${qCount} pending signals</p>`;
+  const countHuman = (db
+    .prepare("SELECT COUNT(*) as count FROM intake_queue WHERE status='pending' AND kind='human_signal'")
+    .get() as any).count;
+  const countAI = (db
+    .prepare("SELECT COUNT(*) as count FROM intake_queue WHERE status='pending' AND kind='ai_suggestion'")
+    .get() as any).count;
+  const { count: qCount } = db
+    .prepare("SELECT COUNT(*) as count FROM intake_queue WHERE status='pending' AND kind=?")
+    .get(tabKind) as any;
+
+  const tabLink = (k: string, label: string, n: number, active: boolean): string =>
+    `<a href='/review?kind=${k}' class='tag'${active ? " style='background:#444;color:#fff'" : ""}>${label} (${n})</a>`;
+
+  let body = `<h2>Review Queue</h2>
+<p class='meta'>
+  ${tabLink("human_signal", "Human signals", countHuman, tabKind === "human_signal")}
+  &nbsp;
+  ${tabLink("ai_suggestion", "AI suggestions", countAI, tabKind === "ai_suggestion")}
+</p>
+<p class='meta'>${qCount} pending in this tab.</p>`;
 
   if (qCount === 0) {
-    body += `<p>No pending signals to review.</p>`;
+    body += `<p>Nothing to review here.</p>`;
+  } else if (tabKind === "ai_suggestion") {
+    // AI suggestion rows: target_node is the *artwork*; proposed_edges
+    // carries the proposed CREATED_BY pointing to a practitioner. We show
+    // both ends + the cosine similarity so the curator can rank quickly.
+    const items = db
+      .prepare(
+        `SELECT iq.id, iq.target_node, iq.submitted_by, iq.created_at, iq.proposed_edges,
+                n.name as target_name
+           FROM intake_queue iq
+           LEFT JOIN nodes n ON iq.target_node = n.id
+          WHERE iq.status='pending' AND iq.kind='ai_suggestion'
+          ORDER BY iq.created_at DESC`
+      )
+      .all() as any[];
+    for (const item of items) {
+      let proposals: any[] = [];
+      try { proposals = JSON.parse(item.proposed_edges || "[]"); } catch { /* leave empty */ }
+      const p = proposals[0] || {};
+      const candidate = db.prepare("SELECT name, slug FROM nodes WHERE id = ?").get(p.target_id) as any;
+      const candName = htmlEscape(String(candidate?.name ?? p.target_id ?? "?"));
+      const candSlug = String(candidate?.slug ?? "");
+      const sim = typeof p.similarity === "number" ? p.similarity.toFixed(4) : "?";
+      const artName = htmlEscape(String(item.target_name ?? item.target_node));
+      const artSlug = String(item.target_node ?? "").split(":").slice(1).join(":");
+      body += `<div class='card' id='item-${item.id}'>
+<h3>${artName}</h3>
+<p class='meta'>Proposed creator: <strong><a href='/practitioner/${encodeURIComponent(candSlug)}'>${candName}</a></strong>
+ · cosine: <span class='tag'>${sim}</span>
+ · ${String(item.created_at ?? "")}</p>
+<p class='meta'>Artwork: <a href='/artwork/${encodeURIComponent(artSlug)}'>${artName}</a></p>
+<div style='margin-top:0.5rem'>
+<button class='btn btn-approve' onclick="reviewAction('${item.id}','approve')">Approve attribution</button>
+<button class='btn btn-reject' onclick="reviewAction('${item.id}','reject')">Reject</button>
+<input type='text' id='reason-${item.id}' placeholder='Rejection reason...' style='width:auto;display:inline-block;margin-left:0.5rem;padding:0.4rem'>
+</div></div>`;
+    }
   } else {
     const items = db
       .prepare(
-        "SELECT iq.id, iq.signal_id, iq.target_node, iq.submitted_by, iq.trust_tier, iq.created_at, s.title, s.content, s.source_url, n.name as target_name FROM intake_queue iq LEFT JOIN signals s ON iq.signal_id = s.id LEFT JOIN nodes n ON iq.target_node = n.id WHERE iq.status = 'pending' ORDER BY iq.created_at DESC"
+        "SELECT iq.id, iq.signal_id, iq.target_node, iq.submitted_by, iq.trust_tier, iq.created_at, s.title, s.content, s.source_url, n.name as target_name FROM intake_queue iq LEFT JOIN signals s ON iq.signal_id = s.id LEFT JOIN nodes n ON iq.target_node = n.id WHERE iq.status='pending' AND iq.kind='human_signal' ORDER BY iq.created_at DESC"
       )
       .all() as any[];
 
@@ -729,6 +1069,228 @@ svg.on('click',function(e){if(e.target.tagName==='svg')closePanel();});
 // GET /field — data-driven p5-derived dot-field view (assets in public/field)
 router.get("/field", (_req, res) => {
   res.sendFile(path.join(__dirname, "..", "..", "public", "field", "index.html"));
+});
+
+// GET /embed-space — scatter plot of the multimodal embedding space, UMAP
+// projected to 2D. Sees the *vectors* directly rather than the derived
+// edges. Practitioners cluster by aesthetic, artworks by visual similarity.
+router.get("/embed-space", (_req, res) => {
+  const body = `<h2>Embedding space <span class='tag'>UMAP 2D</span></h2>
+<p class='meta'>Each dot is a node embedded by Gemini Embedding 2 (768-d, fused text+image for artworks). Projected to 2D via UMAP with cosine metric. Locally faithful — adjacency on the page implies adjacency in vector space. Globally indicative, not metric. Hover for details, click to open a profile.</p>
+
+<div id='embed-controls' style='display:flex;flex-wrap:wrap;gap:0.6rem;align-items:center;margin:0.6rem 0;font-size:0.85rem'>
+  <span class='meta'>show:</span>
+  <label><input type='checkbox' class='filter' value='artwork' checked> <span class='tag' style='background:#a8915c'>artwork</span></label>
+  <label><input type='checkbox' class='filter' value='practitioner' checked> <span class='tag' style='background:#6a8aaa'>practitioner</span></label>
+  <label><input type='checkbox' class='filter' value='collective' checked> <span class='tag' style='background:#7aa890'>collective</span></label>
+  <label><input type='checkbox' class='filter' value='concept' checked> <span class='tag' style='background:#aa9a6a'>concept</span></label>
+  <label><input type='checkbox' class='filter' value='scene' checked> <span class='tag' style='background:#aa6a8a'>scene</span></label>
+  &nbsp;<span class='meta'>·</span>
+  <input id='search' type='text' placeholder='search by name…' style='background:#1a1a1a;color:#d4d4d4;border:1px solid #333;padding:0.3rem;width:14rem'>
+  <span class='meta' id='count-readout'></span>
+</div>
+
+<div id='embed-wrap' style='position:relative;background:#0a0a0a;border:1px solid #1f1f1f;border-radius:4px;margin:0 -1.5rem'>
+  <canvas id='embed-canvas' style='display:block;width:100%;height:78vh;cursor:crosshair'></canvas>
+  <div id='embed-tip' style='position:absolute;pointer-events:none;background:#000;border:1px solid #2a2a2a;padding:0.4rem 0.6rem;font-size:0.78rem;color:#d4d4d4;border-radius:4px;display:none;max-width:280px;line-height:1.3;z-index:10'></div>
+  <div style='position:absolute;bottom:0.4rem;right:0.6rem;font-size:0.7rem;color:#666'>scroll: zoom · drag: pan · 'r': reset</div>
+</div>
+
+<script>
+(async () => {
+  const tip = document.getElementById('embed-tip');
+  const wrap = document.getElementById('embed-wrap');
+  const canvas = document.getElementById('embed-canvas');
+  const countReadout = document.getElementById('count-readout');
+  const ctx = canvas.getContext('2d');
+  let dpr = Math.max(1, window.devicePixelRatio || 1);
+
+  const colors = {
+    artwork:      '#d4b06a',
+    practitioner: '#7aa8d4',
+    collective:   '#8acab0',
+    concept:      '#ccb87a',
+    scene:        '#d48aac',
+    institution:  '#8a8a8a',
+  };
+  const centroidColor = '#888';
+
+  const filters = new Set(['artwork','practitioner','collective','concept','scene']);
+  let searchTerm = '';
+
+  // View state — model coords are in [-1, 1]; we map to canvas via these.
+  let zoom = 1;
+  let panX = 0, panY = 0;
+
+  function resize() {
+    const r = wrap.getBoundingClientRect();
+    canvas.width = Math.floor(r.width * dpr);
+    canvas.height = Math.floor(r.height * dpr);
+    canvas.style.width = r.width + 'px';
+    canvas.style.height = r.height + 'px';
+    draw();
+  }
+  window.addEventListener('resize', resize);
+
+  let items = [];
+  let visible = [];
+  try {
+    const resp = await fetch('/api/embed-space');
+    if (!resp.ok) throw new Error('embed-space endpoint returned ' + resp.status);
+    const data = await resp.json();
+    items = data.items;
+  } catch (err) {
+    canvas.replaceWith(Object.assign(document.createElement('p'), {
+      textContent: 'UMAP projection not available. Run seed/_build/.venv/bin/python3 seed/_build/project_umap.py first.',
+      className: 'meta',
+    }));
+    return;
+  }
+
+  function projectX(mx) { return canvas.width * (mx * 0.4 * zoom + 0.5 + panX); }
+  function projectY(my) { return canvas.height * (my * 0.4 * zoom + 0.5 + panY); }
+  function unprojectX(cx) { return (cx / canvas.width - 0.5 - panX) / (0.4 * zoom); }
+  function unprojectY(cy) { return (cy / canvas.height - 0.5 - panY) / (0.4 * zoom); }
+
+  function rebuildVisible() {
+    const term = searchTerm.trim().toLowerCase();
+    visible = items.filter(it => {
+      if (!filters.has(it.type)) return false;
+      if (term && !(it.name || it.id).toLowerCase().includes(term)) return false;
+      return true;
+    });
+    if (countReadout) countReadout.textContent = visible.length + ' / ' + items.length + ' shown';
+  }
+
+  function draw() {
+    ctx.fillStyle = '#0a0a0a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    rebuildVisible();
+    // Highlight matched search term in brighter render.
+    const term = searchTerm.trim().toLowerCase();
+    for (const it of visible) {
+      const x = projectX(it.x);
+      const y = projectY(it.y);
+      if (x < -10 || x > canvas.width + 10 || y < -10 || y > canvas.height + 10) continue;
+      const r = 2 * dpr;
+      ctx.fillStyle = colors[it.type] || '#888';
+      ctx.globalAlpha = term && (it.name||it.id).toLowerCase().includes(term) ? 1.0 : 0.65;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function hitTest(cxCss, cyCss) {
+    const cx = cxCss * dpr;
+    const cy = cyCss * dpr;
+    let best = null, bestD2 = Infinity;
+    const r2 = (6 * dpr) ** 2;
+    for (const it of visible) {
+      const dx = projectX(it.x) - cx;
+      const dy = projectY(it.y) - cy;
+      const d2 = dx * dx + dy * dy;
+      if (d2 < bestD2 && d2 < r2) { best = it; bestD2 = d2; }
+    }
+    return best;
+  }
+
+  // Hover
+  canvas.addEventListener('mousemove', (e) => {
+    const r = canvas.getBoundingClientRect();
+    const cxCss = e.clientX - r.left;
+    const cyCss = e.clientY - r.top;
+    const hit = hitTest(cxCss, cyCss);
+    if (hit) {
+      const img = hit.cdn_image_url || hit.image_url;
+      const thumb = img ? '<img src="' + img + '" alt="" style="width:120px;height:120px;object-fit:cover;border-radius:3px;display:block;margin-bottom:0.3rem">' : '';
+      tip.innerHTML = thumb +
+        '<div><strong>' + (hit.name || hit.id) + '</strong></div>' +
+        '<div class="meta"><span class="tag">' + hit.type + '</span> · ' + hit.kind + '</div>';
+      tip.style.display = 'block';
+      // Position with offset so the tip doesn't sit under the cursor.
+      const wrapRect = wrap.getBoundingClientRect();
+      const tipX = Math.min(cxCss + 12, wrapRect.width - 300);
+      const tipY = Math.min(cyCss + 12, wrapRect.height - 200);
+      tip.style.left = tipX + 'px';
+      tip.style.top = tipY + 'px';
+    } else {
+      tip.style.display = 'none';
+    }
+  });
+  canvas.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+
+  // Click to open profile
+  canvas.addEventListener('click', (e) => {
+    const r = canvas.getBoundingClientRect();
+    const hit = hitTest(e.clientX - r.left, e.clientY - r.top);
+    if (hit && hit.type && hit.slug) {
+      window.open('/' + encodeURIComponent(hit.type) + '/' + encodeURIComponent(hit.slug), '_blank');
+    }
+  });
+
+  // Pan via drag
+  let dragging = false, dragLast = null;
+  canvas.addEventListener('mousedown', (e) => {
+    dragging = true;
+    dragLast = { x: e.clientX, y: e.clientY };
+    canvas.style.cursor = 'grabbing';
+  });
+  window.addEventListener('mouseup', () => { dragging = false; canvas.style.cursor = 'crosshair'; });
+  window.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    const dx = e.clientX - dragLast.x;
+    const dy = e.clientY - dragLast.y;
+    dragLast = { x: e.clientX, y: e.clientY };
+    panX += dx / canvas.clientWidth;
+    panY += dy / canvas.clientHeight;
+    draw();
+  });
+
+  // Wheel zoom around cursor
+  canvas.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const r = canvas.getBoundingClientRect();
+    const cxCss = e.clientX - r.left;
+    const cyCss = e.clientY - r.top;
+    const mxBefore = unprojectX(cxCss * dpr);
+    const myBefore = unprojectY(cyCss * dpr);
+    const factor = e.deltaY > 0 ? 1 / 1.15 : 1.15;
+    zoom = Math.max(0.4, Math.min(40, zoom * factor));
+    const mxAfter = unprojectX(cxCss * dpr);
+    const myAfter = unprojectY(cyCss * dpr);
+    panX += (mxAfter - mxBefore) * 0.4 * zoom;
+    panY += (myAfter - myBefore) * 0.4 * zoom;
+    draw();
+  }, { passive: false });
+
+  // Keyboard: 'r' resets the view
+  window.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    if (e.key === 'r' || e.key === 'R') {
+      zoom = 1; panX = 0; panY = 0; draw();
+    }
+  });
+
+  // Filter / search wiring
+  document.querySelectorAll('input.filter').forEach((el) => {
+    el.addEventListener('change', () => {
+      filters.clear();
+      document.querySelectorAll('input.filter:checked').forEach((c) => filters.add(c.value));
+      draw();
+    });
+  });
+  document.getElementById('search').addEventListener('input', (e) => {
+    searchTerm = e.target.value;
+    draw();
+  });
+
+  resize();
+})();
+</script>`;
+  const page = `<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Embedding space — A(DAI)</title><style>${CSS}#embed-wrap canvas{background:#0a0a0a}</style></head><body><div class='wrap'><header><h1>A<span>(DAI)</span></h1><nav><a href='/'>Home</a><a href='/explore'>Explore</a><a href='/graph'>Graph</a><a href='/field'>Field</a><a href='/embed-space'>Embed space</a><a href='/contribute'>Contribute</a><a href='/review'>Review</a></nav></header>${body}<footer>A(DAI) — digital arts knowledge commons</footer></div></body></html>`;
+  res.set(HTML_HEADERS).send(page);
 });
 
 export default router;

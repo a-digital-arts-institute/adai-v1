@@ -4,9 +4,26 @@ Field intelligence infrastructure for the digital arts. A knowledge commons and 
 
 *A* canon, not *the* canon. The indefinite article is load-bearing.
 
+**Live at [adai-basel.fly.dev](https://adai-basel.fly.dev)**
+
+---
+
+## What's in the graph (May 2026)
+
+| | count |
+|---|---|
+| Nodes | **1,491** across 10 types: artwork (728), concept (435), practitioner (146), institution (121), scene (30), collective (12), platform (8), classification_regime (6), publication (3), project (2) |
+| Edges | **4,544** — 9 curated edge types + 2 auto-derived from the embedding pipeline (STYLE_KIN, VISUALLY_AFFINE) |
+| Multimodal embeddings | **1,338** Gemini Embedding 2 vectors (artworks fused text+image; practitioners/concepts/scenes text-only) |
+| AI attribution proposals pending review | **17** |
+
+See [`docs/EMBEDDINGS.md`](docs/EMBEDDINGS.md) for the embedding pipeline; [`seed/SOURCES.md`](seed/SOURCES.md) for the canonical edge-type list and source provenance; [`CLAUDE.md`](CLAUDE.md) for architecture + operator notes.
+
+---
+
 ## Architecture
 
-CR-SQLite Matryoshka — every practitioner, scene, and the field itself gets its own SQLite database file, synced via CRDTs.
+CR-SQLite Matryoshka — the long-term design is one SQLite database per practitioner, scene, and the field itself, synced via CRDTs. Today the live deployment is a single CRR-mode DB; per-practitioner split is designed, not yet implemented.
 
 ```
 ┌──────────────────────────────────────────────────┐
@@ -22,56 +39,174 @@ CR-SQLite Matryoshka — every practitioner, scene, and the field itself gets it
 
 **Signal flow:** Arrive → classify source origin → extract entities/edges → intake queue → merge boundary check → CRDT merge → contribution receipt
 
-## Current State (April 2026)
+### Multimodal embedding pipeline
 
-- **Live at** [adai-basel.fly.dev](https://adai-basel.fly.dev)
-- 774 nodes, 929 edges, 3 edge types (PRACTICES 284, BELONGS_TO 366, RELATED_TO 279)
-- Single-DB deployment (per-practitioner split designed, not yet implemented)
+Layered on top of the graph: **Gemini Embedding 2** (multimodal, 768-d) projects artworks (text + image fused), practitioners, concepts, and scenes into one vector space. From that space we derive `STYLE_KIN` edges (practitioner ↔ practitioner aesthetic adjacency), `VISUALLY_AFFINE` edges (artwork ↔ artwork visual rhymes), and `SUGGESTS_CREATED_BY` proposals for unattributed artworks (routed through the curator review queue, never auto-merged).
 
-## Three-Layer Prototype
+```
+seed/nodes.json
+    ↓
+seed/_build/embed_nodes.py  ──► Gemini API  ──► seed/embeddings.bin (+ .json)
+                                                       │
+                                                       ▼
+                                          src/seed-consolidated.ts
+                                          loads + chains embed:derive
+                                                       │
+                                                       ▼
+                                       seed.db (baked into Docker image)
+                                                       │
+                              ┌────────────────────────┴───────────────────┐
+                              ▼                                            ▼
+                   /field, /embed-space, /neighbours        /review?kind=ai_suggestion
+                   profile-page enrichment                   17 attribution candidates
+```
 
-1. **Landing page** (in progress) — generative particle viz, North Star text, email capture → Netlify
-2. **Public data layer** (starts April 9) — automated runs from curated sources, target 2,000–5,000+ nodes, first artwork nodes
-3. **Intimate layer** — practitioner sovereign DBs, LLM-assisted interviews, qualitative input
-4. **Audio layer** — deferred until foundation is solid
+Full reference: [`docs/EMBEDDINGS.md`](docs/EMBEDDINGS.md).
+
+---
 
 ## Stack
 
-CR-SQLite (Gio's C port), Shards (HTTP server + scripting), Claude API (processing, classification, narrative), Fly.io (backend), Netlify (landing page), D3 (graph viz), TouchDesigner (particle/gravitational viz), Docker (deployment)
+- **CR-SQLite** ([Gio's C port](https://github.com/shards-lang/crsqlite-rs)) — SQLite + CRDT extensions for sync
+- **Node 22 + TypeScript + Express** — HTTP server, JSON API, HTML pages
+- **D3 + Canvas** — graph viz (`/graph`), field viz (`/field`), embedding scatter (`/embed-space`)
+- **Google Gemini Embedding 2** — multimodal vector space (offline batch via Python, online derive in TS)
+- **UMAP** (umap-learn) — offline 2D projection for `/embed-space`
+- **Cloudflare R2** — content-addressable image mirror (393 artwork images)
+- **Fly.io** — backend hosting, single 512MB machine in `fra`, persistent `/data` volume
+- **Docker** — multi-stage build, runtime image ~74 MB
 
-## Repos
-
-GitHub org: `a-digital-arts-institute`
-
-- **`adai-v1`** — live codebase, branch `feat/cr-sqlite-backend`. Deployed at adai-basel.fly.dev
-- **`seed-doc`** — single `index.html`, the living specification
-
-```
-adai-v1/
-├── adai-digital-arts-report-research/   # Field/outline schemas (reference)
-├── docs/                                # Spec gap analysis
-├── results/                             # 59 JSON research files (seed input)
-├── db.sql                               # Database schema
-├── Dockerfile / fly.toml / entrypoint.sh  # Fly.io deployment
-├── run.shs / seed.shs / server.shs      # Shards server + seed scripts
-└── CLAUDE.md
-```
+---
 
 ## Endpoints
 
+### Browsing
 | Route | Description |
-|-------|-------------|
+|---|---|
 | `/` | Home — stats + recent additions |
-| `/explore` | Browse all entities |
-| `/practitioner/:slug` | Practitioner profile with graph connections |
-| `/practitioner/:slug/data` | Raw JSON data export ("give me my data") |
+| `/explore` | Browse all entities, filterable by type |
+| `/practitioner/:slug` | Profile + connections + style kin + AI attribution proposals |
+| `/artwork/:slug` | Profile + visually affine artworks + style proximity |
+| `/concept/:slug`, `/scene/:slug`, `/collective/:slug`, … | Polymorphic profile pages |
+
+### Visualisation
+| Route | Description |
+|---|---|
+| `/graph` | D3 force-directed graph view |
+| `/field` | Generative dot-field view (press `e` for embeddings mode) |
+| `/embed-space` | UMAP 2D scatter of all 1,338 embedding vectors |
+| `/neighbours/:type/:slug` | Top-K cosine neighbours of any node, with knobs |
+
+### Curation
+| Route | Description |
+|---|---|
 | `/contribute` | Submit a signal |
-| `/review` | Curator review queue |
-| `/api/stats` | JSON stats |
+| `/review` | Curator review queue (human signals tab) |
+| `/review?kind=ai_suggestion` | Curator review queue (AI attribution proposals) |
+
+### API
+| Route | Description |
+|---|---|
+| `/api/stats` | Node / edge / signal / pending-review counts |
+| `/api/graph` | Full graph as `{nodes, edges}`, supports `?type=` filter |
+| `/api/graph/:slug` | Ego graph (1-hop neighborhood) |
+| `/api/graph/:slug/component` | Full connected component reached via BFS |
+| `/api/embed-space` | UMAP coords + node metadata for the scatter |
+| `/practitioner/:slug/data`, `/artwork/:slug/data`, … | Full JSON export per node ("give me my data") |
+| `POST /api/contribute` | Submit a signal (JSON body) |
+| `POST /api/review/:id/approve` / `/reject` | Curator actions |
+
+---
+
+## Repo layout
+
+```
+adai-v1/
+├── src/
+│   ├── index.ts                 — entry point: init DB, start Express
+│   ├── db.ts                    — SQLite/CR-SQLite setup + migrations
+│   ├── seed.ts                  — legacy seed (results/*.json, kebab IDs)
+│   ├── seed-consolidated.ts     — canonical seed (seed/*.json) + chained embed:derive
+│   ├── templates.ts             — HTML templates
+│   ├── routes/
+│   │   ├── pages.ts             — HTML page handlers (incl. /field, /embed-space)
+│   │   └── api.ts               — JSON API handlers
+│   └── embed/                   — multimodal embedding derive pipeline
+│       ├── vectors.ts           — cosine, decode/encode, loadAll
+│       ├── centroids.ts         — practitioner style centroid computation
+│       ├── derive.ts            — pairwise pass → STYLE_KIN + VISUALLY_AFFINE + AI suggestions
+│       ├── neighbours.ts        — shared topK module (profile pages, /neighbours)
+│       └── cli.ts               — npm run embed:* entrypoint
+├── db.sql                       — CR-SQLite schema (CRR + local-only tables)
+├── seed/
+│   ├── nodes.json, edges.json, signals.json, contributors.json, aliases.json
+│   ├── embeddings.bin           — 1,338 × 768 f32 LE (committed, ~4 MB)
+│   ├── embeddings.json          — sidecar metadata (offsets, hashes)
+│   ├── embeddings.umap2d.json   — UMAP projection, served at /api/embed-space
+│   ├── SOURCES.md               — canonical edge types + source provenance
+│   ├── COVERAGE.md, README.md
+│   └── _build/                  — offline Python pipeline (gitignored from Docker)
+│       ├── embed_nodes.py, image_fetch.py, project_umap.py, calibrate.py
+│       ├── fetch_*.py           — MoMA, Wikidata, fxhash, Art Blocks, Met data fetchers
+│       └── upload_to_r2.py      — R2 image mirror uploader
+├── public/
+│   └── field/                   — /field generative dot-field view
+├── results/                     — 59 legacy per-practitioner JSONs (reference)
+├── docs/
+│   ├── EMBEDDINGS.md            — canonical reference for the embedding pipeline
+│   ├── SPEC-GAP-ANALYSIS.md     — early spec gap audit
+│   └── BUILD-INSTRUCTIONS.md    — original build spec
+├── Dockerfile / fly.toml / entrypoint.sh   — Fly.io deployment
+├── CLAUDE.md                    — architecture + operator notes
+└── README.md                    — this file
+```
+
+---
+
+## Running locally
+
+```bash
+npm install
+
+# Canonical path (what production ships): reads seed/*.json + embeddings.bin
+rm -f adai.db && npm run seed:consolidated && npm run dev
+
+# If adai.db already exists
+npm run dev
+```
+
+Server: http://localhost:8080
+
+`npm run seed:consolidated` loads nodes/edges/signals/embeddings and chains the derive pass — single command produces a fully populated DB including STYLE_KIN + VISUALLY_AFFINE + AI suggestions.
+
+### Re-embedding after seed changes
+
+```bash
+# Idempotent — only re-embeds rows whose content hash changed
+seed/_build/.venv/bin/python3 seed/_build/embed_nodes.py
+seed/_build/.venv/bin/python3 seed/_build/project_umap.py
+git add seed/embeddings.{bin,json,umap2d.json}
+```
+
+Requires `GEMINI_API_KEY` in `.env` (gitignored). Cost ~$0.03 per full pass.
+
+---
+
+## Deploying
+
+```bash
+FLY_REMOTE_BUILDER_REGION=iad flyctl deploy
+```
+
+After deploys that touch seed data or schema, nuke the persistent volume so the new baked `seed.db` replaces the stale one — see [`CLAUDE.md` § Deploy gotchas](CLAUDE.md).
+
+---
 
 ## Entity IDs
 
-Human-readable with type prefix: `artwork:fidenza`, `practitioner:casey reas`, `concept:generative code`
+Human-readable with type prefix: `artwork:fidenza`, `practitioner:casey reas`, `concept:generative code`. The `slug` field is the kebab-case URL-safe form.
+
+---
 
 ## Team
 
@@ -80,6 +215,12 @@ Human-readable with type prefix: `artwork:fidenza`, `practitioner:casey reas`, `
 - **Gio** — backend architecture, CR-SQLite, protocol, public layer data collection
 - **Piyush** — frontend, generative landing page, brand system, particle/gravitational visualization
 
-## Full Reference
+---
 
-See [`claude/CLAUDE.md`](claude/CLAUDE.md) for the authoritative specification — architecture, principles, edge types, gravity model, trust model, agentic risk map, critical gaps, and core rules.
+## Further reading
+
+- [`CLAUDE.md`](CLAUDE.md) — authoritative architecture spec: data model, edge types, trust tiers, gravity model, embedding pipeline operator notes, deploy gotchas
+- [`docs/EMBEDDINGS.md`](docs/EMBEDDINGS.md) — embedding pipeline reference: design rationale, schema, calibration, visualisation surfaces
+- [`seed/SOURCES.md`](seed/SOURCES.md) — canonical edge-type list and source provenance
+- [`seed/COVERAGE.md`](seed/COVERAGE.md) — coverage gaps and known issues
+- [`docs/SPEC-GAP-ANALYSIS.md`](docs/SPEC-GAP-ANALYSIS.md) — early spec audit

@@ -8,3 +8,13 @@ dist/
 docs/
 adai-digital-arts-report-research/
 .claude/
+
+# seed/_build/ is the offline Python pipeline (venv, fetchers, intermediate
+# JSON, image cache). ~483 MB — definitely NOT shipping to the Docker
+# context. The seed/*.json + seed/embeddings.{bin,json,umap2d.json} files
+# that the builder actually needs sit at the top level of seed/.
+seed/_build/
+
+# Local-only databases and caches that occasionally land in seed/.
+seed/*.bak
+seed/*.pre-enrichment.bak

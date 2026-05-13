@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { initDb, getDb } from "./db.js";
+import { derive } from "./embed/derive.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dirname, "..");
@@ -213,6 +214,78 @@ console.log("Nodes by type:", nodesByType);
 
 const edgesByType = db.prepare("SELECT edge_type, COUNT(*) as count FROM edges GROUP BY edge_type ORDER BY count DESC").all();
 console.log("Edges by type:", edgesByType);
+
+// --- Embeddings sidecar (Gemini Embedding 2 multimodal pass) ----------
+// Produced by seed/_build/embed_nodes.py and committed (or not — see CLAUDE.md)
+// as seed/embeddings.{bin,json}. Skip silently when absent so local devs can
+// run seed:consolidated without first running the Python embed pass.
+//
+// CRITICAL: this block must run BEFORE the wal_checkpoint below — otherwise
+// inserts sit in the WAL file and the Dockerfile (which copies only seed.db
+// from the builder) silently loses them. Same trap that bit the upstream
+// A(DAI) bootstrap (commit 205f4c6).
+const embBinPath = join(seedDir, "embeddings.bin");
+const embMetaPath = join(seedDir, "embeddings.json");
+try {
+  const metaText = readFileSync(embMetaPath, "utf-8");
+  const binBytes = readFileSync(embBinPath);
+  type EmbMeta = {
+    node_id: string;
+    kind: string;
+    model: string;
+    dims: number;
+    has_image: number;
+    image_hash: string | null;
+    text_hash: string | null;
+    offset: number;
+  };
+  const meta: EmbMeta[] = JSON.parse(metaText);
+  const insertEmb = db.prepare(
+    `INSERT OR REPLACE INTO node_embeddings
+      (node_id, kind, model, dims, vector, has_image, image_hash, text_hash, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, strftime('%Y-%m-%dT%H:%M:%SZ','now'))`
+  );
+  let embCount = 0;
+  // Wrap in a transaction — 1k+ inserts otherwise WAL-fsync per row.
+  db.exec("BEGIN");
+  try {
+    for (const e of meta) {
+      const byteLen = e.dims * 4;
+      // node-sqlite expects Uint8Array for BLOB parameters.
+      const vec = binBytes.subarray(e.offset, e.offset + byteLen);
+      if (vec.byteLength !== byteLen) {
+        throw new Error(`embedding ${e.node_id}/${e.kind} truncated: expected ${byteLen}, got ${vec.byteLength}`);
+      }
+      insertEmb.run(e.node_id, e.kind, e.model, e.dims, vec,
+                    e.has_image, e.image_hash, e.text_hash);
+      embCount++;
+    }
+    db.exec("COMMIT");
+  } catch (e) {
+    db.exec("ROLLBACK");
+    throw e;
+  }
+  console.log(`Embeddings inserted: ${embCount} (from ${embBinPath})`);
+  const embByKind = db.prepare("SELECT kind, COUNT(*) as count FROM node_embeddings GROUP BY kind ORDER BY count DESC").all();
+  console.log("Embeddings by kind:", embByKind);
+
+  // Now that embeddings are live, chain the derive pass so the baked seed.db
+  // ships complete: STYLE_KIN, VISUALLY_AFFINE, and SUGGESTS_CREATED_BY rows
+  // are produced from the just-loaded vectors + live CREATED_BY edges.
+  // Conditional on embeddings actually loading — no point deriving over
+  // an empty node_embeddings table.
+  if (embCount > 0) {
+    console.log("Running embed:derive over freshly-loaded vectors...");
+    const stats = derive(db, {});
+    console.log("Derive stats:", JSON.stringify(stats, null, 2));
+  }
+} catch (e: any) {
+  if (e?.code === "ENOENT") {
+    console.log("Embeddings sidecar (seed/embeddings.{bin,json}) absent — skipping embeddings + derive. Run seed/_build/embed_nodes.py to produce it.");
+  } else {
+    throw e;
+  }
+}
 
 db.exec("PRAGMA wal_checkpoint(TRUNCATE)");
 console.log("Consolidated seed complete!");
