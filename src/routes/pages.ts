@@ -1,13 +1,34 @@
 import { Router } from "express";
 import path from "node:path";
+import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { getDb } from "../db.js";
 import { htmlPage, htmlEscape, CSS, HTML_HEADERS } from "../templates.js";
 import { topKByNodeId, withMetadata, type Neighbour } from "../embed/neighbours.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const PROJECT_ROOT = path.join(__dirname, "..", "..");
 
 const router = Router();
+
+// GET /skill.md — serve SKILL.md verbatim as text/markdown so a Claude can
+// `curl $ADAI_BASE/skill.md` and bootstrap itself into the contributor API.
+// File is read on every request (small, ~6 KB) so editing it doesn't require
+// a server restart in dev.
+router.get("/skill.md", (_req, res) => {
+  const skillPath = path.join(PROJECT_ROOT, "SKILL.md");
+  if (!fs.existsSync(skillPath)) {
+    res.status(404).type("text/plain").send("SKILL.md not found");
+    return;
+  }
+  res
+    .set({
+      "Content-Type": "text/markdown; charset=utf-8",
+      "Cache-Control": "public, max-age=300",
+      "Access-Control-Allow-Origin": "*",
+    })
+    .send(fs.readFileSync(skillPath, "utf-8"));
+});
 
 const ENTITY_TYPES_EXCLUDE = "('related', 'concept', 'scene', 'classification_regime')";
 
@@ -775,23 +796,60 @@ router.get("/review", (req, res) => {
   } else {
     const items = db
       .prepare(
-        "SELECT iq.id, iq.signal_id, iq.target_node, iq.submitted_by, iq.trust_tier, iq.created_at, s.title, s.content, s.source_url, n.name as target_name FROM intake_queue iq LEFT JOIN signals s ON iq.signal_id = s.id LEFT JOIN nodes n ON iq.target_node = n.id WHERE iq.status='pending' AND iq.kind='human_signal' ORDER BY iq.created_at DESC"
+        "SELECT iq.id, iq.signal_id, iq.target_node, iq.submitted_by, iq.trust_tier, iq.created_at, iq.proposed_nodes, iq.proposed_edges, s.title, s.content, s.source_url, s.source_type, n.name as target_name FROM intake_queue iq LEFT JOIN signals s ON iq.signal_id = s.id LEFT JOIN nodes n ON iq.target_node = n.id WHERE iq.status='pending' AND iq.kind='human_signal' ORDER BY iq.created_at DESC"
       )
       .all() as any[];
 
     for (const item of items) {
       const qtitle = htmlEscape(String(item.title ?? ""));
-      const qcontent = htmlEscape(String(item.content ?? ""));
       const qurl = htmlEscape(String(item.source_url ?? ""));
       const qauthor = htmlEscape(String(item.submitted_by ?? ""));
       const qtier = htmlEscape(String(item.trust_tier ?? ""));
-      const qtarget = htmlEscape(String(item.target_name ?? ""));
+      const qtarget = htmlEscape(String(item.target_name ?? item.target_node ?? ""));
       const qdate = String(item.created_at ?? "");
+      const qsource = String(item.source_type ?? "");
 
       body += `<div class='card' id='item-${item.id}'>
 <h3>${qtitle}</h3>
-<p class='meta'>About: <strong>${qtarget}</strong> · By: ${qauthor} · Trust: <span class='tag'>${qtier}</span> · ${qdate}</p>
-<p>${qcontent}</p>`;
+<p class='meta'>About: <strong>${qtarget}</strong> · By: ${qauthor} · Trust: <span class='tag'>${qtier}</span> · ${qdate}${qsource ? ` · <span class='tag'>${htmlEscape(qsource)}</span>` : ""}</p>`;
+
+      // For API-submitted contributions (source_type like 'api_*'), preview
+      // the structured proposed_nodes / proposed_edges payload instead of
+      // dumping the raw JSON in `content`. For legacy web-form signals,
+      // fall back to rendering the content body as before.
+      const isApiContribution = qsource.startsWith("api_");
+      if (isApiContribution) {
+        let ops: any[] = [];
+        let edges: any[] = [];
+        try { ops = JSON.parse(item.proposed_nodes || "[]"); } catch { /* empty */ }
+        try { edges = JSON.parse(item.proposed_edges || "[]"); } catch { /* empty */ }
+        if (ops.length) {
+          body += `<p class='meta'>Proposed node operations:</p><ul class='meta'>`;
+          for (const op of ops) {
+            if (op?.op === "create_node") {
+              body += `<li>create <span class='tag'>${htmlEscape(String(op.type))}</span> "${htmlEscape(String(op.name))}" (id: <code>${htmlEscape(`${op.type}:${op.slug}`)}</code>)</li>`;
+            } else if (op?.op === "patch_node") {
+              const keys = Object.keys(op.metadata || {}).join(", ");
+              body += `<li>patch metadata of <code>${htmlEscape(String(op.node_id))}</code> — keys: ${htmlEscape(keys)}</li>`;
+            } else if (op?.op === "attach_image") {
+              body += `<li>attach image to <code>${htmlEscape(String(op.node_id))}</code> — <a href='${htmlEscape(String(op.cdn_image_url))}' target='_blank'>preview</a> (sha256: <code>${htmlEscape(String(op.sha256).slice(0, 12))}…</code>)</li>`;
+            } else {
+              body += `<li>${htmlEscape(JSON.stringify(op))}</li>`;
+            }
+          }
+          body += `</ul>`;
+        }
+        if (edges.length) {
+          body += `<p class='meta'>Proposed edges:</p><ul class='meta'>`;
+          for (const e of edges) {
+            const sup = e.supersedes_edge_id ? ` <em>supersedes</em> <code>${htmlEscape(String(e.supersedes_edge_id))}</code>` : "";
+            body += `<li><code>${htmlEscape(String(e.source_id))}</code> — <strong>${htmlEscape(String(e.edge_type))}</strong> → <code>${htmlEscape(String(e.target_id))}</code>${sup}</li>`;
+          }
+          body += `</ul>`;
+        }
+      } else {
+        body += `<p>${htmlEscape(String(item.content ?? ""))}</p>`;
+      }
 
       if (qurl) {
         body += `<p class='meta'>Source: <a href='${qurl}'>${qurl}</a></p>`;

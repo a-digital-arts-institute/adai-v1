@@ -2,24 +2,12 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { initDb, getDb } from "./db.js";
+import { slugify } from "./utils/slug.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dirname, "..");
 
 const dbPath = process.env.DB_PATH || "adai.db";
-
-function slugify(input: string): string {
-  return input
-    .toLowerCase()
-    .replace(/_/g, "-")
-    .replace(/ /g, "-")
-    .replace(/\(/g, "")
-    .replace(/\)/g, "")
-    .replace(/\./g, "")
-    .replace(/'/g, "")
-    .replace(/&/g, "and")
-    .replace(/--/g, "-");
-}
 
 console.log("Initializing database:", dbPath);
 initDb(dbPath);

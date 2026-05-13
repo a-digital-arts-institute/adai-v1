@@ -5,6 +5,12 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getDb } from "../db.js";
 import { HTML_HEADERS, JSON_HEADERS } from "../templates.js";
+import {
+  materialiseCreateNode,
+  materialisePatchNode,
+  materialiseAttachImage,
+  materialiseEdge,
+} from "../utils/contribution.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dirname, "..", "..");
@@ -286,7 +292,7 @@ router.post("/api/review/:id/approve", (req, res) => {
 
   const item = db
     .prepare(
-      "SELECT id, signal_id, target_node, submitted_by, kind, proposed_edges FROM intake_queue WHERE id = ? AND status = 'pending'"
+      "SELECT id, signal_id, target_node, submitted_by, kind, proposed_edges, proposed_nodes FROM intake_queue WHERE id = ? AND status = 'pending'"
     )
     .get(id) as any;
 
@@ -318,6 +324,35 @@ router.post("/api/review/:id/approve", (req, res) => {
     for (const p of proposals) {
       const edgeId = `${p.source_id}--${p.edge_type}--${p.target_id}--curator-from-ai-suggestion`;
       insertEdge.run(edgeId, p.source_id, p.target_id, p.edge_type, item.signal_id);
+    }
+  }
+
+  // For human_signal items submitted via /api/v1/*, materialise the queued
+  // payload. Shape matches the helpers in src/utils/contribution.ts —
+  // proposed_nodes is a discriminated array (create_node / patch_node /
+  // attach_image), proposed_edges is a flat list of edge specs (may carry
+  // supersedes_edge_id for bi-temporal supersession).
+  if (item.kind === "human_signal") {
+    const createdBy = `curator-from-${item.submitted_by ?? "api"}`;
+    if (item.proposed_nodes) {
+      let ops: any[] = [];
+      try { ops = JSON.parse(item.proposed_nodes); } catch { ops = []; }
+      for (const op of ops) {
+        if (op?.op === "create_node") {
+          materialiseCreateNode(db, op, { signalId: item.signal_id, createdBy });
+        } else if (op?.op === "patch_node") {
+          materialisePatchNode(db, op, { createdBy });
+        } else if (op?.op === "attach_image") {
+          materialiseAttachImage(db, op, { createdBy });
+        }
+      }
+    }
+    if (item.proposed_edges) {
+      let edges: any[] = [];
+      try { edges = JSON.parse(item.proposed_edges); } catch { edges = []; }
+      for (const e of edges) {
+        materialiseEdge(db, { ...e, signal_id: item.signal_id }, { signalId: item.signal_id, createdBy });
+      }
     }
   }
 
