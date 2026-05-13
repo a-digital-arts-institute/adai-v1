@@ -1226,6 +1226,113 @@
     });
   }
 
+  // ---- Embedding-neighbours strip (Step 3 zoom companion) ----
+  // Compact list of cosine neighbours sourced from /api/neighbours/:type/:slug:
+  //   - practitioner / collective  → style kin + AI-suggested attributions
+  //   - artwork                    → visually affine + style proximity
+  //   - concept / scene            → closest artworks
+  // Renders below the edge-filter chip cluster; each row is a clickable chip
+  // that delegates to bundle.zoomTo so the strip becomes a navigation surface.
+  // Fetched per zoom-to and cached in bundle._embedCache keyed by node id so
+  // re-visits don't re-hit the network.
+  function createEmbedStrip() {
+    let el = document.getElementById('adai-embed-strip');
+    if (el) return el;
+    el = document.createElement('div');
+    el.id = 'adai-embed-strip';
+    Object.assign(el.style, {
+      position: 'fixed',
+      // Sit below the edge-filter chips. The filter cluster is at top:54
+      // and is variable-height; 96px clears a couple of chip rows. The
+      // strip is scrollable so it never collides with the bookmark dock.
+      top: '120px',
+      right: '24px',
+      zIndex: '40',
+      fontFamily: "'SF Mono', 'Menlo', monospace",
+      fontSize: '10px',
+      color: '#aaa',
+      pointerEvents: 'auto',
+      userSelect: 'none',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'flex-end',
+      gap: '6px',
+      maxWidth: '260px',
+      maxHeight: 'calc(100vh - 240px)',
+      overflowY: 'auto',
+    });
+    document.body.appendChild(el);
+    return el;
+  }
+
+  function renderEmbedStripPayload(el, payload, bundle, graph) {
+    const sections = payload?.sections || [];
+    if (!sections.length) {
+      el.innerHTML = '<div style="color:#555;font-size:9px;letter-spacing:0.06em">no embedding neighbours</div>';
+      return;
+    }
+    let html = '<div style="color:#888;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:2px">embedding</div>';
+    for (const s of sections) {
+      const items = s.neighbours || [];
+      if (!items.length) continue;
+      const top = items.slice(0, 5);  // strip is space-constrained
+      const title = String(s.title || s.key || '').toLowerCase();
+      html += `<div class="adai-embed-section" data-key="${escapeForBreadcrumb(s.key || '')}" style="display:flex;flex-direction:column;gap:3px;align-items:flex-end;width:100%">`;
+      html += `<div style="color:#888;font-size:9px;letter-spacing:0.04em">${escapeForBreadcrumb(title)} <span style="opacity:0.55">${items.length}</span></div>`;
+      for (const n of top) {
+        const sim = (typeof n.similarity === 'number') ? n.similarity.toFixed(3) : '—';
+        const name = n.name || n.node_id;
+        const typeTag = n.type ? `<span style="color:#555;font-size:9px;margin-right:4px">${escapeForBreadcrumb(n.type)}</span>` : '';
+        html += `<span class="adai-embed-chip" data-node-id="${escapeForBreadcrumb(n.node_id)}" title="${escapeForBreadcrumb(name)} · cosine ${sim}" style="background:transparent;border:1px solid #2a2a30;color:#c8c8c8;padding:2px 8px;border-radius:2px;cursor:pointer;font-size:9px;line-height:1.4;max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:inline-block">${typeTag}${escapeForBreadcrumb(name)}<span style="opacity:0.5;margin-left:6px;font-variant-numeric:tabular-nums">${sim}</span></span>`;
+      }
+      html += '</div>';
+    }
+    el.innerHTML = html;
+    el.querySelectorAll('.adai-embed-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        const id = chip.dataset.nodeId;
+        if (id && typeof bundle.zoomTo === 'function') {
+          bundle.zoomTo(id);
+        }
+      }, { once: true });
+    });
+  }
+
+  function renderEmbedStrip(bundle, graph) {
+    const el = createEmbedStrip();
+    const focusedId = bundle.focusedId;
+    if (!bundle.viewLevel || bundle.viewLevel === '30k' || !focusedId) {
+      el.innerHTML = '';
+      return;
+    }
+    const node = graph.byId.get(focusedId);
+    if (!node || !node.slug) { el.innerHTML = ''; return; }
+
+    bundle._embedCache = bundle._embedCache || new Map();
+    if (bundle._embedCache.has(focusedId)) {
+      const payload = bundle._embedCache.get(focusedId);
+      renderEmbedStripPayload(el, payload, bundle, graph);
+      return;
+    }
+
+    // Show "computing" placeholder, then fetch.
+    el.innerHTML = '<div style="color:#555;font-size:9px;letter-spacing:0.06em">embedding · computing…</div>';
+    const url = `/api/neighbours/${encodeURIComponent(node.type)}/${encodeURIComponent(node.slug)}`;
+    fetch(url, { headers: { 'accept': 'application/json' } })
+      .then(r => r.ok ? r.json() : Promise.reject(new Error(`status ${r.status}`)))
+      .then(payload => {
+        bundle._embedCache.set(focusedId, payload);
+        // Bail out if the user has navigated away while we were fetching.
+        if (bundle.focusedId !== focusedId) return;
+        renderEmbedStripPayload(el, payload, bundle, graph);
+      })
+      .catch(err => {
+        console.warn('[adai] /api/neighbours fetch failed', err);
+        if (bundle.focusedId !== focusedId) return;
+        el.innerHTML = '<div style="color:#555;font-size:9px;letter-spacing:0.06em">embedding · unavailable</div>';
+      });
+  }
+
   function pushHistory(bundle) {
     bundle.history = bundle.history || [];
     bundle.history.push({
@@ -1321,6 +1428,7 @@
       if (bundle.zoomFocus === oldVirtualFocus) bundle.zoomFocus = null;
       renderBreadcrumb(bundle, graph);
       renderEdgeFilter(bundle, graph);
+      renderEmbedStrip(bundle, graph);
       renderBookmarksStrip(bundle, graph);
     });
   }
@@ -1412,6 +1520,7 @@
       bundle.outgoingNeighbors = [];
       renderBreadcrumb(bundle, graph);
       renderEdgeFilter(bundle, graph);
+      renderEmbedStrip(bundle, graph);
       renderBookmarksStrip(bundle, graph);
     });
   }
@@ -1492,6 +1601,7 @@
         bundle.zoomNeighbors = [];
         bundle.zoomFocus = null;
         renderBreadcrumb(bundle, graph);
+        renderEmbedStrip(bundle, graph);
       });
       return;
     }
@@ -1553,6 +1663,7 @@
     renderIntro();
     renderBreadcrumb(bundle, graph);
     renderEdgeFilter(bundle, graph);
+    renderEmbedStrip(bundle, graph);
     renderBookmarksStrip(bundle, graph);
 
     // If the URL has ?reading=..., auto-replay it on load.

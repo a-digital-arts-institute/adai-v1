@@ -5,6 +5,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getDb } from "../db.js";
 import { HTML_HEADERS, JSON_HEADERS } from "../templates.js";
+import { buildEmbeddingSections } from "../embed/sections.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dirname, "..", "..");
@@ -442,5 +443,39 @@ router.get("/api/embed-space", (_req, res) => {
   }
   res.set(JSON_HEADERS).json(umapCache);
 });
+
+// GET /api/neighbours/:type/:slug — embedding-derived sections for a node.
+//
+// Returns the same "Style kin / Visually affine / Style proximity / Closest
+// artworks / AI-suggested attributions" cards that the HTML profile pages
+// render (`renderEmbeddingSections` in src/routes/pages.ts), in machine form
+// so the /field overlays (1k entity view + 10k zoom strip) can fetch and
+// render them client-side.
+//
+// Slug-only lookup (the type segment is decorative, like the other polymorphic
+// endpoints) so the client doesn't need to know about colon-id internals.
+function neighboursHandler(req: any, res: any) {
+  const db = getDb();
+  const slug = req.params.slug;
+
+  const node = db
+    .prepare("SELECT id, name, type, slug FROM nodes WHERE slug = ?")
+    .get(slug) as
+    | { id: string; name: string; type: string; slug: string }
+    | undefined;
+  if (!node) {
+    res.status(404).set(JSON_HEADERS).json({ error: "not found" });
+    return;
+  }
+
+  const sections = buildEmbeddingSections(db, node);
+  res.set(JSON_HEADERS).json({
+    node: { id: node.id, name: node.name, type: node.type, slug: node.slug },
+    sections,
+  });
+}
+
+// Polymorphic registration matches the rest of the slug-keyed surface.
+router.get("/api/neighbours/:type/:slug", neighboursHandler);
 
 export default router;

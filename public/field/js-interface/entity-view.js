@@ -388,6 +388,99 @@
     return `<aside class="ev-rec" aria-hidden="true">REC<br>.${num}</aside>`;
   }
 
+  // ---------- Embedding sections ----------
+  // Fetched async from /api/neighbours/:type/:slug after the overlay opens.
+  // The container is laid down empty (with a "computing…" placeholder) by
+  // render(); fillEmbeddings(id) fetches and replaces its contents.
+  function renderEmbeddingsPlaceholder() {
+    return `
+      <section class="ev-section ev-embeddings" id="ev-embeddings">
+        <h2 class="ev-h2">// embedding neighbours <span class="ev-h2-count" id="ev-emb-count">/··</span></h2>
+        <p class="ev-empty" id="ev-emb-status">computing cosine neighbours over the embedding space…</p>
+      </section>
+    `;
+  }
+
+  function renderEmbeddingNeighbour(n) {
+    const url = n.cdn_image_url || n.image_url || '';
+    const sim = (typeof n.similarity === 'number') ? n.similarity.toFixed(3) : '—';
+    const name = escapeHtml(n.name || n.node_id);
+    const type = escapeHtml(n.type || '?');
+    const img = url
+      ? `<img src="${escapeHtml(url)}" alt="${name}" loading="lazy" crossorigin="anonymous">`
+      : `<div class="ev-emb-thumb-empty" data-hatch="1">${name.slice(0, 32)}</div>`;
+    return `
+      <button class="ev-emb-card" data-node-id="${escapeHtml(n.node_id)}" title="${name}">
+        <div class="ev-emb-thumb">${img}</div>
+        <div class="ev-emb-meta">
+          <span class="ev-emb-name">${name}</span>
+          <span class="ev-emb-row">
+            <span class="ev-emb-type">[${type}]</span>
+            <span class="ev-emb-sim">${sim}</span>
+          </span>
+        </div>
+      </button>
+    `;
+  }
+
+  function renderEmbeddingsBody(payload) {
+    const sections = payload?.sections || [];
+    if (!sections.length) {
+      // No vector / no centroid / no neighbours — empty by design for some
+      // node types (institution, publication, classification_regime).
+      return `
+        <p class="ev-empty">no embedding neighbours for this node — <em>type may not carry a vector, or centroid not yet computed</em></p>
+      `;
+    }
+    const total = sections.reduce((acc, s) => acc + (s.neighbours?.length || 0), 0);
+    const blocks = sections.map((s) => {
+      const cards = (s.neighbours || []).map(renderEmbeddingNeighbour).join('');
+      const blurb = s.blurb ? `<p class="ev-emb-blurb">${escapeHtml(s.blurb)}</p>` : '';
+      const keyTag = s.key ? `<span class="ev-emb-key">[${escapeHtml(s.key)}]</span>` : '';
+      return `
+        <div class="ev-emb-group" data-key="${escapeHtml(s.key || '')}">
+          <h3 class="ev-emb-h3">${escapeHtml(s.title)} ${keyTag} <span class="ev-h3-count">/${String(s.neighbours.length).padStart(2, '0')}</span></h3>
+          ${blurb}
+          <div class="ev-emb-grid">${cards}</div>
+        </div>
+      `;
+    }).join('');
+    return `<div class="ev-emb-total" data-total="${total}"></div>${blocks}`;
+  }
+
+  async function fillEmbeddings(node) {
+    const root = document.getElementById('ev-embeddings');
+    if (!root) return;
+    const slug = node.slug || node.id.split(':').slice(1).join(':');
+    try {
+      const r = await fetch(`/api/neighbours/${encodeURIComponent(node.type)}/${encodeURIComponent(slug)}`, {
+        headers: { 'accept': 'application/json' },
+      });
+      if (!r.ok) {
+        root.querySelector('#ev-emb-status').textContent = `embedding neighbours unavailable (${r.status})`;
+        return;
+      }
+      const payload = await r.json();
+      // The overlay may have been closed / navigated by the time the fetch
+      // resolves — check that the placeholder we wrote is still the one
+      // matching this node before mutating.
+      if (STATE.currentId !== node.id) return;
+      const total = (payload.sections || []).reduce((acc, s) => acc + (s.neighbours?.length || 0), 0);
+      const countEl = root.querySelector('#ev-emb-count');
+      const statusEl = root.querySelector('#ev-emb-status');
+      if (countEl) countEl.textContent = `/${String(total).padStart(2, '0')}`;
+      if (statusEl) statusEl.remove();
+      // Append the rendered body after the heading.
+      const body = document.createElement('div');
+      body.innerHTML = renderEmbeddingsBody(payload);
+      root.appendChild(body);
+    } catch (err) {
+      const status = root.querySelector('#ev-emb-status');
+      if (status) status.textContent = 'embedding neighbours unavailable (network error)';
+      console.warn('[entity-view] /api/neighbours fetch failed', err);
+    }
+  }
+
   // ---------- Main render ----------
   function render(id) {
     const node = resolveGraphNode(id);
@@ -415,6 +508,7 @@
         ${renderQuote(showcase)}
         ${renderWorks(node, showcase)}
         ${renderRelations(node, showcase, neighborMap)}
+        ${renderEmbeddingsPlaceholder()}
         ${renderListSection('collections', collections, { empty: 'no public collection holdings linked yet — contribute via /contribute skill' })}
         ${renderListSection('exhibitions.selected', exhibitions, { empty: 'no curated exhibition history yet — contribute via /contribute skill' })}
         ${renderListSection('awards', awards, { empty: 'no awards linked yet — contribute via /contribute skill' })}
@@ -436,6 +530,10 @@
     document.body.classList.add('ev-locked');
     // Focus the close button so ESC works without click.
     setTimeout(() => el.querySelector('.ev-close')?.focus(), 0);
+    // Kick off the async embedding-neighbours fetch. The placeholder
+    // section already exists in the DOM; this fills it.
+    const node = resolveGraphNode(id);
+    if (node) fillEmbeddings(node);
   }
 
   function close() {
@@ -470,9 +568,23 @@
     }
   });
 
-  // Click handler — close button + future header-icon actions.
+  // Click handler — close button + future header-icon actions + embedding
+  // neighbour cards (re-open entity view on the clicked neighbour).
   document.addEventListener('click', (e) => {
     if (!STATE.open) return;
+    const card = e.target?.closest?.('.ev-emb-card');
+    if (card && card.dataset.nodeId) {
+      e.preventDefault();
+      const nextId = card.dataset.nodeId;
+      // Also drive the underlying field's focus so the breadcrumb + zoom
+      // state stay coherent when the user closes the overlay.
+      const field = window.ADAI_GRAPH_FIELD;
+      if (field && typeof field.zoomTo === 'function' && nextId !== STATE.currentId) {
+        try { field.zoomTo(nextId); } catch { /* non-fatal */ }
+      }
+      open(nextId);
+      return;
+    }
     const action = e.target?.closest?.('[data-action]')?.dataset?.action;
     if (action === 'close') {
       e.preventDefault(); close();
@@ -666,6 +778,55 @@
       display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: baseline;
     }
     .ev-list-idx, .ev-list-year { color: #8a8a8c; min-width: 56px; }
+
+    /* ---- embedding neighbours block ---- */
+    .ev-embeddings .ev-emb-group { margin-bottom: 32px; }
+    .ev-emb-h3 {
+      font-size: 13px; font-weight: 500; color: var(--text);
+      margin-bottom: 4px;
+    }
+    .ev-emb-key {
+      color: #6a6a6c; font-weight: 400; padding-left: 6px; font-size: 11px;
+    }
+    .ev-emb-blurb { font-size: 12px; color: #8a8a8c; margin: 0 0 12px; }
+    .ev-emb-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+      gap: 12px;
+    }
+    .ev-emb-card {
+      display: flex; flex-direction: column; gap: 6px;
+      background: transparent; border: 1px solid #2a2a2c; padding: 6px;
+      color: inherit; font-family: inherit; text-align: left;
+      cursor: pointer; transition: border-color 200ms, background 200ms;
+    }
+    .ev-emb-card:hover { border-color: #4a4a4c; background: rgba(255,255,255,0.02); }
+    .ev-emb-thumb {
+      position: relative; aspect-ratio: 1/1; width: 100%;
+      background: #111114; overflow: hidden;
+    }
+    .ev-emb-thumb img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .ev-emb-thumb-empty {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      padding: 6px; font-size: 10px; color: #8a8a8c; text-align: center;
+      line-height: 1.3;
+    }
+    .ev-emb-thumb-empty[data-hatch="1"]::before {
+      content: ''; position: absolute; inset: 0;
+      background-image: repeating-linear-gradient(45deg, #1a1a1c 0 1px, transparent 1px 10px);
+    }
+    .ev-emb-meta {
+      display: flex; flex-direction: column; gap: 2px;
+      font-size: 11px; line-height: 1.35;
+    }
+    .ev-emb-name { color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ev-emb-row { display: flex; justify-content: space-between; color: #8a8a8c; }
+    .ev-emb-type { color: #6a6a6c; }
+    .ev-emb-sim { color: var(--brand-color, #4169B0); font-variant-numeric: tabular-nums; }
 
     .ev-provenance {
       margin-top: 64px; padding-top: 16px; border-top: 1px solid #2a2a2c;
