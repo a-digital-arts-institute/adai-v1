@@ -300,39 +300,6 @@ html, body {
 .vital-value {
   opacity: 0.9;
 }
-/* ---- Field selection caption (above vitals, fades in/out) ---- */
-#field-caption {
-  position: fixed;
-  bottom: 110px;
-  left: 32px;
-  z-index: 10;
-  max-width: 360px;
-  font-size: 13px;
-  letter-spacing: 0.04em;
-  line-height: 1.4;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 220ms ease;
-  background: rgba(6, 6, 8, 0.32);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 6px;
-  padding: 10px 14px;
-  backdrop-filter: blur(14px);
-}
-#field-caption.is-visible { opacity: 1; }
-#field-caption .caption-title {
-  color: var(--text);
-  font-weight: 500;
-}
-#field-caption .caption-sub {
-  color: var(--text);
-  opacity: 0.55;
-  font-size: 11px;
-  margin-top: 3px;
-  letter-spacing: 0.06em;
-  text-transform: lowercase;
-}
-
 /* ---- Room Nav ---- */
 #rooms {
   position: fixed;

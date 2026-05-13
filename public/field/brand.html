@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A(DAI) - Brand</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='3' fill='%234169B0'/><text x='12' y='17' font-size='14' font-family='monospace' font-weight='400' fill='%230C0C0E' text-anchor='middle'>()</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Cutive+Mono&family=Anonymous+Pro:wght@400;700&family=Xanh+Mono:ital@0;1&family=Special+Elite&family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@300;400;500;700&family=Roboto+Mono:wght@300;400;500;700&family=Inconsolata:wght@300;400;500;700&family=Source+Code+Pro:wght@300;400;500;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/field-static/css/style.css?v=20260513a">
+</head>
+<body>
+  <canvas id="gen-bg" aria-hidden="true"></canvas>
+
+  <nav class="nav">
+    <a href="/field" id="logotype" class="nav__logotype live-logotype" aria-label="adai">
+      <span id="logotype-text"></span><span class="logotype__cursor" aria-hidden="true"></span>
+    </a>
+    <div class="nav__links nav__links--always">
+      <a href="/field">Home</a>
+    </div>
+  </nav>
+
+  <main>
+    <section id="brand-hero" class="section section--hero">
+      <h1 class="hero__title">brand system</h1>
+      <p class="hero__tagline">The living identity of A(DAI).</p>
+    </section>
+
+    <section id="brand-brief" class="section brand-brief">
+      <h2 class="section__heading">Why This Looks The Way It Does</h2>
+
+      <p>I kept returning to the experience of opening a reference book, archive, or catalogue somewhere in the middle. You do not begin with a total view. You arrive at one entry: one artist, one work, one movement, one moment. But that entry is never isolated. It is surrounded by predecessors, successors, arguments, citations, and adjacent works that give it shape. The further you move outward, the looser those connections become. What interested me was that density: the sense that any point in culture becomes legible through the web of relations around it. This project tries to translate that feeling into a visual system. It is not an image of the past alone, and not a portrait of the present alone, but a snapshot of the present as history continues to accumulate inside it.</p>
+
+      <p>That became the governing idea. What you see should feel like a cross-section of a larger field: one view, at one moment, organized around one piece of metadata and the connections that radiate from it. Proximity stands for correlation. Brightness stands for intensity. The closer two forms are, the stronger their relation. The brighter a node becomes, the more attention, contribution, and activity it has absorbed.</p>
+
+      <p class="brand-brief__pull">Every view is a page opened in the middle of a history that is still being written.</p>
+
+      <p>I wanted the experience to be both spatial and temporal. Spatially, subjects cluster by affinity and separate by tension. Dense regions are where knowledge has thickened; sparse regions are where the field is still thin, provisional, or underdescribed. Temporally, the composition never resolves into a final state. Each contribution changes the topology. The field is rewritten as it is being read.</p>
+
+      <p>The philosophical grounding comes from Max Bense's <em>Raum und Ich</em> - <em>Space and Ego</em>. What mattered to me there was the idea that aesthetic value lies not only in expression, but in the structuring of information and relations. Form is not a decorative layer added after meaning; form is one way meaning becomes intelligible. That gave me a way to think about the identity not as something applied to the knowledge graph from the outside, but as the knowledge graph taking on visible form.</p>
+
+      <p class="brand-brief__pull">Density reads as mass. Proximity reads as correlation. The field bends under its own logic.</p>
+
+      <p>The logotype follows that same principle. Its punctuation marks are not embellishments; they come from the visual language of notation, syntax, framing, and command. Parentheses, brackets, dots, bars, slashes, and colons all suggest relation: enclosure, interruption, linkage, address, edit. They make the mark feel less like a fixed emblem and more like a live string inside a system. The cursor matters for the same reason. It is the active edge of the identity: the point of insertion, deletion, revision, and continuation. As the cursor shifts between forms borrowed from terminals, early word processors, code editors, and contemporary interfaces, it quietly traces a history of digital tools through the logo itself. The mark writes, erases, and rewrites because the institute is not finished. It remains open to change.</p>
+
+      <p class="brand-brief__pull">A fixed logo would describe a completed institution. This one is built to describe a field in motion.</p>
+
+      <p>What follows is the technical anatomy - logo, color, typography, generative engine. But those parts only matter if they serve the larger ambition. The aim is not simply to give the digital arts a brand. It is to build a visual language for an institution that reflects how knowledge in this field actually works: distributed, recursive, unfinished, and collectively made. Each page is a temporary arrangement of a larger cultural memory. Each contribution changes the picture. The identity is designed to make that condition visible.</p>
+    </section>
+
+    <section id="brand-controls" class="section">
+      <h2 class="section__heading">Interactive Controls</h2>
+      <p style="font-family: var(--font-body); font-size: var(--fs-base); color: var(--color-text-muted); margin-bottom: var(--space-md); max-width: 60ch; line-height: 1.8;">This site is a living design tool. Everything you see can be changed in real time using keyboard shortcuts. Here's what you can do:</p>
+      <table class="controls-table">
+        <thead>
+          <tr>
+            <th>Keys</th>
+            <th>What it does</th>
+            <th>Options</th>
+          </tr>
+        </thead>
+        <tbody id="interactive-controls-rows"></tbody>
+      </table>
+      <p style="font-family: var(--font-body); font-size: var(--fs-xs); color: var(--color-text-muted); margin-top: var(--space-md); max-width: 62ch; line-height: 1.8;">This table is generated from the shared ADAI shortcut registry, so changes to the live key map update the documentation here as well. Brand controls work across pages; field controls apply on the field canvas.</p>
+    </section>
+
+    <section id="brand-logo" class="section">
+      <h2 class="section__heading">Logo</h2>
+      <p style="font-family: var(--font-body); font-size: var(--fs-sm); color: var(--color-text-muted); margin-bottom: var(--space-lg); max-width: 62ch; line-height: 1.8;">The live A(DAI) logo includes the cursor that types and revises the mark. As that cursor changes over time, it tracks the path of digital art itself through shifting interfaces and editing conventions, turning the logo into a small timeline of the medium's evolution.</p>
+      <div id="logo-demos"></div>
+    </section>
+
+    <section id="brand-geometry" class="section">
+      <h2 class="section__heading">Logo Geometry</h2>
+      <p style="font-family: var(--font-body); font-size: var(--fs-sm); color: var(--color-text-muted); margin-bottom: var(--space-lg); max-width: 60ch; line-height: 1.8;">Construction grid, proportions, and clear space rules for the active A(DAI) logotype. This diagram updates live when you cycle the mark with <kbd>l</kbd>.</p>
+
+      <div id="logo-geometry-demo" style="max-width: 700px; margin-bottom: var(--space-lg);"></div>
+
+      <table class="controls-table" style="max-width: 560px;">
+        <thead><tr><th>Element</th><th>Specification</th></tr></thead>
+        <tbody id="logo-geometry-specs"></tbody>
+      </table>
+    </section>
+
+    <section id="brand-colors" class="section">
+      <h2 class="section__heading">Color System</h2>
+      <div id="color-demos"></div>
+    </section>
+
+    <section id="brand-type" class="section">
+      <h2 class="section__heading">Typography</h2>
+      <div id="type-demos"></div>
+    </section>
+
+    <section id="brand-generative" class="section">
+      <h2 class="section__heading">Generative System</h2>
+      <div id="gen-demos"></div>
+    </section>
+
+
+  </main>
+
+  <footer class="footer">
+    <span class="footer__logo live-logotype" id="adai-footer-logo" aria-label="adai">
+      <span class="live-logotype__text" data-logotype-text></span><span class="logotype__cursor" aria-hidden="true"></span>
+    </span>
+    <span class="footer__copy">© 2026 A(DAI)</span>
+  </footer>
+
+  <script src="/field-static/adai-system.js?v=20260513a"></script>
+  <script src="/field-static/brand-state.js?v=20260513a"></script>
+  <script src="/field-static/js-interface/generative.js?v=20260513a"></script>
+  <script src="/field-static/adai-brand.js?v=20260513a"></script>
+</body>
+</html>
