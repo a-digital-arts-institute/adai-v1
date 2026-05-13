@@ -1,19 +1,26 @@
 /**
- * A(DAI) — graph-field (30k view driven by UMAP embeddings)
+ * A(DAI) — graph-field (30k view: UMAP semantics snapped onto Shape of Time)
  *
- * The brand sketch (sketch-brand.js) renders the Shape of Time as ambient
- * background texture; the graph layer above is positioned by the semantic
- * UMAP projection served at /api/embed-space. Every node that has a
- * multimodal embedding gets a stable (bx, by) in brand-space and a
- * type-coloured halo + core. The earlier "snap onto brand dot registry"
- * pathway is retired — sketch-brand's __adaiDotRegistry is no longer read.
+ * The brand sketch (sketch-brand.js) renders the Shape of Time and exposes
+ * window.__adaiDotRegistry — the canonical (x, y, radius) of every dot it
+ * draws, in brand logical coords (window.__adaiBrandSize = { w, h }).
  *
- * Nodes without an embedding are omitted from the 30k constellation (they
- * remain reachable via the search palette and zoomToVirtualFocus).
+ * Layout = best of both worlds:
+ *   1. Fetch /api/embed-space (Gemini 2 multimodal UMAP, 768-d → 2-d).
+ *   2. Normalize each UMAP coord into a 15%-padded brand-space "target".
+ *   3. Stride-pick a pool of distinct brand-dot positions from the spiral.
+ *   4. Greedy nearest-snap: for each embedded node (in order of edge-type
+ *      intention), claim the closest remaining brand dot. Position is the
+ *      spiral's; cluster is the semantics'.
+ *   5. Nodes without an embedding land on the outermost remaining dots
+ *      (shuffled), so the spiral edges show the unembedded periphery.
  *
- * Zoom layer (10k/5k) is unchanged: focus + rose-petal neighbour ring; we
- * still animate from baseX/baseY (UMAP-mapped) to the centre on zoom in
- * and back on zoom out.
+ * Result: bundle.sim[i].(bx,by) coincides exactly with a Shape-of-Time
+ * dot — bound aesthetically — while the *which dot* is decided by UMAP.
+ *
+ * Zoom layer (10k/5k rose/bucket petal layouts, zoomToVirtualFocus,
+ * breadcrumb, replays) is unchanged and animates from these snapped
+ * baseX/baseY coordinates.
  */
 (() => {
   // ---- config ----
@@ -22,20 +29,17 @@
   // the agent skills, but they don't appear at 30k. The reading is "a" canon
   // of practitioners, not "the" graph — `editorial:two-readings` in force.
   const CFG = {
-    // 30k snapshot is now UMAP-driven: every node that has an embedding gets
-    // a position from `/api/embed-space` (1,338+ items as of May 2026). The
-    // earlier registry/Shape-of-Time snapping is retired; sketch-brand.js
-    // continues to draw the spiral as background texture only.
-    //
-    // Nodes without an embedding stay accessible via window.ADAI_GRAPH (for
-    // zoom-in petals and the search palette) but don't appear at 30k.
+    // 30k snapshot draws every graph node onto a Shape-of-Time dot. Embedded
+    // nodes (1,338 today) snap to the spiral position closest to their UMAP
+    // target; unembedded nodes (~150) take outer-edge dots. Semantics cluster
+    // through the spiral's geometry without overriding it.
     DOT_HEX: '#FFFFFF',
-    BASE_ALPHA: 0.78,                 // softened: with ~10× more dots, full alpha is noisy
+    BASE_ALPHA: 0.92,
     NEUTRAL_ALPHA: 0.55,
-    DOT_RADIUS_MIN: 1.6,
-    DOT_RADIUS_MAX: 2.8,
+    DOT_RADIUS_MIN: 2.4,
+    DOT_RADIUS_MAX: 3.6,
     HALO_RADIUS_MULT: 2.6,
-    HALO_ALPHA: 0.20,
+    HALO_ALPHA: 0.26,
     HOVER_HALO_ALPHA: 0.55,
     SELECTED_HALO_ALPHA: 0.85,
     DRIFT: 0.06,
@@ -43,17 +47,19 @@
     BRAND_OPACITY_WHEN_ACTIVE: '1',
     BRAND_OPACITY_AT_ZOOM: '0.55',   // keep the field present while zoomed in
 
-    CLICK_TOLERANCE: 14,
+    CLICK_TOLERANCE: 16,
 
-    // UMAP → brand-space projection.
-    UMAP_BRAND_W: 1600,
-    UMAP_BRAND_H: 900,
-    UMAP_PADDING: 0.12,              // 12% inset on each axis so dots breathe
+    // Brand-registry polling — sketch-brand.js fills __adaiDotRegistry on
+    // first draw; we wait for it before doing layout.
+    REGISTRY_POLL_MS: 80,
+    REGISTRY_TIMEOUT_MS: 4000,
 
-    // Type-driven palette for the 30k constellation. Pulled from
-    // edge-type-colors.js brand accents so kin colours read the same in the
-    // graph and (later) the petal edges. Keys are node `type`; unknown types
-    // fall back to NEUTRAL.
+    // UMAP → brand-space normalisation. 15% inset on each axis so the
+    // semantic cluster sits inside the spiral, not against its edges.
+    UMAP_PADDING: 0.15,
+
+    // Type-driven palette so the snapped constellation reads as semantic
+    // clusters. Brand-accent set, complementary to the white spiral.
     TYPE_COLORS: {
       practitioner:           '#7EB8DA',  // pale cobalt — the spine of the canon
       artwork:                '#D9A33B',  // amber-gold — works as the warm cluster
@@ -213,12 +219,48 @@
     return { ctx, w, h };
   }
 
+  // ---- read Shape of Time positions (restored) -------------------------
+  function readBrandPositions() {
+    const reg = window.__adaiDotRegistry;
+    if (!Array.isArray(reg) || reg.length === 0) return null;
+    const size = window.__adaiBrandSize || { w: 1600, h: 900 };
+    return { positions: reg.slice(), brandW: size.w, brandH: size.h };
+  }
+
+  function waitForRegistry() {
+    return new Promise((resolve) => {
+      const tStart = Date.now();
+      (function poll() {
+        const r = readBrandPositions();
+        if (r) return resolve(r);
+        if (Date.now() - tStart > CFG.REGISTRY_TIMEOUT_MS) return resolve(null);
+        setTimeout(poll, CFG.REGISTRY_POLL_MS);
+      })();
+    });
+  }
+
+  // Stride-pick visually distinct brand positions (dedup by coarse grid,
+  // then evenly subsample to `want`). The registry has tens of thousands
+  // of dots; dedup spreads picks across the full composition.
+  function pickDistinctPositions(brand, want) {
+    const GRID = 14;
+    const seen = new Map();
+    for (const p of brand.positions) {
+      const key = `${(p.x / GRID) | 0},${(p.y / GRID) | 0}`;
+      if (!seen.has(key)) seen.set(key, p);
+    }
+    const distinct = Array.from(seen.values());
+    if (distinct.length <= want) return distinct;
+    const stride = distinct.length / want;
+    const picked = new Array(want);
+    for (let i = 0; i < want; i++) picked[i] = distinct[(i * stride) | 0];
+    return picked;
+  }
+
   // ---- UMAP layout source ----------------------------------------------
-  // The 30k snapshot is now driven by /api/embed-space — a precomputed UMAP
-  // projection of every node's multimodal embedding (Gemini Embedding 2,
-  // 768-d → 2-d via UMAP, cosine, n_neighbors=15, min_dist=0.1, seed=42).
-  // Nodes without embeddings are hidden at 30k; they can still be visited
-  // via the search palette and zoom layer (zoomToVirtualFocus handles them).
+  // /api/embed-space returns a precomputed UMAP projection of every node's
+  // multimodal embedding (Gemini Embedding 2, 768-d → 2-d via UMAP, cosine,
+  // n_neighbors=15, min_dist=0.1, seed=42). 1,338/1,491 nodes are covered.
   async function fetchEmbedSpace() {
     try {
       const res = await fetch('/api/embed-space', { cache: 'no-cache' });
@@ -235,97 +277,158 @@
     }
   }
 
-  // Map raw UMAP coordinates into brand-space (UMAP_BRAND_W × UMAP_BRAND_H)
-  // with a uniform 12% padding so points never touch the screen edges. The
-  // projection is computed once at start time; reproject() then scales
-  // brand-space → viewport on every resize.
-  function projectUmapToBrand(items) {
+  // Z-priority: smaller = drawn first (= behind). Practitioners + artworks
+  // paint on top so they stay readable in dense snapped clusters.
+  const Z_BY_TYPE = {
+    classification_regime: 0, project: 1, related: 1, event: 1,
+    publication: 2, platform: 2, collective: 2,
+    concept: 3, scene: 3, institution: 3,
+    artwork: 4, practitioner: 5,
+  };
+  function zForType(t) { return Z_BY_TYPE[t] != null ? Z_BY_TYPE[t] : 3; }
+
+  // Look up the brand-accent colour for a node type. Used by frame() to
+  // give the 30k constellation a readable type structure.
+  function colorForType(type) {
+    return CFG.TYPE_COLORS[type] || CFG.TYPE_COLOR_FALLBACK;
+  }
+
+  // ---- semantic snapping -----------------------------------------------
+  // The heart of the field: UMAP says where in semantic space a node
+  // belongs; the Shape of Time provides the dot grid. We greedily pair
+  // each embedded node to the *closest available* spiral dot to its
+  // UMAP-target. Position is the spiral's; cluster is UMAP's.
+  function pairNodesToPositions(graph, brand, embedSpace) {
+    // 1. Pool of available brand dots (one slot per graph node).
+    const wanted = graph.nodes.length;
+    const pool = pickDistinctPositions(brand, wanted);
+    const available = pool.map(p => ({
+      x: p.x, y: p.y, radius: p.radius, used: false,
+    }));
+
+    // 2. Partition graph nodes by whether they have an embedding.
+    const embedById = new Map();
+    if (embedSpace && Array.isArray(embedSpace.items)) {
+      for (const it of embedSpace.items) embedById.set(it.id, it);
+    }
+    const embedded = [];
+    const unembedded = [];
+    for (const n of graph.nodes) {
+      if (embedById.has(n.id)) embedded.push(n);
+      else unembedded.push(n);
+    }
+
+    // 3. UMAP bbox → 15%-padded brand-space target per embedded node.
     let minX =  Infinity, minY =  Infinity;
     let maxX = -Infinity, maxY = -Infinity;
-    for (const it of items) {
-      if (typeof it.x !== 'number' || typeof it.y !== 'number') continue;
-      if (it.x < minX) minX = it.x;
-      if (it.x > maxX) maxX = it.x;
-      if (it.y < minY) minY = it.y;
-      if (it.y > maxY) maxY = it.y;
+    for (const n of embedded) {
+      const e = embedById.get(n.id);
+      if (typeof e.x !== 'number' || typeof e.y !== 'number') continue;
+      if (e.x < minX) minX = e.x;
+      if (e.x > maxX) maxX = e.x;
+      if (e.y < minY) minY = e.y;
+      if (e.y > maxY) maxY = e.y;
     }
     if (!isFinite(minX) || maxX === minX || maxY === minY) {
-      // degenerate — fall back to centred unit square
       minX = -1; maxX = 1; minY = -1; maxY = 1;
     }
     const pad = CFG.UMAP_PADDING;
-    const innerW = CFG.UMAP_BRAND_W * (1 - 2 * pad);
-    const innerH = CFG.UMAP_BRAND_H * (1 - 2 * pad);
-    const offX = CFG.UMAP_BRAND_W * pad;
-    const offY = CFG.UMAP_BRAND_H * pad;
-    const sx = innerW / (maxX - minX);
-    const sy = innerH / (maxY - minY);
-    return (it) => ({
-      bx: offX + (it.x - minX) * sx,
-      by: offY + (it.y - minY) * sy,
-    });
-  }
-
-  // Pair every embedded node with its UMAP-projected (bx, by). All node types
-  // participate (practitioner / artwork / concept / institution / scene / ...
-  // — the "unbound" 30k view per the spec). Sort order matters cosmetically:
-  // we draw lower-priority types first so practitioners and artworks land on
-  // top when dots overlap.
-  function pairNodesToPositions(graph, embedSpace) {
-    if (!embedSpace || !Array.isArray(embedSpace.items)) {
-      return {
-        sim: [], brandW: CFG.UMAP_BRAND_W, brandH: CFG.UMAP_BRAND_H,
-        snapshotType: 'all-embedded', snapshotSize: 0,
-        totalGraph: graph.nodes.length, distinctCount: 0,
-      };
+    const innerW = brand.brandW * (1 - 2 * pad);
+    const innerH = brand.brandH * (1 - 2 * pad);
+    const offX = brand.brandW * pad;
+    const offY = brand.brandH * pad;
+    const targets = new Map();
+    for (const n of embedded) {
+      const e = embedById.get(n.id);
+      const tx = offX + ((e.x - minX) / (maxX - minX)) * innerW;
+      const ty = offY + ((e.y - minY) / (maxY - minY)) * innerH;
+      targets.set(n.id, { tx, ty });
     }
-    // Filter to items whose node we know in the graph payload (handles edge
-    // cases like an item being in the projection but pruned from /api/graph).
-    const items = embedSpace.items.filter(it => graph.byId.has(it.id));
-    const proj = projectUmapToBrand(items);
 
-    // Z-order priority: smaller = drawn first (= behind). Practitioners and
-    // artworks sit on top so they remain readable in dense clusters.
-    const Z = {
-      classification_regime: 0, project: 1, related: 1, event: 1,
-      publication: 2, platform: 2, collective: 2,
-      concept: 3, scene: 3, institution: 3,
-      artwork: 4, practitioner: 5,
-    };
-
-    const sim = items.map((it) => {
-      const node = graph.byId.get(it.id);
-      const p = proj(it);
-      return {
-        id: it.id,
-        name: node.name,
-        type: node.type,
-        bx: p.bx,
-        by: p.by,
-        bRad: 6,                       // base brand-space radius (reproject scales)
-        x: 0, y: 0,
-        _z: Z[node.type] != null ? Z[node.type] : 3,
-      };
+    // 4. Greedy nearest-snap. Sort embedded by intention first so the
+    //    most relationally-rich nodes claim their preferred spot before
+    //    less-connected nodes squat the same brand dot.
+    embedded.sort((a, b) => {
+      const ia = graph.intentionOf(a.id);
+      const ib = graph.intentionOf(b.id);
+      if (ib !== ia) return ib - ia;
+      return (a.name || a.id).localeCompare(b.name || b.id);
     });
+
+    const sim = [];
+    for (const n of embedded) {
+      const t = targets.get(n.id);
+      let bestI = -1, bestD2 = Infinity;
+      // Brute-force over the available pool. ~1,300 embedded × ~1,500
+      // candidate dots ≈ 2M ops, runs in a few ms once at start time.
+      for (let i = 0; i < available.length; i++) {
+        if (available[i].used) continue;
+        const dx = available[i].x - t.tx;
+        const dy = available[i].y - t.ty;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < bestD2) { bestD2 = d2; bestI = i; }
+      }
+      if (bestI === -1) break;          // pool exhausted; remainder will fallback
+      const p = available[bestI];
+      p.used = true;
+      sim.push({
+        id: n.id, name: n.name, type: n.type,
+        bx: p.x, by: p.y, bRad: p.radius,
+        x: 0, y: 0,
+        _z: zForType(n.type),
+      });
+    }
+
+    // 5. Fallback for unembedded nodes — drop them on the outermost
+    //    remaining dots (closest to the spiral periphery), shuffled so
+    //    the placement feels random rather than alphabetised.
+    if (unembedded.length) {
+      const cxBrand = brand.brandW / 2;
+      const cyBrand = brand.brandH / 2;
+      const remaining = available
+        .filter(p => !p.used)
+        .sort((a, b) => {
+          const da = (a.x - cxBrand) ** 2 + (a.y - cyBrand) ** 2;
+          const db = (b.x - cxBrand) ** 2 + (b.y - cyBrand) ** 2;
+          return db - da; // farthest from centre first
+        });
+      // Take the outer slice we actually need (or as much of the pool as
+      // we have if it's smaller).
+      const slice = remaining.slice(0, unembedded.length);
+      // Fisher–Yates shuffle inside the slice so the placement is random.
+      for (let i = slice.length - 1; i > 0; i--) {
+        const j = (Math.random() * (i + 1)) | 0;
+        const tmp = slice[i]; slice[i] = slice[j]; slice[j] = tmp;
+      }
+      for (let k = 0; k < unembedded.length && k < slice.length; k++) {
+        const n = unembedded[k];
+        const p = slice[k];
+        p.used = true;
+        sim.push({
+          id: n.id, name: n.name, type: n.type,
+          bx: p.x, by: p.y, bRad: p.radius,
+          x: 0, y: 0,
+          _z: zForType(n.type),
+        });
+      }
+    }
+
+    // 6. Z-sort so the high-priority types render on top of overlapping
+    //    low-priority ones in the snapped constellation.
     sim.sort((a, b) => a._z - b._z);
 
     return {
       sim,
-      brandW: CFG.UMAP_BRAND_W,
-      brandH: CFG.UMAP_BRAND_H,
-      snapshotType: 'all-embedded',
+      brandW: brand.brandW,
+      brandH: brand.brandH,
+      snapshotType: 'umap-snapped',
       snapshotSize: sim.length,
       totalGraph: graph.nodes.length,
-      distinctCount: sim.length,
-      embedModel: embedSpace.model || null,
+      distinctCount: pool.length,
+      embeddedCount: embedded.length,
+      unembeddedCount: unembedded.length,
+      embedModel: (embedSpace && embedSpace.model) || null,
     };
-  }
-
-  // Look up the brand-accent colour for a node type. Used by frame() to
-  // give the 30k constellation a readable type structure against the
-  // monochrome spiral.
-  function colorForType(type) {
-    return CFG.TYPE_COLORS[type] || CFG.TYPE_COLOR_FALLBACK;
   }
 
   // Project brand-space (0..brandW, 0..brandH) into the screen rect occupied
@@ -1403,16 +1506,25 @@
     const canvas = ensureCanvas();
     let { ctx, w, h } = sizeCanvas(canvas);
 
-    const embedSpace = await fetchEmbedSpace();
-    if (!embedSpace) {
-      console.warn('[adai] /api/embed-space unavailable — 30k constellation will be empty (search/zoom still work)');
-    } else {
+    // Wait for the spiral registry and the UMAP projection in parallel.
+    const [brand, embedSpace] = await Promise.all([
+      waitForRegistry(),
+      fetchEmbedSpace(),
+    ]);
+    if (!brand) {
+      console.warn('[adai] dotRegistry unavailable — skipping graph layer');
+      return;
+    }
+    console.log(`[adai] dotRegistry: ${brand.positions.length} brand positions; graph: ${graph.nodes.length} nodes`);
+    if (embedSpace) {
       console.log(`[adai] embed-space: ${embedSpace.items.length} UMAP points (model=${embedSpace.model || '?'})`);
+    } else {
+      console.warn('[adai] /api/embed-space unavailable — falling back to fully random distribution');
     }
 
-    const bundle = pairNodesToPositions(graph, embedSpace || { items: [] });
+    const bundle = pairNodesToPositions(graph, brand, embedSpace);
     reproject(bundle);
-    console.log(`[adai] snapshot: ${bundle.snapshotSize} embedded nodes of ${bundle.totalGraph} total`);
+    console.log(`[adai] snapshot: ${bundle.snapshotSize} nodes snapped (embedded=${bundle.embeddedCount}, fallback=${bundle.unembeddedCount}) over ${bundle.distinctCount} distinct brand positions`);
     restoreBrandOpacity();
 
     window.ADAI_GRAPH_FIELD = bundle;
