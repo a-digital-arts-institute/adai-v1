@@ -335,13 +335,27 @@
     const pad = CFG.UMAP_PADDING;
     const innerW = brand.brandW * (1 - 2 * pad);
     const innerH = brand.brandH * (1 - 2 * pad);
-    const offX = brand.brandW * pad;
-    const offY = brand.brandH * pad;
+    
+    // Preserve aspect ratio: find the max range across both axes
+    const rangeX = maxX - minX;
+    const rangeY = maxY - minY;
+    const maxRange = Math.max(rangeX, rangeY);
+    
+    // Calculate scale factor to fit within the padded area
+    const scale = Math.min(innerW, innerH) / maxRange;
+    
+    // Center the cluster in the brand space
+    const cx = brand.brandW / 2;
+    const cy = brand.brandH / 2;
+    const umapCx = minX + rangeX / 2;
+    const umapCy = minY + rangeY / 2;
+
     const targets = new Map();
     for (const n of embedded) {
       const e = embedById.get(n.id);
-      const tx = offX + ((e.x - minX) / (maxX - minX)) * innerW;
-      const ty = offY + ((e.y - minY) / (maxY - minY)) * innerH;
+      // Scale and translate relative to the center
+      const tx = cx + (e.x - umapCx) * scale;
+      const ty = cy + (e.y - umapCy) * scale;
       targets.set(n.id, { tx, ty });
     }
 
