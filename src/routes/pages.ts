@@ -1,6 +1,10 @@
 import { Router } from "express";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { getDb } from "../db.js";
 import { htmlPage, htmlEscape, CSS, HTML_HEADERS } from "../templates.js";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const router = Router();
 
@@ -510,7 +514,7 @@ router.get("/graph", (_req, res) => {
 <label style='margin-left:0.5rem;font-size:0.8rem;color:#666'><input type='checkbox' id='walk-mode' checked> Walk component on click</label>
 <button id='reset-view' style='margin-left:0.5rem;background:#111;color:#888;border:1px solid #333;padding:0.25rem 0.5rem;border-radius:3px;font-size:0.75rem;cursor:pointer'>Reset view</button>
 <span id='node-count' style='margin-left:1rem;font-size:0.75rem;color:#555'></span>
-<div style='margin-top:0.4rem;font-size:0.7rem;color:#555'>gold hub = A(DAI), the absolute root. red hubs = sub-regimes (the lens a node was seen through). click any node to walk its connected component.</div>
+<div style='margin-top:0.4rem;font-size:0.7rem;color:#555'>gold hub = A(DAI), the absolute root. red hubs = sub-regimes (the lens a node was seen through). click any node to walk its connected component. <a href='/field' style='color:#7eb8da;margin-left:0.5rem'>→ field view</a></div>
 </div>
 <svg id='graph-svg'></svg>
 <div id='detail-panel' style='display:none;position:absolute;top:0;right:0;width:280px;background:#0f0f0f;border:1px solid #222;border-radius:4px;padding:1rem;max-height:80vh;overflow-y:auto;z-index:10'>
@@ -720,6 +724,11 @@ svg.on('click',function(e){if(e.target.tagName==='svg')closePanel();});
   const page = `<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Graph — A(DAI)</title><style>${CSS}#graph-container{margin:-2rem -1.5rem}#graph-svg{background:#0a0a0a;display:block}</style></head><body><div class='wrap'><header><h1>A<span>(DAI)</span></h1><nav><a href='/'>Home</a><a href='/explore'>Explore</a><a href='/graph'>Graph</a><a href='/contribute'>Contribute</a><a href='/review'>Review</a><a href='/api/stats'>Stats</a></nav></header>${graphBody}<footer>A(DAI) — digital arts knowledge commons</footer></div></body></html>`;
 
   res.set(HTML_HEADERS).send(page);
+});
+
+// GET /field — data-driven p5-derived dot-field view (assets in public/field)
+router.get("/field", (_req, res) => {
+  res.sendFile(path.join(__dirname, "..", "..", "public", "field", "index.html"));
 });
 
 export default router;

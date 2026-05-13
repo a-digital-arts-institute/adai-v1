@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A(DAI) — field</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Cutive+Mono&family=Anonymous+Pro:wght@400;700&family=Xanh+Mono:ital@0;1&family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@300;400;500;700&family=Roboto+Mono:wght@300;400;500;700&family=Inconsolata:wght@300;400;500;700&family=Source+Code+Pro:wght@300;400;500;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/field-static/style.css">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+  <div id="mopey"></div>
+
+  <div id="chrome">
+    <div id="logotype" aria-label="adai">
+      <span id="logotype-text"></span><span class="logotype__cursor" aria-hidden="true"></span>
+    </div>
+    <div id="coordinates">
+      <span id="coord-x">x 0.000</span>
+      <span id="coord-y">y 0.000</span>
+    </div>
+
+    <div id="vitals">
+      <div class="vital-row"><span class="vital-label">nodes</span><span class="vital-value" id="v-nodes">…</span></div>
+      <div class="vital-row"><span class="vital-label">edges</span><span class="vital-value" id="v-edges">…</span></div>
+      <div class="vital-row"><span class="vital-label">signal</span><span class="vital-value" id="v-signal">0.00</span></div>
+      <div class="vital-row"><span class="vital-label">mode</span><span class="vital-value" id="v-mode">orbit [m]</span></div>
+    </div>
+
+    <nav id="rooms">
+      <a href="/" class="room-link">home</a>
+      <a href="/explore" class="room-link">explore</a>
+      <a href="#field" class="room-link active">field</a>
+      <a href="/graph" class="room-link">graph</a>
+      <a href="/contribute" class="room-link">contribute</a>
+    </nav>
+
+    <div id="field-caption" aria-live="polite"></div>
+  </div>
+
+  <script src="/field-static/adai-system.js"></script>
+  <script src="/field-static/brand-state.js"></script>
+  <script src="/field-static/sketch-graph.js"></script>
+  <script src="/field-static/field.js"></script>
+</body>
+</html>

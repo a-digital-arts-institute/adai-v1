@@ -1,0 +1,390 @@
+/* A(DAI) Brand Identity — The Field */
+
+@font-face {
+  font-family: 'Brand Mono';
+  src: local('SF Mono'), local('Menlo'), local('Consolas'), local('monospace');
+}
+
+:root {
+  --void: #0C0C0E;
+  --field-bg: var(--void);
+  --text: #E8E6E1;
+  --muted: #3A3A3C;
+  --brand-color: #4169B0;
+  --brand-color-rgb: 65, 105, 176;
+  --signal: var(--brand-color);
+  --signal-rgb: var(--brand-color-rgb);
+  --mono: 'SF Mono', 'Menlo', 'Consolas', 'Courier New', monospace;
+}
+
+/* ---- Light Mode ---- */
+:root[data-mode="light"] {
+  --void: #F5F3EF;
+  --text: #1a1a1e;
+  --muted: #8a8a8c;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--field-bg, var(--void));
+  color: var(--text);
+  font-family: var(--mono);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- Shape of Time canvas ---- */
+#mopey {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--field-bg, var(--void));
+}
+:root[data-mode="light"] #myCanvas {
+  filter: invert(1) hue-rotate(180deg) brightness(1.08);
+  opacity: 0.18;
+}
+:root:not([data-mode="light"]) #myCanvas {
+  opacity: 1;
+}
+#mopey canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  transform-origin: center center;
+}
+
+/* Hide the SVG element sketch.js appends */
+#myFinalSVG {
+  display: none !important;
+}
+
+/* ---- Chrome ---- */
+#chrome {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+#chrome > * { pointer-events: auto; }
+
+/* ---- Logotype ---- */
+#logotype {
+  position: fixed;
+  top: 28px;
+  left: 32px;
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: lowercase;
+  opacity: 0.98;
+  z-index: 10;
+  display: inline-flex;
+  align-items: baseline;
+  min-width: calc(var(--logotype-char-count, 6) * 0.78ch + 1.15ch);
+  color: #FFFFFF;
+  text-shadow:
+    0 0 10px rgba(255, 255, 255, 0.12),
+    0 0 24px rgba(255, 255, 255, 0.05);
+}
+#logotype-text {
+  display: inline-flex;
+  align-items: baseline;
+  flex: 0 0 auto;
+  min-width: 0;
+  white-space: pre;
+}
+.logotype__char {
+  display: inline-block;
+  position: relative;
+}
+.logotype__char.is-selected {
+  color: var(--void);
+  background: var(--signal);
+  box-shadow: 0 0 12px rgba(var(--signal-rgb), 0.22);
+  padding: 0 0.03em;
+  margin: 0 -0.03em;
+}
+.logotype__cursor {
+  display: inline-block;
+  position: relative;
+  width: 0.65ch;
+  height: 0.95em;
+  margin-left: 0.08em;
+  background: var(--signal);
+  vertical-align: -0.1em;
+  opacity: 0.95;
+  box-shadow: 0 0 10px rgba(var(--signal-rgb), 0.2);
+  animation: logotypeCursorBlink 0.95s steps(1, end) infinite;
+}
+.logotype__cursor::before,
+.logotype__cursor::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+.logotype--deleting .logotype__cursor {
+  opacity: 0;
+  animation: none;
+}
+@keyframes logotypeCursorBlink {
+  0%, 54% { opacity: 0.95; }
+  55%, 100% { opacity: 0.18; }
+}
+
+#logotype[data-cursor-case="0"] .logotype__char.is-selected {
+  color: var(--void);
+  background: var(--signal);
+  box-shadow: 0 0 12px rgba(var(--signal-rgb), 0.22);
+  padding: 0 0.03em;
+  margin: 0 -0.03em;
+}
+
+#logotype[data-cursor-case="1"] .logotype__cursor {
+  width: 0.92ch;
+  height: 0.14em;
+  margin-left: 0.04em;
+  vertical-align: 0.16em;
+  box-shadow: none;
+}
+#logotype[data-cursor-case="1"] .logotype__char.is-selected {
+  color: var(--text);
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+  text-decoration-line: underline;
+  text-decoration-color: var(--signal);
+  text-decoration-thickness: 0.13em;
+  text-underline-offset: 0.16em;
+}
+
+#logotype[data-cursor-case="2"] .logotype__cursor {
+  width: 0.76ch;
+  height: 1.02em;
+  margin-left: 0.04em;
+  box-shadow: 0 0 14px rgba(var(--signal-rgb), 0.28);
+}
+#logotype[data-cursor-case="2"] .logotype__char.is-selected {
+  color: var(--void);
+  background: var(--signal);
+  box-shadow: 0 0 16px rgba(var(--signal-rgb), 0.28);
+  padding: 0 0.04em;
+  margin: 0 -0.04em;
+}
+
+#logotype[data-cursor-case="3"] .logotype__cursor {
+  width: 0.74ch;
+  height: 1em;
+  background: transparent;
+  border: 1px solid var(--signal);
+  box-shadow: none;
+}
+#logotype[data-cursor-case="3"] .logotype__char.is-selected {
+  color: var(--text);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--signal);
+  padding: 0 0.05em;
+  margin: 0 -0.05em;
+}
+
+#logotype[data-cursor-case="4"] .logotype__cursor {
+  width: 0.12em;
+  height: 1.02em;
+  margin-left: 0.12em;
+  border-radius: 999px;
+}
+#logotype[data-cursor-case="4"] .logotype__char.is-selected {
+  color: var(--text);
+  background: rgba(var(--signal-rgb), 0.14);
+  box-shadow: inset 2px 0 0 var(--signal);
+  padding: 0 0.05em 0 0.12em;
+  margin: 0 -0.05em 0 -0.08em;
+}
+
+#logotype[data-cursor-case="5"] .logotype__cursor {
+  width: 0.12em;
+  height: 1.02em;
+  margin-left: 0.12em;
+  border-radius: 999px;
+}
+#logotype[data-cursor-case="5"] .logotype__cursor::before,
+#logotype[data-cursor-case="5"] .logotype__cursor::after {
+  opacity: 1;
+  width: 0.7ch;
+  height: 1px;
+  background: var(--signal);
+}
+#logotype[data-cursor-case="5"] .logotype__cursor::before {
+  top: 0;
+  transform: translate(-50%, 0);
+}
+#logotype[data-cursor-case="5"] .logotype__cursor::after {
+  top: auto;
+  bottom: 0;
+  transform: translate(-50%, 0);
+}
+#logotype[data-cursor-case="5"] .logotype__char.is-selected {
+  color: var(--text);
+  background: rgba(var(--signal-rgb), 0.12);
+  box-shadow: inset 0 0 0 1px rgba(var(--signal-rgb), 0.45);
+  border-radius: 0.12em;
+  padding: 0 0.06em;
+  margin: 0 -0.03em;
+}
+
+#logotype[data-cursor-case="6"] .logotype__cursor {
+  width: 0.1em;
+  height: 1.02em;
+  margin-left: 0.14em;
+  border-radius: 999px;
+  box-shadow:
+    0 0 0 1px rgba(var(--signal-rgb), 0.22),
+    0 0 16px rgba(var(--signal-rgb), 0.24);
+}
+#logotype[data-cursor-case="6"] .logotype__char.is-selected {
+  color: var(--text);
+  background: linear-gradient(180deg, rgba(var(--signal-rgb), 0.16), rgba(var(--signal-rgb), 0.06));
+  box-shadow: inset 0 -1px 0 rgba(var(--signal-rgb), 0.55);
+  border-radius: 0.08em;
+  padding: 0 0.05em;
+  margin: 0 -0.02em;
+}
+
+/* ---- Coordinates ---- */
+#coordinates {
+  position: fixed;
+  top: 28px;
+  right: 32px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  opacity: 0.25;
+  display: flex;
+  gap: 16px;
+  z-index: 10;
+}
+
+/* ---- Vitals ---- */
+#vitals {
+  position: fixed;
+  bottom: 28px;
+  left: 32px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  opacity: 0.4;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 10;
+}
+.vital-row {
+  display: flex;
+  gap: 12px;
+}
+.vital-label {
+  opacity: 0.5;
+  min-width: 48px;
+}
+.vital-value {
+  opacity: 0.9;
+}
+/* ---- Field selection caption (above vitals, fades in/out) ---- */
+#field-caption {
+  position: fixed;
+  bottom: 110px;
+  left: 32px;
+  z-index: 10;
+  max-width: 360px;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 220ms ease;
+  background: rgba(6, 6, 8, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 10px 14px;
+  backdrop-filter: blur(14px);
+}
+#field-caption.is-visible { opacity: 1; }
+#field-caption .caption-title {
+  color: var(--text);
+  font-weight: 500;
+}
+#field-caption .caption-sub {
+  color: var(--text);
+  opacity: 0.55;
+  font-size: 11px;
+  margin-top: 3px;
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+}
+
+/* ---- Room Nav ---- */
+#rooms {
+  position: fixed;
+  bottom: 28px;
+  right: 32px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 10px 16px;
+  font-size: 14px;
+  letter-spacing: 0.14em;
+  text-transform: lowercase;
+  z-index: 10;
+  background: rgba(6, 6, 8, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 999px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(18px);
+}
+.room-link {
+  color: var(--text);
+  text-decoration: none;
+  opacity: 0.58;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.42);
+  transition: opacity 0.35s ease, color 0.35s ease;
+  cursor: pointer;
+}
+.room-link:hover {
+  opacity: 0.9;
+}
+.room-link.active {
+  opacity: 1;
+  color: var(--signal);
+  text-shadow: 0 0 10px rgba(var(--signal-rgb), 0.22);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+  #logotype { font-size: 15px; top: 16px; left: 16px; }
+  #coordinates { top: 16px; right: 16px; font-size: 10px; }
+  #vitals { bottom: 16px; left: 16px; font-size: 10px; }
+  #rooms {
+    bottom: 16px;
+    right: 16px;
+    gap: 12px;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #mopey canvas {
+    transform: none !important;
+  }
+}
