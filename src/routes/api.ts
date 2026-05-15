@@ -465,6 +465,7 @@ router.get("/api/embed-space", (_req, res) => {
         cdn_image_url: string | null; image_url: string | null;
         year_raw: string | null; year_start: number | null;
         year_end: number | null; year_ongoing: number | null;
+        year_meta: string | null;
         active_years_1: string | null; active_years_2: string | null;
       }>;
     const byId = new Map(meta.map((m) => [m.id, m]));

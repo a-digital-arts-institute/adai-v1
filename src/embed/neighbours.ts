@@ -144,6 +144,7 @@ export function withMetadata(db: DatabaseSync, neighbours: Neighbour[]): Neighbo
       year_start: number | null;
       year_end: number | null;
       year_ongoing: number | null;
+      year_meta: string | null;
       active_years_1: string | null;
       active_years_2: string | null;
     }>;

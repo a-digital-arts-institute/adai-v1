@@ -3,8 +3,11 @@
 // Artwork metadata stores year inconsistently across seed sources:
 //   1. metadata.year_raw                              — verbatim human string ("c. 1965", "1985–present"). Wins when present.
 //   2. metadata.year_start[/_end][/_ongoing]          — structured ints (canonical going forward).
-//   3. metadata.basic_info.active_years               — legacy seed string ("2024-2025").
-//   4. metadata.full_profile.basic_info.active_years  — same, nested under full_profile in older shapes.
+//   3. metadata.year                                  — fetcher convention (MoMA, Wikidata): string, sometimes "YYYY",
+//                                                       sometimes "YYYY-MM-DD" (ISO date), sometimes "YYYY–YYYY" (range).
+//                                                       We strip ISO dates down to YYYY; everything else passes through.
+//   4. metadata.basic_info.active_years               — legacy seed string ("2024-2025").
+//   5. metadata.full_profile.basic_info.active_years  — same, nested under full_profile in older shapes.
 //
 // All four are tried in that priority order. Returns a single display
 // string or null when no year info exists. Non-artwork types should not
@@ -27,8 +30,19 @@ export interface ArtworkYearFields {
   year_end?: number | null;
   // SQLite returns booleans as 0/1; accept either.
   year_ongoing?: number | boolean | null;
+  /** metadata.year — fetcher convention (MoMA/Wikidata). May be "YYYY", "YYYY-MM-DD", "YYYY–YYYY", or null. */
+  year_meta?: string | null;
   active_years_1?: string | null; // metadata.basic_info.active_years
   active_years_2?: string | null; // metadata.full_profile.basic_info.active_years
+}
+
+// "2019-01-01" → "2019". "2018" → "2018". "2021–2022" → "2021–2022".
+// Defensive: never returns empty string.
+function normaliseLooseYear(s: string): string {
+  const trimmed = s.trim();
+  const isoMatch = /^(\d{4})-\d{2}-\d{2}(?:T.*)?$/.exec(trimmed);
+  if (isoMatch) return isoMatch[1]!;
+  return trimmed;
 }
 
 export function formatArtworkYear(fields: ArtworkYearFields): string | null {
@@ -43,6 +57,9 @@ export function formatArtworkYear(fields: ArtworkYearFields): string | null {
     if (end == null || end === start) return `${start}`;
     return `${start}–${end}`;
   }
+
+  const ym = fields.year_meta;
+  if (typeof ym === "string" && ym.trim()) return normaliseLooseYear(ym);
 
   const a1 = fields.active_years_1;
   if (typeof a1 === "string" && a1.trim()) return a1.trim();
@@ -59,6 +76,7 @@ export function formatArtworkYearFromMetadata(meta: any): string | null {
     year_start: meta.year_start,
     year_end: meta.year_end,
     year_ongoing: meta.year_ongoing,
+    year_meta: typeof meta.year === "string" ? meta.year : null,
     active_years_1: meta.basic_info?.active_years,
     active_years_2: meta.full_profile?.basic_info?.active_years,
   });
@@ -77,6 +95,7 @@ json_extract(metadata,'$.year_raw') AS year_raw,
 json_extract(metadata,'$.year_start') AS year_start,
 json_extract(metadata,'$.year_end') AS year_end,
 json_extract(metadata,'$.year_ongoing') AS year_ongoing,
+json_extract(metadata,'$.year') AS year_meta,
 json_extract(metadata,'$.basic_info.active_years') AS active_years_1,
 json_extract(metadata,'$.full_profile.basic_info.active_years') AS active_years_2
 `.trim();
