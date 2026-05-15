@@ -88,7 +88,13 @@
 
   function renderTitle(node, showcase) {
     const display = showcase?.name_display || node.name || node.id;
-    const dates = showcase?.dates_compact ? `<span class="ev-dates">[${escapeHtml(showcase.dates_compact)}]</span>` : '';
+    // Showcase wins (curated dates_compact like "1934–2018"); otherwise
+    // fall back to the artwork year exposed by /api/graph (year_raw /
+    // year_start[/_end] / legacy active_years). Hidden for non-artworks
+    // with no showcase, since born/died for practitioners is rendered
+    // separately in renderMetadata().
+    const dateStr = showcase?.dates_compact || (node.type === 'artwork' ? node.year : null);
+    const dates = dateStr ? `<span class="ev-dates">[${escapeHtml(dateStr)}]</span>` : '';
     return `<h1 class="ev-title">${escapeHtml(display)} ${dates}</h1>`;
   }
 
@@ -196,7 +202,11 @@
         slug: aw.slug || aw.id.split(':').slice(1).join(':'),
         title: aw.name,
         graph_id: aw.id,
-        // Year/medium/method/blurb intentionally absent — honest stub.
+        // The /api/graph endpoint projects `year` onto artwork nodes
+        // (extracted from year_raw / year_start[/_end] / legacy
+        // basic_info.active_years). Medium/method/blurb still absent —
+        // honest stub.
+        year: aw.year || undefined,
       };
     }).filter(Boolean);
     return { works, source: 'graph' };

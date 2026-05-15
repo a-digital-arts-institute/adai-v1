@@ -12,6 +12,7 @@
 
 import type { DatabaseSync } from "node:sqlite";
 import { cosine, loadAll, type VectorRow, type EmbKind } from "./vectors.js";
+import { YEAR_SQL_FRAGMENT, formatArtworkYear } from "../utils/year.js";
 
 export interface Neighbour {
   node_id: string;
@@ -22,6 +23,8 @@ export interface Neighbour {
   slug?: string;
   cdn_image_url?: string;
   image_url?: string;
+  /** Display-ready year for artworks (e.g. "2024", "2019–2024"). Omitted for other node types or when unknown. */
+  year?: string;
 }
 
 export interface TopKOptions {
@@ -126,7 +129,8 @@ export function withMetadata(db: DatabaseSync, neighbours: Neighbour[]): Neighbo
     .prepare(
       `SELECT id, name, type, slug,
               json_extract(metadata,'$.cdn_image_url') AS cdn_image_url,
-              json_extract(metadata,'$.image_url')     AS image_url
+              json_extract(metadata,'$.image_url')     AS image_url,
+              ${YEAR_SQL_FRAGMENT}
          FROM nodes WHERE id IN (${placeholders})`
     )
     .all(...ids) as Array<{
@@ -136,16 +140,24 @@ export function withMetadata(db: DatabaseSync, neighbours: Neighbour[]): Neighbo
       slug: string;
       cdn_image_url: string | null;
       image_url: string | null;
+      year_raw: string | null;
+      year_start: number | null;
+      year_end: number | null;
+      year_ongoing: number | null;
+      active_years_1: string | null;
+      active_years_2: string | null;
     }>;
   const byId = new Map(rows.map((r) => [r.id, r]));
   return neighbours.map((n) => {
     const meta = byId.get(n.node_id);
     if (!meta) return n;
+    const year = meta.type === "artwork" ? formatArtworkYear(meta) : null;
     return {
       ...n,
       name: meta.name,
       type: meta.type,
       slug: meta.slug,
+      ...(year ? { year } : {}),
       ...(meta.cdn_image_url ? { cdn_image_url: meta.cdn_image_url } : {}),
       ...(meta.image_url ? { image_url: meta.image_url } : {}),
     };

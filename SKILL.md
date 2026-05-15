@@ -139,6 +139,45 @@ Returns `{ node_id, created, status, signal_id, intake_id, warnings }`.
 `created: false` means a node with that id already existed — your
 metadata is **not** merged in that case; use PATCH (§1.3) instead.
 
+**Common metadata fields by type.** Metadata is free-form, but the UI
+reads these specific keys and renders them everywhere (profile pages,
+graph/field hover, embed-space tooltip, listings). Put structured data
+in the fields below when you have it — fall back to free text otherwise.
+
+For `type: "artwork"` — **year** (single source of truth for any
+artwork-year display surface):
+
+| Field | Type | Meaning |
+|-------|------|---------|
+| `year_start` | int | First year. Required for any year display when you don't have `year_raw`. |
+| `year_end` | int \| null | Last year. Null or equal to `year_start` ⇒ single-year ("2024"). Otherwise renders as "2019–2024". |
+| `year_ongoing` | bool | When true and `year_end` is null, renders as "2019–". |
+| `year_raw` | string | Verbatim human form for the cases ints can't capture: `"c. 1965"`, `"1985–present"`, `"late 1990s"`. **Wins over `year_start`/`year_end`** when present, so only set it if the structured pair is wrong. |
+
+Example creating an artwork with a clean year range:
+
+```bash
+curl -s -X POST "$ADAI_BASE/api/v1/nodes" \
+  -H "Authorization: Bearer $ADAI_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "type": "artwork",
+    "name": "Fidenza",
+    "metadata": {
+      "status": "confirmed",
+      "year_start": 2021,
+      "year_end": 2021,
+      "medium": "long-form generative art on Art Blocks"
+    }
+  }'
+```
+
+Legacy seed artworks often store year under `basic_info.active_years`
+(a string like `"2024-2025"`). The display layer reads that as a
+fallback, so you don't need to migrate older nodes — but when **adding
+new artworks or patching existing ones**, prefer the structured fields
+above so future tooling can sort, filter, and reason about them.
+
 ### 1.3 `PATCH /api/v1/nodes/:id` — merge into existing metadata
 
 Use this to **add or correct fields** on a node you didn't create — bios,

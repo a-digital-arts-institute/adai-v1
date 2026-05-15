@@ -6,6 +6,7 @@ import { getDb } from "../db.js";
 import { htmlPage, htmlEscape, CSS, HTML_HEADERS } from "../templates.js";
 import { topKByNodeId, withMetadata, type Neighbour } from "../embed/neighbours.js";
 import { buildEmbeddingSections } from "../embed/sections.js";
+import { formatArtworkYearFromMetadata, formatArtworkYear, YEAR_SQL_FRAGMENT } from "../utils/year.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.join(__dirname, "..", "..");
@@ -107,13 +108,18 @@ router.get("/", (_req, res) => {
 router.get("/explore", (_req, res) => {
   const db = getDb();
   const rows = db
-    .prepare(`SELECT id, name, type, slug FROM nodes WHERE type NOT IN ${ENTITY_TYPES_EXCLUDE} ORDER BY name`)
+    .prepare(
+      `SELECT id, name, type, slug, ${YEAR_SQL_FRAGMENT}
+         FROM nodes WHERE type NOT IN ${ENTITY_TYPES_EXCLUDE} ORDER BY name`
+    )
     .all() as any[];
 
   let body = `<h2>Explore</h2><p class='meta'>${rows.length} entities — practitioners, artworks, collectives, platforms, institutions, and projects</p>`;
 
   for (const r of rows) {
-    body += `<div class='card'><h3><a href='/${r.type}/${r.slug}'>${r.name}</a></h3><span class='tag'>${r.type}</span></div>`;
+    const yr = r.type === "artwork" ? formatArtworkYear(r) : null;
+    const yrTag = yr ? ` <span class='meta'>(${htmlEscape(yr)})</span>` : "";
+    body += `<div class='card'><h3><a href='/${r.type}/${r.slug}'>${r.name}</a>${yrTag}</h3><span class='tag'>${r.type}</span></div>`;
   }
 
   res.set(HTML_HEADERS).send(htmlPage("Explore", body));
@@ -133,6 +139,17 @@ function profileHandler(req: any, res: any) {
   const escName = htmlEscape(String(node.name));
   const escType = htmlEscape(String(node.type));
   let body = `<h2>${escName}</h2><span class='tag'>${escType}</span>`;
+
+  // For artworks, surface the year prominently right under the title.
+  // The same display string is exposed by the API on artwork nodes, so
+  // graph/field/embed-space hovers stay consistent.
+  if (node.type === "artwork" && node.metadata) {
+    try {
+      const yearMeta = JSON.parse(node.metadata);
+      const yr = formatArtworkYearFromMetadata(yearMeta);
+      if (yr) body += ` <span class='tag'>${htmlEscape(yr)}</span>`;
+    } catch { /* metadata not JSON, skip */ }
+  }
 
   if (node.type === "classification_regime") {
     const { count: classifiedCount } = db
@@ -362,9 +379,10 @@ function renderNeighbourList(neighbours: Neighbour[]): string {
     const thumb = img
       ? `<img src='${htmlEscape(String(img))}' alt='${nameEsc}' style='width:96px;height:96px;object-fit:cover;border-radius:4px;display:block' loading='lazy' />`
       : `<div style='width:96px;height:96px;background:#181818;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:#666;text-align:center;padding:0.4rem;box-sizing:border-box'>${nameEsc.slice(0, 40)}</div>`;
+    const yearTag = n.year ? ` <span class='meta'>(${htmlEscape(String(n.year))})</span>` : "";
     s += `<a href='${url}' style='display:block;width:108px;text-decoration:none;color:inherit'>
 ${thumb}
-<div style='font-size:0.78rem;margin-top:0.3rem;line-height:1.2'>${nameEsc}</div>
+<div style='font-size:0.78rem;margin-top:0.3rem;line-height:1.2'>${nameEsc}${yearTag}</div>
 <div class='meta' style='font-size:0.7rem;margin-top:0.15rem'>${typeEsc} · <span class='tag'>${sim}</span></div>
 </a>`;
   }
@@ -883,7 +901,7 @@ function render(data){
     .call(d3.drag().on('start',dragStart).on('drag',dragging).on('end',dragEnd))
     .on('click',function(e,d){onNodeClick(d);});
 
-  node.append('title').text(function(d){return d.name+' ('+d.type+')';});
+  node.append('title').text(function(d){return d.name+(d.year?' ('+d.year+')':'')+' — '+d.type;});
 
   label=g.append('g').selectAll('text').data(data.nodes).enter().append('text')
     .text(function(d){return d.name;})
@@ -928,7 +946,7 @@ function selectNode(d){
   });
 
   var panel=document.getElementById('detail-panel');
-  document.getElementById('detail-name').textContent=d.name;
+  document.getElementById('detail-name').textContent=d.name+(d.year?' ('+d.year+')':'');
   document.getElementById('detail-type').textContent=d.type;
   document.getElementById('detail-link').href='/practitioner/'+d.slug;
 
@@ -1159,8 +1177,9 @@ router.get("/embed-space", (_req, res) => {
     if (hit) {
       const img = hit.cdn_image_url || hit.image_url;
       const thumb = img ? '<img src="' + img + '" alt="" style="width:120px;height:120px;object-fit:cover;border-radius:3px;display:block;margin-bottom:0.3rem">' : '';
+      const yearBit = hit.year ? ' <span class="meta">(' + hit.year + ')</span>' : '';
       tip.innerHTML = thumb +
-        '<div><strong>' + (hit.name || hit.id) + '</strong></div>' +
+        '<div><strong>' + (hit.name || hit.id) + '</strong>' + yearBit + '</div>' +
         '<div class="meta"><span class="tag">' + hit.type + '</span> · ' + hit.kind + '</div>';
       tip.style.display = 'block';
       // Position with offset so the tip doesn't sit under the cursor.

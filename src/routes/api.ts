@@ -12,6 +12,7 @@ import {
   materialiseEdge,
 } from "../utils/contribution.js";
 import { buildEmbeddingSections } from "../embed/sections.js";
+import { YEAR_SQL_FRAGMENT, formatArtworkYear } from "../utils/year.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dirname, "..", "..");
@@ -44,7 +45,8 @@ router.get("/api/graph", (req, res) => {
   const NODE_COLS =
     "id, name, type, slug, " +
     "json_extract(metadata,'$.image_url') AS image_url, " +
-    "json_extract(metadata,'$.cdn_image_url') AS cdn_image_url";
+    "json_extract(metadata,'$.cdn_image_url') AS cdn_image_url, " +
+    YEAR_SQL_FRAGMENT;
 
   let nodeRows: any[];
   if (!typeFilter) {
@@ -86,14 +88,18 @@ router.get("/api/graph", (req, res) => {
   }
 
   res.set(JSON_HEADERS).json({
-    nodes: nodeRows.map((n: any) => ({
-      id: n.id,
-      name: n.name,
-      type: n.type,
-      slug: n.slug,
-      ...(n.cdn_image_url ? { cdn_image_url: n.cdn_image_url } : {}),
-      ...(n.image_url ? { image_url: n.image_url } : {}),
-    })),
+    nodes: nodeRows.map((n: any) => {
+      const year = n.type === "artwork" ? formatArtworkYear(n) : null;
+      return {
+        id: n.id,
+        name: n.name,
+        type: n.type,
+        slug: n.slug,
+        ...(year ? { year } : {}),
+        ...(n.cdn_image_url ? { cdn_image_url: n.cdn_image_url } : {}),
+        ...(n.image_url ? { image_url: n.image_url } : {}),
+      };
+    }),
     edges: edgeRows.map((e: any) => ({
       source: e.source_id,
       target: e.target_id,
@@ -113,7 +119,8 @@ router.get("/api/graph/:slug/component", (req, res) => {
   const NODE_COLS =
     "id, name, type, slug, " +
     "json_extract(metadata,'$.image_url') AS image_url, " +
-    "json_extract(metadata,'$.cdn_image_url') AS cdn_image_url";
+    "json_extract(metadata,'$.cdn_image_url') AS cdn_image_url, " +
+    YEAR_SQL_FRAGMENT;
 
   const start = db.prepare(`SELECT ${NODE_COLS} FROM nodes WHERE slug = ?`).get(slug) as any;
   if (!start) {
@@ -167,12 +174,14 @@ router.get("/api/graph/:slug/component", (req, res) => {
   for (const id of visited) {
     const n = nodeById.get(id);
     if (n) {
+      const year = n.type === "artwork" ? formatArtworkYear(n) : null;
       nodes.push({
         id: n.id,
         name: n.name,
         type: n.type,
         slug: n.slug,
         center: n.id === start.id,
+        ...(year ? { year } : {}),
         ...(n.cdn_image_url ? { cdn_image_url: n.cdn_image_url } : {}),
         ...(n.image_url ? { image_url: n.image_url } : {}),
       });
@@ -190,7 +199,8 @@ router.get("/api/graph/:slug", (req, res) => {
   const NODE_COLS =
     "id, name, type, slug, " +
     "json_extract(metadata,'$.image_url') AS image_url, " +
-    "json_extract(metadata,'$.cdn_image_url') AS cdn_image_url";
+    "json_extract(metadata,'$.cdn_image_url') AS cdn_image_url, " +
+    YEAR_SQL_FRAGMENT;
 
   const node = db.prepare(`SELECT ${NODE_COLS} FROM nodes WHERE slug = ?`).get(slug) as any;
   if (!node) {
@@ -198,15 +208,19 @@ router.get("/api/graph/:slug", (req, res) => {
     return;
   }
 
-  const projectNode = (n: any, extra: Record<string, unknown> = {}) => ({
-    id: n.id,
-    name: n.name,
-    type: n.type,
-    slug: n.slug,
-    ...extra,
-    ...(n.cdn_image_url ? { cdn_image_url: n.cdn_image_url } : {}),
-    ...(n.image_url ? { image_url: n.image_url } : {}),
-  });
+  const projectNode = (n: any, extra: Record<string, unknown> = {}) => {
+    const year = n.type === "artwork" ? formatArtworkYear(n) : null;
+    return {
+      id: n.id,
+      name: n.name,
+      type: n.type,
+      slug: n.slug,
+      ...extra,
+      ...(year ? { year } : {}),
+      ...(n.cdn_image_url ? { cdn_image_url: n.cdn_image_url } : {}),
+      ...(n.image_url ? { image_url: n.image_url } : {}),
+    };
+  };
 
   const nodes: any[] = [projectNode(node, { center: true })];
 
@@ -442,16 +456,21 @@ router.get("/api/embed-space", (_req, res) => {
       .prepare(
         `SELECT id, name, type, slug,
                 json_extract(metadata,'$.cdn_image_url') AS cdn_image_url,
-                json_extract(metadata,'$.image_url')     AS image_url
+                json_extract(metadata,'$.image_url')     AS image_url,
+                ${YEAR_SQL_FRAGMENT}
            FROM nodes WHERE id IN (${placeholders})`
       )
       .all(...ids) as Array<{
         id: string; name: string; type: string; slug: string;
         cdn_image_url: string | null; image_url: string | null;
+        year_raw: string | null; year_start: number | null;
+        year_end: number | null; year_ongoing: number | null;
+        active_years_1: string | null; active_years_2: string | null;
       }>;
     const byId = new Map(meta.map((m) => [m.id, m]));
     const items = raw.items.map((p: any) => {
       const m = byId.get(p.node_id);
+      const year = m && m.type === "artwork" ? formatArtworkYear(m) : null;
       return {
         id: p.node_id,
         kind: p.kind,
@@ -462,6 +481,7 @@ router.get("/api/embed-space", (_req, res) => {
               name: m.name,
               type: m.type,
               slug: m.slug,
+              ...(year ? { year } : {}),
               ...(m.cdn_image_url ? { cdn_image_url: m.cdn_image_url } : {}),
               ...(m.image_url ? { image_url: m.image_url } : {}),
             }

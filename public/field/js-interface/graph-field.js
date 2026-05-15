@@ -538,7 +538,7 @@
       : '';
     panelEl.innerHTML = `
       <button class="adai-close" aria-label="close" style="float:right;background:none;border:none;color:#666;cursor:pointer;font-size:16px;line-height:1;padding:0;margin-left:8px">×</button>
-      <div style="color:#666;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px">${escapeHtml(node.type)}</div>
+      <div style="color:#666;font-size:9px;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:6px">${escapeHtml(node.type)}${node.year ? ` · ${escapeHtml(node.year)}` : ''}</div>
       <div style="font-size:15px;color:#fff;margin-bottom:4px;line-height:1.25">${escapeHtml(node.name)}</div>
       <div style="color:#555;font-size:10px;margin-bottom:14px;word-break:break-all">${escapeHtml(node.id)}</div>
       <div style="border-top:1px solid #2a2a30;padding-top:12px">
