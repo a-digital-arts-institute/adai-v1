@@ -15,8 +15,11 @@
   const STATS_TIMEOUT_MS = 6000;
   const GRAPH_TIMEOUT_MS = 15000;
   // v2: bumped 2026-05-03 when backend started returning cdn_image_url / image_url.
-  // v1 cached payloads predate the image fields and would suppress thumbnails.
-  const CACHE_KEY = 'adai.graph.v2';
+  //     v1 cached payloads predate the image fields and would suppress thumbnails.
+  // v3: bumped 2026-05-16 when backend started projecting `year` onto artwork nodes.
+  //     v2 cached payloads have no year, so the field panel / entity view title
+  //     / CREATED_BY work stubs would silently render without dates.
+  const CACHE_KEY = 'adai.graph.v3';
 
   window.ADAI_GRAPH_STATS = window.ADAI_GRAPH_STATS || null;
   window.ADAI_GRAPH = window.ADAI_GRAPH || null;
