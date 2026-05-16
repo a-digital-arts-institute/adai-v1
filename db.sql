@@ -154,3 +154,25 @@ CREATE TABLE IF NOT EXISTS settings (
 );
 
 INSERT OR IGNORE INTO settings (key, value) VALUES ('db_version', '1');
+
+-- Bearer tokens for the /api/v1/* contributor API. Local-only (NOT a CRR):
+-- token material must never sync. The raw token is sha256-hashed before
+-- storage; we keep token_prefix (first 8 chars of the raw token) so an
+-- operator can identify a token in `npm run token:revoke` without ever
+-- seeing the secret again. Issuance is out-of-band via `src/cli/issue-token.ts`
+-- — there is no HTTP endpoint that mints tokens.
+CREATE TABLE IF NOT EXISTS contributor_tokens (
+    token_hash      TEXT PRIMARY KEY NOT NULL,
+    token_prefix    TEXT NOT NULL,
+    contributor_id  TEXT NOT NULL,
+    label           TEXT,
+    scope           TEXT DEFAULT 'write',
+    created_at      TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+    last_used_at    TEXT,
+    revoked_at      TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_contributor_tokens_contributor
+  ON contributor_tokens(contributor_id);
+CREATE INDEX IF NOT EXISTS idx_contributor_tokens_prefix
+  ON contributor_tokens(token_prefix);

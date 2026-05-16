@@ -1,13 +1,36 @@
 import { Router } from "express";
 import path from "node:path";
+import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { getDb } from "../db.js";
 import { htmlPage, htmlEscape, CSS, HTML_HEADERS } from "../templates.js";
 import { topKByNodeId, withMetadata, type Neighbour } from "../embed/neighbours.js";
+import { buildEmbeddingSections } from "../embed/sections.js";
+import { formatArtworkYearFromMetadata, formatArtworkYear, YEAR_SQL_FRAGMENT } from "../utils/year.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const PROJECT_ROOT = path.join(__dirname, "..", "..");
 
 const router = Router();
+
+// GET /skill.md — serve SKILL.md verbatim as text/markdown so a Claude can
+// `curl $ADAI_BASE/skill.md` and bootstrap itself into the contributor API.
+// File is read on every request (small, ~6 KB) so editing it doesn't require
+// a server restart in dev.
+router.get("/skill.md", (_req, res) => {
+  const skillPath = path.join(PROJECT_ROOT, "SKILL.md");
+  if (!fs.existsSync(skillPath)) {
+    res.status(404).type("text/plain").send("SKILL.md not found");
+    return;
+  }
+  res
+    .set({
+      "Content-Type": "text/markdown; charset=utf-8",
+      "Cache-Control": "public, max-age=300",
+      "Access-Control-Allow-Origin": "*",
+    })
+    .send(fs.readFileSync(skillPath, "utf-8"));
+});
 
 const ENTITY_TYPES_EXCLUDE = "('related', 'concept', 'scene', 'classification_regime')";
 
@@ -85,13 +108,18 @@ router.get("/", (_req, res) => {
 router.get("/explore", (_req, res) => {
   const db = getDb();
   const rows = db
-    .prepare(`SELECT id, name, type, slug FROM nodes WHERE type NOT IN ${ENTITY_TYPES_EXCLUDE} ORDER BY name`)
+    .prepare(
+      `SELECT id, name, type, slug, ${YEAR_SQL_FRAGMENT}
+         FROM nodes WHERE type NOT IN ${ENTITY_TYPES_EXCLUDE} ORDER BY name`
+    )
     .all() as any[];
 
   let body = `<h2>Explore</h2><p class='meta'>${rows.length} entities — practitioners, artworks, collectives, platforms, institutions, and projects</p>`;
 
   for (const r of rows) {
-    body += `<div class='card'><h3><a href='/${r.type}/${r.slug}'>${r.name}</a></h3><span class='tag'>${r.type}</span></div>`;
+    const yr = r.type === "artwork" ? formatArtworkYear(r) : null;
+    const yrTag = yr ? ` <span class='meta'>(${htmlEscape(yr)})</span>` : "";
+    body += `<div class='card'><h3><a href='/${r.type}/${r.slug}'>${r.name}</a>${yrTag}</h3><span class='tag'>${r.type}</span></div>`;
   }
 
   res.set(HTML_HEADERS).send(htmlPage("Explore", body));
@@ -111,6 +139,17 @@ function profileHandler(req: any, res: any) {
   const escName = htmlEscape(String(node.name));
   const escType = htmlEscape(String(node.type));
   let body = `<h2>${escName}</h2><span class='tag'>${escType}</span>`;
+
+  // For artworks, surface the year prominently right under the title.
+  // The same display string is exposed by the API on artwork nodes, so
+  // graph/field/embed-space hovers stay consistent.
+  if (node.type === "artwork" && node.metadata) {
+    try {
+      const yearMeta = JSON.parse(node.metadata);
+      const yr = formatArtworkYearFromMetadata(yearMeta);
+      if (yr) body += ` <span class='tag'>${htmlEscape(yr)}</span>`;
+    } catch { /* metadata not JSON, skip */ }
+  }
 
   if (node.type === "classification_regime") {
     const { count: classifiedCount } = db
@@ -300,129 +339,24 @@ function profileHandler(req: any, res: any) {
 }
 
 // Render the "Style kin", "Visually affine", and "AI-suggested attributions"
-// sections that hang off a profile page. Centralised so each node-type
-// gets only what makes sense and so the rendering is one place to tweak.
+// sections that hang off a profile page. The section selection + neighbour
+// computation lives in `src/embed/sections.ts` and is shared with the JSON
+// endpoint `/api/neighbours/:type/:slug` consumed by the /field overlays,
+// so the HTML and JSON surfaces can never drift apart.
 function renderEmbeddingSections(db: any, node: any): string {
+  const sections = buildEmbeddingSections(db, node);
   let html = "";
-
-  if (node.type === "practitioner" || node.type === "collective") {
-    // Style kin: practitioners closest to this one in style-centroid space.
-    // Only meaningful if this practitioner *has* a centroid (i.e. has at
-    // least one live CREATED_BY edge — bridge practitioners and net-new
-    // imports without attribution silently fall out here).
-    const neighbours = withMetadata(
-      db,
-      topKByNodeId(db, node.id, {
-        queryKind: "style_centroid",
-        candidateKind: "style_centroid",
-        typePrefixes: ["practitioner:", "collective:"],
-        k: 8,
-      })
-    );
-    if (neighbours.length) {
-      html += renderNeighbourSection(
-        "Style kin",
-        "Practitioners closest in style-centroid space (cosine over the mean of their attributed artworks).",
-        neighbours
-      );
-    }
-
-    // Any pending AI-attribution proposals that name this practitioner as
-    // the candidate creator — useful for self-review and for accelerating
-    // the back-of-the-queue curatorial pass.
-    const proposals = db
-      .prepare(
-        `SELECT id, target_node, proposed_edges
-           FROM intake_queue
-          WHERE kind = 'ai_suggestion' AND status = 'pending'`
-      )
-      .all() as Array<{ id: string; target_node: string; proposed_edges: string }>;
-    const matchingProposals: Array<{ id: string; artwork_id: string; sim: number }> = [];
-    for (const p of proposals) {
-      let arr: any[] = [];
-      try { arr = JSON.parse(p.proposed_edges || "[]"); } catch { /* ignore */ }
-      for (const spec of arr) {
-        if (spec.target_id === node.id && spec.edge_type === "CREATED_BY") {
-          matchingProposals.push({ id: p.id, artwork_id: spec.source_id, sim: spec.similarity ?? 0 });
-        }
-      }
-    }
-    if (matchingProposals.length) {
-      // Decorate with metadata via the same helper used for neighbours.
-      matchingProposals.sort((a, b) => b.sim - a.sim);
-      const fake: Neighbour[] = matchingProposals.map((m) => ({
-        node_id: m.artwork_id,
-        similarity: m.sim,
-      }));
-      const decorated = withMetadata(db, fake);
-      html += `<h3 style='margin-top:2rem'>AI-suggested attributions <span class='tag'>${matchingProposals.length}</span></h3>`;
+  for (const s of sections) {
+    if (s.key === "ai_attributions") {
+      // Slightly different chrome for the attribution proposals — the count
+      // is the headline and the blurb links into /review.
+      html += `<h3 style='margin-top:2rem'>${htmlEscape(s.title)} <span class='tag'>${s.neighbours.length}</span></h3>`;
       html += `<p class='meta'>Unattributed artworks the embedding pipeline thinks may be by ${htmlEscape(String(node.name))}. Review at <a href='/review?kind=ai_suggestion'>/review</a>.</p>`;
-      html += renderNeighbourList(decorated);
+      html += renderNeighbourList(s.neighbours);
+      continue;
     }
+    html += renderNeighbourSection(s.title, s.blurb, s.neighbours);
   }
-
-  if (node.type === "artwork") {
-    // Visually affine: nearest artwork neighbours by image+text embedding.
-    const neighbours = withMetadata(
-      db,
-      topKByNodeId(db, node.id, {
-        queryKind: "identity",
-        candidateKind: "identity",
-        typePrefixes: ["artwork:"],
-        k: 8,
-      })
-    );
-    if (neighbours.length) {
-      html += renderNeighbourSection(
-        "Visually affine",
-        "Artworks closest in the embedding space (image + text fused via Gemini Embedding 2).",
-        neighbours
-      );
-    }
-
-    // Also surface the practitioners whose style-centroid this artwork is
-    // closest to — useful diagnostic for attributed artworks, and a head
-    // start on candidates for unattributed ones.
-    const candidates = withMetadata(
-      db,
-      topKByNodeId(db, node.id, {
-        queryKind: "identity",
-        candidateKind: "style_centroid",
-        typePrefixes: ["practitioner:", "collective:"],
-        k: 5,
-        minSimilarity: 0.75,
-      })
-    );
-    if (candidates.length) {
-      html += renderNeighbourSection(
-        "Style proximity",
-        "Practitioners whose style-centroid sits closest to this artwork.",
-        candidates
-      );
-    }
-  }
-
-  if (node.type === "concept" || node.type === "scene") {
-    // For abstract nodes, surface the closest artworks — what works most
-    // strongly carry this concept / belong to this scene per the embedding.
-    const neighbours = withMetadata(
-      db,
-      topKByNodeId(db, node.id, {
-        queryKind: "identity",
-        candidateKind: "identity",
-        typePrefixes: ["artwork:"],
-        k: 8,
-      })
-    );
-    if (neighbours.length) {
-      html += renderNeighbourSection(
-        "Closest artworks in embedding space",
-        "Artworks whose fused text+image vector sits closest to this " + node.type + "'s text embedding.",
-        neighbours
-      );
-    }
-  }
-
   return html;
 }
 
@@ -445,9 +379,10 @@ function renderNeighbourList(neighbours: Neighbour[]): string {
     const thumb = img
       ? `<img src='${htmlEscape(String(img))}' alt='${nameEsc}' style='width:96px;height:96px;object-fit:cover;border-radius:4px;display:block' loading='lazy' />`
       : `<div style='width:96px;height:96px;background:#181818;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:#666;text-align:center;padding:0.4rem;box-sizing:border-box'>${nameEsc.slice(0, 40)}</div>`;
+    const yearTag = n.year ? ` <span class='meta'>(${htmlEscape(String(n.year))})</span>` : "";
     s += `<a href='${url}' style='display:block;width:108px;text-decoration:none;color:inherit'>
 ${thumb}
-<div style='font-size:0.78rem;margin-top:0.3rem;line-height:1.2'>${nameEsc}</div>
+<div style='font-size:0.78rem;margin-top:0.3rem;line-height:1.2'>${nameEsc}${yearTag}</div>
 <div class='meta' style='font-size:0.7rem;margin-top:0.15rem'>${typeEsc} · <span class='tag'>${sim}</span></div>
 </a>`;
   }
@@ -775,23 +710,60 @@ router.get("/review", (req, res) => {
   } else {
     const items = db
       .prepare(
-        "SELECT iq.id, iq.signal_id, iq.target_node, iq.submitted_by, iq.trust_tier, iq.created_at, s.title, s.content, s.source_url, n.name as target_name FROM intake_queue iq LEFT JOIN signals s ON iq.signal_id = s.id LEFT JOIN nodes n ON iq.target_node = n.id WHERE iq.status='pending' AND iq.kind='human_signal' ORDER BY iq.created_at DESC"
+        "SELECT iq.id, iq.signal_id, iq.target_node, iq.submitted_by, iq.trust_tier, iq.created_at, iq.proposed_nodes, iq.proposed_edges, s.title, s.content, s.source_url, s.source_type, n.name as target_name FROM intake_queue iq LEFT JOIN signals s ON iq.signal_id = s.id LEFT JOIN nodes n ON iq.target_node = n.id WHERE iq.status='pending' AND iq.kind='human_signal' ORDER BY iq.created_at DESC"
       )
       .all() as any[];
 
     for (const item of items) {
       const qtitle = htmlEscape(String(item.title ?? ""));
-      const qcontent = htmlEscape(String(item.content ?? ""));
       const qurl = htmlEscape(String(item.source_url ?? ""));
       const qauthor = htmlEscape(String(item.submitted_by ?? ""));
       const qtier = htmlEscape(String(item.trust_tier ?? ""));
-      const qtarget = htmlEscape(String(item.target_name ?? ""));
+      const qtarget = htmlEscape(String(item.target_name ?? item.target_node ?? ""));
       const qdate = String(item.created_at ?? "");
+      const qsource = String(item.source_type ?? "");
 
       body += `<div class='card' id='item-${item.id}'>
 <h3>${qtitle}</h3>
-<p class='meta'>About: <strong>${qtarget}</strong> · By: ${qauthor} · Trust: <span class='tag'>${qtier}</span> · ${qdate}</p>
-<p>${qcontent}</p>`;
+<p class='meta'>About: <strong>${qtarget}</strong> · By: ${qauthor} · Trust: <span class='tag'>${qtier}</span> · ${qdate}${qsource ? ` · <span class='tag'>${htmlEscape(qsource)}</span>` : ""}</p>`;
+
+      // For API-submitted contributions (source_type like 'api_*'), preview
+      // the structured proposed_nodes / proposed_edges payload instead of
+      // dumping the raw JSON in `content`. For legacy web-form signals,
+      // fall back to rendering the content body as before.
+      const isApiContribution = qsource.startsWith("api_");
+      if (isApiContribution) {
+        let ops: any[] = [];
+        let edges: any[] = [];
+        try { ops = JSON.parse(item.proposed_nodes || "[]"); } catch { /* empty */ }
+        try { edges = JSON.parse(item.proposed_edges || "[]"); } catch { /* empty */ }
+        if (ops.length) {
+          body += `<p class='meta'>Proposed node operations:</p><ul class='meta'>`;
+          for (const op of ops) {
+            if (op?.op === "create_node") {
+              body += `<li>create <span class='tag'>${htmlEscape(String(op.type))}</span> "${htmlEscape(String(op.name))}" (id: <code>${htmlEscape(`${op.type}:${op.slug}`)}</code>)</li>`;
+            } else if (op?.op === "patch_node") {
+              const keys = Object.keys(op.metadata || {}).join(", ");
+              body += `<li>patch metadata of <code>${htmlEscape(String(op.node_id))}</code> — keys: ${htmlEscape(keys)}</li>`;
+            } else if (op?.op === "attach_image") {
+              body += `<li>attach image to <code>${htmlEscape(String(op.node_id))}</code> — <a href='${htmlEscape(String(op.cdn_image_url))}' target='_blank'>preview</a> (sha256: <code>${htmlEscape(String(op.sha256).slice(0, 12))}…</code>)</li>`;
+            } else {
+              body += `<li>${htmlEscape(JSON.stringify(op))}</li>`;
+            }
+          }
+          body += `</ul>`;
+        }
+        if (edges.length) {
+          body += `<p class='meta'>Proposed edges:</p><ul class='meta'>`;
+          for (const e of edges) {
+            const sup = e.supersedes_edge_id ? ` <em>supersedes</em> <code>${htmlEscape(String(e.supersedes_edge_id))}</code>` : "";
+            body += `<li><code>${htmlEscape(String(e.source_id))}</code> — <strong>${htmlEscape(String(e.edge_type))}</strong> → <code>${htmlEscape(String(e.target_id))}</code>${sup}</li>`;
+          }
+          body += `</ul>`;
+        }
+      } else {
+        body += `<p>${htmlEscape(String(item.content ?? ""))}</p>`;
+      }
 
       if (qurl) {
         body += `<p class='meta'>Source: <a href='${qurl}'>${qurl}</a></p>`;
@@ -929,7 +901,7 @@ function render(data){
     .call(d3.drag().on('start',dragStart).on('drag',dragging).on('end',dragEnd))
     .on('click',function(e,d){onNodeClick(d);});
 
-  node.append('title').text(function(d){return d.name+' ('+d.type+')';});
+  node.append('title').text(function(d){return d.name+(d.year?' ('+d.year+')':'')+' — '+d.type;});
 
   label=g.append('g').selectAll('text').data(data.nodes).enter().append('text')
     .text(function(d){return d.name;})
@@ -974,7 +946,7 @@ function selectNode(d){
   });
 
   var panel=document.getElementById('detail-panel');
-  document.getElementById('detail-name').textContent=d.name;
+  document.getElementById('detail-name').textContent=d.name+(d.year?' ('+d.year+')':'');
   document.getElementById('detail-type').textContent=d.type;
   document.getElementById('detail-link').href='/practitioner/'+d.slug;
 
@@ -1205,8 +1177,9 @@ router.get("/embed-space", (_req, res) => {
     if (hit) {
       const img = hit.cdn_image_url || hit.image_url;
       const thumb = img ? '<img src="' + img + '" alt="" style="width:120px;height:120px;object-fit:cover;border-radius:3px;display:block;margin-bottom:0.3rem">' : '';
+      const yearBit = hit.year ? ' <span class="meta">(' + hit.year + ')</span>' : '';
       tip.innerHTML = thumb +
-        '<div><strong>' + (hit.name || hit.id) + '</strong></div>' +
+        '<div><strong>' + (hit.name || hit.id) + '</strong>' + yearBit + '</div>' +
         '<div class="meta"><span class="tag">' + hit.type + '</span> · ' + hit.kind + '</div>';
       tip.style.display = 'block';
       // Position with offset so the tip doesn't sit under the cursor.

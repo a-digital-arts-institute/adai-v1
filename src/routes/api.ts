@@ -5,6 +5,14 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getDb } from "../db.js";
 import { HTML_HEADERS, JSON_HEADERS } from "../templates.js";
+import {
+  materialiseCreateNode,
+  materialisePatchNode,
+  materialiseAttachImage,
+  materialiseEdge,
+} from "../utils/contribution.js";
+import { buildEmbeddingSections } from "../embed/sections.js";
+import { YEAR_SQL_FRAGMENT, formatArtworkYear } from "../utils/year.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dirname, "..", "..");
@@ -37,7 +45,8 @@ router.get("/api/graph", (req, res) => {
   const NODE_COLS =
     "id, name, type, slug, " +
     "json_extract(metadata,'$.image_url') AS image_url, " +
-    "json_extract(metadata,'$.cdn_image_url') AS cdn_image_url";
+    "json_extract(metadata,'$.cdn_image_url') AS cdn_image_url, " +
+    YEAR_SQL_FRAGMENT;
 
   let nodeRows: any[];
   if (!typeFilter) {
@@ -79,14 +88,18 @@ router.get("/api/graph", (req, res) => {
   }
 
   res.set(JSON_HEADERS).json({
-    nodes: nodeRows.map((n: any) => ({
-      id: n.id,
-      name: n.name,
-      type: n.type,
-      slug: n.slug,
-      ...(n.cdn_image_url ? { cdn_image_url: n.cdn_image_url } : {}),
-      ...(n.image_url ? { image_url: n.image_url } : {}),
-    })),
+    nodes: nodeRows.map((n: any) => {
+      const year = n.type === "artwork" ? formatArtworkYear(n) : null;
+      return {
+        id: n.id,
+        name: n.name,
+        type: n.type,
+        slug: n.slug,
+        ...(year ? { year } : {}),
+        ...(n.cdn_image_url ? { cdn_image_url: n.cdn_image_url } : {}),
+        ...(n.image_url ? { image_url: n.image_url } : {}),
+      };
+    }),
     edges: edgeRows.map((e: any) => ({
       source: e.source_id,
       target: e.target_id,
@@ -106,7 +119,8 @@ router.get("/api/graph/:slug/component", (req, res) => {
   const NODE_COLS =
     "id, name, type, slug, " +
     "json_extract(metadata,'$.image_url') AS image_url, " +
-    "json_extract(metadata,'$.cdn_image_url') AS cdn_image_url";
+    "json_extract(metadata,'$.cdn_image_url') AS cdn_image_url, " +
+    YEAR_SQL_FRAGMENT;
 
   const start = db.prepare(`SELECT ${NODE_COLS} FROM nodes WHERE slug = ?`).get(slug) as any;
   if (!start) {
@@ -160,12 +174,14 @@ router.get("/api/graph/:slug/component", (req, res) => {
   for (const id of visited) {
     const n = nodeById.get(id);
     if (n) {
+      const year = n.type === "artwork" ? formatArtworkYear(n) : null;
       nodes.push({
         id: n.id,
         name: n.name,
         type: n.type,
         slug: n.slug,
         center: n.id === start.id,
+        ...(year ? { year } : {}),
         ...(n.cdn_image_url ? { cdn_image_url: n.cdn_image_url } : {}),
         ...(n.image_url ? { image_url: n.image_url } : {}),
       });
@@ -183,7 +199,8 @@ router.get("/api/graph/:slug", (req, res) => {
   const NODE_COLS =
     "id, name, type, slug, " +
     "json_extract(metadata,'$.image_url') AS image_url, " +
-    "json_extract(metadata,'$.cdn_image_url') AS cdn_image_url";
+    "json_extract(metadata,'$.cdn_image_url') AS cdn_image_url, " +
+    YEAR_SQL_FRAGMENT;
 
   const node = db.prepare(`SELECT ${NODE_COLS} FROM nodes WHERE slug = ?`).get(slug) as any;
   if (!node) {
@@ -191,15 +208,19 @@ router.get("/api/graph/:slug", (req, res) => {
     return;
   }
 
-  const projectNode = (n: any, extra: Record<string, unknown> = {}) => ({
-    id: n.id,
-    name: n.name,
-    type: n.type,
-    slug: n.slug,
-    ...extra,
-    ...(n.cdn_image_url ? { cdn_image_url: n.cdn_image_url } : {}),
-    ...(n.image_url ? { image_url: n.image_url } : {}),
-  });
+  const projectNode = (n: any, extra: Record<string, unknown> = {}) => {
+    const year = n.type === "artwork" ? formatArtworkYear(n) : null;
+    return {
+      id: n.id,
+      name: n.name,
+      type: n.type,
+      slug: n.slug,
+      ...extra,
+      ...(year ? { year } : {}),
+      ...(n.cdn_image_url ? { cdn_image_url: n.cdn_image_url } : {}),
+      ...(n.image_url ? { image_url: n.image_url } : {}),
+    };
+  };
 
   const nodes: any[] = [projectNode(node, { center: true })];
 
@@ -286,7 +307,7 @@ router.post("/api/review/:id/approve", (req, res) => {
 
   const item = db
     .prepare(
-      "SELECT id, signal_id, target_node, submitted_by, kind, proposed_edges FROM intake_queue WHERE id = ? AND status = 'pending'"
+      "SELECT id, signal_id, target_node, submitted_by, kind, proposed_edges, proposed_nodes FROM intake_queue WHERE id = ? AND status = 'pending'"
     )
     .get(id) as any;
 
@@ -318,6 +339,35 @@ router.post("/api/review/:id/approve", (req, res) => {
     for (const p of proposals) {
       const edgeId = `${p.source_id}--${p.edge_type}--${p.target_id}--curator-from-ai-suggestion`;
       insertEdge.run(edgeId, p.source_id, p.target_id, p.edge_type, item.signal_id);
+    }
+  }
+
+  // For human_signal items submitted via /api/v1/*, materialise the queued
+  // payload. Shape matches the helpers in src/utils/contribution.ts —
+  // proposed_nodes is a discriminated array (create_node / patch_node /
+  // attach_image), proposed_edges is a flat list of edge specs (may carry
+  // supersedes_edge_id for bi-temporal supersession).
+  if (item.kind === "human_signal") {
+    const createdBy = `curator-from-${item.submitted_by ?? "api"}`;
+    if (item.proposed_nodes) {
+      let ops: any[] = [];
+      try { ops = JSON.parse(item.proposed_nodes); } catch { ops = []; }
+      for (const op of ops) {
+        if (op?.op === "create_node") {
+          materialiseCreateNode(db, op, { signalId: item.signal_id, createdBy });
+        } else if (op?.op === "patch_node") {
+          materialisePatchNode(db, op, { createdBy });
+        } else if (op?.op === "attach_image") {
+          materialiseAttachImage(db, op, { createdBy });
+        }
+      }
+    }
+    if (item.proposed_edges) {
+      let edges: any[] = [];
+      try { edges = JSON.parse(item.proposed_edges); } catch { edges = []; }
+      for (const e of edges) {
+        materialiseEdge(db, { ...e, signal_id: item.signal_id }, { signalId: item.signal_id, createdBy });
+      }
     }
   }
 
@@ -406,16 +456,22 @@ router.get("/api/embed-space", (_req, res) => {
       .prepare(
         `SELECT id, name, type, slug,
                 json_extract(metadata,'$.cdn_image_url') AS cdn_image_url,
-                json_extract(metadata,'$.image_url')     AS image_url
+                json_extract(metadata,'$.image_url')     AS image_url,
+                ${YEAR_SQL_FRAGMENT}
            FROM nodes WHERE id IN (${placeholders})`
       )
       .all(...ids) as Array<{
         id: string; name: string; type: string; slug: string;
         cdn_image_url: string | null; image_url: string | null;
+        year_raw: string | null; year_start: number | null;
+        year_end: number | null; year_ongoing: number | null;
+        year_meta: string | null;
+        active_years_1: string | null; active_years_2: string | null;
       }>;
     const byId = new Map(meta.map((m) => [m.id, m]));
     const items = raw.items.map((p: any) => {
       const m = byId.get(p.node_id);
+      const year = m && m.type === "artwork" ? formatArtworkYear(m) : null;
       return {
         id: p.node_id,
         kind: p.kind,
@@ -426,6 +482,7 @@ router.get("/api/embed-space", (_req, res) => {
               name: m.name,
               type: m.type,
               slug: m.slug,
+              ...(year ? { year } : {}),
               ...(m.cdn_image_url ? { cdn_image_url: m.cdn_image_url } : {}),
               ...(m.image_url ? { image_url: m.image_url } : {}),
             }
@@ -442,5 +499,39 @@ router.get("/api/embed-space", (_req, res) => {
   }
   res.set(JSON_HEADERS).json(umapCache);
 });
+
+// GET /api/neighbours/:type/:slug — embedding-derived sections for a node.
+//
+// Returns the same "Style kin / Visually affine / Style proximity / Closest
+// artworks / AI-suggested attributions" cards that the HTML profile pages
+// render (`renderEmbeddingSections` in src/routes/pages.ts), in machine form
+// so the /field overlays (1k entity view + 10k zoom strip) can fetch and
+// render them client-side.
+//
+// Slug-only lookup (the type segment is decorative, like the other polymorphic
+// endpoints) so the client doesn't need to know about colon-id internals.
+function neighboursHandler(req: any, res: any) {
+  const db = getDb();
+  const slug = req.params.slug;
+
+  const node = db
+    .prepare("SELECT id, name, type, slug FROM nodes WHERE slug = ?")
+    .get(slug) as
+    | { id: string; name: string; type: string; slug: string }
+    | undefined;
+  if (!node) {
+    res.status(404).set(JSON_HEADERS).json({ error: "not found" });
+    return;
+  }
+
+  const sections = buildEmbeddingSections(db, node);
+  res.set(JSON_HEADERS).json({
+    node: { id: node.id, name: node.name, type: node.type, slug: node.slug },
+    sections,
+  });
+}
+
+// Polymorphic registration matches the rest of the slug-keyed surface.
+router.get("/api/neighbours/:type/:slug", neighboursHandler);
 
 export default router;

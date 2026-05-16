@@ -28,7 +28,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
-COPY db.sql entrypoint.sh ./
+COPY db.sql entrypoint.sh SKILL.md ./
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/seed.db ./seed.db
 # UMAP projection is read by /api/embed-space at runtime — the .bin and .json

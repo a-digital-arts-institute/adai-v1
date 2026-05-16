@@ -103,6 +103,50 @@ Single SQLite file `adai.db` with CR-SQLite CRDT extensions (`@shards-lang/crsql
 - `POST /api/review/:id/approve` — approve intake item
 - `POST /api/review/:id/reject` — reject with reason
 
+### Contributor API (`/api/v1/*`) — bearer-token, AI-driven
+
+The contributor surface for AI assistants ("Claude with a sandbox") rather than a web frontend. Every endpoint requires `Authorization: Bearer <token>`; tokens are issued out-of-band via `npm run token:issue` and live in the local-only `contributor_tokens` table (sha256-hashed, soft-revocable). The caller-facing contract is `SKILL.md` at the repo root, also served verbatim at `GET /skill.md` so a Claude can bootstrap with `curl $ADAI_BASE/skill.md`.
+
+Endpoints:
+- `GET /api/v1/whoami` — identity + trust tier + r2 status + token scope
+- `POST /api/v1/signals` — text contribution about an existing node (token-gated successor to `/api/contribute`)
+- `POST /api/v1/nodes` — create practitioner / artwork / concept / etc.; server computes `<type>:<slug>` id
+- `PATCH /api/v1/nodes/:id` — JSON-merge-patch on `metadata` (null deletes a key)
+- `POST /api/v1/edges` — add an edge; supports bi-temporal supersession via `supersedes_edge_id`
+- `POST /api/v1/images` — `multipart/form-data` (`image=@file`, `node_id=...`) OR `application/json` with `image_base64` + `mime_type`; uploads to R2 with the same content-addressed key scheme as the offline Python uploader (`images/<sha[:2]>/<sha>.<ext>`), then attaches `cdn_image_url` to the node's metadata
+
+Admin endpoints (require `scope='admin'` token, enforced by `requireAdmin` in `src/auth.ts`):
+- `GET  /api/v1/tokens` — list tokens (`?contributor=<name>&active=1` filters)
+- `POST /api/v1/tokens` — mint a **write-scope** contributor token (refuses `scope=admin` in body; only the operator CLI can mint admins)
+- `POST /api/v1/tokens/:prefix/revoke` — soft-delete a token by prefix
+
+Scope and trust_tier are deliberately decoupled: `scope` (write|admin) governs *which endpoints* the token can hit, `trust_tier` (auto|reviewed|probationary) governs *whether writes auto-merge or queue*. An admin can be `probationary` (every contribution they make queues) and still mint tokens. The mint/revoke/list logic lives in `src/utils/token-mint.ts` and is shared between the HTTP endpoints and the operator CLI so the two paths can't drift.
+
+Trust gating mirrors the legacy `/api/contribute` policy: `trust_tier in (auto, reviewed)` writes land live, anything else queues in `intake_queue` as `kind='human_signal'` with `proposed_nodes` / `proposed_edges` populated. The curator's existing `/review` page renders these queued operations in human form (create-node / patch-node / attach-image / edge-with-supersession previews) and the existing `POST /api/review/:id/approve` materialises them via the helpers in `src/utils/contribution.ts`. Image bytes upload to R2 **regardless of tier** (content-addressed + immutable, so no harm); only the metadata attachment is queued for probationary contributors.
+
+Token CLI:
+```bash
+# Local dev
+npm run token:issue -- --contributor "Casey Reas" --label "claude-laptop"
+npm run token:issue -- --contributor "New Person" --label "first" --create --tier probationary
+npm run token:issue -- --contributor "Giovanni" --label "ops" --admin   # admin-scope (CLI-only)
+npm run token:revoke -- --prefix adai_abc12345
+npm run token:revoke -- --list [--contributor "<name>"]
+
+# Production (writes against /data/adai.db on the volume)
+flyctl ssh console --app adai-basel -C \
+  "node /app/dist/cli/issue-token.js --contributor 'Name' --label 'label' --create --tier reviewed"
+flyctl ssh console --app adai-basel -C \
+  "node /app/dist/cli/revoke-token.js --prefix adai_xxxxxxxx"
+```
+The CLI resolves its DB path via `src/utils/db-path.ts`: explicit `DB_PATH` env wins, otherwise it prefers `/data/adai.db` if present (Fly volume), falling back to `./adai.db` for local dev. **Don't run the CLI as `node dist/cli/...` without one of those guards** — older versions silently fell back to `./adai.db`, which on Fly creates a throwaway DB at `/app/adai.db` and the token never reaches the running server.
+
+The raw token is printed to **stdout** exactly once. The store keeps only `sha256(token)` and the first 13 characters (`adai_` + 8 hex) for human reference. Issuance is operator-only (no HTTP endpoint).
+
+R2 secrets on Fly: the runtime image-upload path needs `R2_ENDPOINT`, `R2_BUCKET`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_PUBLIC_BASE` set as `flyctl secrets`. Locally they come from `.env` (the same file `seed/_build/upload_to_r2.py` reads); `src/index.ts` calls `process.loadEnvFile()` at startup when `.env` exists. Without them `POST /api/v1/images` returns `503 r2_not_configured`; the other endpoints still work.
+
+`db.sql` adds `contributor_tokens` (local-only, NOT a CRR). Don't `crsql_as_crr` it — token material must never sync.
+
 ## Deploying
 
 ```bash
