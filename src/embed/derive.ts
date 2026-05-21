@@ -85,8 +85,8 @@ export function derive(db: DatabaseSync, opts: DeriveOptions = {}): DeriveStats 
   if (!opts.skipCentroids) {
     const cs = computeCentroids(db);
     console.log(
-      `centroids: ${cs.practitioners_with_centroid} written, ` +
-        `${cs.practitioners_skipped_no_artworks} skipped (zero artworks), ` +
+      `centroids: ${cs.creators_with_centroid} written, ` +
+        `${cs.creators_skipped_no_artworks} skipped (zero artworks), ` +
         `${cs.artworks_missing_vectors} CREATED_BY targets lacked an artwork vector`
     );
   }
@@ -101,15 +101,16 @@ export function derive(db: DatabaseSync, opts: DeriveOptions = {}): DeriveStats 
 
   // 3. Load vectors + auxiliary lookups.
   const all = loadAll(db);
-  const centroidByPract = new Map<string, Float32Array>();
+  const centroidByCreator = new Map<string, Float32Array>();
   const identityByNode = new Map<string, Float32Array>();
   for (const [, v] of all) {
-    if (v.kind === "style_centroid") centroidByPract.set(v.node_id, v.vec);
+    if (v.kind === "style_centroid") centroidByCreator.set(v.node_id, v.vec);
     else if (v.kind === "identity") identityByNode.set(v.node_id, v.vec);
   }
 
   // Map artwork → set of known creators (for VISUALLY_AFFINE filter and
-  // SUGGESTS_CREATED_BY "unattributed?" check).
+  // SUGGESTS_CREATED_BY "unattributed?" check). Creators are practitioners
+  // or collectives — same filter as centroids.ts.
   const creatorsByArtwork = new Map<string, Set<string>>();
   {
     const rows = db
@@ -118,7 +119,7 @@ export function derive(db: DatabaseSync, opts: DeriveOptions = {}): DeriveStats 
          WHERE edge_type = 'CREATED_BY'
            AND valid_until IS NULL
            AND source_id LIKE 'artwork:%'
-           AND target_id LIKE 'practitioner:%'`
+           AND (target_id LIKE 'practitioner:%' OR target_id LIKE 'collective:%')`
       )
       .all() as Array<{ source_id: string; target_id: string }>;
     for (const r of rows) {
@@ -161,17 +162,19 @@ export function derive(db: DatabaseSync, opts: DeriveOptions = {}): DeriveStats 
   );
 
   // ----- STYLE_KIN ---------------------------------------------------------
-  // Practitioner ↔ practitioner over style centroids. Bidirectional rows so
-  // BFS / profile-page edge lists don't need to know which types are symmetric.
-  const pracs = [...centroidByPract.keys()].sort();
+  // Creator ↔ creator over style centroids (practitioner or collective —
+  // sections.ts asks for both prefixes, centroids.ts emits both).
+  // Bidirectional rows so BFS / profile-page edge lists don't need to know
+  // which types are symmetric.
+  const creators = [...centroidByCreator.keys()].sort();
   if (!dry) db.exec("BEGIN");
   try {
-    for (let i = 0; i < pracs.length; i++) {
-      const a = pracs[i]!;
-      const va = centroidByPract.get(a)!;
-      for (let j = i + 1; j < pracs.length; j++) {
-        const b = pracs[j]!;
-        const vb = centroidByPract.get(b)!;
+    for (let i = 0; i < creators.length; i++) {
+      const a = creators[i]!;
+      const va = centroidByCreator.get(a)!;
+      for (let j = i + 1; j < creators.length; j++) {
+        const b = creators[j]!;
+        const vb = centroidByCreator.get(b)!;
         const sim = cosine(va, vb);
         if (sim < tauK) continue;
         stats.style_kin.pairs++;
@@ -217,42 +220,42 @@ export function derive(db: DatabaseSync, opts: DeriveOptions = {}): DeriveStats 
 
     // ----- SUGGESTS_CREATED_BY (intake_queue) ----------------------------
     // For each unattributed artwork A (no live CREATED_BY edge), score
-    // against every practitioner's style_centroid. If sim ≥ τ_attribute,
-    // enqueue an ai_suggestion row with the proposed CREATED_BY edge
-    // (direction: artwork → practitioner, matching seed convention).
+    // against every creator's style_centroid (practitioner or collective).
+    // If sim ≥ τ_attribute, enqueue an ai_suggestion row with the proposed
+    // CREATED_BY edge (direction: artwork → creator, matching seed convention).
     let suggestionCounter = 0;
     for (const a of arts) {
       const known = creatorsByArtwork.get(a);
       if (known && known.size > 0) continue; // already attributed
       const va = identityByNode.get(a)!;
       stats.unattributed_artworks_scored++;
-      // Find the best-matching practitioner above threshold.
-      let best: { practitioner: string; sim: number } | null = null;
-      for (const [p, vc] of centroidByPract) {
+      // Find the best-matching creator above threshold.
+      let best: { creator: string; sim: number } | null = null;
+      for (const [c, vc] of centroidByCreator) {
         const sim = cosine(va, vc);
         if (sim < tauA) continue;
-        if (!best || sim > best.sim) best = { practitioner: p, sim };
+        if (!best || sim > best.sim) best = { creator: c, sim };
       }
       if (!best) continue;
       // Skip if curator has already rejected this exact attribution.
-      const hash = pairHash(a, "CREATED_BY", best.practitioner);
+      const hash = pairHash(a, "CREATED_BY", best.creator);
       if (rejected.has(hash)) {
         stats.suggests_created_by.rejected_skipped++;
         continue;
       }
       stats.suggests_created_by.proposals++;
       if (dry) continue;
-      // URL-safe id: a deterministic short hash over (artwork, practitioner).
+      // URL-safe id: a deterministic short hash over (artwork, creator).
       // The intake_queue id ends up in /api/review/:id/{approve,reject} paths
       // and reviewAction()'s JS string-concatenation; spaces/colons in the
       // node ids would break both.
-      const idHash = createHash("sha1").update(`${a}|${best.practitioner}`).digest("hex").slice(0, 12);
+      const idHash = createHash("sha1").update(`${a}|${best.creator}`).digest("hex").slice(0, 12);
       const id = `intake-ai-${idHash}`;
       suggestionCounter++;
       const proposed = JSON.stringify([
         {
           source_id: a,
-          target_id: best.practitioner,
+          target_id: best.creator,
           edge_type: "CREATED_BY",
           // Carry the similarity through so the review UI can sort / show it.
           similarity: Number(best.sim.toFixed(4)),

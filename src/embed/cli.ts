@@ -4,11 +4,21 @@
 //   npm run embed:centroids    — diagnostics only (embed:derive already runs it)
 //   npm run embed:calibrate    — print similarity histograms against
 //                                seed/_build/calibration_pairs.json
+//   npm run embed:report-drift — JSON snapshot of the current similarity
+//                                distribution vs the hard-coded τ thresholds.
+//                                Designed for cron / GH Action logs so a human
+//                                notices when re-tuning is warranted (we don't
+//                                auto-recalibrate — that's how the graph
+//                                silently changes shape).
 //
-// All commands read/write `adai.db` (override via DB_PATH env). No network
-// I/O: the actual API-bound work is in seed/_build/embed_nodes.py.
+// All commands read/write the live DB. Path resolution via resolveCliDbPath:
+// explicit DB_PATH wins, otherwise /data/adai.db if present (Fly volume),
+// falling back to ./adai.db for local dev. Without this guard the legacy
+// `./adai.db` default silently creates an empty DB next to the bundle when
+// invoked via `flyctl ssh console -C ...`. See src/utils/db-path.ts.
 
 import { initDb } from "../db.js";
+import { resolveCliDbPath } from "../utils/db-path.js";
 import { computeCentroids } from "./centroids.js";
 import { derive } from "./derive.js";
 import { loadAll, cosine } from "./vectors.js";
@@ -18,7 +28,17 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dirname, "..", "..");
-const dbPath = process.env.DB_PATH || join(PROJECT_ROOT, "adai.db");
+const dbPath = resolveCliDbPath();
+
+// Hard-coded τ defaults — kept in sync with src/embed/derive.ts DEFAULTS.
+// Imported as constants for the drift report (we want to compare the
+// distribution against whatever values are currently shipped, not against
+// runtime env overrides).
+const TAU_DEFAULTS = {
+  tau_attribute: 0.88,
+  tau_kin: 0.91,
+  tau_visual: 0.84,
+} as const;
 
 function parseEnvFloat(name: string, def?: number): number | undefined {
   const v = process.env[name];
@@ -168,6 +188,105 @@ function cmdCalibrate() {
   }
 }
 
+function percentileOf(sorted: number[], value: number): number {
+  // Returns the percentile of `value` in `sorted` (0–100). Used to ask
+  // "where does our hard-coded τ sit in the current distribution?".
+  if (!sorted.length) return NaN;
+  let lo = 0;
+  let hi = sorted.length;
+  while (lo < hi) {
+    const mid = (lo + hi) >>> 1;
+    if (sorted[mid]! < value) lo = mid + 1;
+    else hi = mid;
+  }
+  return (lo / sorted.length) * 100;
+}
+
+interface DriftBlock {
+  value: number;
+  percentile_in_current_distribution: number;
+  p50: number;
+  p95: number;
+  p99: number;
+}
+
+function summariseDrift(sorted: number[], tau: number): DriftBlock {
+  const round4 = (x: number) => Number(x.toFixed(4));
+  if (!sorted.length) {
+    return { value: tau, percentile_in_current_distribution: NaN, p50: NaN, p95: NaN, p99: NaN };
+  }
+  return {
+    value: tau,
+    percentile_in_current_distribution: Number(percentileOf(sorted, tau).toFixed(2)),
+    p50: round4(sorted[Math.floor(sorted.length * 0.5)]!),
+    p95: round4(sorted[Math.floor(sorted.length * 0.95)]!),
+    p99: round4(sorted[Math.floor(sorted.length * 0.99)]!),
+  };
+}
+
+function cmdReportDrift() {
+  const db = initDb(dbPath);
+  const all = loadAll(db);
+  const centroids: Float32Array[] = [];
+  const artworks: Float32Array[] = [];
+  for (const [, v] of all) {
+    if (v.kind === "style_centroid") centroids.push(v.vec);
+    else if (v.kind === "identity" && v.node_id.startsWith("artwork:")) {
+      artworks.push(v.vec);
+    }
+  }
+
+  // Centroid pairwise (used for τ_kin). With ~150 centroids that's ~11k
+  // pairs — full pairwise fits comfortably.
+  const kinSims: number[] = [];
+  for (let i = 0; i < centroids.length; i++) {
+    for (let j = i + 1; j < centroids.length; j++) {
+      kinSims.push(cosine(centroids[i]!, centroids[j]!));
+    }
+  }
+  kinSims.sort((a, b) => a - b);
+
+  // Artwork pairwise (used for τ_visual) — sample to stay under ~20K pairs.
+  // Same N as cmdCalibrate (200) keeps the two surfaces comparable.
+  const artSample = artworks.slice(0, 200);
+  const visSims: number[] = [];
+  for (let i = 0; i < artSample.length; i++) {
+    for (let j = i + 1; j < artSample.length; j++) {
+      visSims.push(cosine(artSample[i]!, artSample[j]!));
+    }
+  }
+  visSims.sort((a, b) => a - b);
+
+  // Artwork ↔ centroid (used for τ_attribute) — sample artworks against
+  // every centroid to keep the cross-pairwise bounded.
+  const attribSims: number[] = [];
+  for (const av of artSample) {
+    for (const cv of centroids) attribSims.push(cosine(av, cv));
+  }
+  attribSims.sort((a, b) => a - b);
+
+  const report = {
+    timestamp: new Date().toISOString(),
+    db_path: dbPath,
+    counts: {
+      style_centroids: centroids.length,
+      artwork_vectors: artworks.length,
+      kin_pairs_scored: kinSims.length,
+      visual_pairs_scored: visSims.length,
+      attribute_pairs_scored: attribSims.length,
+      artwork_sample_size: artSample.length,
+    },
+    thresholds: TAU_DEFAULTS,
+    drift: {
+      tau_kin: summariseDrift(kinSims, TAU_DEFAULTS.tau_kin),
+      tau_visual: summariseDrift(visSims, TAU_DEFAULTS.tau_visual),
+      tau_attribute: summariseDrift(attribSims, TAU_DEFAULTS.tau_attribute),
+    },
+  };
+
+  console.log(JSON.stringify(report, null, 2));
+}
+
 function main(): void {
   const cmd = process.argv[2];
   switch (cmd) {
@@ -180,9 +299,12 @@ function main(): void {
     case "calibrate":
       cmdCalibrate();
       break;
+    case "report-drift":
+      cmdReportDrift();
+      break;
     default:
       console.error(
-        "usage: tsx src/embed/cli.ts {derive|centroids|calibrate} [--dry-run]\n" +
+        "usage: tsx src/embed/cli.ts {derive|centroids|calibrate|report-drift} [--dry-run]\n" +
           "  derive runs centroids first by default."
       );
       process.exit(2);

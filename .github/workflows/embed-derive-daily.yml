@@ -1,0 +1,52 @@
+name: embed-derive-daily
+
+# Daily re-derive of the embedding-derived edge layer against the live Fly DB.
+#
+# Why: contributors approve CREATED_BY edges through /review, but those don't
+# propagate into STYLE_KIN / VISUALLY_AFFINE / SUGGESTS_CREATED_BY until
+# `npm run embed:derive` runs against the live DB. Without this loop, the
+# embedding layer silently lags real attributions.
+#
+# Why not auto-recalibrate thresholds: `embed:report-drift` prints where the
+# hard-coded τ values sit in the current similarity distribution. If they
+# drift far from their original percentiles (95th for τ_kin, 99th for
+# τ_visual / τ_attribute), re-tune by hand. Automating threshold movement is
+# how the visible graph silently changes shape under us — see the
+# recalibration warning in docs/EMBEDDINGS.md.
+#
+# Required secret: FLY_API_TOKEN (org/personal token with deploy access to
+# the adai-basel app).
+
+on:
+  schedule:
+    # Daily at 04:00 UTC — quiet hour in EU/Asia.
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: embed-derive-daily
+  cancel-in-progress: false
+
+jobs:
+  derive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: install flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: derive against live DB
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        # The CLI resolves /data/adai.db automatically via resolveCliDbPath
+        # when run inside the Fly machine (see src/utils/db-path.ts).
+        run: |
+          flyctl ssh console --app adai-basel -C "node /app/dist/embed/cli.js derive"
+
+      - name: drift snapshot
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        # Independent of derive — runs even if derive emitted zero new edges.
+        # JSON output lands directly in the action log; eyeball weekly.
+        run: |
+          flyctl ssh console --app adai-basel -C "node /app/dist/embed/cli.js report-drift"

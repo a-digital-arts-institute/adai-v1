@@ -1,14 +1,19 @@
-// Compute and upsert practitioner style centroids.
+// Compute and upsert practitioner / collective style centroids.
 //
-// For each practitioner P, gather all live `artwork → P` edges where
-// edge_type = 'CREATED_BY' (filter `valid_until IS NULL` — bi-temporal
-// rule from CLAUDE.md), pull the corresponding artwork `identity`
-// vectors, mean them, L2-normalise, upsert as a `style_centroid` row.
+// For each creator C (a practitioner or a collective), gather all live
+// `artwork → C` edges where edge_type = 'CREATED_BY' (filter
+// `valid_until IS NULL` — bi-temporal rule from CLAUDE.md), pull the
+// corresponding artwork `identity` vectors, mean them, L2-normalise,
+// upsert as a `style_centroid` row.
 //
-// Practitioners with zero live CREATED_BY edges (bridge practitioners,
-// net-new imports not yet attributed) get no centroid row and silently
-// fall out of STYLE_KIN and SUGGESTS_CREATED_BY downstream. All callers
-// that look up centroids must handle the undefined case.
+// Creators with zero live CREATED_BY edges (bridge practitioners, net-new
+// imports not yet attributed) get no centroid row and silently fall out
+// of STYLE_KIN and SUGGESTS_CREATED_BY downstream. All callers that look
+// up centroids must handle the undefined case.
+//
+// Collectives are first-class here — the profile-page neighbour query in
+// src/embed/sections.ts asks for both `practitioner:` and `collective:`
+// prefixes, and node_embeddings has no type restriction.
 //
 // Idempotent: re-runs INSERT OR REPLACE.
 
@@ -18,16 +23,16 @@ import { encodeBlob, keyFor, loadAll, meanAndNormalise, type VectorRow, DIMS } f
 const EMBED_MODEL_TAG = "gemini-embedding-2";
 
 export interface CentroidStats {
-  practitioners_with_centroid: number;
-  practitioners_skipped_no_artworks: number;
+  creators_with_centroid: number;
+  creators_skipped_no_artworks: number;
   artworks_missing_vectors: number;
 }
 
 export function computeCentroids(db: DatabaseSync): CentroidStats {
   const vectors = loadAll(db);
 
-  // Map: practitioner_id → list of artwork vectors (identity-kind).
-  const byPractitioner = new Map<string, Float32Array[]>();
+  // Map: creator_id (practitioner or collective) → list of artwork vectors.
+  const byCreator = new Map<string, Float32Array[]>();
 
   const edges = db
     .prepare(
@@ -35,7 +40,7 @@ export function computeCentroids(db: DatabaseSync): CentroidStats {
        WHERE edge_type = 'CREATED_BY'
          AND valid_until IS NULL
          AND source_id LIKE 'artwork:%'
-         AND target_id LIKE 'practitioner:%'`
+         AND (target_id LIKE 'practitioner:%' OR target_id LIKE 'collective:%')`
     )
     .all() as Array<{ source_id: string; target_id: string }>;
 
@@ -46,12 +51,12 @@ export function computeCentroids(db: DatabaseSync): CentroidStats {
       missing++;
       continue;
     }
-    if (!byPractitioner.has(e.target_id)) byPractitioner.set(e.target_id, []);
-    byPractitioner.get(e.target_id)!.push(art.vec);
+    if (!byCreator.has(e.target_id)) byCreator.set(e.target_id, []);
+    byCreator.get(e.target_id)!.push(art.vec);
   }
 
   // Wipe existing style_centroid rows so re-runs don't leave stale rows
-  // for practitioners who lost all their attributions. (Idempotency over
+  // for creators who lost all their attributions. (Idempotency over
   // node identity, not just hash.)
   db.exec("DELETE FROM node_embeddings WHERE kind = 'style_centroid'");
 
@@ -65,13 +70,13 @@ export function computeCentroids(db: DatabaseSync): CentroidStats {
 
   db.exec("BEGIN");
   try {
-    for (const [practitioner, arts] of byPractitioner) {
+    for (const [creator, arts] of byCreator) {
       if (arts.length === 0) {
         skipped++;
         continue;
       }
       const centroid = meanAndNormalise(arts);
-      insertEmb.run(practitioner, EMBED_MODEL_TAG, DIMS, encodeBlob(centroid));
+      insertEmb.run(creator, EMBED_MODEL_TAG, DIMS, encodeBlob(centroid));
       wrote++;
     }
     db.exec("COMMIT");
@@ -81,8 +86,8 @@ export function computeCentroids(db: DatabaseSync): CentroidStats {
   }
 
   return {
-    practitioners_with_centroid: wrote,
-    practitioners_skipped_no_artworks: skipped,
+    creators_with_centroid: wrote,
+    creators_skipped_no_artworks: skipped,
     artworks_missing_vectors: missing,
   };
 }

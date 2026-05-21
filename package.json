@@ -13,6 +13,7 @@
     "embed:derive": "tsx src/embed/cli.ts derive",
     "embed:centroids": "tsx src/embed/cli.ts centroids",
     "embed:calibrate": "tsx src/embed/cli.ts calibrate",
+    "embed:report-drift": "tsx src/embed/cli.ts report-drift",
     "token:issue": "tsx src/cli/issue-token.ts",
     "token:revoke": "tsx src/cli/revoke-token.ts",
     "build": "tsc",
