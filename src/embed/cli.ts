@@ -10,6 +10,10 @@
 //                                notices when re-tuning is warranted (we don't
 //                                auto-recalibrate — that's how the graph
 //                                silently changes shape).
+//   npm run embed:backfill     — embed any node missing an identity vector
+//                                (catches anything that slipped past the
+//                                embed-on-write path in the contributor API).
+//                                Calls Gemini, requires GEMINI_API_KEY.
 //
 // All commands read/write the live DB. Path resolution via resolveCliDbPath:
 // explicit DB_PATH wins, otherwise /data/adai.db if present (Fly volume),
@@ -22,6 +26,7 @@ import { resolveCliDbPath } from "../utils/db-path.js";
 import { computeCentroids } from "./centroids.js";
 import { derive } from "./derive.js";
 import { loadAll, cosine } from "./vectors.js";
+import { embedNodeNow } from "./server.js";
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -287,7 +292,50 @@ function cmdReportDrift() {
   console.log(JSON.stringify(report, null, 2));
 }
 
-function main(): void {
+async function cmdBackfill() {
+  const db = initDb(dbPath);
+  const limitArg = process.argv.find((a) => a.startsWith("--limit="));
+  const limit = limitArg ? Math.max(0, Number(limitArg.split("=")[1]) || 0) : 0;
+  const rows = db
+    .prepare(
+      `SELECT n.id FROM nodes n
+       WHERE n.type IN ('artwork','practitioner','collective','concept','scene')
+         AND NOT EXISTS (
+           SELECT 1 FROM node_embeddings ne
+           WHERE ne.node_id = n.id AND ne.kind = 'identity'
+         )
+       ORDER BY n.id`
+    )
+    .all() as Array<{ id: string }>;
+
+  const targets = limit > 0 ? rows.slice(0, limit) : rows;
+  console.log(`backfill: ${targets.length} nodes missing identity vectors${limit > 0 ? ` (limit=${limit})` : ""}`);
+
+  let ok = 0;
+  let skipped = 0;
+  let err = 0;
+  const t0 = Date.now();
+  for (const r of targets) {
+    const result = await embedNodeNow(db, r.id);
+    if (result.status === "embedded") {
+      ok++;
+    } else if (result.status === "error") {
+      err++;
+      console.error(`  [err] ${r.id}: ${result.detail}`);
+    } else {
+      skipped++;
+    }
+    if ((ok + skipped + err) % 25 === 0) {
+      console.log(`  [${ok + skipped + err}/${targets.length}] ok=${ok} skipped=${skipped} err=${err}`);
+    }
+  }
+  const dt = ((Date.now() - t0) / 1000).toFixed(1);
+  console.log(`backfill complete in ${dt}s: embedded=${ok} skipped=${skipped} errors=${err}`);
+  db.exec("PRAGMA wal_checkpoint(TRUNCATE)");
+  if (err > 0) process.exit(1);
+}
+
+async function main(): Promise<void> {
   const cmd = process.argv[2];
   switch (cmd) {
     case "derive":
@@ -302,13 +350,20 @@ function main(): void {
     case "report-drift":
       cmdReportDrift();
       break;
+    case "backfill":
+      await cmdBackfill();
+      break;
     default:
       console.error(
-        "usage: tsx src/embed/cli.ts {derive|centroids|calibrate|report-drift} [--dry-run]\n" +
-          "  derive runs centroids first by default."
+        "usage: tsx src/embed/cli.ts {derive|centroids|calibrate|report-drift|backfill} [--dry-run] [--limit=N]\n" +
+          "  derive   runs centroids first by default.\n" +
+          "  backfill calls Gemini for every node missing an identity vector (--limit=N to cap)."
       );
       process.exit(2);
   }
 }
 
-main();
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

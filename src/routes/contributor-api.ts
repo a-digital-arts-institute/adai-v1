@@ -30,6 +30,7 @@ import {
   type ProposedNodeOp,
 } from "../utils/contribution.js";
 import { uploadImage, isR2Configured } from "../r2.js";
+import { embedNodeAsync } from "../embed/server.js";
 
 const router = Router();
 
@@ -192,6 +193,9 @@ router.post("/api/v1/nodes", requireToken, (req, res) => {
     });
     ensureContributorRow(db, req.contributor!);
     bumpApprovedCount(db, req.contributor!.id);
+    // Embed the new node in the background; failures are caught by the
+    // daily backfill in .github/workflows/embed-derive-daily.yml.
+    embedNodeAsync(db, computedId);
     res.set(JSON_HEADERS).json({
       node_id: computedId,
       created,
@@ -256,6 +260,10 @@ router.patch("/api/v1/nodes/:id", requireToken, (req, res) => {
     });
     ensureContributorRow(db, req.contributor!);
     bumpApprovedCount(db, req.contributor!.id);
+    // Re-embed if the patched metadata changed text-derived content. The
+    // (text_hash, image_hash) idempotency check in embedNodeNow makes this
+    // a no-op when nothing meaningful shifted.
+    embedNodeAsync(db, nodeId);
     res.set(JSON_HEADERS).json({ node_id: nodeId, status: "approved", signal_id: signalId, intake_id });
     return;
   }
@@ -441,6 +449,10 @@ router.post(
       });
       ensureContributorRow(db, req.contributor!);
       bumpApprovedCount(db, req.contributor!.id);
+      // Re-embed: artwork identity vectors fuse the image, so a new image
+      // changes the embedding. embedNodeNow's image_hash check makes this
+      // idempotent if the same bytes were already attached.
+      embedNodeAsync(db, nodeId);
       res.set(JSON_HEADERS).json({
         node_id: nodeId,
         upload: upresult,

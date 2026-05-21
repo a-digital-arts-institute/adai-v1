@@ -14,6 +14,10 @@ adai-digital-arts-report-research/
 # context. The seed/*.json + seed/embeddings.{bin,json,umap2d.json} files
 # that the builder actually needs sit at the top level of seed/.
 seed/_build/
+# Exception: the UMAP projector runs inside the runtime image (the daily
+# cron re-projects the live /data/adai.db). It's a few KB of Python and
+# uses the /opt/umap-venv installed in the Dockerfile.
+!seed/_build/project_umap.py
 
 # Local-only databases and caches that occasionally land in seed/.
 seed/*.bak

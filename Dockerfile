@@ -25,6 +25,17 @@ FROM node:22-slim
 
 WORKDIR /app
 
+# Python + umap-learn ship in the runtime image so the daily GH Action can
+# re-project the embedding space against the live /data/adai.db (the script
+# is at /app/seed/_build/project_umap.py). Without this the UMAP scatter on
+# /embed-space ignores any node added via the contributor API until the
+# next deploy.
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends python3 python3-pip python3-venv \
+  && rm -rf /var/lib/apt/lists/*
+RUN python3 -m venv /opt/umap-venv \
+  && /opt/umap-venv/bin/pip install --no-cache-dir 'numpy<2' umap-learn
+
 COPY package.json package-lock.json ./
 RUN npm ci --omit=dev
 
@@ -34,8 +45,11 @@ COPY --from=builder /app/seed.db ./seed.db
 # UMAP projection is read by /api/embed-space at runtime — the .bin and .json
 # stay behind in the builder (their content is already baked into seed.db's
 # node_embeddings table). The UMAP sidecar is the only embedding file that
-# needs to ship.
+# needs to ship; the daily cron writes a fresh version to
+# /data/embeddings.umap2d.json which overrides this one when present.
 COPY --from=builder /app/seed/embeddings.umap2d.json ./seed/embeddings.umap2d.json
+# The UMAP projector script needs to run on the live machine.
+COPY seed/_build/project_umap.py ./seed/_build/project_umap.py
 COPY public ./public
 
 VOLUME ["/data"]
