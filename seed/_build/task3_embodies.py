@@ -1,8 +1,19 @@
 """
-Task 3 (v2): Add EMBODIES + USES_TECHNIQUE edges to artwork nodes.
+Task 3 (v3): Add EMBODIES edges to artwork nodes.
 
 IDEMPOTENT: On each run, first removes any previously-added Task 3 edges and concepts,
 then re-runs with current keyword sets + hand-assignments.
+
+Changes from v2 (2026-05-20 enrichment-pass audit):
+  E. USES_TECHNIQUE emission removed. The previous version emitted USES_TECHNIQUE
+     from artwork sources, which violates the schema rule (USES_TECHNIQUE is
+     practitioner→technique — a craft habit of the artist, not an attribute of
+     a single work). For an artwork, the medium info already lives in
+     `nodes[].metadata.medium`; where a technique-concept is the work's actual
+     subject (e.g. is art → smart contract), that's EMBODIES, not USES_TECHNIQUE.
+     The TECHNIQUES vocabulary below is kept as a comment for reference only.
+     See seed/_build/task6_audit_cleanup_2026_05.py for the cleanup that
+     retroactively retired the 75 bad USES_TECHNIQUE rows.
 
 Changes from v1 (per user direction after checkpoint):
   A. Added title-match fallback so Starmirror / The Call / similar parenthetical variants resolve
@@ -11,7 +22,7 @@ Changes from v1 (per user direction after checkpoint):
   C2. Tightened 'immersion and installation' (dropped bare "installation")
   D. Hand-assigned EMBODIES for ~16 high-visibility 0-EMBODIES artworks (editorial, not keyword)
 
-All EMBODIES and USES_TECHNIQUE edges tagged confidence: "medium".
+All EMBODIES edges tagged confidence: "medium".
 Hand-assignments also "medium" — future editorial/practitioner-review passes upgrade to "high".
 """
 from __future__ import annotations
@@ -144,7 +155,17 @@ THEMES: dict[str, list[str]] = {
     "assemblage and hybridity": ["assemblage", "hybrid", "hybridity", "cyborg", "fused"],
 }
 
-TECHNIQUES: dict[str, list[str]] = {
+# TECHNIQUES vocabulary — RETIRED 2026-05-20 (audit task 6).
+#
+# Originally used to emit USES_TECHNIQUE edges from artwork sources to
+# technique-concepts. That violates the schema rule (USES_TECHNIQUE is
+# practitioner→technique), so the emission was removed. The dict is kept
+# here as a reference for anyone wanting to:
+#   (a) populate nodes[].metadata.medium from artwork descriptions, or
+#   (b) build practitioner→technique USES_TECHNIQUE edges (correct direction)
+#       by aggregating across CREATED_BY edges.
+# Neither is implemented today; this is documentation, not live code.
+_RETIRED_TECHNIQUES: dict[str, list[str]] = {
     "generative adversarial networks": ["gan ", "gans", "generative adversarial"],
     "diffusion models": ["diffusion model", "stable diffusion", "diffusion"],
     "machine learning": ["machine learning", "neural network", "neural-network"],
@@ -446,18 +467,16 @@ def main():
             if add_edge(aid, cid, "EMBODIES",
                         "Task 3 hand-assignment (editorial research pass on high-visibility artwork)"):
                 stats["EMBODIES"] += 1
-        for tech in spec.get("uses_technique", []):
-            cid = get_or_create_concept(tech)
-            if add_edge(aid, cid, "USES_TECHNIQUE",
-                        "Task 3 hand-assignment (editorial research pass on high-visibility artwork)"):
-                stats["USES_TECHNIQUE"] += 1
+        # USES_TECHNIQUE hand-assignments retired 2026-05-20 (audit task 6).
+        # The `uses_technique` key in HAND_ASSIGNMENTS is preserved as editorial
+        # metadata but no edges are emitted from it. See module docstring.
 
     # 2) Heuristic assignments for all remaining artworks
     for a in artworks:
         if a["id"] in hand_applied_ids:
             assignments.append({"artwork": a.get("name"), "artwork_id": a["id"],
-                                "method": "hand-assigned", "embodies": HAND_ASSIGNMENTS[a["id"]]["embodies"],
-                                "uses_technique": HAND_ASSIGNMENTS[a["id"]]["uses_technique"]})
+                                "method": "hand-assigned",
+                                "embodies": HAND_ASSIGNMENTS[a["id"]]["embodies"]})
             continue
 
         desc = artwork_desc(a)
@@ -474,27 +493,17 @@ def main():
         theme_scores.sort(reverse=True)
         top_themes = [t for _, t in theme_scores[:3]]
 
-        tech_scores: list[tuple[int, str]] = []
-        for tech, kws in TECHNIQUES.items():
-            s = score_phrase(text_lower, kws)
-            if s > 0:
-                tech_scores.append((s, tech))
-        tech_scores.sort(reverse=True)
-        top_techs = [t for _, t in tech_scores[:2]]
+        # USES_TECHNIQUE heuristic retired 2026-05-20 (audit task 6).
+        # See module docstring; medium info belongs in nodes[].metadata.medium.
 
         for theme in top_themes:
             cid = get_or_create_concept(theme)
             if add_edge(a["id"], cid, "EMBODIES",
                         "Task 3 heuristic (artwork description keyword match against theme vocabulary)"):
                 stats["EMBODIES"] += 1
-        for tech in top_techs:
-            cid = get_or_create_concept(tech)
-            if add_edge(a["id"], cid, "USES_TECHNIQUE",
-                        "Task 3 heuristic (artwork description keyword match against technique vocabulary)"):
-                stats["USES_TECHNIQUE"] += 1
 
         assignments.append({"artwork": a.get("name"), "artwork_id": a["id"],
-                            "method": "heuristic", "embodies": top_themes, "uses_technique": top_techs})
+                            "method": "heuristic", "embodies": top_themes})
 
     nodes_out = nodes + list(new_concepts.values())
     edges_out = edges + new_edges
@@ -503,18 +512,18 @@ def main():
 
     report = {
         "signal_id": SIGNAL_ID,
-        "task": "Task 3 (v2) — EMBODIES + USES_TECHNIQUE on artworks",
+        "task": "Task 3 (v3) — EMBODIES on artworks (USES_TECHNIQUE retired 2026-05-20)",
         "method_note": ("EMBODIES edges were produced by heuristic keyword matching against a curated "
                          "theme vocabulary. ~20 high-visibility artworks received hand-assigned edges "
                          "after editorial research. All edges marked confidence: medium. Future passes "
                          "(practitioner review, targeted editorial audit) will upgrade some to high "
-                         "and remove false-positives."),
+                         "and remove false-positives. USES_TECHNIQUE emission was retired in the "
+                         "2026-05-20 enrichment-pass audit — see seed/_build/task6_audit_cleanup_2026_05.py."),
         "artworks_processed": len(artworks),
         "artworks_skipped_no_desc": len(skipped_no_desc),
         "artworks_hand_assigned": len(hand_applied_ids),
         "new_edges": {
             "EMBODIES": stats["EMBODIES"],
-            "USES_TECHNIQUE": stats["USES_TECHNIQUE"],
             "total": len(new_edges),
         },
         "new_concept_nodes_created": len(new_concepts),

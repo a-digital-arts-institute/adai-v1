@@ -3,6 +3,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { initDb, getDb } from "./db.js";
 import { derive } from "./embed/derive.js";
+import { validateEdge } from "./utils/edge-types.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dirname, "..");
@@ -153,8 +154,39 @@ const insertEdge = db.prepare(
     created_at, created_by, event_time, valid_from, valid_until, invalidated_by
   ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
 );
+
+// Defense-in-depth: report (don't skip) edges that violate direction /
+// attestation / era rules. seed/edges.json is canonical for the database,
+// so the loader should not silently drop rows — that would break the
+// file-as-truth invariant. Instead, count violations + print a sample so
+// future audits know where to look. Hard blocking happens at write time
+// in src/routes/contributor-api.ts. Rules live in src/utils/edge-types.ts.
+// Skipping IS done for genuinely missing referents (orphan source_id or
+// target_id), because the INSERT would fail anyway.
+const nodeIndex = new Map(nodes.map((n) => [n.id, n]));
+type FlagRow = { id: string; reason: string };
+const orphanSkipped: FlagRow[] = [];
+const ruleFlagged: FlagRow[] = [];
+
 db.exec("BEGIN");
 for (const e of edges) {
+  const src = nodeIndex.get(e.source_id);
+  const dst = nodeIndex.get(e.target_id);
+  if (!src || !dst) {
+    orphanSkipped.push({ id: e.id, reason: !src ? `missing source_id ${e.source_id}` : `missing target_id ${e.target_id}` });
+    continue;
+  }
+  const violation = validateEdge(
+    { id: src.id, type: src.type, metadata: src.metadata },
+    { id: dst.id, type: dst.type },
+    e.edge_type,
+    null,
+    { checkUrlAttestation: false }, // attestation chains live in signals/metadata, not per-edge in the seed
+  );
+  if (violation) {
+    ruleFlagged.push({ id: e.id, reason: `${violation.kind}: ${violation.message}` });
+    // fall through: still insert (canon-preserving)
+  }
   insertEdge.run(
     e.id,
     e.source_id,
@@ -172,7 +204,20 @@ for (const e of edges) {
   );
 }
 db.exec("COMMIT");
-console.log(`Edges inserted: ${edges.length}`);
+console.log(`Edges inserted: ${edges.length - orphanSkipped.length} (of ${edges.length})`);
+if (orphanSkipped.length > 0) {
+  console.log(`Edges skipped (orphan references): ${orphanSkipped.length}`);
+  for (const s of orphanSkipped.slice(0, 10)) console.log(`  - ${s.id}: ${s.reason}`);
+}
+if (ruleFlagged.length > 0) {
+  console.log(`Edges flagged (rule violations, inserted anyway): ${ruleFlagged.length}`);
+  const byKind = new Map<string, number>();
+  for (const f of ruleFlagged) {
+    const kind = f.reason.split(":")[0]!;
+    byKind.set(kind, (byKind.get(kind) ?? 0) + 1);
+  }
+  for (const [k, n] of byKind) console.log(`  ${k}: ${n}`);
+}
 
 const insertAlias = db.prepare(
   "INSERT OR IGNORE INTO node_aliases (source, external_id, node_id, created_at) VALUES (?, ?, ?, ?)"
