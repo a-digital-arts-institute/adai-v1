@@ -1,5 +1,25 @@
 # A(DAI) — Digital Arts Knowledge Commons
 
+> **⚠️ Audits target contracts, not artefacts.**
+>
+> `seed/*.json` is build output. The contracts are the producer scripts
+> in `seed/_build/` (and every committed gatherer). When seed rows look
+> wrong:
+>
+> - **Trace each row to its producer.** No producer? That's the bug —
+>   an ungoverned write path. Don't delete the row; close the gap.
+> - **Compare producer output to the producer's own stated contract**
+>   (docstring, signal record). Not to the global schema doc — yet.
+> - **If many producers "violate" the same documented rule**, the rule
+>   is probably too narrow. Update the doc / validator, not the rows.
+> - **Substantive ≠ procedural.** A row can have a sloppy
+>   `source_evidence` and still be true. Editorial cleanup of
+>   historical canon is almost never the right move.
+>
+> Never hand-edit `seed/*.json`, and never write a post-hoc script that
+> mutates it. New bad writes get rejected at `POST /api/v1/edges` and
+> `/review`. Historical canon stays.
+
 ## What this is
 
 A TypeScript/Express HTTP server that serves the A(DAI) digital arts knowledge graph. It stores practitioner/concept/scene data in SQLite with CR-SQLite CRDT extensions, serves HTML pages and a D3 graph visualization, and exposes a JSON API for graph queries.
