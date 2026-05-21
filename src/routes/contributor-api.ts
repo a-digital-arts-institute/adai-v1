@@ -30,19 +30,20 @@ import {
   type ProposedNodeOp,
 } from "../utils/contribution.js";
 import { uploadImage, isR2Configured } from "../r2.js";
-import { CURATED_EDGE_TYPES, validateEdge } from "../utils/edge-types.js";
 
 const router = Router();
 
 // Permissive list (advisory, not enforced). Anything outside emits a warning
 // in the response but is still accepted, mirroring the schema's permissive
-// stance. Keep in sync with CLAUDE.md's "Node types" section.
+// stance. Keep in sync with CLAUDE.md's "Node types" / "Edge types" sections.
 const KNOWN_NODE_TYPES = new Set([
   "practitioner", "artwork", "concept", "scene", "institution", "collective",
   "platform", "publication", "project", "classification_regime", "event", "related",
 ]);
-// CURATED_EDGE_TYPES + edge-direction / URL / era guards live in
-// src/utils/edge-types.ts so the seed loader can reuse them.
+const CURATED_EDGE_TYPES = new Set([
+  "EMBODIES", "CREATED_BY", "PRACTICES", "EXHIBITED_AT", "CLASSIFIED_BY",
+  "BELONGS_TO", "COLLABORATES_WITH", "USES_TECHNIQUE", "INFLUENCES", "RESPONDS_TO",
+]);
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -274,7 +275,7 @@ router.patch("/api/v1/nodes/:id", requireToken, (req, res) => {
 
 router.post("/api/v1/edges", requireToken, (req, res) => {
   const db = getDb();
-  const { source_id, target_id, edge_type, confidence, event_time, supersedes_edge_id, source_url } = req.body ?? {};
+  const { source_id, target_id, edge_type, confidence, event_time, supersedes_edge_id } = req.body ?? {};
 
   for (const [k, v] of [["source_id", source_id], ["target_id", target_id], ["edge_type", edge_type]] as const) {
     if (!v || typeof v !== "string") {
@@ -284,16 +285,12 @@ router.post("/api/v1/edges", requireToken, (req, res) => {
   }
   // Existence checks — net new for the contributor API (legacy /api/contribute
   // doesn't validate FKs). Surfacing 400 here catches hallucinated IDs early.
-  const src = db.prepare("SELECT id, type, metadata FROM nodes WHERE id = ?").get(source_id) as
-    | { id: string; type: string; metadata: string | null }
-    | undefined;
+  const src = db.prepare("SELECT id FROM nodes WHERE id = ?").get(source_id) as any;
   if (!src) {
     res.status(400).set(JSON_HEADERS).json({ error: "source_id does not exist", source_id });
     return;
   }
-  const dst = db.prepare("SELECT id, type FROM nodes WHERE id = ?").get(target_id) as
-    | { id: string; type: string }
-    | undefined;
+  const dst = db.prepare("SELECT id FROM nodes WHERE id = ?").get(target_id) as any;
   if (!dst) {
     res.status(400).set(JSON_HEADERS).json({ error: "target_id does not exist", target_id });
     return;
@@ -310,25 +307,9 @@ router.post("/api/v1/edges", requireToken, (req, res) => {
   if (!CURATED_EDGE_TYPES.has(edge_type)) {
     warnings.push(`uncurated edge type "${edge_type}" — accepted, but prefer one of: EMBODIES, CREATED_BY, PRACTICES, EXHIBITED_AT, CLASSIFIED_BY, BELONGS_TO, COLLABORATES_WITH, USES_TECHNIQUE, INFLUENCES, RESPONDS_TO`);
   }
-
-  // Hard-block rule violations: direction, INFLUENCES/RESPONDS_TO URL
-  // requirement, pre-2009 artwork → crypto-concept era check. See
-  // src/utils/edge-types.ts and seed/_build/PAUSED.md.
-  const violation = validateEdge(
-    { id: src.id, type: src.type, metadata: src.metadata },
-    { id: dst.id, type: dst.type },
-    edge_type,
-    typeof source_url === "string" ? source_url : null,
-  );
-  if (violation) {
-    res.status(400).set(JSON_HEADERS).json({
-      error: violation.message,
-      violation: violation.kind,
-      source_id,
-      target_id,
-      edge_type,
-    });
-    return;
+  if (edge_type === "INFLUENCES" || edge_type === "RESPONDS_TO") {
+    // Soft policy: these require human-attested intent (see CLAUDE.md).
+    warnings.push(`${edge_type} edges should reflect attested artist intent — make sure source_url anchors a statement, interview, or first-person attestation.`);
   }
 
   const proposed: ProposedEdge = {

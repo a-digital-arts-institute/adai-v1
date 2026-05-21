@@ -292,26 +292,5 @@
     "batch_id": "embedding-multimodal-2026-05",
     "status": "active",
     "provenance_chain": null
-  },
-  {
-    "id": "signal:cleanup-enrichment-audit-2026-05",
-    "title": "Audit 2026-05-20 cleanup: retired 83 rule-violating edges, reclassified 19 to EMBODIES",
-    "source_url": null,
-    "source_type": "audit",
-    "cla_layer": null,
-    "summary": "Retired 75 USES_TECHNIQUE edges with artwork sources (root cause in task3_embodies.py, fixed in v3) — 19 reclassified to EMBODIES where the concept is the subject, 56 deleted as medium-only duplicates of metadata.medium. Also retired 3 INFLUENCES and 5 BELONGS_TO theorist edges produced by ad-hoc gatherers without URL attestation.",
-    "content": "See seed/_build/task6_audit_cleanup_2026_05.py for the deterministic cleanup script. Root-cause fix lives in seed/_build/task3_embodies.py (USES_TECHNIQUE emission retired). Defense-in-depth guards live in src/utils/edge-types.ts.",
-    "submitted_by": "contributor:migration",
-    "confidence": "high",
-    "lived_experience": false,
-    "created_at": "2026-05-20T00:00:00Z",
-    "consent_scope": "full_commons",
-    "consent_attribution": "attributed",
-    "consent_revocable": false,
-    "processing_trace": null,
-    "source_origin": "human_secondary",
-    "batch_id": "cleanup-enrichment-2026-05",
-    "status": "active",
-    "provenance_chain": null
   }
 ]
