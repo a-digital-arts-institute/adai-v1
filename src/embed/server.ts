@@ -99,7 +99,13 @@ function parseMetadata(raw: unknown): Record<string, any> {
   return {};
 }
 
-function buildText(node: { type: string; name: string; metadata: unknown }): string | null {
+/**
+ * Build the embeddable text for a node. Exported for tests; the runtime
+ * path uses it indirectly via embedNodeNow. Mirrors embed_nodes.py's
+ * build_text, with the same per-type strategy and the same TASK_PREFIX
+ * so text hashes stay stable across runs.
+ */
+export function buildText(node: { type: string; name: string; metadata: unknown }): string | null {
   const md = parseMetadata(node.metadata);
   const fp = md.full_profile;
   const name = node.name || "";

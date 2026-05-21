@@ -1,0 +1,44 @@
+name: ci
+
+# Run on every push and pull-request. Two jobs in parallel:
+#   - typecheck: catches TS errors before they land on main (the deploy
+#     would only flag them at Docker build time, which is too late).
+#   - test: tsx --test runs the suite under tests/. Currently a small
+#     surface aimed at high-leverage regressions (trust-tier gating,
+#     slug stability, build_text port fidelity, the collective centroid
+#     bug, token mint/revoke). Expected to grow with the codebase.
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+concurrency:
+  # One run per ref. New pushes cancel in-flight runs on the same branch.
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci
+      - run: npm run build
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci
+      - run: npm test
