@@ -176,3 +176,30 @@ CREATE INDEX IF NOT EXISTS idx_contributor_tokens_contributor
   ON contributor_tokens(contributor_id);
 CREATE INDEX IF NOT EXISTS idx_contributor_tokens_prefix
   ON contributor_tokens(token_prefix);
+
+-- Archivist chat sessions. Local-only — anonymous-visitor session cookies
+-- live here so we can rate-limit and audit without sync. NOT a CRR.
+-- Cookie format: <session_id>.<hex(hmac_sha256(session_id, secret))> set as
+-- HttpOnly+SameSite=Lax. Verification only requires re-computing the HMAC,
+-- but we keep a row so we can track message_count for the per-session quota
+-- and last_message_at for the rolling window.
+CREATE TABLE IF NOT EXISTS archivist_sessions (
+    session_id        TEXT PRIMARY KEY NOT NULL,
+    created_at        INTEGER NOT NULL,
+    ip                TEXT,
+    user_agent        TEXT,
+    message_count     INTEGER DEFAULT 0,
+    last_message_at   INTEGER
+);
+
+-- Per-day token + cost rollup for the global budget gate. Pricing
+-- constants live in src/archivist/ratelimit.ts; this table just stores
+-- aggregates so we can compare today's spend to ARCHIVIST_DAILY_BUDGET_USD.
+CREATE TABLE IF NOT EXISTS archivist_usage (
+    date                 TEXT PRIMARY KEY NOT NULL,   -- YYYY-MM-DD UTC
+    input_tokens         INTEGER DEFAULT 0,
+    output_tokens        INTEGER DEFAULT 0,
+    cache_read_tokens    INTEGER DEFAULT 0,
+    cache_write_tokens   INTEGER DEFAULT 0,
+    est_cost_usd         REAL DEFAULT 0
+);

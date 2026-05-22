@@ -6,6 +6,7 @@ import { initDb } from "./db.js";
 import pageRoutes from "./routes/pages.js";
 import apiRoutes from "./routes/api.js";
 import contributorApiRoutes from "./routes/contributor-api.js";
+import archivistRoutes from "./routes/archivist.js";
 import { htmlPage, HTML_HEADERS } from "./templates.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -45,6 +46,7 @@ app.use("/field-static", express.static(path.join(__dirname, "..", "public", "fi
 app.use(pageRoutes);
 app.use(apiRoutes);
 app.use(contributorApiRoutes);
+app.use(archivistRoutes);
 
 // 404 fallback
 app.use((_req, res) => {
