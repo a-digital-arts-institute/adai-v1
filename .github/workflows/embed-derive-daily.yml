@@ -1,0 +1,89 @@
+name: embed-derive-daily
+
+# Daily refresh of the embedding layer against the live Fly DB. Three
+# stages run in order against /data/adai.db:
+#
+#   1. backfill  — embed any node added via the contributor API that's
+#                  missing an identity vector. Catches anything the
+#                  embed-on-write hot path dropped (Gemini timeout, transient
+#                  fetch error). Reads GEMINI_API_KEY from Fly secrets.
+#   2. derive    — recompute style centroids + STYLE_KIN / VISUALLY_AFFINE /
+#                  SUGGESTS_CREATED_BY. Local SQL only, no API calls. This
+#                  is what propagates curator-approved CREATED_BY edges into
+#                  the embedding layer.
+#   3. UMAP      — re-project the 768-d vector space to 2D and write
+#                  /data/embeddings.umap2d.json (the server prefers this
+#                  over the baked sidecar — see /api/embed-space). UMAP is
+#                  pure CPU; debounced via lockfile so a no-op day skips it.
+#
+# Drift snapshot runs last as a JSON line in the action log so a human can
+# eyeball whether τ values still sit at the originally-calibrated percentiles
+# (τ_kin ≈ p95, τ_visual / τ_attribute ≈ p99). Auto-recalibration is
+# intentionally not wired — that's how the visible graph silently changes
+# shape under us.
+#
+# Required secret: FLY_API_TOKEN (org/personal token with deploy access to
+# the adai-basel app). GEMINI_API_KEY must be set as a Fly secret too — the
+# action doesn't need it directly; the inside-the-machine `embed:backfill`
+# call picks it up from the Fly env.
+
+on:
+  schedule:
+    # Daily at 04:00 UTC — quiet hour in EU/Asia.
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: embed-derive-daily
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: install flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: backfill missing identity vectors
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        # Calls Gemini once per node missing an identity vector. The CLI
+        # exits 0 when there's nothing to do.
+        run: |
+          flyctl ssh console --app adai-basel -C "node /app/dist/embed/cli.js backfill"
+
+      - name: derive against live DB
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        # The CLI resolves /data/adai.db automatically via resolveCliDbPath
+        # when run inside the Fly machine (see src/utils/db-path.ts).
+        run: |
+          flyctl ssh console --app adai-basel -C "node /app/dist/embed/cli.js derive"
+
+      - name: refresh UMAP projection
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        # Debounced: skip if vector count is unchanged since the last run.
+        # Writes /data/embeddings.umap2d.json (volume) — the /api/embed-space
+        # endpoint prefers this over the baked sidecar on first hit.
+        run: |
+          flyctl ssh console --app adai-basel -C "sh -c '\
+            COUNT=\$(sqlite3 /data/adai.db \"SELECT COUNT(*) FROM node_embeddings WHERE dims=768\"); \
+            LAST=\$(cat /data/umap.lockfile 2>/dev/null || echo 0); \
+            if [ \"\$COUNT\" = \"\$LAST\" ] && [ -f /data/embeddings.umap2d.json ]; then \
+              echo \"UMAP skip: \$COUNT vectors unchanged since last run\"; \
+            else \
+              echo \"UMAP refresh: \$LAST -> \$COUNT vectors\"; \
+              /opt/umap-venv/bin/python3 /app/seed/_build/project_umap.py \
+                --from-db /data/adai.db --out /data/embeddings.umap2d.json; \
+              echo \$COUNT > /data/umap.lockfile; \
+            fi'"
+
+      - name: drift snapshot
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        # Independent of derive — runs even if derive emitted zero new edges.
+        # JSON output lands directly in the action log; eyeball weekly.
+        run: |
+          flyctl ssh console --app adai-basel -C "node /app/dist/embed/cli.js report-drift"

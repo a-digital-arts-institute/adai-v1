@@ -1,6 +1,6 @@
 import { Router } from "express";
 import crypto from "node:crypto";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, statSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getDb } from "../db.js";
@@ -12,6 +12,7 @@ import {
   materialiseEdge,
 } from "../utils/contribution.js";
 import { buildEmbeddingSections } from "../embed/sections.js";
+import { embedNodeAsync } from "../embed/server.js";
 import { YEAR_SQL_FRAGMENT, formatArtworkYear } from "../utils/year.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -349,16 +350,22 @@ router.post("/api/review/:id/approve", (req, res) => {
   // supersedes_edge_id for bi-temporal supersession).
   if (item.kind === "human_signal") {
     const createdBy = `curator-from-${item.submitted_by ?? "api"}`;
+    const touchedNodes = new Set<string>();
     if (item.proposed_nodes) {
       let ops: any[] = [];
       try { ops = JSON.parse(item.proposed_nodes); } catch { ops = []; }
       for (const op of ops) {
         if (op?.op === "create_node") {
-          materialiseCreateNode(db, op, { signalId: item.signal_id, createdBy });
+          const result = materialiseCreateNode(db, op, { signalId: item.signal_id, createdBy });
+          // Use the materialised id so a slug normalisation upstream doesn't
+          // desync the embed call from the actual row written.
+          if (result.node_id) touchedNodes.add(result.node_id);
         } else if (op?.op === "patch_node") {
           materialisePatchNode(db, op, { createdBy });
+          if (op.node_id) touchedNodes.add(op.node_id);
         } else if (op?.op === "attach_image") {
           materialiseAttachImage(db, op, { createdBy });
+          if (op.node_id) touchedNodes.add(op.node_id);
         }
       }
     }
@@ -369,6 +376,10 @@ router.post("/api/review/:id/approve", (req, res) => {
         materialiseEdge(db, { ...e, signal_id: item.signal_id }, { signalId: item.signal_id, createdBy });
       }
     }
+    // Embed any nodes the curator just materialised. Same fire-and-forget
+    // contract as the auto-merge path in contributor-api.ts — failures fall
+    // through to the daily backfill.
+    for (const nodeId of touchedNodes) embedNodeAsync(db, nodeId);
   }
 
   db.prepare(
@@ -430,74 +441,98 @@ router.post("/api/review/:id/reject", (req, res) => {
 });
 
 // GET /api/embed-space — UMAP 2D projection joined with node metadata.
-// Reads the precomputed sidecar `seed/embeddings.umap2d.json` (produced
-// offline by `seed/_build/project_umap.py` — see CLAUDE.md) and joins
-// each point with name/type/slug/cdn_image_url for client rendering.
 //
-// Cached at module scope after first read since the sidecar is static.
-let umapCache: any = null;
+// Two possible sources, checked in order:
+//   1. /data/embeddings.umap2d.json — written by the daily GH Action's UMAP
+//      refresh step against the live DB; includes contributor-added nodes.
+//   2. <PROJECT_ROOT>/seed/embeddings.umap2d.json — baked at Docker build
+//      time from the offline pipeline; first-deploy fallback before the
+//      daily cron has run.
+//
+// The cache key includes the file's mtime so a refreshed projection on
+// the volume invalidates the in-memory cache without needing a restart.
+
+const UMAP_VOLUME_PATH = "/data/embeddings.umap2d.json";
+const UMAP_BAKED_PATH = join(PROJECT_ROOT, "seed", "embeddings.umap2d.json");
+
+let umapCache: { mtimeMs: number; path: string; payload: any } | null = null;
+
+function loadUmap(): { path: string; raw: any } | null {
+  const candidates = [UMAP_VOLUME_PATH, UMAP_BAKED_PATH];
+  for (const p of candidates) {
+    if (!existsSync(p)) continue;
+    return { path: p, raw: JSON.parse(readFileSync(p, "utf-8")) };
+  }
+  return null;
+}
 
 router.get("/api/embed-space", (_req, res) => {
   const db = getDb();
-  if (!umapCache) {
-    const umapPath = join(PROJECT_ROOT, "seed", "embeddings.umap2d.json");
-    if (!existsSync(umapPath)) {
-      res.status(404).set(JSON_HEADERS).json({
-        error: "UMAP projection not available",
-        hint: "Run `seed/_build/.venv/bin/python3 seed/_build/project_umap.py` to produce seed/embeddings.umap2d.json",
-      });
-      return;
-    }
-    const raw = JSON.parse(readFileSync(umapPath, "utf-8"));
-    const ids = raw.items.map((i: any) => i.node_id);
-    // One IN-query for all metadata in one hop (~1300 rows).
-    const placeholders = ids.map(() => "?").join(",");
-    const meta = db
-      .prepare(
-        `SELECT id, name, type, slug,
-                json_extract(metadata,'$.cdn_image_url') AS cdn_image_url,
-                json_extract(metadata,'$.image_url')     AS image_url,
-                ${YEAR_SQL_FRAGMENT}
-           FROM nodes WHERE id IN (${placeholders})`
-      )
-      .all(...ids) as Array<{
-        id: string; name: string; type: string; slug: string;
-        cdn_image_url: string | null; image_url: string | null;
-        year_raw: string | null; year_start: number | null;
-        year_end: number | null; year_ongoing: number | null;
-        year_meta: string | null;
-        active_years_1: string | null; active_years_2: string | null;
-      }>;
-    const byId = new Map(meta.map((m) => [m.id, m]));
-    const items = raw.items.map((p: any) => {
-      const m = byId.get(p.node_id);
-      const year = m && m.type === "artwork" ? formatArtworkYear(m) : null;
-      return {
-        id: p.node_id,
-        kind: p.kind,
-        x: p.x,
-        y: p.y,
-        ...(m
-          ? {
-              name: m.name,
-              type: m.type,
-              slug: m.slug,
-              ...(year ? { year } : {}),
-              ...(m.cdn_image_url ? { cdn_image_url: m.cdn_image_url } : {}),
-              ...(m.image_url ? { image_url: m.image_url } : {}),
-            }
-          : {}),
-      };
+  const loaded = loadUmap();
+  if (!loaded) {
+    res.status(404).set(JSON_HEADERS).json({
+      error: "UMAP projection not available",
+      hint: "Run `seed/_build/.venv/bin/python3 seed/_build/project_umap.py` to produce seed/embeddings.umap2d.json, or wait for the next embed-derive-daily run.",
     });
-    umapCache = {
-      model: raw.model,
-      method: raw.method,
-      params: raw.params,
-      n_items: items.length,
-      items,
-    };
+    return;
   }
-  res.set(JSON_HEADERS).json(umapCache);
+  // Invalidate cache on file change — the daily UMAP refresh writes a
+  // fresh /data/embeddings.umap2d.json with a new mtime.
+  const stat = statSync(loaded.path);
+  if (umapCache && umapCache.path === loaded.path && umapCache.mtimeMs === stat.mtimeMs) {
+    res.set(JSON_HEADERS).json(umapCache.payload);
+    return;
+  }
+  const raw = loaded.raw;
+  const ids = raw.items.map((i: any) => i.node_id);
+  const placeholders = ids.map(() => "?").join(",");
+  const meta = db
+    .prepare(
+      `SELECT id, name, type, slug,
+              json_extract(metadata,'$.cdn_image_url') AS cdn_image_url,
+              json_extract(metadata,'$.image_url')     AS image_url,
+              ${YEAR_SQL_FRAGMENT}
+         FROM nodes WHERE id IN (${placeholders})`
+    )
+    .all(...ids) as Array<{
+      id: string; name: string; type: string; slug: string;
+      cdn_image_url: string | null; image_url: string | null;
+      year_raw: string | null; year_start: number | null;
+      year_end: number | null; year_ongoing: number | null;
+      year_meta: string | null;
+      active_years_1: string | null; active_years_2: string | null;
+    }>;
+  const byId = new Map(meta.map((m) => [m.id, m]));
+  const items = raw.items.map((p: any) => {
+    const m = byId.get(p.node_id);
+    const year = m && m.type === "artwork" ? formatArtworkYear(m) : null;
+    return {
+      id: p.node_id,
+      kind: p.kind,
+      x: p.x,
+      y: p.y,
+      ...(m
+        ? {
+            name: m.name,
+            type: m.type,
+            slug: m.slug,
+            ...(year ? { year } : {}),
+            ...(m.cdn_image_url ? { cdn_image_url: m.cdn_image_url } : {}),
+            ...(m.image_url ? { image_url: m.image_url } : {}),
+          }
+        : {}),
+    };
+  });
+  const payload = {
+    model: raw.model,
+    method: raw.method,
+    params: raw.params,
+    source: loaded.path === UMAP_VOLUME_PATH ? "volume" : "baked",
+    n_items: items.length,
+    items,
+  };
+  umapCache = { path: loaded.path, mtimeMs: stat.mtimeMs, payload };
+  res.set(JSON_HEADERS).json(payload);
 });
 
 // GET /api/neighbours/:type/:slug — embedding-derived sections for a node.

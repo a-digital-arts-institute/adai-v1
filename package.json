@@ -13,13 +13,17 @@
     "embed:derive": "tsx src/embed/cli.ts derive",
     "embed:centroids": "tsx src/embed/cli.ts centroids",
     "embed:calibrate": "tsx src/embed/cli.ts calibrate",
+    "embed:report-drift": "tsx src/embed/cli.ts report-drift",
+    "embed:backfill": "tsx src/embed/cli.ts backfill",
     "token:issue": "tsx src/cli/issue-token.ts",
     "token:revoke": "tsx src/cli/revoke-token.ts",
     "build": "tsc",
+    "test": "tsx --test tests/*.test.ts",
     "start": "node dist/index.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.658.0",
+    "@google/genai": "^1.0.0",
     "@shards-lang/crsqlite": "^0.1.0",
     "express": "^5.1.0",
     "multer": "^2.0.1"

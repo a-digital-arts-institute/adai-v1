@@ -48,7 +48,7 @@ OUT_PATH = ROOT / "seed" / "embeddings.umap2d.json"
 DIMS = 768
 
 
-def load_vectors() -> tuple[list[dict], np.ndarray]:
+def load_vectors_from_sidecar() -> tuple[list[dict], np.ndarray]:
     if not EMB_BIN.exists() or not EMB_META.exists():
         sys.exit("seed/embeddings.{bin,json} missing — run embed_nodes.py first")
     meta = json.loads(EMB_META.read_text())
@@ -71,6 +71,35 @@ def load_vectors() -> tuple[list[dict], np.ndarray]:
     return keep_meta, arr
 
 
+def load_vectors_from_db(db_path: Path) -> tuple[list[dict], np.ndarray]:
+    """
+    Read vectors directly from a node_embeddings table. Used by the daily
+    Fly cron so contributor-added nodes (which never touch
+    seed/embeddings.bin) make it into the UMAP projection.
+    """
+    import sqlite3
+
+    if not db_path.exists():
+        sys.exit(f"DB not found: {db_path}")
+    con = sqlite3.connect(str(db_path))
+    rows = con.execute(
+        "SELECT node_id, kind, model, dims, vector "
+        "FROM node_embeddings WHERE dims = ? ORDER BY node_id, kind",
+        (DIMS,),
+    ).fetchall()
+    con.close()
+    if not rows:
+        sys.exit(f"no embeddings in {db_path} (table node_embeddings empty?)")
+    arr = np.zeros((len(rows), DIMS), dtype=np.float32)
+    meta: list[dict] = []
+    for i, (node_id, kind, model, dims, vec_blob) in enumerate(rows):
+        if dims != DIMS or len(vec_blob) != DIMS * 4:
+            continue
+        arr[i] = struct.unpack(f"<{DIMS}f", vec_blob)
+        meta.append({"node_id": node_id, "kind": kind, "model": model, "dims": dims})
+    return meta, arr[: len(meta)]
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--neighbours", type=int, default=15,
@@ -78,10 +107,24 @@ def main() -> int:
     ap.add_argument("--min-dist", type=float, default=0.1,
                     help="UMAP min_dist — lower = tighter clusters")
     ap.add_argument("--random-state", type=int, default=42)
+    ap.add_argument("--from-db", type=str, default="",
+                    help="Read vectors from this SQLite DB's node_embeddings "
+                         "table instead of seed/embeddings.{bin,json}. Used by "
+                         "the daily Fly cron.")
+    ap.add_argument("--out", type=str, default="",
+                    help="Write output to this path instead of "
+                         "seed/embeddings.umap2d.json (used with --from-db to "
+                         "land on the Fly volume at /data/embeddings.umap2d.json).")
     args = ap.parse_args()
 
-    meta, vecs = load_vectors()
-    print(f"loaded {len(meta)} vectors × {DIMS} dims")
+    out_path = Path(args.out) if args.out else OUT_PATH
+
+    if args.from_db:
+        meta, vecs = load_vectors_from_db(Path(args.from_db))
+        print(f"loaded {len(meta)} vectors × {DIMS} dims from {args.from_db}")
+    else:
+        meta, vecs = load_vectors_from_sidecar()
+        print(f"loaded {len(meta)} vectors × {DIMS} dims from sidecar")
 
     reducer = umap.UMAP(
         n_components=2,
@@ -122,10 +165,11 @@ def main() -> int:
         "items": items,
     }
 
-    tmp = OUT_PATH.with_suffix(".json.tmp")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = out_path.with_suffix(out_path.suffix + ".tmp")
     tmp.write_text(json.dumps(out, indent=2) + "\n")
-    tmp.replace(OUT_PATH)
-    print(f"wrote {len(items)} points → {OUT_PATH}")
+    tmp.replace(out_path)
+    print(f"wrote {len(items)} points → {out_path}")
     return 0
 
 
