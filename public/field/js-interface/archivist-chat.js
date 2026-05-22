@@ -393,29 +393,27 @@
     return null;
   }
   function dispatchClientTool(name, input) {
+    const api = window.ADAI_GRAPH_FIELD;
+    if (!api) return;
     try {
       if (name === 'focus_node') {
         const id = findNodeIdBySlug(input.slug);
-        if (id && window.ADAI_GRAPH_FIELD && typeof window.ADAI_GRAPH_FIELD.zoomTo === 'function') {
-          window.ADAI_GRAPH_FIELD.zoomTo(id);
-        }
+        if (id && typeof api.zoomTo === 'function') api.zoomTo(id);
       } else if (name === 'highlight_nodes') {
         const slugs = Array.isArray(input.slugs) ? input.slugs : [];
-        if (slugs.length > 0) {
-          const id = findNodeIdBySlug(slugs[0]);
-          if (id && window.ADAI_GRAPH_FIELD && typeof window.ADAI_GRAPH_FIELD.zoomTo === 'function') {
-            window.ADAI_GRAPH_FIELD.zoomTo(id);
-          }
+        const ids = slugs.map(findNodeIdBySlug).filter(Boolean);
+        if (ids.length && typeof api.highlightNodes === 'function') {
+          api.highlightNodes(ids);
         }
       } else if (name === 'clear_focus') {
-        // Best-effort: call zoomTo(null) if supported; otherwise just no-op.
-        if (window.ADAI_GRAPH_FIELD && typeof window.ADAI_GRAPH_FIELD.zoomTo === 'function') {
-          try { window.ADAI_GRAPH_FIELD.zoomTo(null); } catch {}
+        if (typeof api.zoomToHome === 'function') api.zoomToHome();
+        if (typeof api.clearHighlights === 'function') api.clearHighlights();
+      } else if (name === 'set_field_mode') {
+        const mode = input && input.mode;
+        if ((mode === 'curatorial' || mode === 'embeddings') && typeof api.setMode === 'function') {
+          api.setMode(mode);
         }
       }
-      // set_field_mode: deferred — no client API yet. Chip is shown so the
-      // user knows the model tried; nothing visual changes until we wire
-      // the embeddings-mode toggle into graph-field.js.
     } catch (e) {
       console.warn('[archivist] client-tool dispatch failed:', name, e);
     }

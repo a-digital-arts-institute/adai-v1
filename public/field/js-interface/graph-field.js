@@ -1659,6 +1659,49 @@
       zoomToNode(graph, bundle, id, w, h, opts);
     };
 
+    // ---- Public API for the archivist chat (and any other driver) ----
+    // Single side-effect contract: every method mutates bundle state, never
+    // touches DOM directly. The frame loop reads bundle.highlightedIds /
+    // bundle.fieldMode and renders accordingly.
+    bundle.highlightedIds = new Set();
+    let highlightTimer = null;
+    bundle.highlightNodes = (ids, ttlMs = 30000) => {
+      if (!Array.isArray(ids)) return;
+      bundle.highlightedIds = new Set(ids.filter(id => graph.byId.has(id)));
+      if (highlightTimer) clearTimeout(highlightTimer);
+      if (ttlMs > 0) highlightTimer = setTimeout(() => {
+        bundle.highlightedIds = new Set();
+        highlightTimer = null;
+      }, ttlMs);
+    };
+    bundle.clearHighlights = () => {
+      if (highlightTimer) { clearTimeout(highlightTimer); highlightTimer = null; }
+      bundle.highlightedIds = new Set();
+    };
+    bundle.zoomToHome = () => {
+      if (!bundle.viewLevel || bundle.viewLevel === '30k') return;
+      // Same trick the empty-space click uses: collapse history so a single
+      // zoomBack walks all the way out.
+      bundle.history = [{ level: '30k', focusedId: null }];
+      zoomBack(graph, bundle, w, h);
+    };
+    // Field mode: 'curatorial' (default) or 'embeddings'. Sets activeFilters
+    // so when the user (or the archivist) zooms into a node, the right edge
+    // types are foregrounded. The filter chip cluster still lets the user
+    // override per-zoom.
+    bundle.fieldMode = 'curatorial';
+    bundle.setMode = (mode) => {
+      if (mode !== 'curatorial' && mode !== 'embeddings') return;
+      bundle.fieldMode = mode;
+      bundle.activeFilters = bundle.activeFilters || new Set();
+      if (mode === 'embeddings') {
+        bundle.activeFilters = new Set(['STYLE_KIN', 'VISUALLY_AFFINE']);
+      } else {
+        bundle.activeFilters.clear();
+      }
+      renderEdgeFilter(bundle, graph);
+    };
+
     // ---- chrome ----
     renderIntro();
     renderBreadcrumb(bundle, graph);
@@ -1862,6 +1905,24 @@
           ctx.arc(s.x, s.y, s.r * 1.15, 0, Math.PI * 2);
           ctx.fill();
         }
+      }
+      // Archivist-driven highlights — a soft pulsing ring on each highlighted
+      // sim dot. Auto-cleared after the TTL set when the set was installed.
+      // Drawn only at 30k where the field actually has sim dots; at zoomed
+      // levels the focused/neighbour rendering already foregrounds the relevant
+      // nodes, so the ring would just be visual noise.
+      if (bundle.highlightedIds && bundle.highlightedIds.size > 0 && !zoomed) {
+        const pulse = 0.55 + 0.35 * Math.sin(Date.now() / 380);
+        for (const s of bundle.sim) {
+          if (!bundle.highlightedIds.has(s.id)) continue;
+          ctx.strokeStyle = '#E8E6E1';
+          ctx.globalAlpha = pulse;
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r * 3.5, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        ctx.lineWidth = 1;
       }
       ctx.fillStyle = CFG.DOT_HEX;
 
