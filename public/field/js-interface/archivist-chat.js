@@ -24,6 +24,7 @@
   const STATE = {
     open: false,
     busy: false,
+    helpOpen: false,  // ? button toggles a help/tips overlay in the log
     online: null,     // null = unknown; true/false set after /session call
     quota: null,
     /** Wire-form history: array of { role, content } where content is either
@@ -122,6 +123,7 @@
         <textarea class="arch-input" id="arch-input" rows="1"
           placeholder="ask the archivist…" autocomplete="off"
           spellcheck="false"></textarea>
+        <button type="button" class="arch-iconbtn" id="arch-help" title="help / what can I ask?" aria-label="help">?</button>
         <button type="button" class="arch-iconbtn" id="arch-reset" title="reset conversation" aria-label="reset conversation">×</button>
         <button type="button" class="arch-iconbtn" id="arch-minimize" title="hide log" aria-label="hide log">−</button>
         <button type="button" class="arch-iconbtn" id="arch-dock" title="move (cycle dock)" aria-label="move">⇄</button>
@@ -134,17 +136,52 @@
     return el;
   }
 
+  // ---------- help / empty state ----------
+  // The archivist is more capable than the bar suggests; without this hint
+  // visitors only ever try "who is X" and never learn it can drive the
+  // view, see what they're looking at, or open the rich profile.
+  const HELP_HTML = `
+    <div class="arch-help">
+      <div class="arch-help-lead">a server-hosted archivist with read-only access to the A(DAI) graph.</div>
+      <div class="arch-help-section">
+        <div class="arch-help-h">what to ask</div>
+        <ul>
+          <li><em>who is Casey Reas?</em> &nbsp;·&nbsp; <em>what's Fidenza?</em> &nbsp;·&nbsp; <em>what concepts live near generative art?</em></li>
+          <li><em>tell me about this</em> / <em>what's near it</em> — it sees the node you're focused on in /field</li>
+          <li><em>show me X</em> — zooms the field to X &nbsp;·&nbsp; <em>tell me everything about X</em> — opens the full profile panel</li>
+          <li><em>highlight every artwork that uses cellular automata</em> &nbsp;·&nbsp; <em>switch to embeddings view</em> &nbsp;·&nbsp; <em>zoom out</em></li>
+          <li><em>what's missing about X?</em> — it'll point you at /contribute when the canon thins</li>
+        </ul>
+      </div>
+      <div class="arch-help-section">
+        <div class="arch-help-h">it can act on /field</div>
+        <ul>
+          <li>focus on a node, highlight a set, open the full profile panel, swap between curatorial and embeddings views</li>
+          <li>any <a href="#" onclick="return false;" class="arch-help-fake-link">[node link]</a> in a reply opens the profile in-place — cmd-click to open the standalone page in a new tab</li>
+        </ul>
+      </div>
+      <div class="arch-help-section">
+        <div class="arch-help-h">controls</div>
+        <ul>
+          <li><kbd>⇧?</kbd> focus / toggle &nbsp;·&nbsp; <kbd>esc</kbd> close &nbsp;·&nbsp; <kbd>enter</kbd> send &nbsp;·&nbsp; <kbd>shift+enter</kbd> newline</li>
+          <li><span class="arch-help-btn">×</span> reset chat &nbsp;·&nbsp; <span class="arch-help-btn">−</span> hide log &nbsp;·&nbsp; <span class="arch-help-btn">⇄</span> move (center / right / left) &nbsp;·&nbsp; <span class="arch-help-btn">?</span> this panel</li>
+        </ul>
+      </div>
+      <div class="arch-help-foot">read-only by design — it can't add nodes, edges, or signals. To contribute, head to <a href="/contribute">/contribute</a>.</div>
+    </div>`;
+
   function renderLog() {
     const root = ensureRoot();
     const log = root.querySelector('#arch-log');
     if (!log) return;
+    // Help panel takes precedence over both the empty state and the
+    // ongoing log — it's modal-ish within the surface.
+    if (STATE.helpOpen) {
+      log.innerHTML = HELP_HTML;
+      return;
+    }
     if (STATE.turns.length === 0) {
-      log.innerHTML = `
-        <div class="arch-empty">
-          a server-hosted archivist with read-only access to the graph.
-          ask about a practitioner, an artwork, a scene, or what's missing.
-          <kbd>⇧?</kbd> toggles · <kbd>esc</kbd> closes
-        </div>`;
+      log.innerHTML = HELP_HTML;
       return;
     }
     log.innerHTML = STATE.turns.map((t, i) => renderTurn(t, i)).join('');
@@ -275,6 +312,12 @@
   // ---------- send + stream ----------
   async function send(text) {
     if (!text || STATE.busy) return;
+    // Dismiss the help overlay on first real send — it's a starter hint,
+    // not a permanent companion.
+    if (STATE.helpOpen) {
+      STATE.helpOpen = false;
+      ensureRoot().querySelector('#arch-help')?.classList.remove('is-active');
+    }
     const online = await ensureSession();
     if (!online) {
       STATE.turns.push({ role: 'assistant', text: '*the archivist is offline (no API key configured).*', chips: [] });
@@ -542,10 +585,20 @@
 
     const sendBtn = root.querySelector('#arch-send');
     const input = root.querySelector('#arch-input');
+    const helpBtn = root.querySelector('#arch-help');
     const resetBtn = root.querySelector('#arch-reset');
     const minBtn = root.querySelector('#arch-minimize');
     const dockBtn = root.querySelector('#arch-dock');
     sendBtn?.addEventListener('click', onSendClick);
+    helpBtn?.addEventListener('click', () => {
+      STATE.helpOpen = !STATE.helpOpen;
+      const r2 = ensureRoot();
+      // The help panel only renders if the log is visible — pop the bar
+      // open so first-time visitors don't click "?" into a no-op.
+      if (STATE.helpOpen) r2.classList.add('is-open');
+      r2.querySelector('#arch-help')?.classList.toggle('is-active', STATE.helpOpen);
+      renderLog();
+    });
     resetBtn?.addEventListener('click', () => {
       // Confirm only if there's anything to lose. Cheap protection against an
       // accidental click mid-thread; click again immediately if you mean it.
@@ -565,8 +618,11 @@
         e.preventDefault();
         onSendClick();
       } else if (e.key === 'Escape') {
+        // Collapse the log (and blur via close()) — matches the visible
+        // "esc close" hint and avoids the dead-air state of just-blurred.
         e.preventDefault();
-        input.blur();
+        e.stopPropagation();
+        close();
       }
     });
     input?.addEventListener('focus', () => { STATE.open = true; });
