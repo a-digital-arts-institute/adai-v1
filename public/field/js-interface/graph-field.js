@@ -749,7 +749,6 @@
     requestAnimationFrame(step);
   }
 
-  // Dim the brand viz while we're zoomed in (focus the graph layer).
   // Field-mode default filters. Both zoom-to handlers wipe activeFilters
   // (intentionally — a fresh zoom shouldn't inherit hand-toggled chips
   // from the previous focus), and setMode also calls this so the
@@ -764,6 +763,7 @@
     }
   }
 
+  // Dim the brand viz while we're zoomed in (focus the graph layer).
   function setBrandOpacityForZoom(zoomedIn) {
     const targets = [
       document.getElementById('mopey'),

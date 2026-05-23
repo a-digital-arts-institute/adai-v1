@@ -89,10 +89,14 @@ export interface RateLimitDecision {
  */
 export function checkSessionLimit(session: { message_count: number; last_message_at: number | null }): RateLimitDecision {
   // Rolling window — if the last message was within the window, count
-  // towards quota; otherwise reset implicitly. (We don't actually mutate
-  // the row here; bumpSession does that after a successful call. The
-  // "reset" is purely a read-side decision: if you've been quiet for an
-  // hour, your full quota is available again.)
+  // towards quota; otherwise the window has rolled and the request is
+  // allowed through. The read side and the write side cooperate: this
+  // check returns ok:true as soon as `ageS >= SESSION_WINDOW_S`, and
+  // bumpSession (src/archivist/session.ts) then rebases `message_count`
+  // back to 1 on the same boundary using the same SESSION_WINDOW_SECONDS
+  // constant. Without the write-side rebase the counter would grow
+  // monotonically and lock out returning visitors after the first
+  // window rollover.
   if (!session.last_message_at) return { ok: true };
   const ageS = Math.floor((Date.now() - session.last_message_at) / 1000);
   if (ageS >= SESSION_WINDOW_S) return { ok: true };

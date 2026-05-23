@@ -304,12 +304,18 @@ function profileHandler(req: any, res: any) {
     }
   }
 
+  // Same consent_scope filter as the contribs query above — structural_only
+  // contributors were promised "only the edge counts, not the content", and
+  // `s.title` rendered in the provenance block (see below) is content. The
+  // edges themselves stay live in the graph; only the signal row's title /
+  // origin metadata is suppressed for structural_only signals.
   const provenance = db
     .prepare(
       `SELECT DISTINCT s.id, s.title, s.source_origin, s.batch_id, s.consent_scope, s.status
        FROM signals s
        JOIN edges e ON e.signal_id = s.id
-       WHERE e.valid_until IS NULL AND (e.source_id = ? OR e.target_id = ?)`
+       WHERE e.valid_until IS NULL AND (e.source_id = ? OR e.target_id = ?)
+         AND (s.consent_scope IS NULL OR s.consent_scope != 'structural_only')`
     )
     .all(node.id, node.id) as any[];
 

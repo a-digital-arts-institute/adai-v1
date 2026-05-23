@@ -103,17 +103,21 @@
     // italic: *foo* (must not match left over from bold; bold already replaced)
     t = t.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
     // links: [text](/path) — only same-origin paths.
-    // Reject protocol-relative ('//evil.com') and backslash variants
-    // ('/\evil.com'); browsers treat both as cross-origin navigation,
-    // and the click interceptor's /^\/([a-z_]+)\/([^\/?#]+)$/ test would
-    // miss them too — they'd fall through to default browser navigation.
+    // Reject protocol-relative ('//evil.com'), backslash variants
+    // ('/\evil.com'), AND tab/LF/CR variants ('/\t/evil.com'). Per WHATWG
+    // URL parsing, browsers strip ASCII TAB (0x09), LF (0x0A), and CR
+    // (0x0D) from `href` BEFORE resolving — so '/\t/evil.com' renders in
+    // markup as <a href="/\t/evil.com"> and the browser turns it into
+    // '//evil.com' (protocol-relative cross-origin) at navigation time.
+    // The click interceptor's /^\/([a-z_]+)\/([^\/?#]+)$/ would miss any
+    // of these too, so they'd fall through to default browser nav.
     // A model influenced by prompt injection in canon content could
     // otherwise emit clickable cross-origin links. We require the path
     // to be a single-leading-slash same-origin path; on rejection the
     // raw (HTML-escaped) markdown stays visible so the visitor can see
     // what the model wrote without being able to click it.
     t = t.replace(/\[([^\]]+)\]\((\/[^)]*)\)/g, (_m, label, href) => {
-      if (href.length < 2 || href[1] === '/' || href[1] === '\\') return _m;
+      if (href.length < 2 || /[\/\\\t\n\r]/.test(href[1])) return _m;
       return `<a href="${href}">${label}</a>`;
     });
     return t;
