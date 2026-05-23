@@ -408,6 +408,7 @@
       highlight_nodes: input && Array.isArray(input.slugs) ? `→ highlight ×${input.slugs.length}` : '→ highlight',
       set_field_mode: input && input.mode ? `→ mode: ${input.mode}` : '→ mode',
       clear_focus: '→ zoom out',
+      open_entity_view: input && input.slug ? `→ open ${input.slug}` : '→ open node',
     };
     return labels[name] || name;
   }
@@ -489,6 +490,19 @@
         const mode = input && input.mode;
         if ((mode === 'curatorial' || mode === 'embeddings') && typeof api.setMode === 'function') {
           api.setMode(mode);
+        }
+      } else if (name === 'open_entity_view') {
+        // Open the rich detailed overlay (the same panel the 'i' key
+        // triggers). We zoom the field first so closing the overlay
+        // leaves the visitor on the right node — entity-view doesn't
+        // touch field focus on its own.
+        const id = findNodeIdBySlug(input.slug);
+        const ev = window.ADAI_ENTITY_VIEW;
+        if (id) {
+          if (typeof api.zoomTo === 'function') {
+            try { api.zoomTo(id); } catch { /* non-fatal */ }
+          }
+          if (ev && typeof ev.open === 'function') ev.open(id);
         }
       }
     } catch (e) {

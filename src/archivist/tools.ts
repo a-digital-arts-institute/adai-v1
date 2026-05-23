@@ -351,6 +351,7 @@ const CLIENT_TOOL_NAMES = new Set<string>([
   "highlight_nodes",
   "set_field_mode",
   "clear_focus",
+  "open_entity_view",
 ]);
 
 export function isClientTool(name: string): boolean {
@@ -372,6 +373,7 @@ export const SERVER_HANDLERS: Record<string, ServerHandler> = {
   highlight_nodes: clientStub,
   set_field_mode: clientStub,
   clear_focus: clientStub,
+  open_entity_view: clientStub,
 };
 
 export const TOOL_DEFINITIONS: ToolDef[] = [
@@ -494,6 +496,18 @@ export const TOOL_DEFINITIONS: ToolDef[] = [
     name: "clear_focus",
     description: "Zoom back out from a focused node to the full field view.",
     input_schema: { type: "object", properties: {} },
+  },
+  {
+    name: "open_entity_view",
+    description:
+      "Open the rich entity-view overlay for a node — a full panel with the node's metadata, image (if any), edges, and embedding neighbours. Heavier than focus_node: only call this when the visitor wants to dwell on a single node, not when you're just referencing it in passing. If you've already focused the node and the visitor asks to read more / dig in / show more, this is the right tool. Don't call it back-to-back on different nodes — pick one.",
+    input_schema: {
+      type: "object",
+      properties: {
+        slug: { type: "string", description: "Slug of the node to open in the entity view." },
+      },
+      required: ["slug"],
+    },
   },
 ];
 
