@@ -27,6 +27,7 @@ import {
   SESSION_QUOTA_VALUE,
 } from "../archivist/ratelimit.js";
 import { runArchivist, isConfigured as agentConfigured, type UsageReport } from "../archivist/agent.js";
+import type { VisitorContext } from "../archivist/prompt.js";
 
 const router = Router();
 
@@ -35,6 +36,52 @@ const router = Router();
 // belt-and-braces.
 const MAX_HISTORY_MESSAGES = 24;
 const MAX_MESSAGE_CHARS = 4000;
+
+// Visitor-context limits. The browser ships these per turn; we never trust
+// the strings directly (we look node-id names up in the DB on the server
+// side) but we still bound length so a malicious client can't blow the
+// prompt up with megabytes of junk.
+const MAX_CONTEXT_ID_LEN = 200;
+const MAX_CONTEXT_TRAIL = 8;
+const ALLOWED_VIEW_LEVELS = new Set(["30k", "10k", "5k", "node", "neighbourhood"]);
+const ALLOWED_FIELD_MODES = new Set(["curatorial", "embeddings"]);
+
+function sanitiseContext(raw: unknown): VisitorContext | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const r = raw as Record<string, unknown>;
+  const out: VisitorContext = {};
+
+  if (typeof r.focused_id === "string" && r.focused_id.length > 0 && r.focused_id.length <= MAX_CONTEXT_ID_LEN) {
+    out.focused_id = r.focused_id;
+  }
+  if (typeof r.view_level === "string" && ALLOWED_VIEW_LEVELS.has(r.view_level)) {
+    out.view_level = r.view_level;
+  }
+  if (typeof r.field_mode === "string" && ALLOWED_FIELD_MODES.has(r.field_mode)) {
+    out.field_mode = r.field_mode;
+  }
+  if (Array.isArray(r.recent_focus_ids)) {
+    const trail: string[] = [];
+    for (const v of r.recent_focus_ids) {
+      if (typeof v !== "string") continue;
+      if (v.length === 0 || v.length > MAX_CONTEXT_ID_LEN) continue;
+      trail.push(v);
+      if (trail.length >= MAX_CONTEXT_TRAIL) break;
+    }
+    if (trail.length > 0) out.recent_focus_ids = trail;
+  }
+
+  // Drop entirely if nothing useful survived sanitisation.
+  if (
+    out.focused_id == null &&
+    out.view_level == null &&
+    out.field_mode == null &&
+    !out.recent_focus_ids
+  ) {
+    return undefined;
+  }
+  return out;
+}
 
 function sanitiseMessages(raw: unknown): { ok: true; messages: any[] } | { ok: false; error: string } {
   if (!Array.isArray(raw)) return { ok: false, error: "messages must be an array" };
@@ -128,6 +175,7 @@ router.post("/api/archivist/chat", async (req, res) => {
     res.status(400).set(JSON_HEADERS).json({ error: parsed.error });
     return;
   }
+  const visitorContext = sanitiseContext(req.body?.context);
 
   // Open SSE. X-Accel-Buffering disables Fly/nginx buffering so the bytes
   // actually leave the server promptly; Cache-Control no-store keeps any
@@ -142,7 +190,13 @@ router.post("/api/archivist/chat", async (req, res) => {
   res.flushHeaders?.();
 
   const ac = new AbortController();
-  req.on("close", () => ac.abort());
+  // Watch the *response* socket, not the request. In Node 22+ / Express 5 the
+  // IncomingMessage emits 'close' as soon as the body has been consumed (i.e.
+  // within ms of receiving the POST), which is NOT a disconnect — it just
+  // means express.json() finished. Aborting on that closes Claude's stream
+  // before the first token. res.on('close') with a writableEnded guard fires
+  // only when the client actually goes away mid-stream.
+  res.on("close", () => { if (!res.writableEnded) ac.abort(); });
 
   function writeEvent(name: string, data: unknown): void {
     if (res.writableEnded) return;
@@ -165,7 +219,7 @@ router.post("/api/archivist/chat", async (req, res) => {
   let finalUsage: UsageReport | null = null;
 
   try {
-    for await (const evt of runArchivist({ messages: parsed.messages, db, signal: ac.signal })) {
+    for await (const evt of runArchivist({ messages: parsed.messages, db, context: visitorContext, signal: ac.signal })) {
       if (evt.type === "usage") {
         finalUsage = evt.usage;
         continue; // don't forward raw usage to the wire

@@ -17,6 +17,8 @@
   if (window.ADAI_ARCHIVIST) return; // idempotent
 
   const SESSION_HISTORY_KEY = 'adai_archivist_history';
+  const DOCK_KEY = 'adai_archivist_dock';
+  const DOCKS = ['center', 'right', 'left'];
   const MAX_HISTORY = 20;
 
   const STATE = {
@@ -120,6 +122,9 @@
         <textarea class="arch-input" id="arch-input" rows="1"
           placeholder="ask the archivist…" autocomplete="off"
           spellcheck="false"></textarea>
+        <button type="button" class="arch-iconbtn" id="arch-reset" title="reset conversation" aria-label="reset conversation">×</button>
+        <button type="button" class="arch-iconbtn" id="arch-minimize" title="hide log" aria-label="hide log">−</button>
+        <button type="button" class="arch-iconbtn" id="arch-dock" title="move (cycle dock)" aria-label="move">⇄</button>
         <button type="button" class="arch-send" id="arch-send">send</button>
         <span class="arch-keyhint" aria-hidden="true">⇧?</span>
       </div>
@@ -191,8 +196,64 @@
   function clear() {
     STATE.history = [];
     STATE.turns = [];
+    STATE.pendingAssistant = null;
+    STATE.currentToolCalls = new Map();
     saveHistory();
     renderLog();
+  }
+
+  // ---------- dock (move) ----------
+  function loadDock() {
+    try {
+      const v = sessionStorage.getItem(DOCK_KEY);
+      return DOCKS.includes(v) ? v : 'center';
+    } catch { return 'center'; }
+  }
+  function applyDock(name) {
+    const root = ensureRoot();
+    for (const d of DOCKS) root.classList.remove('dock-' + d);
+    root.classList.add('dock-' + name);
+    try { sessionStorage.setItem(DOCK_KEY, name); } catch {}
+  }
+  function cycleDock() {
+    const cur = loadDock();
+    const next = DOCKS[(DOCKS.indexOf(cur) + 1) % DOCKS.length];
+    applyDock(next);
+  }
+
+  // ---------- visitor context ----------
+  // Snapshot of what /field is currently showing — focused node, zoom
+  // level, mode, and the recent-focus trail. We ship this with each
+  // /api/archivist/chat POST so the archivist can resolve deictic
+  // phrases ("this", "what's near it") to the node on screen. Defensive
+  // because window.ADAI_GRAPH_FIELD may not be initialised yet (the
+  // archivist loads with `defer`, but the user could still send before
+  // the field bundle is ready).
+  function snapshotVisitorContext() {
+    try {
+      const field = window.ADAI_GRAPH_FIELD;
+      if (!field) return null;
+      const trail = Array.isArray(field.history)
+        ? field.history
+            .map((h) => h && typeof h.focusedId === 'string' ? h.focusedId : null)
+            .filter(Boolean)
+            .slice(-5)
+        : [];
+      const ctx = {
+        focused_id: typeof field.focusedId === 'string' ? field.focusedId : null,
+        view_level: typeof field.viewLevel === 'string' ? field.viewLevel : null,
+        field_mode: typeof field.fieldMode === 'string' ? field.fieldMode : null,
+        recent_focus_ids: trail,
+      };
+      // Drop the whole snapshot if nothing useful is on screen — keeps
+      // the server-side check (`!ctx` short-circuit) tidy.
+      if (!ctx.focused_id && !ctx.view_level && !ctx.field_mode && trail.length === 0) {
+        return null;
+      }
+      return ctx;
+    } catch {
+      return null;
+    }
   }
 
   // ---------- session bootstrap ----------
@@ -229,13 +290,17 @@
     setBusy(true, 'thinking…');
     renderLog();
 
+    const visitorContext = snapshotVisitorContext();
     let resp;
     try {
       resp = await fetch('/api/archivist/chat', {
         method: 'POST',
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json', 'Accept': 'text/event-stream' },
-        body: JSON.stringify({ messages: STATE.history.slice(-MAX_HISTORY) }),
+        body: JSON.stringify({
+          messages: STATE.history.slice(-MAX_HISTORY),
+          ...(visitorContext ? { context: visitorContext } : {}),
+        }),
       });
     } catch (e) {
       finishWithError('network error: ' + (e?.message || e));
@@ -367,8 +432,20 @@
       }
       renderLog();
     } else if (event === 'client_tool') {
-      const chip = { name: data.name, label: chipLabelFor(data.name, data.input), client: true, done: true };
-      a.chips.push(chip);
+      // The matching tool_use_start already pushed a placeholder chip; we
+      // refine that chip in-place with the input-derived label (e.g.
+      // "→ highlight ×6") and the gold "client" tint. Falling back to a
+      // new chip only if the start event never arrived for some reason.
+      const id = data.tool_use_id;
+      let chip = id ? STATE.currentToolCalls.get(id) : null;
+      if (chip) {
+        chip.label = chipLabelFor(data.name, data.input);
+        chip.client = true;
+        chip.done = true;
+      } else {
+        chip = { name: data.name, label: chipLabelFor(data.name, data.input), client: true, done: true };
+        a.chips.push(chip);
+      }
       dispatchClientTool(data.name, data.input || {});
       renderLog();
     } else if (event === 'stop') {
@@ -447,9 +524,27 @@
     const root = ensureRoot();
     root.classList.add('is-open'); // bar itself is always visible; log shows when there are turns
 
+    applyDock(loadDock());
+
     const sendBtn = root.querySelector('#arch-send');
     const input = root.querySelector('#arch-input');
+    const resetBtn = root.querySelector('#arch-reset');
+    const minBtn = root.querySelector('#arch-minimize');
+    const dockBtn = root.querySelector('#arch-dock');
     sendBtn?.addEventListener('click', onSendClick);
+    resetBtn?.addEventListener('click', () => {
+      // Confirm only if there's anything to lose. Cheap protection against an
+      // accidental click mid-thread; click again immediately if you mean it.
+      if (STATE.turns.length === 0) { clear(); return; }
+      if (typeof window.confirm === 'function' && !window.confirm('Reset this conversation?')) return;
+      clear();
+    });
+    minBtn?.addEventListener('click', () => {
+      const root2 = ensureRoot();
+      if (root2.classList.contains('is-open')) close();
+      else open();
+    });
+    dockBtn?.addEventListener('click', cycleDock);
     input?.addEventListener('input', autoresize);
     input?.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
@@ -462,13 +557,51 @@
     });
     input?.addEventListener('focus', () => { STATE.open = true; });
 
+    // Intercept clicks on profile-page links the archivist emits inside its
+    // replies (e.g. [Casey Reas](/practitioner/casey-reas)). Instead of
+    // navigating away from /field, look the node up by slug and zoom the
+    // graph to it. Modifier-click (cmd/ctrl/shift) and middle-click are
+    // left alone so "open in new tab" still works.
+    const KNOWN_NODE_PREFIXES = new Set([
+      'practitioner', 'artwork', 'concept', 'scene', 'collective',
+      'institution', 'platform', 'publication', 'project',
+      'classification_regime', 'event', 'related',
+    ]);
+    root.addEventListener('click', (e) => {
+      if (e.defaultPrevented) return;
+      if (e.button !== 0) return; // ignore middle/right
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return; // honour new-tab/window
+      const a = e.target?.closest?.('a[href]');
+      if (!a || !root.contains(a)) return;
+      const href = a.getAttribute('href') || '';
+      // Same-origin path of form /<type>/<slug>; reject deeper paths, query
+      // strings, fragments — those aren't profile-page links.
+      const m = /^\/([a-z_]+)\/([^\/?#]+)$/.exec(href);
+      if (!m) return;
+      if (!KNOWN_NODE_PREFIXES.has(m[1])) return;
+      const slug = decodeURIComponent(m[2]);
+      const id = findNodeIdBySlug(slug);
+      const api = window.ADAI_GRAPH_FIELD;
+      if (!id || !api || typeof api.zoomTo !== 'function') {
+        // Field not ready or slug not in the loaded graph — fall through to
+        // the browser default so the visitor still reaches the page.
+        return;
+      }
+      e.preventDefault();
+      try { api.zoomTo(id); } catch (err) {
+        console.warn('[archivist] zoomTo failed, falling back to nav:', err);
+        window.location.href = href;
+      }
+    });
+
     // Global keyboard — Shift+? focuses the input from anywhere except
-    // when the user is already typing in another field.
+    // when the user is already typing in any input (including this one;
+    // otherwise typing "?" inside the chat would toggle the chat closed).
     document.addEventListener('keydown', (e) => {
       if (e.key === '?' && e.shiftKey) {
         const tag = (document.activeElement?.tagName || '').toLowerCase();
         const isTyping = tag === 'input' || tag === 'textarea' || document.activeElement?.isContentEditable;
-        if (isTyping && document.activeElement?.id !== 'arch-input') return;
+        if (isTyping) return;
         e.preventDefault();
         toggle();
       }

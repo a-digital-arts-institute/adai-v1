@@ -21,13 +21,13 @@ import {
   isClientTool,
   type ToolDef,
 } from "./tools.js";
-import { buildPrompt } from "./prompt.js";
+import { buildPrompt, type VisitorContext } from "./prompt.js";
 
 export type AgentEvent =
   | { type: "text_delta"; text: string }
   | { type: "tool_use_start"; tool_use_id: string; name: string; input_preview?: Record<string, unknown> }
   | { type: "tool_use_end"; tool_use_id: string; name: string; ok: boolean }
-  | { type: "client_tool"; name: string; input: Record<string, unknown> }
+  | { type: "client_tool"; tool_use_id: string; name: string; input: Record<string, unknown> }
   | { type: "usage"; usage: UsageReport }
   | { type: "stop"; reason: string }
   | { type: "error"; error: string };
@@ -76,6 +76,9 @@ interface RunOpts {
   messages: Anthropic.Messages.MessageParam[];
   /** Live DB handle — server tools execute against it. */
   db: DatabaseSync;
+  /** What the visitor is currently looking at in /field. Optional and
+   *  ambient — woven into the prompt head, not exposed as a tool. */
+  context?: VisitorContext;
   /** Abort signal — closes the HTTP stream when the client disconnects. */
   signal?: AbortSignal;
 }
@@ -93,7 +96,7 @@ export async function* runArchivist(opts: RunOpts): AsyncGenerator<AgentEvent, v
   }
 
   const model = defaultModel();
-  const { spine, head } = buildPrompt(opts.db);
+  const { spine, head } = buildPrompt(opts.db, opts.context);
 
   // System is multi-block so we can mark the static spine for caching and
   // leave the head uncached (it changes every chat).
@@ -192,7 +195,9 @@ export async function* runArchivist(opts: RunOpts): AsyncGenerator<AgentEvent, v
     for (const call of toolCalls) {
       if (isClientTool(call.name)) {
         // Client tool: dispatch to the browser; the model just sees "ok".
-        yield { type: "client_tool", name: call.name, input: call.input };
+        // Pass tool_use_id so the chat UI can refine the existing chip
+        // (which only knows the name) with the full input-derived label.
+        yield { type: "client_tool", tool_use_id: call.id, name: call.name, input: call.input };
       }
       const handler = SERVER_HANDLERS[call.name];
       let ok = true;
