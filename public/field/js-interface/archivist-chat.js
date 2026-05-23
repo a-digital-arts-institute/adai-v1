@@ -573,9 +573,14 @@
 
     // Intercept clicks on profile-page links the archivist emits inside its
     // replies (e.g. [Casey Reas](/practitioner/casey-reas)). Instead of
-    // navigating away from /field, look the node up by slug and zoom the
-    // graph to it. Modifier-click (cmd/ctrl/shift) and middle-click are
-    // left alone so "open in new tab" still works.
+    // navigating to the standalone server-rendered profile, we zoom the
+    // field to the node AND open the rich entity-view overlay on top —
+    // the visitor's expectation when clicking a name is "show me this in
+    // detail", and the overlay is the in-page version of that. The model
+    // distinction stays intact: focus_node is still zoom-only, this is
+    // user-initiated. Modifier-click (cmd/ctrl/shift) and middle-click
+    // are left alone so "open in new tab → reach the server page" still
+    // works for visitors who want it.
     const KNOWN_NODE_PREFIXES = new Set([
       'practitioner', 'artwork', 'concept', 'scene', 'collective',
       'institution', 'platform', 'publication', 'project',
@@ -596,15 +601,23 @@
       const slug = decodeURIComponent(m[2]);
       const id = findNodeIdBySlug(slug);
       const api = window.ADAI_GRAPH_FIELD;
-      if (!id || !api || typeof api.zoomTo !== 'function') {
-        // Field not ready or slug not in the loaded graph — fall through to
-        // the browser default so the visitor still reaches the page.
+      const ev = window.ADAI_ENTITY_VIEW;
+      if (!id) {
+        // Slug not in the loaded graph — fall through to the browser
+        // default so the visitor still reaches the standalone page.
         return;
       }
+      // We have a node; we'll prevent the navigation regardless. Zoom the
+      // field first (so closing the overlay lands the visitor on the
+      // right node), then open the entity-view overlay if available. If
+      // neither bundle is ready, fall back to navigation.
+      if (!api?.zoomTo && !ev?.open) return;
       e.preventDefault();
-      try { api.zoomTo(id); } catch (err) {
-        console.warn('[archivist] zoomTo failed, falling back to nav:', err);
-        window.location.href = href;
+      if (api && typeof api.zoomTo === 'function') {
+        try { api.zoomTo(id); } catch (err) { console.warn('[archivist] zoomTo failed:', err); }
+      }
+      if (ev && typeof ev.open === 'function') {
+        try { ev.open(id); } catch (err) { console.warn('[archivist] entity-view open failed:', err); }
       }
     });
 

@@ -500,7 +500,7 @@ export const TOOL_DEFINITIONS: ToolDef[] = [
   {
     name: "open_entity_view",
     description:
-      "Open the rich entity-view overlay for a node — a full panel with the node's metadata, image (if any), edges, and embedding neighbours. Heavier than focus_node: only call this when the visitor wants to dwell on a single node, not when you're just referencing it in passing. If you've already focused the node and the visitor asks to read more / dig in / show more, this is the right tool. Don't call it back-to-back on different nodes — pick one.",
+      "Open the rich entity-view overlay — a full panel that COVERS the graph with the node's metadata, image, edges, and neighbours. This is a heavy, attention-grabbing gesture. Only call when the visitor EXPLICITLY asks to read about / open / dig into / tell me everything about / go deeper on a node. Do NOT call for vague phrasings like 'show me X', 'find X', 'can you X', 'where is X' — those want focus_node, not the overlay. When in doubt, prefer focus_node. Never call back-to-back on different nodes.",
     input_schema: {
       type: "object",
       properties: {
