@@ -142,8 +142,30 @@ export async function* runArchivist(opts: RunOpts): AsyncGenerator<AgentEvent, v
     try {
       for await (const evt of stream) {
         if (opts.signal?.aborted) {
-          yield { type: "stop", reason: "client_disconnected" };
           stream.controller.abort();
+          // Best-effort: try to capture any partial usage so the billing
+          // meter doesn't undercount aborted streams. Without this, the
+          // early return below would skip the post-loop finalMessage()
+          // call entirely, finalUsage in the route stays null, and
+          // recordUsage is never invoked — meaning Anthropic still bills
+          // us for the partial response but archivist_usage shows zero.
+          // The SDK's finalMessage() after abort returns whatever was
+          // buffered (or throws); either is fine here.
+          try {
+            const partial = await stream.finalMessage();
+            if (partial?.usage) {
+              const u = partial.usage as any;
+              aggregate.input_tokens += u.input_tokens ?? 0;
+              aggregate.output_tokens += u.output_tokens ?? 0;
+              aggregate.cache_read_tokens += u.cache_read_input_tokens ?? 0;
+              aggregate.cache_write_tokens += u.cache_creation_input_tokens ?? 0;
+            }
+          } catch {
+            // Stream gave us nothing usable — accept the undercount for
+            // this one aborted call rather than crashing the route.
+          }
+          yield { type: "usage", usage: aggregate };
+          yield { type: "stop", reason: "client_disconnected" };
           return;
         }
         if (evt.type === "content_block_start" && evt.content_block.type === "tool_use") {

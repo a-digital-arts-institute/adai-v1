@@ -163,12 +163,18 @@ function get_node(db: DatabaseSync, input: Record<string, unknown>): unknown {
     };
   });
 
+  // Honor consent_scope='structural_only': the contributor was promised
+  // "only the edge counts, not the content". Their edges are still in the
+  // edges table and still render; we just don't surface the signal body
+  // (title/summary) through the archivist. NULL/other values pass through
+  // (allow-by-default — only 'structural_only' is explicitly suppressed).
   const signals = db
     .prepare(
       `SELECT s.id, s.title, s.summary, s.source_url, s.source_origin, s.created_at
          FROM signals s
          JOIN intake_queue q ON q.signal_id = s.id
         WHERE q.target_node = ? AND q.status = 'approved'
+          AND (s.consent_scope IS NULL OR s.consent_scope != 'structural_only')
         ORDER BY s.created_at DESC
         LIMIT 5`
     )

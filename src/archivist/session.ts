@@ -18,6 +18,7 @@
 import type { Request, Response } from "express";
 import crypto from "node:crypto";
 import type { DatabaseSync } from "node:sqlite";
+import { SESSION_WINDOW_SECONDS } from "./ratelimit.js";
 
 const COOKIE_NAME = "adai_arch";
 const MAX_AGE_S = 60 * 60 * 24 * 30; // 30 days
@@ -63,10 +64,22 @@ function verifySigned(signed: string, key: string): string | null {
   const sessionId = signed.slice(0, dot);
   const sig = signed.slice(dot + 1);
   if (!sessionId || !sig) return null;
+  // Reject anything that isn't pure hex BEFORE touching Buffer.from. With
+  // non-hex input, Buffer.from(s, "hex") silently truncates at the first
+  // invalid char — a string-length check then passes but the resulting
+  // byte buffers differ in length, and timingSafeEqual throws RangeError.
+  // An uncaught throw would bubble out of readSession into the chat route
+  // and produce a 500 for any visitor with a malformed cookie.
+  if (!/^[0-9a-fA-F]+$/.test(sig)) return null;
   const expected = sign(sessionId, key);
   // Constant-time compare to avoid leaking signature info via timing.
   if (sig.length !== expected.length) return null;
-  if (!crypto.timingSafeEqual(Buffer.from(sig, "hex"), Buffer.from(expected, "hex"))) return null;
+  try {
+    if (!crypto.timingSafeEqual(Buffer.from(sig, "hex"), Buffer.from(expected, "hex"))) return null;
+  } catch {
+    // Belt-and-braces in case the hex check above misses an edge case.
+    return null;
+  }
   return sessionId;
 }
 
@@ -132,9 +145,26 @@ export function getOrIssueSession(db: DatabaseSync, req: Request, res: Response)
 /**
  * Record that a chat call completed for this session. Updates the rolling
  * window used by the per-session rate limiter.
+ *
+ * Window-aware reset: if the previous message landed outside the rolling
+ * window, message_count drops back to 1 instead of compounding. Without
+ * this, message_count grows monotonically — the read-side check in
+ * checkSessionLimit only allows the *first* message past the window
+ * boundary (because that read returns ok:true unconditionally), then the
+ * very next message inside the new window finds message_count already at
+ * or above quota and gets denied. Net effect was: any returning visitor
+ * got 1-message-per-hour after their first burst.
  */
 export function bumpSession(db: DatabaseSync, sessionId: string): void {
+  const now = Date.now();
+  const cutoffMs = now - SESSION_WINDOW_SECONDS * 1000;
   db.prepare(
-    "UPDATE archivist_sessions SET message_count = message_count + 1, last_message_at = ? WHERE session_id = ?"
-  ).run(Date.now(), sessionId);
+    `UPDATE archivist_sessions
+        SET message_count = CASE
+              WHEN last_message_at IS NULL OR last_message_at < ? THEN 1
+              ELSE message_count + 1
+            END,
+            last_message_at = ?
+      WHERE session_id = ?`
+  ).run(cutoffMs, now, sessionId);
 }

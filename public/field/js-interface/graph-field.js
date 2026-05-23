@@ -750,6 +750,20 @@
   }
 
   // Dim the brand viz while we're zoomed in (focus the graph layer).
+  // Field-mode default filters. Both zoom-to handlers wipe activeFilters
+  // (intentionally — a fresh zoom shouldn't inherit hand-toggled chips
+  // from the previous focus), and setMode also calls this so the
+  // curatorial/embeddings split has one source of truth. Keeping it
+  // module-scoped so zoomToNode (top-level) and bundle.setMode (inside
+  // the IIFE init) can both reach it.
+  function applyDefaultFiltersForMode(bundle) {
+    if (bundle.fieldMode === 'embeddings') {
+      bundle.activeFilters = new Set(['STYLE_KIN', 'VISUALLY_AFFINE']);
+    } else {
+      bundle.activeFilters = new Set();
+    }
+  }
+
   function setBrandOpacityForZoom(zoomedIn) {
     const targets = [
       document.getElementById('mopey'),
@@ -1367,7 +1381,7 @@
     bundle.viewLevel = '10k';
     bundle.focusedId = focusedId;
     bundle.zoomFocus = null;
-    bundle.activeFilters = new Set();  // reset filters on zoom-to
+    applyDefaultFiltersForMode(bundle);  // reset + reapply current mode's defaults
 
     const layout = compute10kLayout(graph, focusedId, canvasW, canvasH);
     bundle.zoomCenter = { x: layout.cx, y: layout.cy };
@@ -1488,7 +1502,7 @@
 
     bundle.viewLevel = level;
     bundle.focusedId = focusedId;
-    bundle.activeFilters = new Set();  // reset filters on zoom-to
+    applyDefaultFiltersForMode(bundle);  // reset + reapply current mode's defaults
     setBrandOpacityForZoom(true);
 
     runTween(CFG.ZOOM_TRANSITION_MS, (e) => {
@@ -1689,16 +1703,16 @@
     // so when the user (or the archivist) zooms into a node, the right edge
     // types are foregrounded. The filter chip cluster still lets the user
     // override per-zoom.
+    //
+    // The mode is sticky: applyDefaultFiltersForMode (called from both
+    // zoom-to handlers) re-applies the right filter set after every
+    // zoom-to so e.g. set_field_mode('embeddings') followed by
+    // focus_node(...) doesn't silently lose the embeddings foregrounding.
     bundle.fieldMode = 'curatorial';
     bundle.setMode = (mode) => {
       if (mode !== 'curatorial' && mode !== 'embeddings') return;
       bundle.fieldMode = mode;
-      bundle.activeFilters = bundle.activeFilters || new Set();
-      if (mode === 'embeddings') {
-        bundle.activeFilters = new Set(['STYLE_KIN', 'VISUALLY_AFFINE']);
-      } else {
-        bundle.activeFilters.clear();
-      }
+      applyDefaultFiltersForMode(bundle);
       renderEdgeFilter(bundle, graph);
     };
 

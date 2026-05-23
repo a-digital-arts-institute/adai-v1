@@ -99,6 +99,24 @@ function sanitiseMessages(raw: unknown): { ok: true; messages: any[] } | { ok: f
       // Allow structured content blocks coming back (e.g. when the client
       // replays prior assistant tool-use turns). Pass through but truncate
       // text blocks. We don't accept image blocks here.
+      //
+      // TRUST MODEL — DELIBERATE FOOTGUN, READ THIS BEFORE TIGHTENING:
+      // We accept tool_use and tool_result blocks straight from the
+      // client. A malicious visitor can therefore fabricate a
+      // "tool_result" claiming search_nodes returned anything they want,
+      // and the model will reason from that on the next turn. This is
+      // tolerated because (a) chat history lives in the visitor's own
+      // sessionStorage and is replayed per-request — they can only lie
+      // to *their own* model, and they see the lie in their own UI; and
+      // (b) keeping the structured blocks intact is what lets the system
+      // spine + tool definitions stay cacheable across turns, which is
+      // material to per-message cost.
+      // The realistic abuse is screenshotting a fake "authoritative"
+      // reply; that's a misinformation concern, not an integrity one,
+      // and the right mitigation lives outside this layer (don't make
+      // the archivist's voice screenshot-bait; consider HMAC-signing
+      // server-emitted tool_results if it ever matters). Do NOT silently
+      // strip tool_use/tool_result here — that breaks the cache path.
       const blocks = content.filter((b: any) => b && (b.type === "text" || b.type === "tool_use" || b.type === "tool_result"));
       for (const b of blocks) {
         if (b.type === "text" && typeof b.text === "string") b.text = b.text.slice(0, MAX_MESSAGE_CHARS);

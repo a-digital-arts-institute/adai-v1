@@ -252,9 +252,14 @@ function profileHandler(req: any, res: any) {
     }
   }
 
+  // Honor consent_scope='structural_only': the contributor was promised
+  // "only the edge counts, not the content" — so we hide title/summary/
+  // content for those signals here too. Their edges are still rendered
+  // from the edges table below; this only suppresses the narrative body.
+  // NULL/other consent_scope values pass through (allow-by-default).
   const contribs = db
     .prepare(
-      "SELECT s.title, s.summary, s.content, s.source_url, s.submitted_by, s.created_at, s.consent_attribution FROM signals s JOIN intake_queue iq ON iq.signal_id = s.id WHERE iq.target_node = ? AND iq.status = 'approved' ORDER BY s.created_at DESC"
+      "SELECT s.title, s.summary, s.content, s.source_url, s.submitted_by, s.created_at, s.consent_attribution FROM signals s JOIN intake_queue iq ON iq.signal_id = s.id WHERE iq.target_node = ? AND iq.status = 'approved' AND (s.consent_scope IS NULL OR s.consent_scope != 'structural_only') ORDER BY s.created_at DESC"
     )
     .all(node.id) as any[];
 
@@ -427,9 +432,11 @@ function dataHandler(req: any, res: any) {
     .prepare("SELECT id, source_id, target_id, edge_type, confidence FROM edges WHERE source_id = ? OR target_id = ?")
     .all(node.id, node.id) as any[];
 
+  // Same consent_scope filter as the HTML profile path above — don't
+  // expose structural_only contributors' titles through the data API.
   const signalRows = db
     .prepare(
-      "SELECT s.id, s.title, s.submitted_by FROM signals s JOIN intake_queue iq ON iq.signal_id = s.id WHERE iq.target_node = ? AND iq.status = 'approved'"
+      "SELECT s.id, s.title, s.submitted_by FROM signals s JOIN intake_queue iq ON iq.signal_id = s.id WHERE iq.target_node = ? AND iq.status = 'approved' AND (s.consent_scope IS NULL OR s.consent_scope != 'structural_only')"
     )
     .all(node.id) as any[];
 

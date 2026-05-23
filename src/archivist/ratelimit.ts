@@ -146,3 +146,9 @@ export function recordUsage(db: DatabaseSync, u: UsageTally): void {
 }
 
 export const SESSION_QUOTA_VALUE = SESSION_QUOTA;
+// Exposed for src/archivist/session.ts so bumpSession can do a window-aware
+// reset (when the previous message is outside the rolling window the counter
+// drops back to 1 instead of compounding). Single source of truth — both
+// the read-side check (checkSessionLimit) and the write-side update
+// (bumpSession) use the same value.
+export const SESSION_WINDOW_SECONDS = SESSION_WINDOW_S;
