@@ -7,8 +7,6 @@
     "node": ">=22.5.0"
   },
   "scripts": {
-    "audit:schema:fast": "seed/_build/.venv/bin/python3 seed/_build/audit_schema.py --tier fast",
-    "audit:schema:full": "seed/_build/.venv/bin/python3 seed/_build/audit_schema.py --tier full",
     "dev": "tsx src/index.ts",
     "seed": "tsx src/seed.ts",
     "seed:consolidated": "tsx src/seed-consolidated.ts",
@@ -18,7 +16,9 @@
     "token:issue": "tsx src/cli/issue-token.ts",
     "token:revoke": "tsx src/cli/revoke-token.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "audit:schema:fast": "seed/_build/.venv/bin/python3 seed/_build/audit_schema.py --tier fast",
+    "audit:schema:full": "seed/_build/.venv/bin/python3 seed/_build/audit_schema.py --tier full"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.658.0",
