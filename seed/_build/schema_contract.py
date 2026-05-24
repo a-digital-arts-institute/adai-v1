@@ -28,13 +28,13 @@ EDGE_CLAIMS: Dict[str, Dict[str, Optional[EdgeClaim]]] = {
             source_types=("artwork",),
             target_types=("institution", "platform"),
             description="A specific artwork was shown at a specific institution/platform.",
-            ref="SKILL.md §1.4 edge table, line 220",
+            ref="SKILL.md §1.4 edge table, line 221",
         ),
         "sources_md": EdgeClaim(
             source_types=("practitioner",),
             target_types=("institution",),
             description="Where a practitioner has shown work (practitioner-level CV). Note: direction differs from SKILL.md — SOURCES.md table lists practitioner→institution, not artwork→institution.",
-            ref="SOURCES.md line 297 edge structure table ('What the seed produces honestly')",
+            ref="SOURCES.md line 296 edge structure table ('What the seed produces honestly')",
         ),
         "claude_md": EdgeClaim(
             source_types=(),
@@ -82,7 +82,7 @@ EDGE_CLAIMS: Dict[str, Dict[str, Optional[EdgeClaim]]] = {
             source_types=("artwork",),
             target_types=("practitioner",),
             description="Who made the artwork.",
-            ref="SKILL.md §1.4 edge table, line 217",
+            ref="SKILL.md §1.4 edge table, line 216",
         ),
         "sources_md": EdgeClaim(
             source_types=("artwork",),
@@ -102,13 +102,13 @@ EDGE_CLAIMS: Dict[str, Dict[str, Optional[EdgeClaim]]] = {
             source_types=("artwork",),
             target_types=("concept",),
             description="What the artwork expresses conceptually.",
-            ref="SKILL.md §1.4 edge table, line 218",
+            ref="SKILL.md §1.4 edge table, line 217",
         ),
         "sources_md": EdgeClaim(
             source_types=("artwork",),
             target_types=("concept",),
             description="What a work is about conceptually. Count: 621. Heuristic EMBODIES from April 22 enrichment pass superseded by 1,035 source-attested EMBODIES from objkt, fxhash, and Wikidata depicts in real-source pass.",
-            ref="SOURCES.md line 292 edge structure table + line 377 (Known Gaps #11 EMBODIES edge quality)",
+            ref="SOURCES.md line 293 edge structure table + line 377 (Known Gaps #11 EMBODIES edge quality)",
         ),
         "claude_md": EdgeClaim(
             source_types=(),
@@ -122,13 +122,13 @@ EDGE_CLAIMS: Dict[str, Dict[str, Optional[EdgeClaim]]] = {
             source_types=("practitioner",),
             target_types=("concept",),
             description="What the practitioner works with. SKILL.md lists target as 'concept / technique'.",
-            ref="SKILL.md §1.4 edge table, line 219",
+            ref="SKILL.md §1.4 edge table, line 218",
         ),
         "sources_md": EdgeClaim(
             source_types=("practitioner",),
             target_types=("concept",),
             description="What someone works with. Count: 461. SOURCES.md table lists target type as 'concept' only (no 'technique' qualifier, unlike SKILL.md).",
-            ref="SOURCES.md line 293 edge structure table",
+            ref="SOURCES.md line 294 edge structure table",
         ),
         "claude_md": EdgeClaim(
             source_types=(),
@@ -142,13 +142,13 @@ EDGE_CLAIMS: Dict[str, Dict[str, Optional[EdgeClaim]]] = {
             source_types=("practitioner",),
             target_types=("technique",),
             description="Finer-grained than PRACTICES. SKILL.md lists source as practitioner and target as technique.",
-            ref="SKILL.md §1.4 edge table, line 220",
+            ref="SKILL.md §1.4 edge table, line 219",
         ),
         "sources_md": EdgeClaim(
             source_types=("artwork",),
             target_types=("concept",),
             description="What method/tool the work employs. Count: 75. Note: SOURCES.md table lists source as artwork (not practitioner as in SKILL.md) and target as concept (not technique). This is a documented cross-document discrepancy.",
-            ref="SOURCES.md line 298 edge structure table ('artwork → concept, What method/tool the work employs')",
+            ref="SOURCES.md line 300 edge structure table ('artwork → concept, What method/tool the work employs')",
         ),
         "claude_md": EdgeClaim(
             source_types=(),
@@ -162,7 +162,7 @@ EDGE_CLAIMS: Dict[str, Dict[str, Optional[EdgeClaim]]] = {
             source_types=("practitioner",),
             target_types=("collective", "scene"),
             description="Membership in a collective or scene. SKILL.md lists both collective and scene as valid target types.",
-            ref="SKILL.md §1.4 edge table, line 221",
+            ref="SKILL.md §1.4 edge table, line 220",
         ),
         "sources_md": EdgeClaim(
             source_types=("practitioner",),
@@ -188,7 +188,7 @@ EDGE_CLAIMS: Dict[str, Dict[str, Optional[EdgeClaim]]] = {
             source_types=("any",),
             target_types=("classification_regime",),
             description="Provenance: which research lens saw this node. Count: 283. CLASSIFIED_BY edges are authored in seed/edges.json, not auto-injected.",
-            ref="SOURCES.md line 296 edge structure table ('any → classification regime, Provenance: which research lens saw this node')",
+            ref="SOURCES.md line 297 edge structure table ('any → classification regime, Provenance: which research lens saw this node')",
         ),
         "claude_md": EdgeClaim(
             source_types=("any",),
