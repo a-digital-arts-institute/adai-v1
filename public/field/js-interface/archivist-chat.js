@@ -408,6 +408,18 @@
     } else {
       STATE.turns.push({ role: 'assistant', text: '*' + msg + '*', chips: [] });
     }
+    // Keep wire-history alternation intact. send() already pushed the user
+    // turn; without a matching assistant entry, the next send POSTs two
+    // consecutive user roles and the Anthropic SDK rejects every retry
+    // with `messages: must alternate between user and assistant`. Because
+    // STATE.history is persisted to sessionStorage, that wedge survives
+    // reloads until the visitor hits "reset". Match the success path's
+    // contract (line 392-397) and record the failure on the wire too.
+    const last = STATE.history[STATE.history.length - 1];
+    if (last && last.role === 'user') {
+      STATE.history.push({ role: 'assistant', content: '(error: ' + msg + ')' });
+    }
+    STATE.pendingAssistant = null;
     setBusy(false, '');
     saveHistory();
     renderLog();

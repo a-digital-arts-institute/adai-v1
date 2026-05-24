@@ -43,14 +43,27 @@ interface ModelPrice {
   cache_write: number; // $/MTok
 }
 
+// Family-level keys (no trailing date stamp). priceFor() strips the
+// "-YYYYMMDD" suffix before lookup so both dated IDs (the form the SDK
+// accepts, e.g. "claude-sonnet-4-6-20251022") and undated family names
+// resolve correctly. Anthropic releases new dated variants per family
+// regularly; keying on the family means we don't silently fall back to
+// haiku pricing the moment a dated sonnet/opus ID lands in
+// ARCHIVIST_MODEL.
 const PRICES: Record<string, ModelPrice> = {
-  "claude-haiku-4-5-20251001": { input: 1.0, output: 5.0, cache_read: 0.10, cache_write: 1.25 },
-  "claude-sonnet-4-6":         { input: 3.0, output: 15.0, cache_read: 0.30, cache_write: 3.75 },
-  "claude-opus-4-7":           { input: 15.0, output: 75.0, cache_read: 1.50, cache_write: 18.75 },
+  "claude-haiku-4-5":  { input: 1.0,  output: 5.0,  cache_read: 0.10, cache_write: 1.25 },
+  "claude-sonnet-4-6": { input: 3.0,  output: 15.0, cache_read: 0.30, cache_write: 3.75 },
+  "claude-opus-4-7":   { input: 15.0, output: 75.0, cache_read: 1.50, cache_write: 18.75 },
 };
 
 function priceFor(model: string): ModelPrice {
-  return PRICES[model] ?? PRICES["claude-haiku-4-5-20251001"]!;
+  if (PRICES[model]) return PRICES[model];
+  // Strip the trailing "-YYYYMMDD" date stamp Anthropic appends to release
+  // IDs and retry the lookup. If still unmatched, fall back to haiku
+  // pricing — better to under-meter a new family than to crash the gate.
+  const stripped = model.replace(/-\d{8}$/, "");
+  if (PRICES[stripped]) return PRICES[stripped];
+  return PRICES["claude-haiku-4-5"]!;
 }
 
 export interface UsageTally {

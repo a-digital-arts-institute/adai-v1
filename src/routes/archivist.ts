@@ -11,7 +11,7 @@
 // The chat route is stateless on conversation — the client sends its
 // full history every time (capped on the client to ~20 turns).
 
-import { Router } from "express";
+import express, { Router } from "express";
 import { getDb } from "../db.js";
 import { JSON_HEADERS } from "../templates.js";
 import {
@@ -30,6 +30,15 @@ import { runArchivist, isConfigured as agentConfigured, type UsageReport } from 
 import type { VisitorContext } from "../archivist/prompt.js";
 
 const router = Router();
+
+// Tight per-route body cap. src/index.ts skips the global 16 MB
+// express.json for /api/archivist/* so this is the only parser that runs
+// on these routes. Sized to fit a worst-case sanitised body (~24 messages
+// × 4000 chars text + structured tool_use/tool_result blocks + visitor
+// context) with comfortable headroom, but small enough that an
+// unauthenticated attacker can't amplify a single POST into multi-MB JSON
+// parsing per request.
+router.use(express.json({ limit: "1mb" }));
 
 // Cap how much history we'll forward to the model — both for cost and for
 // prompt-injection blast radius. The browser already trims to 20; this is
@@ -254,8 +263,14 @@ router.post("/api/archivist/chat", async (req, res) => {
       } catch (e: any) {
         console.warn("[archivist] recordUsage failed:", e?.message ?? e);
       }
+      // Only debit the visitor's per-session quota when the model actually
+      // issued a request (i.e. we got at least partial usage back). Failing
+      // before the first token — Anthropic outage, bad API key on the Fly
+      // secret, transport error — shouldn't burn the visitor's hourly
+      // window. Without this gate a 5-minute outage can exhaust a visitor's
+      // entire 30/hour budget on retries that never reached the model.
+      try { bumpSession(db, session.session_id); } catch {}
     }
-    try { bumpSession(db, session.session_id); } catch {}
     writeEvent("done", { type: "done" });
     res.end();
   }

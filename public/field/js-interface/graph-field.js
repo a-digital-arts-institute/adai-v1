@@ -1549,6 +1549,12 @@
   function zoomToNode(graph, bundle, nodeId, canvasW, canvasH, opts = {}) {
     const node = graph.byId.get(nodeId);
     if (!node) return;
+    // Focus change clears archivist highlights — the rings were context
+    // for "what we just talked about", not a sticky overlay. The
+    // highlight_nodes tool description documents this contract. Optional
+    // chain in case the public API hasn't been wired up yet (zoomToNode
+    // is module-scoped; bundle.clearHighlights is attached inside start()).
+    bundle.clearHighlights?.();
     if (node.type === 'practitioner') {
       zoomToPractitioner(graph, bundle, nodeId, canvasW, canvasH, opts);
     } else {
@@ -1561,6 +1567,8 @@
   function zoomBack(graph, bundle, canvasW, canvasH) {
     if (bundle.transitioning) return;
     if (!bundle.viewLevel || bundle.viewLevel === '30k') return;
+    // Same contract as zoomToNode: focus change drops archivist highlights.
+    bundle.clearHighlights?.();
     bundle.history = bundle.history || [];
     const prev = bundle.history.pop() || { level: '30k', focusedId: null };
 

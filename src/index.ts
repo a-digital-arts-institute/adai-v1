@@ -35,8 +35,16 @@ console.log("Database initialized.");
 
 const app = express();
 // 12 MB matches the multer cap on /api/v1/images and gives base64 payloads
-// (4/3 size of the raw bytes) plus a small envelope room.
-app.use(express.json({ limit: "16mb" }));
+// (4/3 size of the raw bytes) plus a small envelope room. The archivist
+// chat endpoint is unauthenticated, so it skips this generous cap and
+// declares its own tight one at the router level — otherwise an attacker
+// could amplify a single POST into 16 MB of JSON parsing per request
+// before hitting the rate-limit gate.
+const generousJson = express.json({ limit: "16mb" });
+app.use((req, res, next) => {
+  if (req.path.startsWith("/api/archivist/")) return next();
+  return generousJson(req, res, next);
+});
 
 // /field-static serves the public/field tree (p5-derived data-driven graph view).
 // Mounted before route handlers so /field-static/* never reaches the page router.
