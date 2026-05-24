@@ -39,6 +39,9 @@ concepts_cache.json
 # Claude Code project memory
 .claude/
 
+# Git worktrees (isolated workspaces for feature branches)
+.worktrees/
+
 # OS
 .DS_Store
 Thumbs.db
