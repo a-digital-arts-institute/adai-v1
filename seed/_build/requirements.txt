@@ -1,0 +1,6 @@
+# Offline pipeline (gatherers, embedding, audit) dependencies.
+# Project Python: 3.10+ (CI/dev uses 3.14).
+# Install via: seed/_build/.venv/bin/pip install -r seed/_build/requirements.txt
+pyyaml>=6.0
+numpy>=1.26
+requests>=2.31
