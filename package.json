@@ -7,6 +7,8 @@
     "node": ">=22.5.0"
   },
   "scripts": {
+    "audit:schema:fast": "seed/_build/.venv/bin/python3 seed/_build/audit_schema.py --tier fast",
+    "audit:schema:full": "seed/_build/.venv/bin/python3 seed/_build/audit_schema.py --tier full",
     "dev": "tsx src/index.ts",
     "seed": "tsx src/seed.ts",
     "seed:consolidated": "tsx src/seed-consolidated.ts",
