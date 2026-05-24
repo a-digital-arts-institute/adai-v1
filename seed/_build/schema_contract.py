@@ -250,7 +250,13 @@ EDGE_CLAIMS: Dict[str, Dict[str, Optional[EdgeClaim]]] = {
     },
     "STYLE_KIN": {
         "skill_md": None,
-        "sources_md": None,
+        "sources_md": EdgeClaim(
+            source_types=("practitioner",),
+            target_types=("practitioner",),
+            is_invitation=False,
+            description="Stylistic adjacency, derived from cosine over each practitioner's style centroid (mean of artwork vectors they CREATED_BY). Auto-derived, threshold τ_kin = 0.91.",
+            ref="SOURCES.md line 309 (embedding-pipeline table)",
+        ),
         "claude_md": EdgeClaim(
             source_types=("practitioner",),
             target_types=("practitioner",),
@@ -260,7 +266,13 @@ EDGE_CLAIMS: Dict[str, Dict[str, Optional[EdgeClaim]]] = {
     },
     "VISUALLY_AFFINE": {
         "skill_md": None,
-        "sources_md": None,
+        "sources_md": EdgeClaim(
+            source_types=("artwork",),
+            target_types=("artwork",),
+            is_invitation=False,
+            description="Cross-artist visual rhymes from artwork-vector cosine, gated to different creators. Auto-derived, threshold τ_visual = 0.84.",
+            ref="SOURCES.md line 310 (embedding-pipeline table)",
+        ),
         "claude_md": EdgeClaim(
             source_types=("artwork",),
             target_types=("artwork",),
