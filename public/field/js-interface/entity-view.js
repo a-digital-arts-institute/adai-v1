@@ -568,8 +568,14 @@
       if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); }
       return;
     }
-    // 'i' opens entity view for the currently focused node.
+    // 'i' opens entity view for the currently focused node — but NOT while
+    // the visitor is typing into an input/textarea, otherwise every word
+    // containing "i" pops the overlay over whatever they're writing
+    // (notably the archivist chat).
     if ((e.key === 'i' || e.key === 'I') && !e.metaKey && !e.ctrlKey && !e.altKey) {
+      const tag = (document.activeElement?.tagName || '').toLowerCase();
+      const isTyping = tag === 'input' || tag === 'textarea' || document.activeElement?.isContentEditable;
+      if (isTyping) return;
       const id = getCurrentFocusedId();
       if (id) {
         e.preventDefault();

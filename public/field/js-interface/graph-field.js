@@ -749,6 +749,20 @@
     requestAnimationFrame(step);
   }
 
+  // Field-mode default filters. Both zoom-to handlers wipe activeFilters
+  // (intentionally — a fresh zoom shouldn't inherit hand-toggled chips
+  // from the previous focus), and setMode also calls this so the
+  // curatorial/embeddings split has one source of truth. Keeping it
+  // module-scoped so zoomToNode (top-level) and bundle.setMode (inside
+  // the IIFE init) can both reach it.
+  function applyDefaultFiltersForMode(bundle) {
+    if (bundle.fieldMode === 'embeddings') {
+      bundle.activeFilters = new Set(['STYLE_KIN', 'VISUALLY_AFFINE']);
+    } else {
+      bundle.activeFilters = new Set();
+    }
+  }
+
   // Dim the brand viz while we're zoomed in (focus the graph layer).
   function setBrandOpacityForZoom(zoomedIn) {
     const targets = [
@@ -1367,7 +1381,7 @@
     bundle.viewLevel = '10k';
     bundle.focusedId = focusedId;
     bundle.zoomFocus = null;
-    bundle.activeFilters = new Set();  // reset filters on zoom-to
+    applyDefaultFiltersForMode(bundle);  // reset + reapply current mode's defaults
 
     const layout = compute10kLayout(graph, focusedId, canvasW, canvasH);
     bundle.zoomCenter = { x: layout.cx, y: layout.cy };
@@ -1488,7 +1502,7 @@
 
     bundle.viewLevel = level;
     bundle.focusedId = focusedId;
-    bundle.activeFilters = new Set();  // reset filters on zoom-to
+    applyDefaultFiltersForMode(bundle);  // reset + reapply current mode's defaults
     setBrandOpacityForZoom(true);
 
     runTween(CFG.ZOOM_TRANSITION_MS, (e) => {
@@ -1535,6 +1549,12 @@
   function zoomToNode(graph, bundle, nodeId, canvasW, canvasH, opts = {}) {
     const node = graph.byId.get(nodeId);
     if (!node) return;
+    // Focus change clears archivist highlights — the rings were context
+    // for "what we just talked about", not a sticky overlay. The
+    // highlight_nodes tool description documents this contract. Optional
+    // chain in case the public API hasn't been wired up yet (zoomToNode
+    // is module-scoped; bundle.clearHighlights is attached inside start()).
+    bundle.clearHighlights?.();
     if (node.type === 'practitioner') {
       zoomToPractitioner(graph, bundle, nodeId, canvasW, canvasH, opts);
     } else {
@@ -1547,6 +1567,8 @@
   function zoomBack(graph, bundle, canvasW, canvasH) {
     if (bundle.transitioning) return;
     if (!bundle.viewLevel || bundle.viewLevel === '30k') return;
+    // Same contract as zoomToNode: focus change drops archivist highlights.
+    bundle.clearHighlights?.();
     bundle.history = bundle.history || [];
     const prev = bundle.history.pop() || { level: '30k', focusedId: null };
 
@@ -1657,6 +1679,49 @@
     bundle.zoomTo = (id, opts = {}) => {
       if (!id || !graph.byId.has(id)) return;
       zoomToNode(graph, bundle, id, w, h, opts);
+    };
+
+    // ---- Public API for the archivist chat (and any other driver) ----
+    // Single side-effect contract: every method mutates bundle state, never
+    // touches DOM directly. The frame loop reads bundle.highlightedIds /
+    // bundle.fieldMode and renders accordingly.
+    bundle.highlightedIds = new Set();
+    let highlightTimer = null;
+    bundle.highlightNodes = (ids, ttlMs = 30000) => {
+      if (!Array.isArray(ids)) return;
+      bundle.highlightedIds = new Set(ids.filter(id => graph.byId.has(id)));
+      if (highlightTimer) clearTimeout(highlightTimer);
+      if (ttlMs > 0) highlightTimer = setTimeout(() => {
+        bundle.highlightedIds = new Set();
+        highlightTimer = null;
+      }, ttlMs);
+    };
+    bundle.clearHighlights = () => {
+      if (highlightTimer) { clearTimeout(highlightTimer); highlightTimer = null; }
+      bundle.highlightedIds = new Set();
+    };
+    bundle.zoomToHome = () => {
+      if (!bundle.viewLevel || bundle.viewLevel === '30k') return;
+      // Same trick the empty-space click uses: collapse history so a single
+      // zoomBack walks all the way out.
+      bundle.history = [{ level: '30k', focusedId: null }];
+      zoomBack(graph, bundle, w, h);
+    };
+    // Field mode: 'curatorial' (default) or 'embeddings'. Sets activeFilters
+    // so when the user (or the archivist) zooms into a node, the right edge
+    // types are foregrounded. The filter chip cluster still lets the user
+    // override per-zoom.
+    //
+    // The mode is sticky: applyDefaultFiltersForMode (called from both
+    // zoom-to handlers) re-applies the right filter set after every
+    // zoom-to so e.g. set_field_mode('embeddings') followed by
+    // focus_node(...) doesn't silently lose the embeddings foregrounding.
+    bundle.fieldMode = 'curatorial';
+    bundle.setMode = (mode) => {
+      if (mode !== 'curatorial' && mode !== 'embeddings') return;
+      bundle.fieldMode = mode;
+      applyDefaultFiltersForMode(bundle);
+      renderEdgeFilter(bundle, graph);
     };
 
     // ---- chrome ----
@@ -1862,6 +1927,24 @@
           ctx.arc(s.x, s.y, s.r * 1.15, 0, Math.PI * 2);
           ctx.fill();
         }
+      }
+      // Archivist-driven highlights — a soft pulsing ring on each highlighted
+      // sim dot. Auto-cleared after the TTL set when the set was installed.
+      // Drawn only at 30k where the field actually has sim dots; at zoomed
+      // levels the focused/neighbour rendering already foregrounds the relevant
+      // nodes, so the ring would just be visual noise.
+      if (bundle.highlightedIds && bundle.highlightedIds.size > 0 && !zoomed) {
+        const pulse = 0.55 + 0.35 * Math.sin(Date.now() / 380);
+        for (const s of bundle.sim) {
+          if (!bundle.highlightedIds.has(s.id)) continue;
+          ctx.strokeStyle = '#E8E6E1';
+          ctx.globalAlpha = pulse;
+          ctx.lineWidth = 1.4;
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r * 3.5, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        ctx.lineWidth = 1;
       }
       ctx.fillStyle = CFG.DOT_HEX;
 

@@ -252,9 +252,14 @@ function profileHandler(req: any, res: any) {
     }
   }
 
+  // Honor consent_scope='structural_only': the contributor was promised
+  // "only the edge counts, not the content" — so we hide title/summary/
+  // content for those signals here too. Their edges are still rendered
+  // from the edges table below; this only suppresses the narrative body.
+  // NULL/other consent_scope values pass through (allow-by-default).
   const contribs = db
     .prepare(
-      "SELECT s.title, s.summary, s.content, s.source_url, s.submitted_by, s.created_at, s.consent_attribution FROM signals s JOIN intake_queue iq ON iq.signal_id = s.id WHERE iq.target_node = ? AND iq.status = 'approved' ORDER BY s.created_at DESC"
+      "SELECT s.title, s.summary, s.content, s.source_url, s.submitted_by, s.created_at, s.consent_attribution FROM signals s JOIN intake_queue iq ON iq.signal_id = s.id WHERE iq.target_node = ? AND iq.status = 'approved' AND (s.consent_scope IS NULL OR s.consent_scope != 'structural_only') ORDER BY s.created_at DESC"
     )
     .all(node.id) as any[];
 
@@ -299,12 +304,18 @@ function profileHandler(req: any, res: any) {
     }
   }
 
+  // Same consent_scope filter as the contribs query above — structural_only
+  // contributors were promised "only the edge counts, not the content", and
+  // `s.title` rendered in the provenance block (see below) is content. The
+  // edges themselves stay live in the graph; only the signal row's title /
+  // origin metadata is suppressed for structural_only signals.
   const provenance = db
     .prepare(
       `SELECT DISTINCT s.id, s.title, s.source_origin, s.batch_id, s.consent_scope, s.status
        FROM signals s
        JOIN edges e ON e.signal_id = s.id
-       WHERE e.valid_until IS NULL AND (e.source_id = ? OR e.target_id = ?)`
+       WHERE e.valid_until IS NULL AND (e.source_id = ? OR e.target_id = ?)
+         AND (s.consent_scope IS NULL OR s.consent_scope != 'structural_only')`
     )
     .all(node.id, node.id) as any[];
 
@@ -427,9 +438,11 @@ function dataHandler(req: any, res: any) {
     .prepare("SELECT id, source_id, target_id, edge_type, confidence FROM edges WHERE source_id = ? OR target_id = ?")
     .all(node.id, node.id) as any[];
 
+  // Same consent_scope filter as the HTML profile path above — don't
+  // expose structural_only contributors' titles through the data API.
   const signalRows = db
     .prepare(
-      "SELECT s.id, s.title, s.submitted_by FROM signals s JOIN intake_queue iq ON iq.signal_id = s.id WHERE iq.target_node = ? AND iq.status = 'approved'"
+      "SELECT s.id, s.title, s.submitted_by FROM signals s JOIN intake_queue iq ON iq.signal_id = s.id WHERE iq.target_node = ? AND iq.status = 'approved' AND (s.consent_scope IS NULL OR s.consent_scope != 'structural_only')"
     )
     .all(node.id) as any[];
 
