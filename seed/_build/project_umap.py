@@ -71,6 +71,41 @@ def load_vectors_from_sidecar() -> tuple[list[dict], np.ndarray]:
     return keep_meta, arr
 
 
+def load_vectors_from_binary(bin_path: Path) -> tuple[list[dict], np.ndarray]:
+    """
+    Read vectors from the AEVB binary stream produced by
+    `node /app/dist/embed/cli.js export-vectors`. Used by the GH Action cron
+    so UMAP runs on the runner (multi-core, GBs of RAM) instead of the 512MB
+    Fly machine. Wire format documented in src/embed/cli.ts cmdExportVectors.
+    """
+    if not bin_path.exists():
+        sys.exit(f"binary export not found: {bin_path}")
+    raw = bin_path.read_bytes()
+    if len(raw) < 16 or raw[:4] != b"AEVB":
+        sys.exit(f"bad magic: {bin_path} is not an AEVB stream")
+    version, dims, n = struct.unpack_from("<III", raw, 4)
+    if version != 1:
+        sys.exit(f"unsupported AEVB version {version} (expected 1)")
+    if dims != DIMS:
+        sys.exit(f"dims mismatch: stream={dims} expected={DIMS}")
+    arr = np.zeros((n, DIMS), dtype=np.float32)
+    meta: list[dict] = []
+    cur = 16
+    for i in range(n):
+        if cur + 4 > len(raw):
+            sys.exit(f"AEVB truncated at item {i}: missing meta length")
+        meta_len, = struct.unpack_from("<I", raw, cur)
+        cur += 4
+        if cur + meta_len + DIMS * 4 > len(raw):
+            sys.exit(f"AEVB truncated at item {i}: short body")
+        meta_obj = json.loads(raw[cur:cur + meta_len].decode("utf-8"))
+        cur += meta_len
+        arr[i] = struct.unpack(f"<{DIMS}f", raw[cur:cur + DIMS * 4])
+        cur += DIMS * 4
+        meta.append({**meta_obj, "dims": DIMS})
+    return meta, arr
+
+
 def load_vectors_from_db(db_path: Path) -> tuple[list[dict], np.ndarray]:
     """
     Read vectors directly from a node_embeddings table. Used by the daily
@@ -111,6 +146,10 @@ def main() -> int:
                     help="Read vectors from this SQLite DB's node_embeddings "
                          "table instead of seed/embeddings.{bin,json}. Used by "
                          "the daily Fly cron.")
+    ap.add_argument("--from-binary", type=str, default="",
+                    help="Read vectors from this AEVB binary stream (produced "
+                         "by `node dist/embed/cli.js export-vectors`). Used by "
+                         "the GH Action cron so UMAP runs on the runner.")
     ap.add_argument("--out", type=str, default="",
                     help="Write output to this path instead of "
                          "seed/embeddings.umap2d.json (used with --from-db to "
@@ -119,7 +158,12 @@ def main() -> int:
 
     out_path = Path(args.out) if args.out else OUT_PATH
 
-    if args.from_db:
+    if args.from_binary and args.from_db:
+        sys.exit("pass either --from-binary or --from-db, not both")
+    if args.from_binary:
+        meta, vecs = load_vectors_from_binary(Path(args.from_binary))
+        print(f"loaded {len(meta)} vectors × {DIMS} dims from {args.from_binary}")
+    elif args.from_db:
         meta, vecs = load_vectors_from_db(Path(args.from_db))
         print(f"loaded {len(meta)} vectors × {DIMS} dims from {args.from_db}")
     else:

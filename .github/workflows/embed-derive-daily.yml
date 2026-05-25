@@ -13,8 +13,14 @@ name: embed-derive-daily
 #                  the embedding layer.
 #   3. UMAP      — re-project the 768-d vector space to 2D and write
 #                  /data/embeddings.umap2d.json (the server prefers this
-#                  over the baked sidecar — see /api/embed-space). UMAP is
-#                  pure CPU; debounced via lockfile so a no-op day skips it.
+#                  over the baked sidecar — see /api/embed-space). UMAP runs
+#                  on the runner, not the Fly machine: we SSH-export the
+#                  node_embeddings rows as a compact AEVB binary, fit UMAP
+#                  on the runner's multi-core CPU + GB of RAM (~12 s for
+#                  ~1500 vectors), then SFTP the result back to the volume.
+#                  The 512MB / 1-CPU Fly machine timed out every run when
+#                  this step lived in-process. Debounced via lockfile so a
+#                  no-op day skips compute and skips the SFTP push.
 #
 # Drift snapshot runs last as a JSON line in the action log so a human can
 # eyeball whether τ values still sit at the originally-calibrated percentiles
@@ -42,8 +48,22 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        # Need seed/_build/project_umap.py to run UMAP on the runner.
+
       - name: install flyctl
         uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: setup python (for UMAP)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: install python deps
+        # numba/llvmlite (umap-learn's dep) wheel install is ~30 s warm cache.
+        run: pip install --disable-pip-version-check numpy 'umap-learn>=0.5'
 
       - name: backfill missing identity vectors
         env:
@@ -61,24 +81,58 @@ jobs:
         run: |
           flyctl ssh console --app adai-basel -C "node /app/dist/embed/cli.js derive"
 
-      - name: refresh UMAP projection
+      - name: refresh UMAP projection (on runner)
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-        # Debounced: skip if vector count is unchanged since the last run.
-        # Writes /data/embeddings.umap2d.json (volume) — the /api/embed-space
-        # endpoint prefers this over the baked sidecar on first hit.
+        # Three-step round-trip. We don't run UMAP inside the Fly machine
+        # (single CPU, 512 MB — fits the chat workload, not a sklearn-driven
+        # kNN fit). Lockfile lives on the volume so cross-run debounce
+        # survives runner ephemerality.
         run: |
-          flyctl ssh console --app adai-basel -C "sh -c '\
-            COUNT=\$(sqlite3 /data/adai.db \"SELECT COUNT(*) FROM node_embeddings WHERE dims=768\"); \
-            LAST=\$(cat /data/umap.lockfile 2>/dev/null || echo 0); \
-            if [ \"\$COUNT\" = \"\$LAST\" ] && [ -f /data/embeddings.umap2d.json ]; then \
-              echo \"UMAP skip: \$COUNT vectors unchanged since last run\"; \
-            else \
-              echo \"UMAP refresh: \$LAST -> \$COUNT vectors\"; \
-              /opt/umap-venv/bin/python3 /app/seed/_build/project_umap.py \
-                --from-db /data/adai.db --out /data/embeddings.umap2d.json; \
-              echo \$COUNT > /data/umap.lockfile; \
-            fi'"
+          set -euo pipefail
+          # 2>/dev/null swallows flyctl's "Connecting to ..." stderr chatter
+          # so the substitution captures only the inner stdout.
+          COUNT=$(flyctl ssh console --app adai-basel -C "node /app/dist/embed/cli.js export-vectors --count-only" 2>/dev/null | tr -d '[:space:]')
+          LAST=$(flyctl ssh console --app adai-basel -C "cat /data/umap.lockfile 2>/dev/null || echo 0" 2>/dev/null | tr -d '[:space:]')
+          HAVE_OUT=$(flyctl ssh console --app adai-basel -C "test -f /data/embeddings.umap2d.json && echo y || echo n" 2>/dev/null | tr -d '[:space:]')
+
+          if [ -z "$COUNT" ]; then
+            echo "UMAP: empty COUNT from export-vectors --count-only — aborting"
+            exit 1
+          fi
+
+          if [ "$COUNT" = "$LAST" ] && [ "$HAVE_OUT" = "y" ]; then
+            echo "UMAP skip: $COUNT vectors unchanged since last run, /data/embeddings.umap2d.json present"
+            exit 0
+          fi
+
+          echo "UMAP refresh: $LAST -> $COUNT vectors (have_out=$HAVE_OUT)"
+
+          # Pull vectors as AEVB binary. We discard flyctl's stderr but keep
+          # the inner CLI's stdout (which is pure binary — see header check
+          # below).
+          flyctl ssh console --app adai-basel -C "node /app/dist/embed/cli.js export-vectors" 2>/dev/null > /tmp/vectors.bin
+          BYTES=$(wc -c < /tmp/vectors.bin)
+          MAGIC=$(head -c 4 /tmp/vectors.bin)
+          if [ "$MAGIC" != "AEVB" ]; then
+            echo "UMAP: bad magic in /tmp/vectors.bin (got '$MAGIC', expected 'AEVB'); first 64 bytes:"
+            head -c 64 /tmp/vectors.bin | xxd
+            exit 1
+          fi
+          echo "exported $BYTES bytes (AEVB) to /tmp/vectors.bin"
+
+          # Fit UMAP on the runner. ~12 s for 1500 vectors on a typical
+          # GH runner. Output is normalised to [-1, 1] (see project_umap.py).
+          python3 seed/_build/project_umap.py \
+            --from-binary /tmp/vectors.bin \
+            --out /tmp/embeddings.umap2d.json
+
+          # Atomic-ish swap on the volume: SFTP-put to a sibling path and
+          # mv via SSH so the live server never sees a half-written file.
+          flyctl ssh sftp put --app adai-basel /tmp/embeddings.umap2d.json /data/embeddings.umap2d.json.new
+          printf '%s' "$COUNT" > /tmp/umap.lockfile
+          flyctl ssh sftp put --app adai-basel /tmp/umap.lockfile /data/umap.lockfile.new
+          flyctl ssh console --app adai-basel -C "sh -c 'mv /data/embeddings.umap2d.json.new /data/embeddings.umap2d.json && mv /data/umap.lockfile.new /data/umap.lockfile && echo SWAPPED'"
 
       - name: drift snapshot
         env:
