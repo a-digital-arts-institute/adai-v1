@@ -2,6 +2,7 @@
 
 See docs/superpowers/specs/2026-05-24-schema-audit-design.md.
 """
+import argparse
 import json
 import pathlib
 import sys
@@ -134,5 +135,39 @@ def load_graph(
     return nodes_by_id, edges, contributors_by_id, signals_by_id
 
 
+def main(argv: Optional[List[str]] = None) -> int:
+    parser = argparse.ArgumentParser(
+        description="A(DAI) schema audit — catalog schema issues in the graph."
+    )
+    parser.add_argument("--tier", choices=["fast", "full"], default="fast",
+                        help="fast = mechanical + heuristic; full = adds LLM narrative pass")
+    parser.add_argument("--live", action="store_true",
+                        help="Pull graph from production API instead of local seed files")
+    parser.add_argument("--out-dir", default="docs",
+                        help="Where to write the report and CSV directory (default: docs)")
+    args = parser.parse_args(argv)
+
+    print(f"[audit] tier={args.tier} live={args.live} out_dir={args.out_dir}",
+          file=sys.stderr)
+    try:
+        nodes_by_id, edges, contributors_by_id, signals_by_id = load_graph(
+            live_url=DEFAULT_API_URL if args.live else None,
+        )
+    except FileNotFoundError as e:
+        print(f"[audit] ERROR: {e}", file=sys.stderr)
+        return 1
+    except Exception as e:
+        print(f"[audit] ERROR loading graph: {e}", file=sys.stderr)
+        return 1
+
+    print(f"[audit] loaded {len(nodes_by_id)} nodes, {len(edges)} edges",
+          file=sys.stderr)
+
+    # Findings pipeline lands in Chunks 3-8. For now this is a no-op.
+    print("[audit] check_* pipeline not yet implemented — no findings produced.",
+          file=sys.stderr)
+    return 0
+
+
 if __name__ == "__main__":
-    raise SystemExit("audit_schema.py not yet implemented")
+    sys.exit(main())
