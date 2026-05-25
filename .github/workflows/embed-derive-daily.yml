@@ -70,7 +70,11 @@ jobs:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         # Calls Gemini once per node missing an identity vector. The CLI
         # exits 0 when there's nothing to do.
+        # The curl precedes every SSH step because Fly auto_stop_machines
+        # = 'stop' kills the VM after a short HTTP-idle window and SSH
+        # activity alone doesn't reset that timer (observed in CI).
         run: |
+          curl -fsSL -o /dev/null https://adai-basel.fly.dev/api/stats
           flyctl ssh console --app adai-basel -C "node /app/dist/embed/cli.js backfill"
 
       - name: derive against live DB
@@ -79,6 +83,7 @@ jobs:
         # The CLI resolves /data/adai.db automatically via resolveCliDbPath
         # when run inside the Fly machine (see src/utils/db-path.ts).
         run: |
+          curl -fsSL -o /dev/null https://adai-basel.fly.dev/api/stats
           flyctl ssh console --app adai-basel -C "node /app/dist/embed/cli.js derive"
 
       - name: refresh UMAP projection (on runner)
@@ -154,4 +159,5 @@ jobs:
         # Independent of derive — runs even if derive emitted zero new edges.
         # JSON output lands directly in the action log; eyeball weekly.
         run: |
+          curl -fsSL -o /dev/null https://adai-basel.fly.dev/api/stats
           flyctl ssh console --app adai-basel -C "node /app/dist/embed/cli.js report-drift"
