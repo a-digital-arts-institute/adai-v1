@@ -1,15 +1,25 @@
 #!/usr/bin/env python3
 """
-Project the embedding sidecar (seed/embeddings.{bin,json}) to 2D via UMAP
-and write seed/embeddings.umap2d.json — a small flat array the server
-loads and serves from /embed-space.
+Project a 768-d embedding set to 2D via UMAP and write a small flat JSON
+array the server loads and serves from /embed-space.
+
+Three input modes, mutually exclusive:
+  * default            — read seed/embeddings.{bin,json} (committed sidecar)
+  * --from-db PATH     — read node_embeddings from a SQLite DB (used when
+                         running inside the Fly machine over /data/adai.db)
+  * --from-binary PATH — read the AEVB binary stream produced by
+                         `node dist/embed/cli.js export-vectors` (used by
+                         the GH Action cron — runner-side UMAP fit so the
+                         512MB Fly machine doesn't run out of headroom)
 
 The 768-d → 2D projection preserves local neighbourhoods (cosine metric,
 which matches how the rest of the pipeline reasons about similarity).
 Deterministic given the same input + random_state.
 
 Usage:
-  seed/_build/.venv/bin/python3 seed/_build/project_umap.py [--neighbours N] [--min-dist D]
+  seed/_build/.venv/bin/python3 seed/_build/project_umap.py \\
+    [--neighbours N] [--min-dist D] [--random-state R] \\
+    [--from-db PATH | --from-binary PATH] [--out PATH]
 
 Output JSON shape:
   {
@@ -88,6 +98,10 @@ def load_vectors_from_binary(bin_path: Path) -> tuple[list[dict], np.ndarray]:
         sys.exit(f"unsupported AEVB version {version} (expected 1)")
     if dims != DIMS:
         sys.exit(f"dims mismatch: stream={dims} expected={DIMS}")
+    # Mirror load_vectors_from_db: bail with a clear message rather than let
+    # UMAP's fit_transform crash on an empty array deeper in the pipeline.
+    if n == 0:
+        sys.exit(f"no vectors in {bin_path} (AEVB n_items=0 — did export-vectors run before any backfill?)")
     arr = np.zeros((n, DIMS), dtype=np.float32)
     meta: list[dict] = []
     cur = 16

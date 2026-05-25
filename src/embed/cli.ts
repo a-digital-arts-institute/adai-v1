@@ -313,7 +313,7 @@ const EXPORT_VERSION = 1;
 function cmdExportVectors() {
   const db = initDb(dbPath);
   const countOnly = process.argv.includes("--count-only");
-  const rows = db
+  const rawRows = db
     .prepare(
       `SELECT node_id, kind, model, dims, vector
          FROM node_embeddings
@@ -321,6 +321,13 @@ function cmdExportVectors() {
         ORDER BY node_id, kind`
     )
     .all(768) as Array<{ node_id: string; kind: string; model: string; dims: number; vector: Uint8Array }>;
+
+  // Belt-and-braces filter: the SELECT's WHERE dims=768 should already
+  // exclude bad rows, but the exporter is the last line of defence before
+  // UMAP. Filter BEFORE writing the header so n_items in the header always
+  // matches the number of records actually emitted (the Python decoder
+  // reads exactly n_items records and errors out on a truncated stream).
+  const rows = rawRows.filter((r) => r.dims === 768 && r.vector.byteLength === 768 * 4);
 
   if (countOnly) {
     process.stdout.write(`${rows.length}\n`);
@@ -337,10 +344,6 @@ function cmdExportVectors() {
   process.stdout.write(header);
 
   for (const r of rows) {
-    // Belt-and-braces: skip any row that doesn't have a full 768-d float32
-    // blob. The dims filter in the SELECT should catch this already but the
-    // exporter is the line of defence against feeding UMAP a malformed batch.
-    if (r.dims !== 768 || r.vector.byteLength !== 768 * 4) continue;
     const meta = JSON.stringify({ node_id: r.node_id, kind: r.kind, model: r.model });
     const metaBytes = Buffer.from(meta, "utf-8");
     const len = Buffer.alloc(4);
