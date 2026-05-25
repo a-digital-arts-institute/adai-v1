@@ -14,6 +14,13 @@
 //                                (catches anything that slipped past the
 //                                embed-on-write path in the contributor API).
 //                                Calls Gemini, requires GEMINI_API_KEY.
+//   (no npm alias) export-vectors
+//                              — stream node_embeddings to stdout as a compact
+//                                binary blob the UMAP cron consumes from a GH
+//                                runner (UMAP on the 512MB Fly machine times
+//                                out; the runner has multi-core + GBs of RAM
+//                                and finishes in seconds). --count-only prints
+//                                just the row count for lockfile debounce.
 //
 // All commands read/write the live DB. Path resolution via resolveCliDbPath:
 // explicit DB_PATH wins, otherwise /data/adai.db if present (Fly volume),
@@ -292,6 +299,58 @@ function cmdReportDrift() {
   console.log(JSON.stringify(report, null, 2));
 }
 
+// Wire format consumed by seed/_build/project_umap.py --from-binary. Kept
+// small and self-describing so a future change (e.g. dims bump for a newer
+// embedding model) breaks loud rather than silently corrupting the projection.
+//
+//   header  : "AEVB" magic (4 bytes) | version u32 LE | dims u32 LE | n u32 LE
+//   per row : meta_len u32 LE | meta JSON utf-8 | dims × float32 LE
+//
+// meta JSON shape: { node_id: string, kind: "identity"|"style_centroid", model: string }
+const EXPORT_MAGIC = Buffer.from("AEVB", "ascii");
+const EXPORT_VERSION = 1;
+
+function cmdExportVectors() {
+  const db = initDb(dbPath);
+  const countOnly = process.argv.includes("--count-only");
+  const rows = db
+    .prepare(
+      `SELECT node_id, kind, model, dims, vector
+         FROM node_embeddings
+        WHERE dims = ?
+        ORDER BY node_id, kind`
+    )
+    .all(768) as Array<{ node_id: string; kind: string; model: string; dims: number; vector: Uint8Array }>;
+
+  if (countOnly) {
+    process.stdout.write(`${rows.length}\n`);
+    return;
+  }
+
+  // Header (16 bytes). dims must agree with vectors.ts DIMS; if that ever
+  // changes the receiver will reject the file (which is the point).
+  const header = Buffer.alloc(16);
+  EXPORT_MAGIC.copy(header, 0);
+  header.writeUInt32LE(EXPORT_VERSION, 4);
+  header.writeUInt32LE(768, 8);
+  header.writeUInt32LE(rows.length, 12);
+  process.stdout.write(header);
+
+  for (const r of rows) {
+    // Belt-and-braces: skip any row that doesn't have a full 768-d float32
+    // blob. The dims filter in the SELECT should catch this already but the
+    // exporter is the line of defence against feeding UMAP a malformed batch.
+    if (r.dims !== 768 || r.vector.byteLength !== 768 * 4) continue;
+    const meta = JSON.stringify({ node_id: r.node_id, kind: r.kind, model: r.model });
+    const metaBytes = Buffer.from(meta, "utf-8");
+    const len = Buffer.alloc(4);
+    len.writeUInt32LE(metaBytes.byteLength, 0);
+    process.stdout.write(len);
+    process.stdout.write(metaBytes);
+    process.stdout.write(Buffer.from(r.vector.buffer, r.vector.byteOffset, r.vector.byteLength));
+  }
+}
+
 async function cmdBackfill() {
   const db = initDb(dbPath);
   const limitArg = process.argv.find((a) => a.startsWith("--limit="));
@@ -353,11 +412,15 @@ async function main(): Promise<void> {
     case "backfill":
       await cmdBackfill();
       break;
+    case "export-vectors":
+      cmdExportVectors();
+      break;
     default:
       console.error(
-        "usage: tsx src/embed/cli.ts {derive|centroids|calibrate|report-drift|backfill} [--dry-run] [--limit=N]\n" +
-          "  derive   runs centroids first by default.\n" +
-          "  backfill calls Gemini for every node missing an identity vector (--limit=N to cap)."
+        "usage: tsx src/embed/cli.ts {derive|centroids|calibrate|report-drift|backfill|export-vectors} [--dry-run] [--limit=N] [--count-only]\n" +
+          "  derive          runs centroids first by default.\n" +
+          "  backfill        calls Gemini for every node missing an identity vector (--limit=N to cap).\n" +
+          "  export-vectors  streams node_embeddings to stdout as the AEVB binary the UMAP cron consumes (--count-only for debounce)."
       );
       process.exit(2);
   }
