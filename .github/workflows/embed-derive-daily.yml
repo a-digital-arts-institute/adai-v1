@@ -101,9 +101,12 @@ jobs:
           # "Connecting to ..." chatter is on stderr and doesn't pollute the
           # command substitution stdout, so leaving it visible makes any
           # future SSH failure obvious in the action log.
+          # flyctl ssh console -C runs the command directly (execve-style),
+          # not through a shell — so any redirection / `||` / `&&` has to be
+          # wrapped in `sh -c '...'` to reach a shell on the other side.
           COUNT=$(flyctl ssh console --app adai-basel -C "node /app/dist/embed/cli.js export-vectors --count-only" | tr -d '[:space:]')
-          LAST=$(flyctl ssh console --app adai-basel -C "cat /data/umap.lockfile 2>/dev/null || echo 0" | tr -d '[:space:]')
-          HAVE_OUT=$(flyctl ssh console --app adai-basel -C "test -f /data/embeddings.umap2d.json && echo y || echo n" | tr -d '[:space:]')
+          LAST=$(flyctl ssh console --app adai-basel -C "sh -c 'cat /data/umap.lockfile 2>/dev/null || echo 0'" | tr -d '[:space:]')
+          HAVE_OUT=$(flyctl ssh console --app adai-basel -C "sh -c 'test -f /data/embeddings.umap2d.json && echo y || echo n'" | tr -d '[:space:]')
 
           echo "COUNT=$COUNT LAST=$LAST HAVE_OUT=$HAVE_OUT"
 
