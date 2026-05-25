@@ -113,3 +113,40 @@ def test_load_graph_missing_signals_warns_returns_empty(capsys):
         assert signals == {}
         captured = capsys.readouterr()
         assert "signals.json" in captured.err
+
+
+def test_parse_metadata_handles_json_string_of_non_dict():
+    """A JSON string that decodes to a non-dict (str/int/list/bool/null) must
+    fall back to {} so downstream checks can safely call md.get(...)."""
+    for raw in ['"a string"', '42', 'true', 'null', '[1, 2]']:
+        result = _parse_metadata({"metadata": raw})
+        assert result == {}, f"_parse_metadata({raw!r}) should be {{}}, got {result!r}"
+
+
+def test_load_graph_live_mode_normalises_edge_fields(monkeypatch):
+    """The live API serialises edges as {source, target, type}; load_graph
+    must normalise to seed schema {source_id, target_id, edge_type}."""
+    class _MockResponse:
+        def __init__(self, payload):
+            self._payload = payload
+        def raise_for_status(self): pass
+        def json(self): return self._payload
+
+    payload = {
+        "nodes": [{"id": "practitioner:a", "name": "A", "type": "practitioner", "slug": "a"}],
+        "edges": [{"source": "practitioner:a", "target": "concept:x",
+                   "type": "PRACTICES", "confidence": 1.0, "created_by": "contributor:migration"}],
+    }
+    import requests
+    monkeypatch.setattr(requests, "get", lambda url, timeout: _MockResponse(payload))
+
+    nodes_by_id, edges, contribs, signals = load_graph(live_url="https://example/api/graph")
+    assert "practitioner:a" in nodes_by_id
+    assert len(edges) == 1
+    e = edges[0]
+    assert e["source_id"] == "practitioner:a"
+    assert e["target_id"] == "concept:x"
+    assert e["edge_type"] == "PRACTICES"
+    assert e["valid_until"] is None  # API only returns current edges
+    assert contribs == {}  # API doesn't expose contributors
+    assert signals == {}   # API doesn't expose signals

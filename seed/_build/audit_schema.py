@@ -49,9 +49,10 @@ def _parse_metadata(node: dict) -> dict:
         return raw
     if isinstance(raw, str):
         try:
-            return json.loads(raw)
+            decoded = json.loads(raw)
         except json.JSONDecodeError:
             return {}
+        return decoded if isinstance(decoded, dict) else {}
     return {}
 
 
@@ -86,8 +87,15 @@ def load_graph(
     can't run without them. Soft-fail (warning + empty registry) for
     contributors.json and signals.json — C.5 checks degrade gracefully.
 
-    If live_url is given, fetch nodes+edges from the live API and treat
-    contributors/signals as empty (the public API does not expose them).
+    If live_url is given, fetch nodes+edges from the live API. Caveats:
+    - Edge field names are normalised from {source, target, type} (API) to
+      {source_id, target_id, edge_type} (seed schema) so downstream checks work.
+    - The public API does not expose node metadata, signal_id, valid_until, or
+      the contributors/signals registries. As a result, --live mode degrades:
+      Sections B/C.1/C.3/D/E (metadata-dependent), C.4 (bi-temporal), and C.5
+      (signal/contributor provenance) cannot produce findings.
+    - --live is most useful for spot-checking node counts and edge-type
+      distributions against production after a deploy.
     """
     if live_url is not None:
         import requests  # local import — only required for --live
@@ -95,7 +103,20 @@ def load_graph(
         resp.raise_for_status()
         payload = resp.json()
         nodes = payload.get("nodes", [])
-        edges = payload.get("edges", [])
+        # Live API serialises edges as {source, target, type, ...}; seed schema uses
+        # {source_id, target_id, edge_type, ...}. Normalise so downstream checks work.
+        edges = [
+            {
+                "id": e.get("id", ""),
+                "source_id": e.get("source"),
+                "target_id": e.get("target"),
+                "edge_type": e.get("type"),
+                "confidence": e.get("confidence"),
+                "created_by": e.get("created_by"),
+                "valid_until": None,  # API only returns current edges
+            }
+            for e in payload.get("edges", [])
+        ]
         contributors: List[dict] = []
         signals: List[dict] = []
     else:
