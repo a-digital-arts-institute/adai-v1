@@ -65,16 +65,41 @@ jobs:
         # numba/llvmlite (umap-learn's dep) wheel install is ~30 s warm cache.
         run: pip install --disable-pip-version-check numpy 'umap-learn>=0.5'
 
+      - name: wake the machine
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        # The app runs auto_stop_machines='stop' with min_machines_running=0,
+        # so the machine is stopped/suspended between cron runs. Every step
+        # below talks to it over `ssh console`, which can't connect to a
+        # machine that isn't running — and ssh doesn't trigger the proxy's
+        # auto_start. So start the machine explicitly first (a no-op if it's
+        # already up), then block until it actually accepts an ssh exec.
+        # This supersedes the older per-step `curl /api/stats` wake-pokes:
+        # waiting on real SSH readiness is stricter than waiting on an HTTP
+        # 200, and once the machine is up the rest of the job runs inside
+        # its idle window without further nudging.
+        run: |
+          for id in $(flyctl machine list --app adai-basel --json | jq -r '.[].id'); do
+            echo "starting machine $id"
+            flyctl machine start "$id" --app adai-basel || true
+          done
+          for i in $(seq 1 30); do
+            if flyctl ssh console --app adai-basel -C "true" 2>/dev/null; then
+              echo "machine reachable over ssh"
+              exit 0
+            fi
+            echo "waiting for ssh... ($i/30)"
+            sleep 5
+          done
+          echo "machine did not become reachable over ssh in time" >&2
+          exit 1
+
       - name: backfill missing identity vectors
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
         # Calls Gemini once per node missing an identity vector. The CLI
         # exits 0 when there's nothing to do.
-        # The curl precedes every SSH step because Fly auto_stop_machines
-        # = 'stop' kills the VM after a short HTTP-idle window and SSH
-        # activity alone doesn't reset that timer (observed in CI).
         run: |
-          curl -fsSL -o /dev/null https://adai-basel.fly.dev/api/stats
           flyctl ssh console --app adai-basel -C "node /app/dist/embed/cli.js backfill"
 
       - name: derive against live DB
@@ -83,7 +108,6 @@ jobs:
         # The CLI resolves /data/adai.db automatically via resolveCliDbPath
         # when run inside the Fly machine (see src/utils/db-path.ts).
         run: |
-          curl -fsSL -o /dev/null https://adai-basel.fly.dev/api/stats
           flyctl ssh console --app adai-basel -C "node /app/dist/embed/cli.js derive"
 
       - name: refresh UMAP projection (on runner)
@@ -95,12 +119,6 @@ jobs:
         # survives runner ephemerality.
         run: |
           set -eo pipefail
-          # Fly auto-stops idle machines; a multi-step workflow can fall into
-          # that window between commands. One HTTP request guarantees a hot
-          # VM before any SSH-substitution that --pipefail would silently
-          # kill on "no started VMs".
-          curl -fsSL -o /dev/null https://adai-basel.fly.dev/api/stats
-          echo "machine warm"
 
           # Note: we deliberately do NOT redirect flyctl's stderr — the
           # "Connecting to ..." chatter is on stderr and doesn't pollute the
@@ -159,5 +177,4 @@ jobs:
         # Independent of derive — runs even if derive emitted zero new edges.
         # JSON output lands directly in the action log; eyeball weekly.
         run: |
-          curl -fsSL -o /dev/null https://adai-basel.fly.dev/api/stats
           flyctl ssh console --app adai-basel -C "node /app/dist/embed/cli.js report-drift"
