@@ -21,6 +21,7 @@ from schema_contract import (
     CRYPTO_ERA_SLUG_TOKENS,
     ERA_VIOLATION_WHITELIST,
     KNOWN_LEGACY_EDGE_TYPES,
+    INVITATION_STATUS_SET,
 )
 
 SEVERITY_INFO = "info"
@@ -869,6 +870,69 @@ def check_narrative_mismatches(
             ))
 
     cache.save()
+    return findings
+
+
+def check_invitations_honored(
+    nodes_by_id: Dict[str, dict],
+    edges: List[dict],
+) -> List[Finding]:
+    """Section E: confirms invitation edges are still empty and counts empty stubs.
+
+    Per spec — informational, not bugs (except invitation_violated, which IS a bug
+    because it means the design contract was breached).
+    """
+    findings: List[Finding] = []
+    # Edge counts per invitation type
+    invitation_types = {
+        et for et, doc_map in EDGE_CLAIMS.items()
+        if any(c is not None and c.is_invitation for c in doc_map.values())
+    }
+    edge_counts: Dict[str, int] = {et: 0 for et in invitation_types}
+    for e in edges:
+        if e["edge_type"] in invitation_types:
+            edge_counts[e["edge_type"]] += 1
+
+    for et, count in sorted(edge_counts.items()):
+        if count == 0:
+            findings.append(Finding(
+                section="E", category="invitation_honored", severity=SEVERITY_INFO,
+                subject_id=et, subject_kind="edge",
+                details={"count": 0, "expected": 0,
+                         "rationale": "invitation edge reserved for practitioner voice"},
+            ))
+        else:
+            findings.append(Finding(
+                section="E", category="invitation_violated", severity=SEVERITY_BUG,
+                subject_id=et, subject_kind="edge",
+                details={"count": count, "expected": 0,
+                         "rationale": "invitation edge has non-zero edges — contract breach"},
+                suggested_fix="audit how these edges entered the graph; remove or attest",
+            ))
+
+    # Empty-stub count (0 in-degree AND 0 out-degree AND status in INVITATION_STATUS_SET)
+    in_degree: Dict[str, int] = {}
+    out_degree: Dict[str, int] = {}
+    for e in edges:
+        out_degree[e["source_id"]] = out_degree.get(e["source_id"], 0) + 1
+        in_degree[e["target_id"]] = in_degree.get(e["target_id"], 0) + 1
+
+    stub_count = 0
+    for nid, n in nodes_by_id.items():
+        if in_degree.get(nid, 0) > 0 or out_degree.get(nid, 0) > 0:
+            continue
+        md = _parse_metadata(n)
+        status = md.get("status")
+        if status in INVITATION_STATUS_SET or status is None:
+            stub_count += 1
+
+    findings.append(Finding(
+        section="E", category="empty_stub_count", severity=SEVERITY_INFO,
+        subject_id="(empty_stubs)", subject_kind="node",
+        details={"count": stub_count,
+                 "status_set": sorted(INVITATION_STATUS_SET),
+                 "rationale": "0-degree nodes with stub-like status — invitations awaiting contribution"},
+    ))
     return findings
 
 
