@@ -5,6 +5,8 @@ See docs/superpowers/specs/2026-05-24-schema-audit-design.md.
 import argparse
 import json
 import pathlib
+import re
+import string
 import sys
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Literal, Optional, Tuple
@@ -12,6 +14,7 @@ from typing import Any, Dict, List, Literal, Optional, Tuple
 from schema_contract import (
     EDGE_CLAIMS,
     AUTOMATED_WRITER_PREFIXES,
+    GENERIC_TITLE_DENYLIST,
 )
 
 SEVERITY_INFO = "info"
@@ -19,6 +22,8 @@ SEVERITY_WARNING = "warning"
 SEVERITY_BUG = "bug"
 
 _VALID_SUBJECT_KINDS = frozenset({"edge", "node"})
+
+_PUNCT_STRIP = str.maketrans("", "", string.punctuation)
 
 
 @dataclass
@@ -279,6 +284,66 @@ def check_per_document_conformance(
                 "conforming_edges": conforming,
                 "conformance_pct": pct,
             },
+        ))
+    return findings
+
+
+def _normalise_title(name: str) -> str:
+    """Lowercase + strip ASCII punctuation. Non-ASCII (e.g. é, ü) preserved."""
+    return name.lower().translate(_PUNCT_STRIP).strip()
+
+
+def detect_id_collisions(
+    nodes_by_id: Dict[str, dict],
+    edges: List[dict],
+) -> List[Finding]:
+    """C.1: nodes with generic names whose CREATED_BY edges suggest multiple distinct works."""
+    findings: List[Finding] = []
+
+    # Index CREATED_BY edges by source artwork
+    creators_by_artwork: Dict[str, List[dict]] = {}
+    for e in edges:
+        if e["edge_type"] == "CREATED_BY":
+            creators_by_artwork.setdefault(e["source_id"], []).append(e)
+
+    # Index COLLABORATES_WITH (symmetric — store both directions)
+    collab_pairs: set = set()
+    for e in edges:
+        if e["edge_type"] == "COLLABORATES_WITH":
+            s, t = e["source_id"], e["target_id"]
+            collab_pairs.add((s, t))
+            collab_pairs.add((t, s))
+
+    for artwork_id, creator_edges in creators_by_artwork.items():
+        node = nodes_by_id.get(artwork_id)
+        if not node or node.get("type") != "artwork":
+            continue
+        norm = _normalise_title(node.get("name", ""))
+        if norm not in GENERIC_TITLE_DENYLIST:
+            continue
+        # Must have >= 2 distinct practitioner creators
+        creator_ids = [
+            e["target_id"] for e in creator_edges
+            if nodes_by_id.get(e["target_id"], {}).get("type") == "practitioner"
+        ]
+        if len(set(creator_ids)) < 2:
+            continue
+        # If every pair of creators is in collab_pairs, it's legitimate co-authorship
+        all_pairs_collaborate = all(
+            (creator_ids[i], creator_ids[j]) in collab_pairs
+            for i in range(len(creator_ids)) for j in range(i + 1, len(creator_ids))
+        )
+        if all_pairs_collaborate:
+            continue
+        findings.append(Finding(
+            section="C", category="id_collision", severity=SEVERITY_BUG,
+            subject_id=artwork_id, subject_kind="node",
+            details={
+                "name": node.get("name"),
+                "creators": list(set(creator_ids)),
+                "gatherers": sorted({e["created_by"] for e in creator_edges}),
+            },
+            suggested_fix="split into per-creator nodes with disambiguated ids",
         ))
     return findings
 
