@@ -37,10 +37,10 @@ EDGE_CLAIMS: Dict[str, Dict[str, Optional[EdgeClaim]]] = {
             ref="SOURCES.md line 296 edge structure table ('What the seed produces honestly')",
         ),
         "claude_md": EdgeClaim(
-            source_types=(),
-            target_types=(),
-            description="Mentioned as count (305) in edge-types paragraph; no explicit source/target stated.",
-            ref="CLAUDE.md 'Edge types' paragraph in Database section",
+            source_types=("artwork",),
+            target_types=("institution", "platform"),
+            description="A specific artwork was shown at a specific institution/platform.",
+            ref="CLAUDE.md edge-types paragraph (Database section, count 305)",
         ),
     },
     "RESPONDS_TO": {
