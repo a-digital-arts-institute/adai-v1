@@ -546,5 +546,71 @@ def detect_era_violations(
     return findings
 
 
+def detect_bitemporal_integrity(edges: List[dict]) -> List[Finding]:
+    """C.4: integrity of bi-temporal fields. Audits ALL edges including superseded.
+
+    Categories:
+      - valid_until_before_valid_from
+      - dangling_invalidated_by (invalidated_by → nonexistent edge id)
+      - superseded_without_invalidator (valid_until set but invalidated_by is null)
+      - supersession_loop (chain of invalidated_by loops back to self)
+    """
+    findings: List[Finding] = []
+    edge_ids = {e.get("id") for e in edges if e.get("id")}
+
+    for e in edges:
+        eid = e.get("id", "<no-id>")
+        vf = e.get("valid_from")
+        vu = e.get("valid_until")
+        invby = e.get("invalidated_by")
+
+        if vu is not None and vf is not None and vu < vf:
+            findings.append(Finding(
+                section="C", category="valid_until_before_valid_from", severity=SEVERITY_BUG,
+                subject_id=eid, subject_kind="edge",
+                details={"valid_from": vf, "valid_until": vu},
+                suggested_fix="repair valid_from or valid_until — temporal range invalid",
+            ))
+
+        if invby and invby not in edge_ids:
+            findings.append(Finding(
+                section="C", category="dangling_invalidated_by", severity=SEVERITY_BUG,
+                subject_id=eid, subject_kind="edge",
+                details={"invalidated_by": invby},
+                suggested_fix="invalidated_by must reference an existing edge id",
+            ))
+
+        if vu is not None and not invby:
+            findings.append(Finding(
+                section="C", category="superseded_without_invalidator", severity=SEVERITY_BUG,
+                subject_id=eid, subject_kind="edge",
+                details={"valid_until": vu},
+                suggested_fix="set invalidated_by to the successor edge id, or null out valid_until",
+            ))
+
+    # Detect supersession loops: follow invalidated_by from each edge,
+    # raise if we revisit the start.
+    invalidator_map = {e.get("id"): e.get("invalidated_by") for e in edges if e.get("id")}
+    for start, _ in invalidator_map.items():
+        seen = set()
+        cur = invalidator_map.get(start)
+        steps = 0
+        while cur and cur in invalidator_map and steps < 100:
+            if cur == start:
+                findings.append(Finding(
+                    section="C", category="supersession_loop", severity=SEVERITY_BUG,
+                    subject_id=start, subject_kind="edge",
+                    details={"loop_through": sorted(seen)},
+                    suggested_fix="break the cycle in invalidated_by chain",
+                ))
+                break
+            if cur in seen:
+                break
+            seen.add(cur)
+            cur = invalidator_map.get(cur)
+            steps += 1
+    return findings
+
+
 if __name__ == "__main__":
     sys.exit(main())
