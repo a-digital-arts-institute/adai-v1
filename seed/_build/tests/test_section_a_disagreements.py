@@ -61,3 +61,34 @@ def test_embedding_edges_excluded_from_conformance():
     ea = next(f for f in findings if f.subject_id == "EXHIBITED_AT")
     # the embedding edge must NOT bump the practitioner-source count to 10
     assert ea.details["edge_count"] == 10
+
+
+def test_any_wildcard_treated_as_match():
+    """CLASSIFIED_BY's three claims all use source_types=("any",); the audit must
+    treat "any" as a wildcard. A claim of `('any',) -> ('classification_regime',)`
+    should produce 100% conformance over any artwork→classification_regime,
+    practitioner→classification_regime, etc."""
+    nodes = {
+        "artwork:a1": {"id": "artwork:a1", "type": "artwork"},
+        "practitioner:p1": {"id": "practitioner:p1", "type": "practitioner"},
+        "institution:i1": {"id": "institution:i1", "type": "institution"},
+        "classification_regime:r1": {"id": "classification_regime:r1", "type": "classification_regime"},
+    }
+    edges = [
+        {"source_id": "artwork:a1", "target_id": "classification_regime:r1",
+         "edge_type": "CLASSIFIED_BY", "created_by": "contributor:migration"},
+        {"source_id": "practitioner:p1", "target_id": "classification_regime:r1",
+         "edge_type": "CLASSIFIED_BY", "created_by": "contributor:migration"},
+        {"source_id": "institution:i1", "target_id": "classification_regime:r1",
+         "edge_type": "CLASSIFIED_BY", "created_by": "contributor:migration"},
+    ]
+    findings = check_schema_disagreements(nodes, edges, EDGE_CLAIMS)
+    cb = next(f for f in findings if f.subject_id == "CLASSIFIED_BY")
+    # All three documents say ("any",) -> ("classification_regime",); every fixture
+    # edge satisfies that → 100% conformance for all three documents.
+    conf = cb.details["conformance_pct"]
+    assert conf["skill_md"] == 100.0, f"skill_md conformance: {conf['skill_md']}"
+    assert conf["sources_md"] == 100.0, f"sources_md conformance: {conf['sources_md']}"
+    assert conf["claude_md"] == 100.0, f"claude_md conformance: {conf['claude_md']}"
+    # All three agree → not a disagreement → severity is info
+    assert cb.severity == "info"

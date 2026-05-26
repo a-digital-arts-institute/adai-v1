@@ -141,9 +141,26 @@ def load_graph(
 
 
 def _is_embedding_edge(edge: dict) -> bool:
-    """Embedding-derived edges live in their own row, not folded into curated conformance."""
+    """Embedding-derived edges live in their own row, not folded into curated conformance.
+
+    Uses a literal "embedding-" prefix rather than AUTOMATED_WRITER_PREFIXES because
+    the spec excludes embedding-derived edges specifically; gatherer- enrichment edges
+    are still part of the curated set.
+    """
     cb = edge.get("created_by", "") or ""
     return cb.startswith("embedding-")
+
+
+def _types_match(node_type: Optional[str], claim_types: tuple) -> bool:
+    """True if node_type satisfies claim_types.
+
+    Treats the sentinel "any" in claim_types as a wildcard (matches any node type).
+    Used for CLASSIFIED_BY, which all three schema documents encode as
+    `any -> classification_regime`. Empty claim_types tuple matches nothing.
+    """
+    if "any" in claim_types:
+        return node_type is not None
+    return node_type in claim_types
 
 
 def check_schema_disagreements(
@@ -188,8 +205,8 @@ def check_schema_disagreements(
                 continue
             ok = sum(
                 1 for e in live_edges
-                if nodes_by_id.get(e["source_id"], {}).get("type") in claim.source_types
-                and nodes_by_id.get(e["target_id"], {}).get("type") in claim.target_types
+                if _types_match(nodes_by_id.get(e["source_id"], {}).get("type"), claim.source_types)
+                and _types_match(nodes_by_id.get(e["target_id"], {}).get("type"), claim.target_types)
             )
             conformance_pct[doc_name] = round(100.0 * ok / n, 1)
 
