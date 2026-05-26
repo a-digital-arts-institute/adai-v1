@@ -5,6 +5,7 @@ See docs/superpowers/specs/2026-05-24-schema-audit-design.md.
 import argparse
 import hashlib
 import json
+import os
 import pathlib
 import re
 import string
@@ -13,6 +14,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Literal, Optional, Tuple
 
 from schema_contract import (
+    CONTRACT_SCHEMA_VERSION,
     EDGE_CLAIMS,
     AUTOMATED_WRITER_PREFIXES,
     GENERIC_TITLE_DENYLIST,
@@ -757,6 +759,117 @@ class NarrativeCache:
         tmp = self.path.with_suffix(self.path.suffix + ".tmp")
         tmp.write_text(json.dumps(self._data, sort_keys=True, indent=2))
         tmp.replace(self.path)
+
+
+NARRATIVE_MODEL_ID = "claude-haiku-4-5"  # implementer-verify; participates in cache key
+NARRATIVE_PROMPT_VERSION = 1
+
+NARRATIVE_PROMPT_TEMPLATE = """\
+You are comparing two views of one practitioner's place in the digital arts field.
+
+The PROSE below comes from the practitioner's profile metadata (free-text scene_affiliation).
+The EDGES below are the structured BELONGS_TO and CLASSIFIED_BY edges actually in the graph.
+
+Compare them. Produce JSON with two fields:
+  - "claimed_but_unlinked": list of scenes/platforms/institutions the prose names that are NOT present as edges
+  - "linked_but_unclaimed": list of edges whose target is contradicted by or absent from the prose
+
+Be strict. If everything aligns, both lists should be empty. Do not invent claims.
+
+PROSE:
+{prose}
+
+EDGES:
+{edges_json}
+
+Respond with ONLY the JSON object, nothing else.
+"""
+
+
+def check_narrative_mismatches(
+    nodes_by_id: Dict[str, dict],
+    edges: List[dict],
+    client: Optional[Any] = None,
+    cache: Optional[NarrativeCache] = None,
+) -> List[Finding]:
+    """Section D: per-practitioner narrative-vs-edge comparison via LLM.
+
+    If client is None (no ANTHROPIC_API_KEY), returns one info finding marking skip.
+    """
+    if cache is None:
+        cache = NarrativeCache(pathlib.Path("seed/_build/.cache/narrative_audit.json"))
+
+    if client is None:
+        return [Finding(
+            section="D", category="section_d_skipped", severity=SEVERITY_INFO,
+            subject_id="(section_d)", subject_kind="node",
+            details={"reason": "no Anthropic client (ANTHROPIC_API_KEY unset)"},
+        )]
+
+    findings: List[Finding] = []
+    # Index practitioner edges (BELONGS_TO + CLASSIFIED_BY, current state only)
+    edges_for: Dict[str, List[dict]] = {}
+    for e in edges:
+        if e["edge_type"] not in ("BELONGS_TO", "CLASSIFIED_BY"):
+            continue
+        if e.get("valid_until") is not None:
+            continue
+        edges_for.setdefault(e["source_id"], []).append(e)
+
+    for pid, p in sorted(nodes_by_id.items()):
+        if p.get("type") != "practitioner":
+            continue
+        md = _parse_metadata(p)
+        prose = (md.get("full_profile", {}).get("network_position", {})
+                   .get("scene_affiliation", "") or "")
+        if not prose.strip():
+            continue
+
+        prac_edges = edges_for.get(pid, [])
+        canon = canonical_edges_json(prac_edges)
+        key = narrative_cache_key(
+            pid, prose, canon, NARRATIVE_MODEL_ID, NARRATIVE_PROMPT_VERSION,
+            CONTRACT_SCHEMA_VERSION,
+        )
+        cached = cache.get(key)
+        if cached is None:
+            try:
+                prompt = NARRATIVE_PROMPT_TEMPLATE.format(prose=prose, edges_json=canon)
+                resp = client.messages.create(
+                    model=NARRATIVE_MODEL_ID,
+                    max_tokens=1024,
+                    messages=[{"role": "user", "content": prompt}],
+                )
+                text = resp.content[0].text
+                cached = json.loads(text)
+                cache.put(key, cached)
+            except Exception as e:
+                findings.append(Finding(
+                    section="D", category="section_d_incomplete", severity=SEVERITY_WARNING,
+                    subject_id=pid, subject_kind="node",
+                    details={"reason": str(e)},
+                ))
+                continue
+
+        for claim in cached.get("claimed_but_unlinked", []):
+            findings.append(Finding(
+                section="D", category="claimed_but_unlinked", severity=SEVERITY_WARNING,
+                subject_id=pid, subject_kind="node",
+                details={"prose_claim": claim, "model_id": NARRATIVE_MODEL_ID,
+                         "prompt_version": NARRATIVE_PROMPT_VERSION},
+                suggested_fix="add edge OR remove claim from prose",
+            ))
+        for edge_desc in cached.get("linked_but_unclaimed", []):
+            findings.append(Finding(
+                section="D", category="linked_but_unclaimed", severity=SEVERITY_WARNING,
+                subject_id=pid, subject_kind="node",
+                details={"edge_description": edge_desc, "model_id": NARRATIVE_MODEL_ID,
+                         "prompt_version": NARRATIVE_PROMPT_VERSION},
+                suggested_fix="add to prose OR remove edge",
+            ))
+
+    cache.save()
+    return findings
 
 
 if __name__ == "__main__":

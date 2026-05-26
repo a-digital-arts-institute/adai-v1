@@ -49,3 +49,81 @@ def test_cache_load_save_roundtrip():
         cache2 = NarrativeCache(path)
         assert cache2.get("key1") == {"finding": "x"}
         assert cache2.get("missing") is None
+
+
+from unittest.mock import MagicMock
+
+
+def test_check_narrative_mismatches_with_mocked_client():
+    """Mock the Anthropic client; assert one Finding per non-empty LLM result."""
+    from audit_schema import check_narrative_mismatches, NARRATIVE_MODEL_ID
+
+    nodes = {
+        "practitioner:sofia": {
+            "id": "practitioner:sofia", "type": "practitioner", "name": "Sofia",
+            "metadata": {
+                "full_profile": {
+                    "network_position": {
+                        "scene_affiliation": "Active in the Tezos generative art scene.",
+                    },
+                },
+            },
+        },
+        "scene:tezos": {"type": "scene"},
+    }
+    edges = [{
+        "source_id": "practitioner:sofia", "target_id": "scene:tezos",
+        "edge_type": "BELONGS_TO", "created_by": "x", "valid_until": None,
+    }]
+
+    mock_client = MagicMock()
+    mock_response = MagicMock()
+    mock_response.content = [MagicMock(text=json.dumps({
+        "claimed_but_unlinked": ["Ethereum platform Feral File"],
+        "linked_but_unclaimed": [],
+    }))]
+    mock_client.messages.create.return_value = mock_response
+
+    with tempfile.TemporaryDirectory() as tmp:
+        cache = NarrativeCache(pathlib.Path(tmp) / "cache.json")
+        findings = check_narrative_mismatches(nodes, edges, client=mock_client, cache=cache)
+
+    assert any("Ethereum platform Feral File" in str(f.details) for f in findings)
+    # called once
+    assert mock_client.messages.create.call_count == 1
+
+
+def test_check_narrative_mismatches_uses_cache_on_second_call():
+    from audit_schema import check_narrative_mismatches
+
+    nodes = {
+        "practitioner:p": {
+            "id": "practitioner:p", "type": "practitioner",
+            "metadata": {"full_profile": {"network_position": {"scene_affiliation": "X"}}},
+        },
+    }
+    edges = []
+
+    mock_client = MagicMock()
+    mock_response = MagicMock()
+    mock_response.content = [MagicMock(text=json.dumps({"claimed_but_unlinked": [],
+                                                       "linked_but_unclaimed": []}))]
+    mock_client.messages.create.return_value = mock_response
+
+    with tempfile.TemporaryDirectory() as tmp:
+        cache = NarrativeCache(pathlib.Path(tmp) / "cache.json")
+        check_narrative_mismatches(nodes, edges, client=mock_client, cache=cache)
+        check_narrative_mismatches(nodes, edges, client=mock_client, cache=cache)
+
+    # second call should hit the cache, not the client
+    assert mock_client.messages.create.call_count == 1
+
+
+def test_check_narrative_mismatches_skips_when_no_key():
+    """If neither client nor key provided, returns one info Finding noting skip."""
+    from audit_schema import check_narrative_mismatches
+    with tempfile.TemporaryDirectory() as tmp:
+        cache = NarrativeCache(pathlib.Path(tmp) / "cache.json")
+        findings = check_narrative_mismatches({}, [], client=None, cache=cache)
+    assert len(findings) == 1
+    assert findings[0].category == "section_d_skipped"
