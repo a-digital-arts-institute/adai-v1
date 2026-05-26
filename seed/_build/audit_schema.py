@@ -3,6 +3,7 @@
 See docs/superpowers/specs/2026-05-24-schema-audit-design.md.
 """
 import argparse
+import hashlib
 import json
 import pathlib
 import re
@@ -696,6 +697,66 @@ def detect_unknown_edge_types(
                            else "remap to a known edge type or add the type to EDGE_CLAIMS"),
         ))
     return findings
+
+
+def canonical_edges_json(edges: List[dict]) -> str:
+    """Canonicalised JSON of an edge list for cache-key hashing.
+
+    Keeps only source_id, edge_type, target_id, created_by. Sorts by tuple of those.
+    """
+    KEEP = ("source_id", "target_id", "edge_type", "created_by")
+    minimal = [{k: e.get(k) for k in KEEP} for e in edges]
+    minimal.sort(key=lambda e: (e["source_id"], e["edge_type"], e["target_id"]))
+    return json.dumps(minimal, sort_keys=True)
+
+
+def narrative_cache_key(
+    practitioner_id: str,
+    prose_text: str,
+    canonical_edges: str,
+    model_id: str,
+    prompt_version: int,
+    contract_schema_version: str,
+) -> str:
+    """SHA-256 over the six cache-key components."""
+    payload = json.dumps([
+        practitioner_id,
+        hashlib.sha256(prose_text.encode()).hexdigest(),
+        hashlib.sha256(canonical_edges.encode()).hexdigest(),
+        model_id,
+        prompt_version,
+        contract_schema_version,
+    ], sort_keys=True)
+    return hashlib.sha256(payload.encode()).hexdigest()
+
+
+class NarrativeCache:
+    """JSON-file-backed cache for Section D LLM results.
+
+    Single-writer assumption (the audit script). Load reads if file exists;
+    save atomically replaces the file.
+    """
+
+    def __init__(self, path: pathlib.Path):
+        self.path = path
+        self._data: Dict[str, Any] = {}
+        if path.exists():
+            try:
+                self._data = json.loads(path.read_text())
+            except json.JSONDecodeError:
+                self._data = {}
+
+    def get(self, key: str) -> Optional[Any]:
+        return self._data.get(key)
+
+    def put(self, key: str, value: Any) -> None:
+        self._data[key] = value
+
+    def save(self) -> None:
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        tmp = self.path.with_suffix(self.path.suffix + ".tmp")
+        tmp.write_text(json.dumps(self._data, sort_keys=True, indent=2))
+        tmp.replace(self.path)
 
 
 if __name__ == "__main__":
