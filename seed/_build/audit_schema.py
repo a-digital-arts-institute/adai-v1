@@ -3,7 +3,11 @@
 See docs/superpowers/specs/2026-05-24-schema-audit-design.md.
 """
 import argparse
+import csv
+import datetime as dt
+from datetime import timezone
 import hashlib
+import io
 import json
 import os
 import pathlib
@@ -934,6 +938,166 @@ def check_invitations_honored(
                  "rationale": "0-degree nodes with stub-like status — invitations awaiting contribution"},
     ))
     return findings
+
+
+_SECTION_TITLES = {
+    "A": "Schema disagreements",
+    "B": "Per-document conformance",
+    "C": "Genuine bugs",
+    "D": "Narrative-vs-edge mismatches",
+    "E": "Invitations honored",
+}
+
+
+def _render_section_a_table(findings: List[Finding]) -> List[str]:
+    """Section A as a per-edge-type comparison table (spec-mandated format)."""
+    lines = [
+        "| Edge type | SKILL.md | SOURCES.md | CLAUDE.md | Data conforms to | Edges |",
+        "|---|---|---|---|---|---:|",
+    ]
+    for f in sorted(findings, key=lambda f: f.subject_id):
+        claims = f.details.get("claims", {})
+        conf = f.details.get("conformance_pct", {})
+        edge_count = f.details.get("edge_count", 0)
+
+        def claim_cell(doc: str) -> str:
+            c = claims.get(doc)
+            if c is None:
+                return "_not documented_"
+            inv = " · invitation" if c.get("is_invitation") else ""
+            return f"src: {', '.join(c['source_types'])}; tgt: {', '.join(c['target_types'])}{inv}"
+
+        def conf_cell() -> str:
+            parts = []
+            for doc in ("skill_md", "sources_md", "claude_md"):
+                pct = conf.get(doc)
+                if pct is None:
+                    parts.append(f"{doc}: –")
+                else:
+                    parts.append(f"{doc}: {pct}%")
+            return "; ".join(parts)
+
+        lines.append(
+            f"| `{f.subject_id}` | {claim_cell('skill_md')} | {claim_cell('sources_md')} | "
+            f"{claim_cell('claude_md')} | {conf_cell()} | {edge_count} |"
+        )
+    return lines
+
+
+def _render_section_b_table(findings: List[Finding]) -> List[str]:
+    """Section B as a document-conformance roll-up table."""
+    lines = [
+        "| Document | Edges considered | Conforming | Conformance % |",
+        "|---|---:|---:|---:|",
+    ]
+    for f in sorted(findings, key=lambda f: f.subject_id):
+        d = f.details
+        pct = d.get("conformance_pct")
+        pct_str = f"{pct}%" if pct is not None else "–"
+        lines.append(
+            f"| {f.subject_id} | {d.get('edges_considered', 0)} | "
+            f"{d.get('conforming_edges', 0)} | {pct_str} |"
+        )
+    return lines
+
+
+def _render_section_findings_as_bullets(findings: List[Finding]) -> List[str]:
+    """Sections C/D/E render as one bullet per finding with structured detail."""
+    lines: List[str] = []
+    # Group by category for readability
+    by_category: Dict[str, List[Finding]] = {}
+    for f in findings:
+        by_category.setdefault(f.category, []).append(f)
+    for category in sorted(by_category):
+        items = sorted(by_category[category], key=lambda f: f.subject_id)
+        lines.append(f"### `{category}` ({len(items)})")
+        lines.append("")
+        for f in items:
+            details_compact = json.dumps(f.details, sort_keys=True)
+            fix = f" — _fix:_ {f.suggested_fix}" if f.suggested_fix else ""
+            lines.append(f"- **{f.subject_id}** [{f.severity}] — `{details_compact}`{fix}")
+        lines.append("")
+    return lines
+
+
+def render_report(
+    findings: List[Finding],
+    tier: str,
+    node_count: int,
+    edge_count: int,
+) -> str:
+    """Markdown report. Sections A and B render as spec-mandated tables;
+    Sections C, D, E render as grouped-by-category bullets. All within-group
+    ordering is by subject_id for deterministic golden-file comparison.
+    """
+    lines: List[str] = []
+    lines.append(f"# A(DAI) Schema Audit — {dt.date.today().isoformat()} ({tier.upper()})")
+    lines.append("")
+    lines.append(f"Generated: {dt.datetime.now(timezone.utc).isoformat()}")
+    lines.append(f"Graph snapshot: {node_count} nodes, {edge_count} edges")
+    lines.append("")
+
+    # Headline table
+    lines.append("## Headline counts")
+    lines.append("")
+    lines.append("| Section | Findings | Highest severity |")
+    lines.append("|---|---:|---|")
+    by_section: Dict[str, List[Finding]] = {}
+    for f in findings:
+        by_section.setdefault(f.section, []).append(f)
+    SEVERITY_RANK = {SEVERITY_INFO: 0, SEVERITY_WARNING: 1, SEVERITY_BUG: 2}
+    for section in ("A", "B", "C", "D", "E"):
+        sf = by_section.get(section, [])
+        if not sf:
+            lines.append(f"| {section}. {_SECTION_TITLES[section]} | 0 | – |")
+        else:
+            max_sev = max(sf, key=lambda f: SEVERITY_RANK[f.severity]).severity
+            lines.append(f"| {section}. {_SECTION_TITLES[section]} | {len(sf)} | {max_sev} |")
+    lines.append("")
+
+    # Per-section detail — Section A and B as tables, C/D/E as grouped bullets
+    for section in ("A", "B", "C", "D", "E"):
+        lines.append(f"## Section {section}: {_SECTION_TITLES[section]}")
+        lines.append("")
+        sf = by_section.get(section, [])
+        if not sf:
+            lines.append("_No findings._")
+            lines.append("")
+            continue
+        if section == "A":
+            lines.extend(_render_section_a_table(sf))
+        elif section == "B":
+            lines.extend(_render_section_b_table(sf))
+        else:
+            lines.extend(_render_section_findings_as_bullets(sf))
+        lines.append("")
+
+    lines.append("## Reproducing this audit")
+    lines.append("")
+    lines.append(f"```bash\nnpm run audit:schema:{tier}\n```")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def render_csvs(findings: List[Finding]) -> Dict[str, str]:
+    """One CSV per (section, category). Filename: section_<section>_<category>.csv (lowercase)."""
+    by_key: Dict[str, List[Finding]] = {}
+    for f in findings:
+        fname = f"section_{f.section.lower()}_{f.category}.csv"
+        by_key.setdefault(fname, []).append(f)
+
+    out: Dict[str, str] = {}
+    for fname, items in by_key.items():
+        items_sorted = sorted(items, key=lambda f: f.subject_id)
+        buf = io.StringIO()
+        w = csv.writer(buf)
+        w.writerow(["subject_id", "subject_kind", "severity", "category",
+                    "details_json", "suggested_fix"])
+        for f in items_sorted:
+            w.writerow([f.subject_id, f.subject_kind, f.severity, f.category,
+                        json.dumps(f.details, sort_keys=True), f.suggested_fix])
+        out[fname] = buf.getvalue()
+    return out
 
 
 if __name__ == "__main__":
