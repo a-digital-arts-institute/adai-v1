@@ -9,6 +9,11 @@ import sys
 from dataclasses import dataclass, field
 from typing import Any, Dict, List, Literal, Optional, Tuple
 
+from schema_contract import (
+    EDGE_CLAIMS,
+    AUTOMATED_WRITER_PREFIXES,
+)
+
 SEVERITY_INFO = "info"
 SEVERITY_WARNING = "warning"
 SEVERITY_BUG = "bug"
@@ -133,6 +138,84 @@ def load_graph(
     contributors_by_id = {c["id"]: c for c in contributors}
     signals_by_id = {s["id"]: s for s in signals}
     return nodes_by_id, edges, contributors_by_id, signals_by_id
+
+
+def _is_embedding_edge(edge: dict) -> bool:
+    """Embedding-derived edges live in their own row, not folded into curated conformance."""
+    cb = edge.get("created_by", "") or ""
+    return cb.startswith("embedding-")
+
+
+def check_schema_disagreements(
+    nodes_by_id: Dict[str, dict],
+    edges: List[dict],
+    contract: Dict[str, Any],
+) -> List[Finding]:
+    """Section A: for each edge type, compare source/target types across documents.
+
+    Excludes embedding-derived edges from the conformance numerator.
+    """
+    findings: List[Finding] = []
+
+    # Group curated edges by type
+    curated = [e for e in edges if not _is_embedding_edge(e)]
+    by_type: Dict[str, List[dict]] = {}
+    for e in curated:
+        by_type.setdefault(e["edge_type"], []).append(e)
+
+    for edge_type, doc_map in contract.items():
+        live_edges = by_type.get(edge_type, [])
+        n = len(live_edges)
+
+        # Documents disagree if non-None claims differ in source_types or target_types
+        non_none = {d: c for d, c in doc_map.items() if c is not None}
+        documents_disagree = False
+        if len(non_none) > 1:
+            first = next(iter(non_none.values()))
+            for c in non_none.values():
+                if c.source_types != first.source_types or c.target_types != first.target_types:
+                    documents_disagree = True
+                    break
+
+        # Per-document conformance
+        conformance_pct: Dict[str, Optional[float]] = {}
+        for doc_name, claim in doc_map.items():
+            if claim is None:
+                conformance_pct[doc_name] = None
+                continue
+            if n == 0:
+                conformance_pct[doc_name] = 100.0 if claim.is_invitation else None
+                continue
+            ok = sum(
+                1 for e in live_edges
+                if nodes_by_id.get(e["source_id"], {}).get("type") in claim.source_types
+                and nodes_by_id.get(e["target_id"], {}).get("type") in claim.target_types
+            )
+            conformance_pct[doc_name] = round(100.0 * ok / n, 1)
+
+        severity = SEVERITY_WARNING if documents_disagree else SEVERITY_INFO
+        findings.append(Finding(
+            section="A",
+            category="schema_disagreement" if documents_disagree else "schema_agreement",
+            severity=severity,
+            subject_id=edge_type,
+            subject_kind="edge",
+            details={
+                "edge_count": n,
+                "documents_disagree": documents_disagree,
+                "claims": {
+                    doc_name: None if c is None else {
+                        "source_types": list(c.source_types),
+                        "target_types": list(c.target_types),
+                        "is_invitation": c.is_invitation,
+                        "ref": c.ref,
+                    }
+                    for doc_name, c in doc_map.items()
+                },
+                "conformance_pct": conformance_pct,
+            },
+        ))
+    return findings
 
 
 def main(argv: Optional[List[str]] = None) -> int:
