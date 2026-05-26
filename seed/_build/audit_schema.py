@@ -235,6 +235,54 @@ def check_schema_disagreements(
     return findings
 
 
+def check_per_document_conformance(
+    nodes_by_id: Dict[str, dict],
+    edges: List[dict],
+    contract: Dict[str, Dict[str, Any]],
+) -> List[Finding]:
+    """Section B: roll-up of conformance per document across all curated edges.
+
+    Excludes embedding-derived edges (their disciplined types are reported separately).
+    Edges whose edge_type isn't in the contract at all are not counted in any
+    document's denominator — they show up in Section C.7 instead.
+
+    Uses `_types_match()` so the 'any' sentinel in claim_types (CLASSIFIED_BY) is
+    honoured as a wildcard.
+    """
+    findings: List[Finding] = []
+    curated = [e for e in edges if not _is_embedding_edge(e) and e["edge_type"] in contract]
+    total = len(curated)
+
+    for doc_name in ("skill_md", "sources_md", "claude_md"):
+        conforming = 0
+        considered = 0
+        for e in curated:
+            claim = contract[e["edge_type"]].get(doc_name)
+            if claim is None:
+                # this document does not document this edge type; skip
+                continue
+            considered += 1
+            src_type = nodes_by_id.get(e["source_id"], {}).get("type")
+            tgt_type = nodes_by_id.get(e["target_id"], {}).get("type")
+            if _types_match(src_type, claim.source_types) and _types_match(tgt_type, claim.target_types):
+                conforming += 1
+        pct = round(100.0 * conforming / considered, 1) if considered else None
+        findings.append(Finding(
+            section="B",
+            category="per_document_conformance",
+            severity=SEVERITY_INFO,
+            subject_id=doc_name,
+            subject_kind="node",  # arbitrary — Section B subject is a document, not a graph object
+            details={
+                "total_curated_edges": total,
+                "edges_considered": considered,
+                "conforming_edges": conforming,
+                "conformance_pct": pct,
+            },
+        ))
+    return findings
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         description="A(DAI) schema audit — catalog schema issues in the graph."
