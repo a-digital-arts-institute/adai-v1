@@ -1100,5 +1100,17 @@ def render_csvs(findings: List[Finding]) -> Dict[str, str]:
     return out
 
 
+def normalize_output(text: str) -> str:
+    """Strip volatile lines from a rendered report for golden-file comparison."""
+    out_lines: List[str] = []
+    for line in text.replace("\r\n", "\n").splitlines():
+        if line.startswith("Generated:"):
+            continue
+        if line.startswith("Graph snapshot:"):
+            continue
+        out_lines.append(line)
+    return "\n".join(out_lines)
+
+
 if __name__ == "__main__":
     sys.exit(main())
