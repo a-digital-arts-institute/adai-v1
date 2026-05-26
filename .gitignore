@@ -16,6 +16,9 @@ seed/_build/.image_cache.sqlite
 seed/_build/.image_cache.sqlite-shm
 seed/_build/.image_cache.sqlite-wal
 
+# Schema audit's Section D LLM-result cache — local-only, may contain API responses
+seed/_build/.cache/
+
 # Node
 node_modules/
 dist/

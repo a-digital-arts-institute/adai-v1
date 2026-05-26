@@ -821,6 +821,38 @@ class NarrativeCache:
 NARRATIVE_MODEL_ID = "claude-haiku-4-5"  # implementer-verify; participates in cache key
 NARRATIVE_PROMPT_VERSION = 1
 
+
+def _extract_json(text: str) -> str:
+    """Extract a JSON object from an LLM response that may be wrapped in
+    markdown code fences (```json ... ``` or ``` ... ```) or contain extra
+    prose. Returns the substring from the first `{` to the matching `}`.
+    Falls back to the stripped original text if no braces are found.
+    """
+    s = text.strip()
+    # Strip leading code-fence
+    if s.startswith("```"):
+        # Drop the opening fence line (possibly ```json)
+        nl = s.find("\n")
+        if nl != -1:
+            s = s[nl + 1:]
+        # Drop trailing fence
+        if s.rstrip().endswith("```"):
+            s = s.rstrip()[:-3]
+        s = s.strip()
+    # Bracket-match the first JSON object
+    start = s.find("{")
+    if start == -1:
+        return s
+    depth = 0
+    for i in range(start, len(s)):
+        if s[i] == "{":
+            depth += 1
+        elif s[i] == "}":
+            depth -= 1
+            if depth == 0:
+                return s[start:i + 1]
+    return s[start:]
+
 NARRATIVE_PROMPT_TEMPLATE = """\
 You are comparing two views of one practitioner's place in the digital arts field.
 
@@ -877,8 +909,12 @@ def check_narrative_mismatches(
         if p.get("type") != "practitioner":
             continue
         md = _parse_metadata(p)
-        prose = (md.get("full_profile", {}).get("network_position", {})
-                   .get("scene_affiliation", "") or "")
+        # Some practitioners have full_profile or network_position explicitly null
+        # (the field exists but is None); guard against that with `or {}` between
+        # each level rather than the default-on-missing of dict.get.
+        full_profile = md.get("full_profile") or {}
+        network_position = full_profile.get("network_position") or {}
+        prose = network_position.get("scene_affiliation") or ""
         if not prose.strip():
             continue
 
@@ -898,7 +934,7 @@ def check_narrative_mismatches(
                     messages=[{"role": "user", "content": prompt}],
                 )
                 text = resp.content[0].text
-                cached = json.loads(text)
+                cached = json.loads(_extract_json(text))
                 cache.put(key, cached)
             except Exception as e:
                 findings.append(Finding(

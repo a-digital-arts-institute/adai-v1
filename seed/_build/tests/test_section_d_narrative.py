@@ -5,7 +5,32 @@ from audit_schema import (
     canonical_edges_json,
     narrative_cache_key,
     NarrativeCache,
+    _extract_json,
 )
+
+
+def test_extract_json_handles_plain_object():
+    assert _extract_json('{"a": 1}') == '{"a": 1}'
+
+
+def test_extract_json_strips_markdown_code_fence_json():
+    text = '```json\n{"a": 1}\n```'
+    assert json.loads(_extract_json(text)) == {"a": 1}
+
+
+def test_extract_json_strips_unlabelled_code_fence():
+    text = '```\n{"a": 1}\n```'
+    assert json.loads(_extract_json(text)) == {"a": 1}
+
+
+def test_extract_json_handles_prose_before_object():
+    text = 'Here is the JSON:\n{"a": 1}'
+    assert json.loads(_extract_json(text)) == {"a": 1}
+
+
+def test_extract_json_handles_nested_braces():
+    text = '```json\n{"a": {"b": 2}}\n```'
+    assert json.loads(_extract_json(text)) == {"a": {"b": 2}}
 
 
 def test_canonical_edges_json_sorts_and_keeps_only_known_fields():
