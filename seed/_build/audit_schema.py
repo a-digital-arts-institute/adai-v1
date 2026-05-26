@@ -15,6 +15,8 @@ from schema_contract import (
     EDGE_CLAIMS,
     AUTOMATED_WRITER_PREFIXES,
     GENERIC_TITLE_DENYLIST,
+    CRYPTO_ERA_SLUG_TOKENS,
+    ERA_VIOLATION_WHITELIST,
 )
 
 SEVERITY_INFO = "info"
@@ -449,6 +451,99 @@ def main(argv: Optional[List[str]] = None) -> int:
     print("[audit] check_* pipeline not yet implemented — no findings produced.",
           file=sys.stderr)
     return 0
+
+
+def detect_era_violations(
+    nodes_by_id: Dict[str, dict],
+    edges: List[dict],
+) -> List[Finding]:
+    """C.3: pre-2009 artworks linked to crypto-era concepts.
+
+    Strict: only checks artworks with a structured `metadata.year_start` int.
+    Emits ONE summary Finding showing coverage % so the gap is visible in the
+    report (we don't emit per-artwork skip rows — would dominate Section C
+    without adding information).
+    """
+    findings: List[Finding] = []
+
+    # Index concept slugs once
+    concept_slugs = {nid: n.get("slug", "") for nid, n in nodes_by_id.items()
+                     if n.get("type") == "concept"}
+
+    # Classify artworks for the coverage summary
+    total_artworks = 0
+    covered = 0
+    excluded_with_year_raw = 0
+    excluded_with_active_years_string = 0
+    excluded_no_year_info = 0
+    for nid, n in nodes_by_id.items():
+        if n.get("type") != "artwork":
+            continue
+        total_artworks += 1
+        md = _parse_metadata(n)
+        if isinstance(md.get("year_start"), int):
+            covered += 1
+        elif isinstance(md.get("year_raw"), str):
+            excluded_with_year_raw += 1
+        elif isinstance(md.get("full_profile", {}).get("basic_info", {}).get("active_years"), str):
+            excluded_with_active_years_string += 1
+        else:
+            excluded_no_year_info += 1
+    coverage_pct = round(100.0 * covered / total_artworks, 1) if total_artworks else 0.0
+
+    findings.append(Finding(
+        section="C", category="era_check_coverage", severity=SEVERITY_INFO,
+        subject_id="(era_check_coverage)", subject_kind="node",
+        details={
+            "total": total_artworks,
+            "covered": covered,
+            "coverage_pct": coverage_pct,
+            "excluded_with_year_raw": excluded_with_year_raw,
+            "excluded_with_active_years_string": excluded_with_active_years_string,
+            "excluded_no_year_info": excluded_no_year_info,
+        },
+        suggested_fix=(f"strict mode covers {covered} of {total_artworks} artworks ({coverage_pct}%); "
+                       f"add metadata.year_start to remaining {total_artworks - covered} to expand"),
+    ))
+
+    # Walk edges and emit era_violation findings
+    for e in edges:
+        src_id = e["source_id"]
+        tgt_id = e["target_id"]
+        src = nodes_by_id.get(src_id, {})
+        if src.get("type") != "artwork":
+            continue
+        if tgt_id not in concept_slugs:
+            continue
+        slug = concept_slugs[tgt_id]
+        if not any(token in slug for token in CRYPTO_ERA_SLUG_TOKENS):
+            continue
+        if (src_id, tgt_id) in ERA_VIOLATION_WHITELIST:
+            continue
+
+        md = _parse_metadata(src)
+        year_start = md.get("year_start")
+        if not isinstance(year_start, int):
+            continue  # captured in the coverage summary above
+        if year_start >= 2009:
+            continue
+
+        findings.append(Finding(
+            section="C", category="era_violation", severity=SEVERITY_BUG,
+            subject_id=f"{src_id}--{e['edge_type']}--{tgt_id}",
+            subject_kind="edge",
+            details={
+                "artwork": src_id,
+                "year_start": year_start,
+                "concept": tgt_id,
+                "concept_slug": slug,
+                "edge_type": e["edge_type"],
+                "created_by": e["created_by"],
+            },
+            suggested_fix="delete edge OR add to ERA_VIOLATION_WHITELIST if curator attests",
+        ))
+
+    return findings
 
 
 if __name__ == "__main__":
