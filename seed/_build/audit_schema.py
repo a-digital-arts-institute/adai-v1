@@ -657,5 +657,20 @@ def detect_provenance_broken(
     return findings
 
 
+def detect_self_loops(edges: List[dict]) -> List[Finding]:
+    """C.6: source == target. Should always be zero."""
+    findings: List[Finding] = []
+    for e in edges:
+        if e["source_id"] == e["target_id"]:
+            findings.append(Finding(
+                section="C", category="self_loop", severity=SEVERITY_BUG,
+                subject_id=e.get("id", f"{e['source_id']}--{e['edge_type']}--{e['target_id']}"),
+                subject_kind="edge",
+                details={"source_id": e["source_id"], "edge_type": e["edge_type"]},
+                suggested_fix="delete self-referential edge",
+            ))
+    return findings
+
+
 if __name__ == "__main__":
     sys.exit(main())
