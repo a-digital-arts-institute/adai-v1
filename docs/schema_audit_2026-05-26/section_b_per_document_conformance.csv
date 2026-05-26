@@ -1,0 +1,4 @@
+subject_id,subject_kind,severity,category,details_json,suggested_fix
+claude_md,node,info,per_document_conformance,"{""conformance_pct"": 82.0, ""conforming_edges"": 2768, ""edges_considered"": 3376, ""total_curated_edges"": 3376}",
+skill_md,node,info,per_document_conformance,"{""conformance_pct"": 82.0, ""conforming_edges"": 2768, ""edges_considered"": 3376, ""total_curated_edges"": 3376}",
+sources_md,node,info,per_document_conformance,"{""conformance_pct"": 92.9, ""conforming_edges"": 3136, ""edges_considered"": 3376, ""total_curated_edges"": 3376}",

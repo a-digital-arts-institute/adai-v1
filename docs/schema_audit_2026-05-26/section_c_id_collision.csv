@@ -1,0 +1,3 @@
+subject_id,subject_kind,severity,category,details_json,suggested_fix
+artwork:black hole,node,bug,id_collision,"{""creators"": [""practitioner:addie wagenknecht"", ""practitioner:suzanne treister""], ""gatherers"": [""gatherer-objkt-tags-v3"", ""gatherer-wikidata-v3b""], ""name"": ""Black Hole""}",split into per-creator nodes with disambiguated ids
+artwork:untitled,node,bug,id_collision,"{""creators"": [""practitioner:american artist"", ""practitioner:harold cohen"", ""practitioner:vera molnar""], ""gatherers"": [""gatherer-enrichment"", ""gatherer-moma-digital-v3"", ""gatherer-wikidata-v3b""], ""name"": ""Untitled""}",split into per-creator nodes with disambiguated ids
