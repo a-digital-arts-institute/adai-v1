@@ -1,0 +1,7 @@
+subject_id,subject_kind,severity,category,details_json,suggested_fix
+practitioner:danielle brathwaite-shirley,node,warning,linked_but_unclaimed,"{""edge_description"": ""scene:race technology and digital culture"", ""model_id"": ""claude-haiku-4-5"", ""prompt_version"": 1}",add to prose OR remove edge
+practitioner:grimes elftech,node,warning,linked_but_unclaimed,"{""edge_description"": ""scene:sound art"", ""model_id"": ""claude-haiku-4-5"", ""prompt_version"": 1}",add to prose OR remove edge
+practitioner:ian cheng,node,warning,linked_but_unclaimed,"{""edge_description"": ""scene:speculative and sci-fi practice"", ""model_id"": ""claude-haiku-4-5"", ""prompt_version"": 1}",add to prose OR remove edge
+practitioner:james bridle,node,warning,linked_but_unclaimed,"{""edge_description"": ""scene:forensic and research-based art"", ""model_id"": ""claude-haiku-4-5"", ""prompt_version"": 1}",add to prose OR remove edge
+practitioner:legacy russell,node,warning,linked_but_unclaimed,"{""edge_description"": ""scene:critical tech art"", ""model_id"": ""claude-haiku-4-5"", ""prompt_version"": 1}",add to prose OR remove edge
+practitioner:mario klingemann,node,warning,linked_but_unclaimed,"{""edge_description"": ""scene:crypto art"", ""model_id"": ""claude-haiku-4-5"", ""prompt_version"": 1}",add to prose OR remove edge
