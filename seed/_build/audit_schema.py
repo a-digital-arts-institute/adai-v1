@@ -612,5 +612,50 @@ def detect_bitemporal_integrity(edges: List[dict]) -> List[Finding]:
     return findings
 
 
+def detect_provenance_broken(
+    edges: List[dict],
+    contributors_by_id: Dict[str, dict],
+    signals_by_id: Dict[str, dict],
+) -> List[Finding]:
+    """C.5: integrity of edge.created_by + edge.signal_id."""
+    findings: List[Finding] = []
+    for e in edges:
+        eid = e.get("id", "<no-id>")
+        cb = e.get("created_by")
+        if cb is None or (isinstance(cb, str) and not cb.strip()):
+            findings.append(Finding(
+                section="C", category="created_by_missing", severity=SEVERITY_BUG,
+                subject_id=eid, subject_kind="edge",
+                details={}, suggested_fix="every edge must have a created_by value",
+            ))
+        elif cb.startswith(AUTOMATED_WRITER_PREFIXES):
+            pass  # known automated writer
+        elif cb.startswith("contributor:"):
+            if cb not in contributors_by_id:
+                findings.append(Finding(
+                    section="C", category="unknown_contributor", severity=SEVERITY_BUG,
+                    subject_id=eid, subject_kind="edge",
+                    details={"created_by": cb},
+                    suggested_fix="add contributor row or repair edge",
+                ))
+        else:
+            findings.append(Finding(
+                section="C", category="unrecognised_created_by_format", severity=SEVERITY_BUG,
+                subject_id=eid, subject_kind="edge",
+                details={"created_by": cb},
+                suggested_fix="created_by must match gatherer-*, embedding-*, or contributor:<id>",
+            ))
+
+        sig = e.get("signal_id")
+        if sig and sig not in signals_by_id:
+            findings.append(Finding(
+                section="C", category="dangling_signal_id", severity=SEVERITY_BUG,
+                subject_id=eid, subject_kind="edge",
+                details={"signal_id": sig},
+                suggested_fix="add signals.json row or null out signal_id on edge",
+            ))
+    return findings
+
+
 if __name__ == "__main__":
     sys.exit(main())
