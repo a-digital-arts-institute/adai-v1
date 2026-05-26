@@ -91,10 +91,10 @@ EDGE_CLAIMS: Dict[str, Dict[str, Optional[EdgeClaim]]] = {
             ref="SOURCES.md line 295 edge structure table + line 314 (auto-derive refusal clause)",
         ),
         "claude_md": EdgeClaim(
-            source_types=(),
-            target_types=(),
-            description="Mentioned as count (738, May 2026 post-embedding pass) in edge-types paragraph; no explicit source/target stated beyond the count context.",
-            ref="CLAUDE.md 'Edge types' paragraph in Database section",
+            source_types=("artwork",),
+            target_types=("practitioner",),
+            description="Who made it. CLAUDE.md mentions count (738, May 2026 post-embedding pass) without re-stating direction; encoded to mirror SKILL.md per the plan's worked-example pattern (CLAUDE.md inherits the seed-research narrative).",
+            ref="CLAUDE.md 'Edge types' paragraph (Database section, count 738)",
         ),
     },
     "EMBODIES": {
@@ -111,10 +111,10 @@ EDGE_CLAIMS: Dict[str, Dict[str, Optional[EdgeClaim]]] = {
             ref="SOURCES.md line 293 edge structure table + line 377 (Known Gaps #11 EMBODIES edge quality)",
         ),
         "claude_md": EdgeClaim(
-            source_types=(),
-            target_types=(),
-            description="Mentioned as count (1096, May 2026 post-embedding pass) in edge-types paragraph; no explicit source/target stated.",
-            ref="CLAUDE.md 'Edge types' paragraph in Database section",
+            source_types=("artwork",),
+            target_types=("concept",),
+            description="What the artwork expresses conceptually. CLAUDE.md mentions count (1096) without re-stating direction; encoded to mirror SKILL.md per the worked-example pattern.",
+            ref="CLAUDE.md 'Edge types' paragraph (Database section, count 1096)",
         ),
     },
     "PRACTICES": {
@@ -131,10 +131,10 @@ EDGE_CLAIMS: Dict[str, Dict[str, Optional[EdgeClaim]]] = {
             ref="SOURCES.md line 294 edge structure table",
         ),
         "claude_md": EdgeClaim(
-            source_types=(),
-            target_types=(),
-            description="Mentioned as count (461) in edge-types paragraph; no explicit source/target stated.",
-            ref="CLAUDE.md 'Edge types' paragraph in Database section",
+            source_types=("practitioner",),
+            target_types=("concept",),
+            description="What the practitioner works with. CLAUDE.md mentions count (461) without re-stating direction; encoded to mirror SKILL.md (SKILL.md target is 'concept / technique' but no 'technique' node type exists in canon, so target encoded as ('concept',)).",
+            ref="CLAUDE.md 'Edge types' paragraph (Database section, count 461)",
         ),
     },
     "USES_TECHNIQUE": {
@@ -151,10 +151,10 @@ EDGE_CLAIMS: Dict[str, Dict[str, Optional[EdgeClaim]]] = {
             ref="SOURCES.md line 300 edge structure table ('artwork → concept, What method/tool the work employs')",
         ),
         "claude_md": EdgeClaim(
-            source_types=(),
-            target_types=(),
-            description="Mentioned as count (102, May 2026) in edge-types paragraph; no explicit source/target stated.",
-            ref="CLAUDE.md 'Edge types' paragraph in Database section",
+            source_types=("practitioner",),
+            target_types=("concept",),
+            description="Finer-grained than PRACTICES. CLAUDE.md mentions count (102) without re-stating direction; encoded to mirror SKILL.md's practitioner-source (SKILL.md target is 'technique' but no 'technique' node type exists, so encoded as 'concept' which is the actual seed target per SOURCES.md).",
+            ref="CLAUDE.md 'Edge types' paragraph (Database section, count 102)",
         ),
     },
     "BELONGS_TO": {
@@ -171,10 +171,10 @@ EDGE_CLAIMS: Dict[str, Dict[str, Optional[EdgeClaim]]] = {
             ref="SOURCES.md line 299 edge structure table",
         ),
         "claude_md": EdgeClaim(
-            source_types=(),
-            target_types=(),
-            description="Mentioned as count (193, May 2026) in edge-types paragraph; no explicit source/target stated.",
-            ref="CLAUDE.md 'Edge types' paragraph in Database section",
+            source_types=("practitioner",),
+            target_types=("collective", "scene"),
+            description="Membership in a collective or scene. CLAUDE.md mentions count (193) without re-stating direction; encoded to mirror SKILL.md.",
+            ref="CLAUDE.md 'Edge types' paragraph (Database section, count 193)",
         ),
     },
     "CLASSIFIED_BY": {
@@ -211,10 +211,10 @@ EDGE_CLAIMS: Dict[str, Dict[str, Optional[EdgeClaim]]] = {
             ref="SOURCES.md line 298 edge structure table + line 121 (enrichment pass reclassification note)",
         ),
         "claude_md": EdgeClaim(
-            source_types=(),
-            target_types=(),
-            description="Mentioned as count (183) in edge-types paragraph; no explicit source/target stated.",
-            ref="CLAUDE.md 'Edge types' paragraph in Database section",
+            source_types=("practitioner",),
+            target_types=("practitioner",),
+            description="Symmetric creative collaboration between practitioners. CLAUDE.md mentions count (183) without re-stating direction; encoded to mirror SKILL.md.",
+            ref="CLAUDE.md 'Edge types' paragraph (Database section, count 183)",
         ),
     },
     "INFLUENCES": {
@@ -231,9 +231,9 @@ EDGE_CLAIMS: Dict[str, Dict[str, Optional[EdgeClaim]]] = {
             ref="SOURCES.md line 301 edge structure table + line 314 (auto-derive refusal) + line 320 (INFLUENCES sparseness rationale)",
         ),
         "claude_md": EdgeClaim(
-            source_types=(),
-            target_types=(),
-            description="Mentioned as count (4) in edge-types paragraph. Pipeline refuses to auto-emit INFLUENCES. No explicit source/target stated beyond count.",
+            source_types=("practitioner",),
+            target_types=("practitioner",),
+            description="Who shaped whose practice. CLAUDE.md mentions count (4) and that the pipeline refuses to auto-emit INFLUENCES; encoded to mirror SKILL.md.",
             ref="CLAUDE.md 'Edge types' paragraph + 'pipeline refuses to auto-emit INFLUENCES or RESPONDS_TO' clause",
         ),
     },
