@@ -348,6 +348,75 @@ def detect_id_collisions(
     return findings
 
 
+def detect_forked_created_by(
+    nodes_by_id: Dict[str, dict],
+    edges: List[dict],
+) -> List[Finding]:
+    """C.2: artworks with > 1 CREATED_BY edge where creators are NOT collaborators.
+
+    Sub-classes:
+      (a) "platform_or_institution_as_creator": at least one target is not a practitioner
+      (b) "id_collision_overlap": the artwork name is in GENERIC_TITLE_DENYLIST (also caught by C.1)
+      (c) "other": forked but no obvious cause
+    """
+    findings: List[Finding] = []
+
+    creators_by_artwork: Dict[str, List[dict]] = {}
+    for e in edges:
+        if e["edge_type"] == "CREATED_BY":
+            creators_by_artwork.setdefault(e["source_id"], []).append(e)
+
+    collab_pairs: set = set()
+    for e in edges:
+        if e["edge_type"] == "COLLABORATES_WITH":
+            s, t = e["source_id"], e["target_id"]
+            collab_pairs.add((s, t))
+            collab_pairs.add((t, s))
+
+    for artwork_id, creator_edges in creators_by_artwork.items():
+        if len(creator_edges) < 2:
+            continue
+        target_ids = [e["target_id"] for e in creator_edges]
+        # All-practitioner co-authorship?
+        all_practitioner = all(
+            nodes_by_id.get(t, {}).get("type") == "practitioner" for t in target_ids
+        )
+        if all_practitioner:
+            all_pairs_collaborate = all(
+                (target_ids[i], target_ids[j]) in collab_pairs
+                for i in range(len(target_ids)) for j in range(i + 1, len(target_ids))
+            )
+            if all_pairs_collaborate:
+                continue
+
+        # Sub-class
+        if not all_practitioner:
+            sub_class = "platform_or_institution_as_creator"
+        else:
+            artwork_name = nodes_by_id.get(artwork_id, {}).get("name", "")
+            if _normalise_title(artwork_name) in GENERIC_TITLE_DENYLIST:
+                sub_class = "id_collision_overlap"
+            else:
+                sub_class = "other"
+
+        findings.append(Finding(
+            section="C", category="forked_created_by", severity=SEVERITY_BUG,
+            subject_id=artwork_id, subject_kind="node",
+            details={
+                "sub_class": sub_class,
+                "creators": target_ids,
+                "creator_types": [nodes_by_id.get(t, {}).get("type") for t in target_ids],
+                "gatherers": sorted({e["created_by"] for e in creator_edges}),
+            },
+            suggested_fix={
+                "platform_or_institution_as_creator": "remap non-practitioner CREATED_BY to EXHIBITED_AT or PUBLISHED_ON",
+                "id_collision_overlap": "split node — see Section C.1 finding for same id",
+                "other": "manual review",
+            }[sub_class],
+        ))
+    return findings
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         description="A(DAI) schema audit — catalog schema issues in the graph."
