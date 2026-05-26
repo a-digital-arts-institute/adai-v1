@@ -17,6 +17,7 @@ from schema_contract import (
     GENERIC_TITLE_DENYLIST,
     CRYPTO_ERA_SLUG_TOKENS,
     ERA_VIOLATION_WHITELIST,
+    KNOWN_LEGACY_EDGE_TYPES,
 )
 
 SEVERITY_INFO = "info"
@@ -669,6 +670,31 @@ def detect_self_loops(edges: List[dict]) -> List[Finding]:
                 details={"source_id": e["source_id"], "edge_type": e["edge_type"]},
                 suggested_fix="delete self-referential edge",
             ))
+    return findings
+
+
+def detect_unknown_edge_types(
+    edges: List[dict],
+    contract: Dict[str, Any],
+) -> List[Finding]:
+    """C.7: edges whose edge_type isn't in EDGE_CLAIMS at all."""
+    findings: List[Finding] = []
+    known = set(contract.keys())
+    for e in edges:
+        et = e["edge_type"]
+        if et in known:
+            continue
+        annotation = "legacy_path_leak" if et in KNOWN_LEGACY_EDGE_TYPES else "unknown"
+        findings.append(Finding(
+            section="C", category="unknown_edge_type", severity=SEVERITY_BUG,
+            subject_id=e.get("id", f"{e['source_id']}--{et}--{e['target_id']}"),
+            subject_kind="edge",
+            details={"edge_type": et, "annotation": annotation,
+                     "created_by": e.get("created_by")},
+            suggested_fix=("delete legacy-path edge — should never be in canonical seed"
+                           if annotation == "legacy_path_leak"
+                           else "remap to a known edge type or add the type to EDGE_CLAIMS"),
+        ))
     return findings
 
 
