@@ -351,7 +351,7 @@ def detect_id_collisions(
             subject_id=artwork_id, subject_kind="node",
             details={
                 "name": node.get("name"),
-                "creators": list(set(creator_ids)),
+                "creators": sorted(set(creator_ids)),
                 "gatherers": sorted({e["created_by"] for e in creator_edges}),
             },
             suggested_fix="split into per-creator nodes with disambiguated ids",
@@ -432,33 +432,85 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(
         description="A(DAI) schema audit — catalog schema issues in the graph."
     )
-    parser.add_argument("--tier", choices=["fast", "full"], default="fast",
-                        help="fast = mechanical + heuristic; full = adds LLM narrative pass")
-    parser.add_argument("--live", action="store_true",
-                        help="Pull graph from production API instead of local seed files")
-    parser.add_argument("--out-dir", default="docs",
-                        help="Where to write the report and CSV directory (default: docs)")
+    parser.add_argument("--tier", choices=["fast", "full"], default="fast")
+    parser.add_argument("--live", action="store_true")
+    parser.add_argument("--out-dir", default="docs")
+    parser.add_argument("--seed-dir", default=None,
+                        help="Override seed directory (for testing)")
     args = parser.parse_args(argv)
 
     print(f"[audit] tier={args.tier} live={args.live} out_dir={args.out_dir}",
           file=sys.stderr)
+
     try:
         nodes_by_id, edges, contributors_by_id, signals_by_id = load_graph(
+            seed_dir=pathlib.Path(args.seed_dir) if args.seed_dir else None,
             live_url=DEFAULT_API_URL if args.live else None,
         )
     except FileNotFoundError as e:
         print(f"[audit] ERROR: {e}", file=sys.stderr)
         return 1
-    except Exception as e:
-        print(f"[audit] ERROR loading graph: {e}", file=sys.stderr)
-        return 1
 
-    print(f"[audit] loaded {len(nodes_by_id)} nodes, {len(edges)} edges",
-          file=sys.stderr)
+    print(f"[audit] loaded {len(nodes_by_id)} nodes, {len(edges)} edges", file=sys.stderr)
 
-    # Findings pipeline lands in Chunks 3-8. For now this is a no-op.
-    print("[audit] check_* pipeline not yet implemented — no findings produced.",
+    findings: List[Finding] = []
+    findings.extend(check_schema_disagreements(nodes_by_id, edges, EDGE_CLAIMS))
+    print(f"[audit] A schema disagreements: {sum(1 for f in findings if f.section == 'A')}",
           file=sys.stderr)
+    findings.extend(check_per_document_conformance(nodes_by_id, edges, EDGE_CLAIMS))
+    findings.extend(detect_id_collisions(nodes_by_id, edges))
+    findings.extend(detect_forked_created_by(nodes_by_id, edges))
+    findings.extend(detect_era_violations(nodes_by_id, edges))
+    findings.extend(detect_bitemporal_integrity(edges))
+    findings.extend(detect_provenance_broken(edges, contributors_by_id, signals_by_id))
+    findings.extend(detect_self_loops(edges))
+    findings.extend(detect_unknown_edge_types(edges, EDGE_CLAIMS))
+    section_c = sum(1 for f in findings if f.section == "C")
+    print(f"[audit] C genuine bugs: {section_c}", file=sys.stderr)
+
+    if args.tier == "full":
+        client = None
+        if os.environ.get("ANTHROPIC_API_KEY"):
+            try:
+                import anthropic
+                client = anthropic.Anthropic()
+            except Exception as e:
+                print(f"[audit] WARN: failed to construct anthropic client: {e}",
+                      file=sys.stderr)
+        cache_path = REPO_ROOT / "seed" / "_build" / ".cache" / "narrative_audit.json"
+        cache = NarrativeCache(cache_path)
+        findings.extend(check_narrative_mismatches(
+            nodes_by_id, edges, client=client, cache=cache,
+        ))
+        section_d = sum(1 for f in findings if f.section == "D")
+        print(f"[audit] D narrative mismatches: {section_d}", file=sys.stderr)
+
+    findings.extend(check_invitations_honored(nodes_by_id, edges))
+
+    # Write outputs
+    today = dt.date.today().isoformat()
+    out_dir = pathlib.Path(args.out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    md_path = out_dir / f"SCHEMA_AUDIT_{today}.md"
+    suffix = 2
+    while md_path.exists():
+        md_path = out_dir / f"SCHEMA_AUDIT_{today}-{suffix}.md"
+        suffix += 1
+
+    md = render_report(findings, tier=args.tier,
+                       node_count=len(nodes_by_id), edge_count=len(edges))
+    md_path.write_text(md)
+    print(f"[audit] wrote {md_path}", file=sys.stderr)
+
+    # Rename: docs/SCHEMA_AUDIT_2026-05-24.md → docs/schema_audit_2026-05-24/
+    csv_dir = out_dir / md_path.name.replace("SCHEMA_AUDIT_", "schema_audit_").replace(".md", "")
+    csv_dir.mkdir(parents=True, exist_ok=True)
+    csvs = render_csvs(findings)
+    for fname, content in csvs.items():
+        (csv_dir / fname).write_text(content)
+    print(f"[audit] wrote {len(csvs)} CSVs to {csv_dir}/", file=sys.stderr)
+
     return 0
 
 
