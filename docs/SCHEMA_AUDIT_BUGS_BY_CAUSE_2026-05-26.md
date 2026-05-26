@@ -202,6 +202,37 @@ All three are *plausible* art-historical lineages — exactly the trap the rule 
 
 ---
 
+## Bug 10 — 353 narrative-vs-edge mismatches (Section D, FULL tier)
+
+**What the audit says.** After the FULL tier was run (claude-haiku-4-5, ~$0.07, 87 seconds), Section D produced **347 `claimed_but_unlinked` findings + 6 `linked_but_unclaimed` findings across 43 practitioners**. Each claimed_but_unlinked finding is a specific scene, institution, platform, or movement the practitioner's prose bio (`metadata.full_profile.network_position.scene_affiliation`) names but that is *not* represented as a `BELONGS_TO` or `CLASSIFIED_BY` edge in the graph.
+
+Examples (truncated; full list in `docs/schema_audit_2026-05-26/section_d_claimed_but_unlinked.csv`):
+
+| Practitioner | Missing edges (prose names them, graph doesn't) |
+|---|---|
+| Anna Ridler | Royal College of Art, Barbican, V&A, Serpentine, PHI Foundation Montreal, Ars Electronica |
+| Brian Eno | Long Now Foundation, Tate, MoMA, Roxy Music, generative art movement, ambient music |
+| Cao Fei | Venice Biennale (2003, 2007, 2015), Documenta, Serpentine Galleries, MoMA PS1, Centre Pompidou, UCCA Beijing, Vitamin Creative Space |
+| Allison Parrish | Electronic Literature Organization, Counterpath, Processing/p5.js community, ITP/NYU, AI/ML art scene |
+| American Artist | MoMA, Whitney, Queens Museum, Carnegie Mellon, Parsons, Rhizome network, post-internet art |
+
+These are not invented by the model — they all appear in the practitioners' actual bio prose, which was written by humans during the seed-research-2025 pass.
+
+**Cause.** The seed-research-2025 narrative captured each practitioner's positioning in fluent prose ("Active in the Tezos generative art scene; exhibited at Serpentine and Centre Pompidou; teaches at Goldsmiths"). The structured edge layer was populated separately, and only some of the prose-named entities became canonical nodes with edges. The gap between prose and edges is the gap between what the team *knows* about each practitioner and what the *graph* knows.
+
+**Fix.** Two paths, complementary:
+
+- **Mechanical pass for high-confidence cases.** For each `claimed_but_unlinked` finding where the named entity already exists as a node (e.g. `institution:moma` is a real node; "MoMA" in prose should add `EXHIBITED_AT`), generate a candidate edge with `confidence: medium` flagged for curator review. Roughly 1/3 of the 347 are nodes that already exist.
+- **Curator triage for the rest.** The remaining 2/3 (scenes/institutions/movements not yet in the graph as nodes) need a human decision: create the node + edge, or note that the prose claim is too vague to model (e.g. "academic creative writing").
+
+This is also the **single highest-value Basel-floor activity**: practitioners visiting the floor can confirm or contest each row in real time, turning prose into structured edges with attestation.
+
+**Cost discipline.** The audit's Section D LLM call is cached per (practitioner, prose hash, edges hash, model id, prompt version, contract schema version). Re-running the FULL tier without changing any of those is free — only changed practitioners hit the API. A full re-cost happens when the prompt is revised (bump `NARRATIVE_PROMPT_VERSION`) or the model is changed.
+
+The 6 `linked_but_unclaimed` findings (edges in the graph not corroborated by prose) deserve separate manual review — they may be over-eager gatherer attributions, or they may be prose gaps.
+
+---
+
 ## What's clean (no findings, worth confirming)
 
 - **Section C.4 bi-temporal integrity:** zero findings. `valid_from`, `valid_until`, `invalidated_by` are internally consistent across all 3376 edges. The supersession discipline has held up.
@@ -219,8 +250,9 @@ For each bug above, the "Fix" paragraph is concrete enough to act on. Priority o
 
 1. **Bug 5 (CREATED_BY platform-as-creator) and Bug 7 (id collisions)** — most visible to graph readers, easiest to fix (about 70 edges combined), highest signal-to-noise.
 2. **Bug 9 (forbidden auto-INFLUENCES)** — 3 edges, design-rule violation, important to clean before Basel where practitioners may see these and reasonably ask "you wrote this without asking me?"
-3. **Bugs 1, 2, 3, 4 (Section A/B disagreements)** — documentation work, not data work. Likely best resolved by editing SKILL.md and CLAUDE.md to match what SOURCES.md says and what the data does.
-4. **Bug 8 (era coverage)** — not urgent. Improves the audit's coverage but doesn't reveal new bugs until backfilled.
+3. **Bug 10 (Section D — 353 narrative-vs-edge mismatches)** — biggest source of work, but also the highest-value Basel-floor activity. The mechanical pass on the ~1/3 where the named entity is already a node can happen pre-Basel; the rest is curator triage.
+4. **Bugs 1, 2, 3, 4 (Section A/B disagreements)** — documentation work, not data work. Likely best resolved by editing SKILL.md and CLAUDE.md to match what SOURCES.md says and what the data does.
+5. **Bug 8 (era coverage)** — not urgent. Improves the audit's coverage but doesn't reveal new bugs until backfilled.
 
 If you want a single cleanup script: `scripts/cleanup_v1_audit_findings.py` could mechanically apply the Bug 5 and Bug 7 fixes (the rest need judgment). Pre-launch, before Basel.
 

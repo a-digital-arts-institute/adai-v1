@@ -10,7 +10,7 @@ Institutional memory. If anyone re-builds the schema-audit tool from a clean sla
 1. **The plan's worked examples were authoritative, but the implementer subagents treated them as suggestions.** This produced eight separate empty-tuple-instead-of-direction bugs that all the reviewers missed at first, because the reviewers focused on whether the new entries were faithful, not on whether the worked-example template was consistently applied.
 2. **The seed schema and the public API don't agree on field names or shape.** The plan was specced as if they did. Three bugs trace to that mismatch.
 
-Total: 14 bugs caught before merge. The code-quality reviewer subagent was the single highest-value step — most bugs in this list were caught by it. Three were caught by the spec-compliance reviewer; the remainder by controller verification or by the implementer hitting a test failure.
+Total: 16 bugs/issues caught before merge — 13 in code or contract data, 3 in the plan itself. The code-quality reviewer subagent was the single highest-value step on the code-build side. The first FULL-tier run against live data caught two more bugs (8a and 8b) that no test had exercised because both required real-world inputs (a null `full_profile` in metadata; an actual Claude response with markdown fences).
 
 ---
 
@@ -116,7 +116,42 @@ Also documented (in the same commit) that the public API strips node metadata, s
 
 **Commit:** Part of `4984d6d` (the Task 22 main-wiring commit).
 
-### Bug 8 — npm scripts placed at the top of `package.json` instead of the end
+### Bug 8a — `check_narrative_mismatches` crashed on practitioners with `full_profile = null`
+
+**Caught by:** the first FULL-tier run against the live seed (2026-05-26, after Task 24).
+
+**Symptom.** `md.get("full_profile", {}).get("network_position", {}).get("scene_affiliation", "")` works fine when `full_profile` is missing (the `.get` default kicks in) and works fine when `full_profile` is a dict. It blows up with `AttributeError: 'NoneType' object has no attribute 'get'` when `full_profile` exists but is explicitly `null` in the metadata — because in that case `.get("full_profile", {})` returns `None`, not `{}`. At least one practitioner in the live seed had this shape.
+
+**What would have happened.** The audit's FULL tier would have aborted with a traceback the first time it encountered such a practitioner. Section D would produce nothing.
+
+**Fix.** Replaced the chained `.get` with explicit `or {}` guards at each nesting level:
+```python
+full_profile = md.get("full_profile") or {}
+network_position = full_profile.get("network_position") or {}
+prose = network_position.get("scene_affiliation") or ""
+```
+
+**Lesson.** `dict.get(key, default)` returns the default only when the *key is missing*. When the key is present with value `None`, the default is not used. Anywhere we chain `.get` calls on optional sub-objects, this trap is one practitioner away.
+
+**Commit:** `47fe775`.
+
+### Bug 8b — Anthropic responses are wrapped in markdown code fences
+
+**Caught by:** the first FULL-tier run, immediately after fixing Bug 8a.
+
+**Symptom.** The narrative prompt says "Respond with ONLY the JSON object, nothing else." `claude-haiku-4-5` ignored that and wrapped every response in `` ```json … ``` `` markdown fences. `json.loads()` then failed on the leading backticks. All 43 practitioners with prose silently became `section_d_incomplete` warnings with the same error message ("Expecting value: line 1 column 1 (char 0)").
+
+**What would have happened.** Without the wrapper fix, Section D would have shipped 43 warnings and zero actual mismatch findings — the most valuable section of the audit would have produced no usable output.
+
+**Fix.** Added `_extract_json(text)` helper that strips leading/trailing code fences, finds the first `{`, bracket-matches to the closing `}`, and returns just the JSON substring. Added 5 unit tests covering: plain JSON, ```json fences, unlabelled ``` fences, prose-before-object, and nested braces.
+
+**Lesson.** Even with explicit instructions to return raw JSON, frontier-model responses can include framing. Robust LLM JSON parsing needs a wrapping layer; don't trust the prompt alone. Consider adding `response_format={"type": "json_object"}` to future calls if the SDK supports it.
+
+**Commit:** `47fe775`.
+
+---
+
+### Bug 9 — npm scripts placed at the top of `package.json` instead of the end
 
 **Caught by:** controller spot-check after Task 2 implementer reported done.
 
@@ -134,7 +169,7 @@ Also documented (in the same commit) that the public API strips node metadata, s
 
 These weren't bugs in the *code*; they were assumptions in the plan that didn't hold for this machine.
 
-### Issue 9 — `seed/_build/.venv/` referenced everywhere didn't exist
+### Issue 10 — `seed/_build/.venv/` referenced everywhere didn't exist
 
 **Symptom.** CLAUDE.md and the plan both refer to `seed/_build/.venv/bin/python3` and `seed/_build/requirements.txt` as if they exist. On this checkout, neither did. The plan's Task 1 Step 1 begins with `cat seed/_build/requirements.txt` — would have errored.
 
@@ -144,7 +179,7 @@ These weren't bugs in the *code*; they were assumptions in the plan that didn't 
 
 **Commit:** `5238878`.
 
-### Issue 10 — Plan + spec documents were untracked files in main's working tree
+### Issue 11 — Plan + spec documents were untracked files in main's working tree
 
 **Symptom.** `docs/superpowers/plans/2026-05-24-schema-audit-tool.md` and `docs/superpowers/specs/2026-05-24-schema-audit-design.md` existed in the working directory but had never been committed to any branch. If the directory had been cleaned, they would have been lost.
 
@@ -154,7 +189,7 @@ These weren't bugs in the *code*; they were assumptions in the plan that didn't 
 
 **Commit:** `3edec59`.
 
-### Issue 11 — Plan oversold `--live` mode
+### Issue 12 — Plan oversold `--live` mode
 
 **Symptom.** The plan presents `--live` as a peer of the local-seed audit path: "the audit can be run against production after deploys." Reality (discovered while fixing Bug 6): the public `/api/graph` endpoint strips out node metadata, `signal_id`, `valid_until`, `event_time`, `invalidated_by`, and a few other fields. Six of the ten audit sections — Section B (mostly), Section C.1, C.3, C.4, C.5, and Section D, plus part of E — fundamentally cannot run against the public API regardless of any field normalisation.
 
@@ -182,10 +217,12 @@ For future plans of this shape: drop spec-compliance review on verbatim-code tas
 
 ## How many of these would have shipped?
 
-Of the 11 bugs/issues above:
+Of the 13 bugs/issues above:
 
-- 4 (Bugs 5, 6, 7, 8) would have produced wrong or non-functional output but with detectable symptoms — would have been caught in any human run-through.
+- 6 (Bugs 5, 6, 7, 8a, 8b, 9) would have produced wrong or non-functional output but with detectable symptoms — would have been caught in any human run-through.
 - 4 (Bugs 1, 2, 3, 4) would have produced *silently* wrong audit findings in Section A and Section B. No runtime error, no crash, just wrong numbers in a report meant to drive v2 reseed decisions. These are the most consequential — none would have been caught by integration testing because they're not behavioural bugs, they're correctness-of-the-data-model bugs.
-- 3 (Issues 9, 10, 11) are plan-level. Would have surfaced as friction for the next person picking up this work.
+- 3 (Issues 10, 11, 12) are plan-level. Would have surfaced as friction for the next person picking up this work.
 
-The code-quality reviewer earned its keep specifically on the silent-correctness bugs. That's the lesson for the next plan.
+The code-quality reviewer earned its keep specifically on the silent-correctness bugs. The two FULL-tier bugs (8a, 8b) also reinforce that real-data testing catches things mocked-client tests can't.
+
+**Cost of catching them:** roughly 4 review subagent dispatches across 24 tasks (Tasks 3, 6, 8 had code-quality review; one Section D bug caught during build by a test failure on first FULL run). The catches more than paid for the review time — the silent-correctness bugs would otherwise have shipped wrong numbers in a report meant to guide significant downstream decisions about the v2 reseed.
