@@ -31,10 +31,10 @@ EDGE_CLAIMS: Dict[str, Dict[str, Optional[EdgeClaim]]] = {
             ref="SKILL.md §1.4 edge table, line 221",
         ),
         "sources_md": EdgeClaim(
-            source_types=("practitioner",),
-            target_types=("institution",),
-            description="Where a practitioner has shown work (practitioner-level CV). Note: direction differs from SKILL.md — SOURCES.md table lists practitioner→institution, not artwork→institution.",
-            ref="SOURCES.md line 296 edge structure table ('What the seed produces honestly')",
+            source_types=("artwork",),
+            target_types=("institution", "platform"),
+            description="SOURCES.md no longer defines edge shape; defers to SKILL.md (May 2026 cleanup). Mirrors SKILL.md's claim.",
+            ref="SOURCES.md ('Edge type contract' section — points to SKILL.md)",
         ),
         "claude_md": EdgeClaim(
             source_types=("artwork",),

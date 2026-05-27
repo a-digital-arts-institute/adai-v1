@@ -1,0 +1,2 @@
+subject_id,subject_kind,severity,category,details_json,suggested_fix
+(empty_stubs),node,info,empty_stub_count,"{""count"": 191, ""rationale"": ""0-degree nodes with stub-like status \u2014 invitations awaiting contribution"", ""status_set"": [""anchor"", ""bridge"", ""draft"", ""placeholder"", ""stub""]}",
