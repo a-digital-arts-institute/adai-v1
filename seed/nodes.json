@@ -123,6 +123,38 @@
           "type": "collective",
           "source": "contributor:migration"
         }
+      ],
+      "focus_areas": [
+        {
+          "id": "concept:writing",
+          "name": "Writing",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:publishing",
+          "name": "publishing",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:reading groups",
+          "name": "reading groups",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:smart contracts",
+          "name": "smart contracts",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:knowledge graphs",
+          "name": "knowledge graphs",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:events",
+          "name": "events",
+          "source": "contributor:migration"
+        }
       ]
     },
     "created_at": "2026-04-21T13:29:05Z",
@@ -1187,6 +1219,23 @@
           "type": "platform",
           "source": "contributor:migration"
         }
+      ],
+      "focus_areas": [
+        {
+          "id": "concept:collaborative knowledge platform",
+          "name": "Collaborative knowledge platform",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:visual research tool",
+          "name": "visual research tool",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:social bookmarking for creative practitioners",
+          "name": "social bookmarking for creative practitioners",
+          "source": "contributor:migration"
+        }
       ]
     },
     "created_at": "2026-04-21T13:29:05Z",
@@ -1338,6 +1387,23 @@
           "id": "institution:rhizome artbase",
           "name": "Rhizome / ArtBase",
           "type": "institution",
+          "source": "contributor:migration"
+        }
+      ],
+      "focus_areas": [
+        {
+          "id": "concept:on-chain generative art",
+          "name": "On-chain generative art",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:software",
+          "name": "software",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:blockchain-native digital art",
+          "name": "blockchain-native digital art",
           "source": "contributor:migration"
         }
       ]
@@ -3053,6 +3119,43 @@
           "type": "platform",
           "source": "contributor:migration"
         }
+      ],
+      "focus_areas": [
+        {
+          "id": "concept:gallery",
+          "name": "Gallery",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:publishing",
+          "name": "publishing",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:curation",
+          "name": "curation",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:online exhibitions",
+          "name": "online exhibitions",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:ai video",
+          "name": "AI video",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:photography",
+          "name": "photography",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:digital art",
+          "name": "digital art",
+          "source": "contributor:migration"
+        }
       ]
     },
     "created_at": "2026-04-21T13:29:05Z",
@@ -3261,6 +3364,28 @@
           "id": "institution:serpentine arts technologies",
           "name": "Serpentine Arts Technologies",
           "type": "institution",
+          "source": "contributor:migration"
+        }
+      ],
+      "focus_areas": [
+        {
+          "id": "concept:online exhibition platform",
+          "name": "Online exhibition platform",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:digital art marketplace",
+          "name": "digital art marketplace",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:hardware",
+          "name": "hardware",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:publishing",
+          "name": "publishing",
           "source": "contributor:migration"
         }
       ]
@@ -4688,7 +4813,143 @@
     "type": "collective",
     "name": "Forensic Architecture",
     "slug": "forensic-architecture",
-    "metadata": "{\"original_type\": \"collective\", \"status\": \"confirmed\", \"source_file\": \"Forensic_Architecture.json\", \"full_profile\": {\"basic_info\": {\"name\": \"Forensic Architecture\", \"type\": \"collective\", \"active_years\": \"2010-present\", \"location\": \"London, UK (Goldsmiths, University of London)\", \"url\": \"https://forensic-architecture.org\"}, \"practice_description\": {\"medium\": \"spatial analysis, 3D modelling, video reconstruction, interactive cartography, installation\", \"practice_summary\": \"Multidisciplinary research agency that uses architectural techniques, open-source investigation, and spatial analysis to produce evidence of state and corporate violence. Their exhibitions function as investigative infrastructure — the artwork IS the assembled evidence.\", \"methodology\": \"FA assembles interdisciplinary teams of architects, software developers, filmmakers, journalists, archaeologists, lawyers, and scientists. Each investigation begins with open-source data collection — geolocated videos, satellite imagery, lidar scans, photogrammetry, ground-penetrating radar — which is synchronized within navigable 3D digital environments. They reconstruct space-timelines of events by combining remote sensing with eyewitness testimony ('situated testimony'). The resulting spatial evidence is presented simultaneously in legal forums (courts, UN inquiries) and cultural venues (galleries, museums). Eyal Weizman describes this as both 'archaeology of the very recent past' and 'assembling for the future.'\"}, \"relevance_to_sense_room\": {\"relevance_summary\": \"Forensic Architecture demonstrates how a relational graph of evidence — spatial data, testimonies, media fragments — can be assembled into an exhibition that IS the investigative apparatus. Their practice is a direct precedent for graph-curated exhibition where connections between elements generate meaning.\", \"art_as_substrate\": \"Yes. Their spatial reconstructions, 3D models, and synchronized media assemblies function as substrate layers that other analyses build upon. Each piece of evidence becomes a node in a navigable relational field.\", \"relational_composition\": \"Yes, fundamentally. Their entire methodology is relational/graph-based — cross-referencing spatial data, temporal sequences, witness accounts, satellite imagery, and media fragments. The investigation emerges from the connections between heterogeneous evidence types.\", \"self_recomposing\": \"Partially. Investigations evolve as new evidence is added, and their interactive platforms (e.g., Timemap) allow recomposition by users navigating the evidence. However, the final evidentiary assemblies are curated rather than algorithmically self-generating.\"}, \"key_works\": {\"works\": [{\"title\": \"Timemap\", \"year\": \"ongoing\", \"description\": \"Open-source JavaScript tool for exploration, monitoring and classification of incidents in time and space. Used across multiple investigations.\", \"relevance\": \"A direct example of graph-based relational infrastructure becoming the exhibition interface — users navigate interconnected spatial-temporal evidence nodes.\"}, {\"title\": \"Investigative Commons (HKW, Berlin)\", \"year\": \"2021\", \"description\": \"Exhibition at Haus der Kulturen der Welt presenting FA's methodology as a shared investigative infrastructure, inviting other groups to adopt and extend their tools.\", \"relevance\": \"The exhibition explicitly frames investigation as commons infrastructure — directly resonant with A(DAI)'s commons-first approach to collective intelligence.\"}, {\"title\": \"Cloud Studies\", \"year\": \"2020\", \"description\": \"Investigation into the use of tear gas and toxic clouds as weapons, using fluid dynamics simulation, open-source video analysis, and spatial reconstruction.\", \"relevance\": \"Demonstrates how heterogeneous data sources (video, simulation, testimony, chemical analysis) are assembled into a coherent relational evidence field.\"}]}, \"protocol_art_resonance\": {\"protocol_art_summary\": \"Forensic Architecture treats investigative methodology itself as a creative medium. They have pioneered 'investigative aesthetics' — the idea that forensic tools, evidentiary protocols, and spatial analysis constitute an artistic practice. Their work proposes that infrastructure for truth-production is itself an art form.\", \"system_designed\": \"A complete investigative methodology ('forensic aesthetics') combining open-source intelligence, spatial reconstruction, and situated testimony. Their open-source tools (Timemap, Datasheet Server, mtriage) constitute shared infrastructure for human rights investigation.\"}, \"commons_orientation\": {\"licence_model\": \"hybrid\", \"commons_summary\": \"FA operates as a university-based research agency with strong commons orientation. Their investigative tools are open-sourced on GitHub (19 repositories). Their 'Investigative Commons' project explicitly frames their methodology as shared infrastructure. However, specific investigations may involve confidential evidence and legal constraints.\"}, \"governance_model\": {\"governance_type\": \"institutional\", \"governance_detail\": \"Led by Eyal Weizman as principal investigator, based within the Centre for Research Architecture at Goldsmiths, University of London. Each investigation assembles a project-specific team. The 'Investigative Commons' initiative extends participation to partner organizations. Academic institutional governance with collaborative project structures.\"}, \"consent_and_authorship\": {\"consent_approach\": \"FA works with witnesses and survivors whose testimony is integrated into spatial reconstructions ('situated testimony'). Consent and protection of sources is central to their human rights mandate. They operate under ethical frameworks appropriate to legal and journalistic contexts.\", \"authorship_model\": \"Collective. Works are attributed to 'Forensic Architecture' as an entity rather than individual team members. The interdisciplinary team — architects, coders, filmmakers, lawyers — collaborates on each investigation.\"}, \"liveness_and_duration\": {\"temporal_type\": \"responsive-to-input\", \"temporal_detail\": \"Investigations evolve as new evidence surfaces. Interactive platforms like Timemap update with new incidents and data. Exhibitions present a snapshot of ongoing investigation that may continue to develop. The work responds to real-world events and new open-source data.\"}, \"data_materiality\": {\"data_sources\": \"Open-source video (social media, surveillance, news), satellite imagery, lidar scans, photogrammetry, witness testimony, chemical analysis, fluid dynamics data, architectural plans, publicly available government data, Telegram channels.\", \"data_provenance\": \"Mixed provenance: open-source publicly available media, consented witness testimony, institutional satellite data, scraped social media. FA operates under human rights and legal ethical standards. They explicitly document evidence chains for admissibility in courts.\"}, \"embedding_space_relevance\": {\"embedding_summary\": \"FA uses BERTopic for topic modelling across large evidence corpora, indicating engagement with semantic embedding spaces for classification and pattern detection in open-source investigation materials.\", \"multimodal\": \"Yes — their investigations integrate video, audio testimony, 3D spatial models, satellite imagery, text documents, and chemical/physical data into unified investigative environments.\"}, \"exhibition_modality\": {\"modality\": \"installation\", \"spatial_description\": \"Exhibitions typically feature large-scale projections of 3D reconstructions, video assemblies, and interactive timelines within gallery spaces. The exhibition space itself becomes a navigable evidence environment. Shown at Tate Britain, MACBA Barcelona, Louisiana Museum, HKW Berlin, and others.\"}, \"sensory_register\": {\"senses\": \"visual, sonic, textual\", \"dominant_register\": \"visual\"}, \"interoperability\": {\"composability\": \"High. Their open-source tools (Timemap, Datasheet Server, mtriage) expose APIs and use standard web formats (JSON, JavaScript). Evidence assemblies are structured data that could serve as inputs to other analytical systems.\", \"technical_openness\": \"Open source (GitHub), documented, forkable\"}, \"technical_approach\": {\"stack\": \"JavaScript (Timemap, Datasheet Server), Python (BERTopic, mtriage), 3D modelling software, photogrammetry tools, lidar processing, fluid dynamics simulation, GIS/remote sensing, Telegram API integration, custom web visualization platforms\"}, \"network_position\": {\"position_type\": \"hub\", \"scene_affiliation\": \"Bridges contemporary art, human rights investigation, academic research, open-source intelligence (OSINT), and legal/forensic fields. Connected to Turner Prize ecosystem, documenta, academic research networks, and human rights organizations (UN, ICC).\", \"connections\": \"Connected to Eyal Weizman's broader 'investigative aesthetics' network. Bridges to other research collectives working at intersection of art, technology, and social justice.\"}, \"potential_role_in_adai\": {\"role\": \"theoretical-reference\", \"role_detail\": \"FA provides a powerful precedent for A(DAI)'s core proposition: that relational graph infrastructure can be the primary medium of exhibition. Their 'Investigative Commons' model — open-source tools for collective evidence assembly — directly parallels A(DAI)'s commons-first collective intelligence infrastructure. Their practice demonstrates that exhibition-as-infrastructure works at scale and has real-world impact.\"}, \"temporal_status\": {\"status\": \"active-infrastructure\"}, \"uncertain\": [\"embedding_summary\"]}, \"data_provenance\": {\"source\": \"seed-research-2025\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "original_type": "collective",
+      "status": "confirmed",
+      "source_file": "Forensic_Architecture.json",
+      "full_profile": {
+        "basic_info": {
+          "name": "Forensic Architecture",
+          "type": "collective",
+          "active_years": "2010-present",
+          "location": "London, UK (Goldsmiths, University of London)",
+          "url": "https://forensic-architecture.org"
+        },
+        "practice_description": {
+          "medium": "spatial analysis, 3D modelling, video reconstruction, interactive cartography, installation",
+          "practice_summary": "Multidisciplinary research agency that uses architectural techniques, open-source investigation, and spatial analysis to produce evidence of state and corporate violence. Their exhibitions function as investigative infrastructure — the artwork IS the assembled evidence.",
+          "methodology": "FA assembles interdisciplinary teams of architects, software developers, filmmakers, journalists, archaeologists, lawyers, and scientists. Each investigation begins with open-source data collection — geolocated videos, satellite imagery, lidar scans, photogrammetry, ground-penetrating radar — which is synchronized within navigable 3D digital environments. They reconstruct space-timelines of events by combining remote sensing with eyewitness testimony ('situated testimony'). The resulting spatial evidence is presented simultaneously in legal forums (courts, UN inquiries) and cultural venues (galleries, museums). Eyal Weizman describes this as both 'archaeology of the very recent past' and 'assembling for the future.'"
+        },
+        "relevance_to_sense_room": {
+          "relevance_summary": "Forensic Architecture demonstrates how a relational graph of evidence — spatial data, testimonies, media fragments — can be assembled into an exhibition that IS the investigative apparatus. Their practice is a direct precedent for graph-curated exhibition where connections between elements generate meaning.",
+          "art_as_substrate": "Yes. Their spatial reconstructions, 3D models, and synchronized media assemblies function as substrate layers that other analyses build upon. Each piece of evidence becomes a node in a navigable relational field.",
+          "relational_composition": "Yes, fundamentally. Their entire methodology is relational/graph-based — cross-referencing spatial data, temporal sequences, witness accounts, satellite imagery, and media fragments. The investigation emerges from the connections between heterogeneous evidence types.",
+          "self_recomposing": "Partially. Investigations evolve as new evidence is added, and their interactive platforms (e.g., Timemap) allow recomposition by users navigating the evidence. However, the final evidentiary assemblies are curated rather than algorithmically self-generating."
+        },
+        "key_works": {
+          "works": [
+            {
+              "title": "Timemap",
+              "year": "ongoing",
+              "description": "Open-source JavaScript tool for exploration, monitoring and classification of incidents in time and space. Used across multiple investigations.",
+              "relevance": "A direct example of graph-based relational infrastructure becoming the exhibition interface — users navigate interconnected spatial-temporal evidence nodes."
+            },
+            {
+              "title": "Investigative Commons (HKW, Berlin)",
+              "year": "2021",
+              "description": "Exhibition at Haus der Kulturen der Welt presenting FA's methodology as a shared investigative infrastructure, inviting other groups to adopt and extend their tools.",
+              "relevance": "The exhibition explicitly frames investigation as commons infrastructure — directly resonant with A(DAI)'s commons-first approach to collective intelligence."
+            },
+            {
+              "title": "Cloud Studies",
+              "year": "2020",
+              "description": "Investigation into the use of tear gas and toxic clouds as weapons, using fluid dynamics simulation, open-source video analysis, and spatial reconstruction.",
+              "relevance": "Demonstrates how heterogeneous data sources (video, simulation, testimony, chemical analysis) are assembled into a coherent relational evidence field."
+            }
+          ]
+        },
+        "protocol_art_resonance": {
+          "protocol_art_summary": "Forensic Architecture treats investigative methodology itself as a creative medium. They have pioneered 'investigative aesthetics' — the idea that forensic tools, evidentiary protocols, and spatial analysis constitute an artistic practice. Their work proposes that infrastructure for truth-production is itself an art form.",
+          "system_designed": "A complete investigative methodology ('forensic aesthetics') combining open-source intelligence, spatial reconstruction, and situated testimony. Their open-source tools (Timemap, Datasheet Server, mtriage) constitute shared infrastructure for human rights investigation."
+        },
+        "commons_orientation": {
+          "licence_model": "hybrid",
+          "commons_summary": "FA operates as a university-based research agency with strong commons orientation. Their investigative tools are open-sourced on GitHub (19 repositories). Their 'Investigative Commons' project explicitly frames their methodology as shared infrastructure. However, specific investigations may involve confidential evidence and legal constraints."
+        },
+        "governance_model": {
+          "governance_type": "institutional",
+          "governance_detail": "Led by Eyal Weizman as principal investigator, based within the Centre for Research Architecture at Goldsmiths, University of London. Each investigation assembles a project-specific team. The 'Investigative Commons' initiative extends participation to partner organizations. Academic institutional governance with collaborative project structures."
+        },
+        "consent_and_authorship": {
+          "consent_approach": "FA works with witnesses and survivors whose testimony is integrated into spatial reconstructions ('situated testimony'). Consent and protection of sources is central to their human rights mandate. They operate under ethical frameworks appropriate to legal and journalistic contexts.",
+          "authorship_model": "Collective. Works are attributed to 'Forensic Architecture' as an entity rather than individual team members. The interdisciplinary team — architects, coders, filmmakers, lawyers — collaborates on each investigation."
+        },
+        "liveness_and_duration": {
+          "temporal_type": "responsive-to-input",
+          "temporal_detail": "Investigations evolve as new evidence surfaces. Interactive platforms like Timemap update with new incidents and data. Exhibitions present a snapshot of ongoing investigation that may continue to develop. The work responds to real-world events and new open-source data."
+        },
+        "data_materiality": {
+          "data_sources": "Open-source video (social media, surveillance, news), satellite imagery, lidar scans, photogrammetry, witness testimony, chemical analysis, fluid dynamics data, architectural plans, publicly available government data, Telegram channels.",
+          "data_provenance": "Mixed provenance: open-source publicly available media, consented witness testimony, institutional satellite data, scraped social media. FA operates under human rights and legal ethical standards. They explicitly document evidence chains for admissibility in courts."
+        },
+        "embedding_space_relevance": {
+          "embedding_summary": "FA uses BERTopic for topic modelling across large evidence corpora, indicating engagement with semantic embedding spaces for classification and pattern detection in open-source investigation materials.",
+          "multimodal": "Yes — their investigations integrate video, audio testimony, 3D spatial models, satellite imagery, text documents, and chemical/physical data into unified investigative environments."
+        },
+        "exhibition_modality": {
+          "modality": "installation",
+          "spatial_description": "Exhibitions typically feature large-scale projections of 3D reconstructions, video assemblies, and interactive timelines within gallery spaces. The exhibition space itself becomes a navigable evidence environment. Shown at Tate Britain, MACBA Barcelona, Louisiana Museum, HKW Berlin, and others."
+        },
+        "sensory_register": {
+          "senses": "visual, sonic, textual",
+          "dominant_register": "visual"
+        },
+        "interoperability": {
+          "composability": "High. Their open-source tools (Timemap, Datasheet Server, mtriage) expose APIs and use standard web formats (JSON, JavaScript). Evidence assemblies are structured data that could serve as inputs to other analytical systems.",
+          "technical_openness": "Open source (GitHub), documented, forkable"
+        },
+        "technical_approach": {
+          "stack": "JavaScript (Timemap, Datasheet Server), Python (BERTopic, mtriage), 3D modelling software, photogrammetry tools, lidar processing, fluid dynamics simulation, GIS/remote sensing, Telegram API integration, custom web visualization platforms"
+        },
+        "network_position": {
+          "position_type": "hub",
+          "scene_affiliation": "Bridges contemporary art, human rights investigation, academic research, open-source intelligence (OSINT), and legal/forensic fields. Connected to Turner Prize ecosystem, documenta, academic research networks, and human rights organizations (UN, ICC).",
+          "connections": "Connected to Eyal Weizman's broader 'investigative aesthetics' network. Bridges to other research collectives working at intersection of art, technology, and social justice."
+        },
+        "potential_role_in_adai": {
+          "role": "theoretical-reference",
+          "role_detail": "FA provides a powerful precedent for A(DAI)'s core proposition: that relational graph infrastructure can be the primary medium of exhibition. Their 'Investigative Commons' model — open-source tools for collective evidence assembly — directly parallels A(DAI)'s commons-first collective intelligence infrastructure. Their practice demonstrates that exhibition-as-infrastructure works at scale and has real-world impact."
+        },
+        "temporal_status": {
+          "status": "active-infrastructure"
+        },
+        "uncertain": [
+          "embedding_summary"
+        ]
+      },
+      "data_provenance": {
+        "source": "seed-research-2025",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "focus_areas": [
+        {
+          "id": "concept:spatial analysis",
+          "name": "spatial analysis",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:3d modelling",
+          "name": "3D modelling",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:video reconstruction",
+          "name": "video reconstruction",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:interactive cartography",
+          "name": "interactive cartography",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:installation",
+          "name": "Installation",
+          "source": "contributor:migration"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -6508,6 +6769,28 @@
           "type": "practitioner",
           "source": "contributor:migration"
         }
+      ],
+      "focus_areas": [
+        {
+          "id": "concept:ai voice model",
+          "name": "AI voice model",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:web instrument",
+          "name": "web instrument",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:dao governance",
+          "name": "DAO governance",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:blockchain",
+          "name": "blockchain",
+          "source": "contributor:migration"
+        }
       ]
     },
     "created_at": "2026-04-21T13:29:05Z",
@@ -6938,7 +7221,24 @@
       },
       "original_type": "theoretical",
       "source_file": "Interdependence.json",
-      "seed_category": null
+      "seed_category": null,
+      "focus_areas": [
+        {
+          "id": "concept:podcast",
+          "name": "Podcast",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:writing",
+          "name": "Writing",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:theoretical framework",
+          "name": "theoretical framework",
+          "source": "contributor:migration"
+        }
+      ]
     }
   },
   {
@@ -9268,6 +9568,28 @@
           "type": "platform",
           "source": "contributor:migration"
         }
+      ],
+      "focus_areas": [
+        {
+          "id": "concept:collective releasing infrastructure",
+          "name": "Collective releasing infrastructure",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:legal economic framework design",
+          "name": "legal/economic framework design",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:publishing platform",
+          "name": "publishing platform",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:policy advocacy",
+          "name": "policy advocacy",
+          "source": "contributor:migration"
+        }
       ]
     },
     "created_at": "2026-04-21T13:29:05Z",
@@ -9561,7 +9883,143 @@
     "type": "institution",
     "name": "Rhizome / ArtBase",
     "slug": "rhizome-artbase",
-    "metadata": "{\"original_type\": \"institution\", \"status\": \"confirmed\", \"source_file\": \"Rhizome_ArtBase.json\", \"full_profile\": {\"basic_info\": {\"name\": \"Rhizome / ArtBase\", \"type\": \"institution\", \"active_years\": \"1996-present (Rhizome); 1999-present (ArtBase)\", \"location\": \"New York, NY, USA (affiliated with the New Museum)\", \"url\": \"https://rhizome.org\"}, \"practice_description\": {\"medium\": \"Digital art preservation, web archiving, born-digital art curation, software preservation, editorial publishing\", \"practice_summary\": \"Rhizome is a nonprofit arts organization that champions born-digital art through commissions, exhibitions, scholarship, and digital preservation. ArtBase, its online archive founded in 1999, contains over 2,110 artworks spanning software, code, websites, games, and interactive media.\", \"methodology\": \"Rhizome operates through several interlocking programs: ArtBase (archival collection), Net Art Anthology (historical restaging of key works), ArtBase Anthologies (monthly curated exhibitions of restored works), editorial publishing, and a digital preservation program led by Dragan Espenschied that develops open-source tools for web archiving and software preservation. Curatorial direction is led by Artistic Director Michael Connor. Works are accessioned into ArtBase through editorial selection, and the preservation team maintains and restores aging digital artworks.\"}, \"relevance_to_sense_room\": {\"relevance_summary\": \"Rhizome represents the archival and preservation dimension of the digital art field. Its ArtBase is the most significant collection of born-digital art, but it functions as a catalogue rather than a relational graph. A(DAI) could build the relational intelligence layer that connects the entities Rhizome preserves.\", \"art_as_substrate\": \"Partially. ArtBase contains artworks that could serve as substrate material (interactive websites, software art, games), but Rhizome's role is preservation rather than recomposition. The archived works themselves are rich substrates if made available for compositional use.\", \"relational_composition\": \"Limited. Rhizome organizes works editorially (chronologically, thematically) but does not expose the relational graph between artists, works, concepts, and movements. Net Art Anthology created temporal and thematic narratives but not a navigable relational structure.\", \"self_recomposing\": \"No. Rhizome's role is preservation -- maintaining works in their original state. However, ArtBase Anthologies recontextualize archived works through monthly curated presentations, creating evolving interpretive frames around static artworks.\"}, \"key_works\": {\"works\": [{\"title\": \"Net Art Anthology\", \"year\": \"2016-2019\", \"description\": \"A multi-year project restaging 100 key net art works from the 1980s to present, combining digital conservation with historical narrative. Funded by the Thoma Art Foundation.\", \"relevance\": \"Demonstrated that digital art history requires active preservation and recontextualization. The anthology's structure (chronological chapters, restored works, contextual essays) is a curatorial framework that A(DAI) could extend into a relational graph.\"}, {\"title\": \"ArtBase Anthologies\", \"year\": \"2024-present\", \"description\": \"Monthly curated exhibitions of newly restored artworks from ArtBase, launched with works by Auriea Harvey and Entropy8Zuper! Each edition presents a solo deep dive, historical snapshot, or thematic curation.\", \"relevance\": \"Shows how archived digital art can be reactivated through curatorial framing -- a model for how A(DAI)'s graph could surface and recontextualize works dynamically.\"}, {\"title\": \"Webrecorder / Conifer\", \"year\": \"2014-present\", \"description\": \"Open-source web archiving tools developed by Rhizome's preservation program to capture interactive web-based artworks, now spun off as an independent project.\", \"relevance\": \"Infrastructure for preserving the web-based artworks that A(DAI) would map. Demonstrates Rhizome's commitment to open-source tooling for the commons.\"}]}, \"protocol_art_resonance\": {\"protocol_art_summary\": \"Rhizome does not explicitly frame preservation as artistic practice, but its development of open-source archiving tools (Webrecorder) and its editorial framing of digital art history function as infrastructure design with cultural purpose. The decision of what to preserve and how to restore it is itself a form of protocol design that shapes what the field remembers.\", \"system_designed\": \"ArtBase (born-digital art archive), Webrecorder/Conifer (open-source web archiving tools), Net Art Anthology (historical restaging framework), and the ArtBase Anthologies curatorial program.\"}, \"commons_orientation\": {\"licence_model\": \"commons-based\", \"commons_summary\": \"Rhizome is a nonprofit. Its preservation tools (Webrecorder) are open-source and designed to decentralize web archiving practices. ArtBase is publicly accessible. The organization is sustained by membership, grants (Thoma Foundation, NEA), and its affiliation with the New Museum. It builds commons infrastructure for digital art preservation.\"}, \"governance_model\": {\"governance_type\": \"institutional\", \"governance_detail\": \"Governed as a nonprofit with an executive director, artistic director (Michael Connor), and digital preservation lead (Dragan Espenschied). Affiliated with the New Museum of Contemporary Art. Editorial and curatorial decisions are made by a small professional team. Accession to ArtBase is editorially determined -- this is the bottleneck identified in the task brief.\"}, \"consent_and_authorship\": {\"consent_approach\": \"Artists consent to inclusion in ArtBase and to preservation/restoration of their works. Rhizome's preservation program works with artists when possible to ensure faithful restoration. Historical works where artists are unreachable require institutional judgment.\", \"authorship_model\": \"Individual artist authorship is recognized and preserved. Rhizome functions as institutional steward, not co-author. The editorial and curatorial framing adds an interpretive layer but does not claim co-authorship.\"}, \"liveness_and_duration\": {\"temporal_type\": \"durational-infinite\", \"temporal_detail\": \"Rhizome's mission is perpetual preservation -- maintaining access to born-digital artworks against technological obsolescence. ArtBase Anthologies create periodic reactivations of archived works. The archive itself grows through new accessions (three new works added for the 30th anniversary in 2026).\"}, \"data_materiality\": {\"data_sources\": \"Born-digital artworks (websites, software, code, games, interactive media), web archives, artist documentation, contextual essays, historical metadata.\", \"data_provenance\": \"Artworks are contributed by artists or acquired through institutional partnerships. Preservation involves capturing and restoring original digital materials. Web archiving captures publicly accessible web content. All provenance is documented through Rhizome's curatorial and preservation processes.\"}, \"embedding_space_relevance\": {\"embedding_summary\": \"Rhizome does not directly engage with embedding or latent spaces. Its organizational logic is editorial and chronological rather than computational. However, the ArtBase collection could be a rich dataset for embedding-based exploration of digital art history if made computationally accessible.\", \"multimodal\": \"Yes, implicitly. ArtBase contains works spanning text, image, video, audio, interactive software, and games -- a multimodal collection, though not unified in a computational embedding space.\"}, \"exhibition_modality\": {\"modality\": \"web\", \"spatial_description\": \"Primarily web-based. ArtBase and Net Art Anthology are online exhibitions. Rhizome World (2025) brought programming into physical gallery space at WSA, New York. ArtBase Anthologies present restored works in online exhibition format with contextual framing.\"}, \"sensory_register\": {\"senses\": \"visual, textual, sonic\", \"dominant_register\": \"visual\"}, \"interoperability\": {\"composability\": \"Limited as an archive. ArtBase does not expose a public API or structured data feed for its collection. Webrecorder tools are open-source and interoperable. The archived works themselves vary in technical openness.\", \"technical_openness\": \"Webrecorder tools are fully open source. ArtBase content is publicly viewable but not programmatically accessible via API. The organization advocates for open standards in digital preservation.\"}, \"technical_approach\": {\"stack\": \"Webrecorder (open-source web archiving, WARC format), browser-based emulation for legacy works, custom CMS for editorial content, standard web technologies for online exhibitions. Preservation tools include software emulation and code migration.\"}, \"network_position\": {\"position_type\": \"hub\", \"scene_affiliation\": \"Central institution in the net art and born-digital art preservation community. Affiliated with the New Museum (New York). Connected to academic digital humanities, museum conservation, and the broader new media art world. Bridges art history, technology, and institutional preservation.\", \"connections\": \"Are.na (shared New York new media art community; Are.na co-founder Charles Broskoski worked for Rhizome's John Michael Boling), Art Blocks (digital art preservation parallels), New Museum / New Inc (institutional affiliation, New Inc partners with Metalabel)\"}, \"potential_role_in_adai\": {\"role\": \"conversation-partner\", \"role_detail\": \"Rhizome's ArtBase represents the most significant existing attempt to archive born-digital art, but lacks relational intelligence. A(DAI) could build the relational and graph-based layer that connects ArtBase's preserved works to practitioners, concepts, and scenes. Rhizome's editorial expertise and preservation knowledge make it a natural conversation partner for defining how intelligence about digital art should be structured.\"}, \"temporal_status\": {\"status\": \"active-infrastructure\"}, \"uncertain\": [\"composability\"]}, \"data_provenance\": {\"source\": \"seed-research-2025\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "original_type": "institution",
+      "status": "confirmed",
+      "source_file": "Rhizome_ArtBase.json",
+      "full_profile": {
+        "basic_info": {
+          "name": "Rhizome / ArtBase",
+          "type": "institution",
+          "active_years": "1996-present (Rhizome); 1999-present (ArtBase)",
+          "location": "New York, NY, USA (affiliated with the New Museum)",
+          "url": "https://rhizome.org"
+        },
+        "practice_description": {
+          "medium": "Digital art preservation, web archiving, born-digital art curation, software preservation, editorial publishing",
+          "practice_summary": "Rhizome is a nonprofit arts organization that champions born-digital art through commissions, exhibitions, scholarship, and digital preservation. ArtBase, its online archive founded in 1999, contains over 2,110 artworks spanning software, code, websites, games, and interactive media.",
+          "methodology": "Rhizome operates through several interlocking programs: ArtBase (archival collection), Net Art Anthology (historical restaging of key works), ArtBase Anthologies (monthly curated exhibitions of restored works), editorial publishing, and a digital preservation program led by Dragan Espenschied that develops open-source tools for web archiving and software preservation. Curatorial direction is led by Artistic Director Michael Connor. Works are accessioned into ArtBase through editorial selection, and the preservation team maintains and restores aging digital artworks."
+        },
+        "relevance_to_sense_room": {
+          "relevance_summary": "Rhizome represents the archival and preservation dimension of the digital art field. Its ArtBase is the most significant collection of born-digital art, but it functions as a catalogue rather than a relational graph. A(DAI) could build the relational intelligence layer that connects the entities Rhizome preserves.",
+          "art_as_substrate": "Partially. ArtBase contains artworks that could serve as substrate material (interactive websites, software art, games), but Rhizome's role is preservation rather than recomposition. The archived works themselves are rich substrates if made available for compositional use.",
+          "relational_composition": "Limited. Rhizome organizes works editorially (chronologically, thematically) but does not expose the relational graph between artists, works, concepts, and movements. Net Art Anthology created temporal and thematic narratives but not a navigable relational structure.",
+          "self_recomposing": "No. Rhizome's role is preservation -- maintaining works in their original state. However, ArtBase Anthologies recontextualize archived works through monthly curated presentations, creating evolving interpretive frames around static artworks."
+        },
+        "key_works": {
+          "works": [
+            {
+              "title": "Net Art Anthology",
+              "year": "2016-2019",
+              "description": "A multi-year project restaging 100 key net art works from the 1980s to present, combining digital conservation with historical narrative. Funded by the Thoma Art Foundation.",
+              "relevance": "Demonstrated that digital art history requires active preservation and recontextualization. The anthology's structure (chronological chapters, restored works, contextual essays) is a curatorial framework that A(DAI) could extend into a relational graph."
+            },
+            {
+              "title": "ArtBase Anthologies",
+              "year": "2024-present",
+              "description": "Monthly curated exhibitions of newly restored artworks from ArtBase, launched with works by Auriea Harvey and Entropy8Zuper! Each edition presents a solo deep dive, historical snapshot, or thematic curation.",
+              "relevance": "Shows how archived digital art can be reactivated through curatorial framing -- a model for how A(DAI)'s graph could surface and recontextualize works dynamically."
+            },
+            {
+              "title": "Webrecorder / Conifer",
+              "year": "2014-present",
+              "description": "Open-source web archiving tools developed by Rhizome's preservation program to capture interactive web-based artworks, now spun off as an independent project.",
+              "relevance": "Infrastructure for preserving the web-based artworks that A(DAI) would map. Demonstrates Rhizome's commitment to open-source tooling for the commons."
+            }
+          ]
+        },
+        "protocol_art_resonance": {
+          "protocol_art_summary": "Rhizome does not explicitly frame preservation as artistic practice, but its development of open-source archiving tools (Webrecorder) and its editorial framing of digital art history function as infrastructure design with cultural purpose. The decision of what to preserve and how to restore it is itself a form of protocol design that shapes what the field remembers.",
+          "system_designed": "ArtBase (born-digital art archive), Webrecorder/Conifer (open-source web archiving tools), Net Art Anthology (historical restaging framework), and the ArtBase Anthologies curatorial program."
+        },
+        "commons_orientation": {
+          "licence_model": "commons-based",
+          "commons_summary": "Rhizome is a nonprofit. Its preservation tools (Webrecorder) are open-source and designed to decentralize web archiving practices. ArtBase is publicly accessible. The organization is sustained by membership, grants (Thoma Foundation, NEA), and its affiliation with the New Museum. It builds commons infrastructure for digital art preservation."
+        },
+        "governance_model": {
+          "governance_type": "institutional",
+          "governance_detail": "Governed as a nonprofit with an executive director, artistic director (Michael Connor), and digital preservation lead (Dragan Espenschied). Affiliated with the New Museum of Contemporary Art. Editorial and curatorial decisions are made by a small professional team. Accession to ArtBase is editorially determined -- this is the bottleneck identified in the task brief."
+        },
+        "consent_and_authorship": {
+          "consent_approach": "Artists consent to inclusion in ArtBase and to preservation/restoration of their works. Rhizome's preservation program works with artists when possible to ensure faithful restoration. Historical works where artists are unreachable require institutional judgment.",
+          "authorship_model": "Individual artist authorship is recognized and preserved. Rhizome functions as institutional steward, not co-author. The editorial and curatorial framing adds an interpretive layer but does not claim co-authorship."
+        },
+        "liveness_and_duration": {
+          "temporal_type": "durational-infinite",
+          "temporal_detail": "Rhizome's mission is perpetual preservation -- maintaining access to born-digital artworks against technological obsolescence. ArtBase Anthologies create periodic reactivations of archived works. The archive itself grows through new accessions (three new works added for the 30th anniversary in 2026)."
+        },
+        "data_materiality": {
+          "data_sources": "Born-digital artworks (websites, software, code, games, interactive media), web archives, artist documentation, contextual essays, historical metadata.",
+          "data_provenance": "Artworks are contributed by artists or acquired through institutional partnerships. Preservation involves capturing and restoring original digital materials. Web archiving captures publicly accessible web content. All provenance is documented through Rhizome's curatorial and preservation processes."
+        },
+        "embedding_space_relevance": {
+          "embedding_summary": "Rhizome does not directly engage with embedding or latent spaces. Its organizational logic is editorial and chronological rather than computational. However, the ArtBase collection could be a rich dataset for embedding-based exploration of digital art history if made computationally accessible.",
+          "multimodal": "Yes, implicitly. ArtBase contains works spanning text, image, video, audio, interactive software, and games -- a multimodal collection, though not unified in a computational embedding space."
+        },
+        "exhibition_modality": {
+          "modality": "web",
+          "spatial_description": "Primarily web-based. ArtBase and Net Art Anthology are online exhibitions. Rhizome World (2025) brought programming into physical gallery space at WSA, New York. ArtBase Anthologies present restored works in online exhibition format with contextual framing."
+        },
+        "sensory_register": {
+          "senses": "visual, textual, sonic",
+          "dominant_register": "visual"
+        },
+        "interoperability": {
+          "composability": "Limited as an archive. ArtBase does not expose a public API or structured data feed for its collection. Webrecorder tools are open-source and interoperable. The archived works themselves vary in technical openness.",
+          "technical_openness": "Webrecorder tools are fully open source. ArtBase content is publicly viewable but not programmatically accessible via API. The organization advocates for open standards in digital preservation."
+        },
+        "technical_approach": {
+          "stack": "Webrecorder (open-source web archiving, WARC format), browser-based emulation for legacy works, custom CMS for editorial content, standard web technologies for online exhibitions. Preservation tools include software emulation and code migration."
+        },
+        "network_position": {
+          "position_type": "hub",
+          "scene_affiliation": "Central institution in the net art and born-digital art preservation community. Affiliated with the New Museum (New York). Connected to academic digital humanities, museum conservation, and the broader new media art world. Bridges art history, technology, and institutional preservation.",
+          "connections": "Are.na (shared New York new media art community; Are.na co-founder Charles Broskoski worked for Rhizome's John Michael Boling), Art Blocks (digital art preservation parallels), New Museum / New Inc (institutional affiliation, New Inc partners with Metalabel)"
+        },
+        "potential_role_in_adai": {
+          "role": "conversation-partner",
+          "role_detail": "Rhizome's ArtBase represents the most significant existing attempt to archive born-digital art, but lacks relational intelligence. A(DAI) could build the relational and graph-based layer that connects ArtBase's preserved works to practitioners, concepts, and scenes. Rhizome's editorial expertise and preservation knowledge make it a natural conversation partner for defining how intelligence about digital art should be structured."
+        },
+        "temporal_status": {
+          "status": "active-infrastructure"
+        },
+        "uncertain": [
+          "composability"
+        ]
+      },
+      "data_provenance": {
+        "source": "seed-research-2025",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "focus_areas": [
+        {
+          "id": "concept:digital art preservation",
+          "name": "Digital art preservation",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:web archiving",
+          "name": "web archiving",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:born-digital art curation",
+          "name": "born-digital art curation",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:software preservation",
+          "name": "software preservation",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:editorial publishing",
+          "name": "editorial publishing",
+          "source": "contributor:migration"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -10267,6 +10725,28 @@
           "type": "practitioner",
           "source": "contributor:migration"
         }
+      ],
+      "focus_areas": [
+        {
+          "id": "concept:institutional programme: commissioning",
+          "name": "Institutional programme: commissioning",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:r&d",
+          "name": "R&D",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:strategic publishing",
+          "name": "strategic publishing",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:policy convening",
+          "name": "policy convening",
+          "source": "contributor:migration"
+        }
       ]
     },
     "created_at": "2026-04-21T13:29:05Z",
@@ -10526,6 +11006,23 @@
           "type": "practitioner",
           "source": "contributor:migration"
         }
+      ],
+      "focus_areas": [
+        {
+          "id": "concept:strategic briefing",
+          "name": "Strategic briefing",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:publication",
+          "name": "publication",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:policy document",
+          "name": "policy document",
+          "source": "contributor:migration"
+        }
       ]
     },
     "created_at": "2026-04-21T13:29:05Z",
@@ -10670,6 +11167,33 @@
           "id": "practitioner:mario klingemann",
           "name": "Mario Klingemann",
           "type": "practitioner",
+          "source": "contributor:migration"
+        }
+      ],
+      "focus_areas": [
+        {
+          "id": "concept:ai-generated imagery",
+          "name": "AI-generated imagery",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:generative video",
+          "name": "generative video",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:interactive installation",
+          "name": "interactive installation",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:nft art",
+          "name": "NFT art",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:bio-digital art",
+          "name": "bio-digital art",
           "source": "contributor:migration"
         }
       ]
@@ -10927,7 +11451,138 @@
     "type": "platform",
     "name": "Spawning AI / Source.Plus",
     "slug": "spawning-ai-source-plus",
-    "metadata": "{\"original_type\": \"platform\", \"status\": \"confirmed\", \"source_file\": \"Spawning_AI_SourcePlus.json\", \"full_profile\": {\"basic_info\": {\"name\": \"Spawning AI / Source.Plus\", \"type\": \"platform\", \"active_years\": \"2022-present\", \"location\": \"Dover, Delaware (registered); Berlin, Germany (operations)\", \"url\": \"https://spawning.ai\"}, \"practice_description\": {\"medium\": \"Software infrastructure, web protocols, API, marketplace\", \"practice_summary\": \"Consent infrastructure for AI training data. Evolved from HaveIBeenTrained.com (artist opt-out search engine for LAION-5B) to Source.Plus (curated marketplace for consented, non-infringing AI training data). Created the ai.txt protocol as an AI-era successor to robots.txt.\", \"methodology\": \"Spawning builds tools at the intersection of art, technology, and rights management. The approach is layered: first establish opt-out (HaveIBeenTrained), then create interoperable standards (ai.txt protocol), then build opt-in marketplace (Source.Plus). Partners with major AI developers (Stability AI, Hugging Face) to honor Do Not Train registries. Hosts all images on Source.Plus directly to protect cultural institutions from scraping. Employs moderators for data verification.\"}, \"relevance_to_sense_room\": {\"relevance_summary\": \"Spawning provides the consent and provenance infrastructure that any ethical graph-curated generative exhibition requires. If A(DAI) uses AI-processed creative material, Spawning's tools and protocols represent the standard for ensuring consented, traceable data sourcing.\", \"art_as_substrate\": \"Indirectly -- Spawning does not produce art itself, but it provides the substrate infrastructure (consent verification, provenance tracking, data curation) that enables art-as-substrate to function ethically. Source.Plus curates the raw material (training data) from which generative art is made.\", \"relational_composition\": \"Yes, at an infrastructure level. Spawning's system maps relationships between data creators, datasets, AI models, and outputs. The ai.txt protocol creates a relational web of permissions across the internet. Source.Plus mediates relationships between rights holders and AI developers.\", \"self_recomposing\": \"Yes -- the consent layer is dynamic. Artists can change their opt-in/opt-out status at any time via ai.txt, and the system responds in real time when datasets are accessed. Source.Plus evolves as new collections are curated and new rights holders join.\"}, \"key_works\": {\"works\": [{\"title\": \"HaveIBeenTrained.com\", \"year\": 2022, \"description\": \"Search engine allowing artists to find their work in the LAION-5B dataset (5.8 billion images) used to train Stable Diffusion and Midjourney, and opt out. Over 1 billion artworks opted out by April 2023. Partnered with Shutterstock and ArtStation.\", \"relevance\": \"First widely adopted tool for artist agency over AI training data. Demonstrated that consent infrastructure is technically feasible at scale and that artists would use it.\"}, {\"title\": \"ai.txt Protocol\", \"year\": 2023, \"description\": \"Website-level protocol allowing site owners to set permissions for AI data mining, addressing limitations of robots.txt. Checked when dataset links are used to download content, enabling real-time permission adjustments. WordPress plugin available. Adopted by Hugging Face and Stability AI.\", \"relevance\": \"Open protocol that creates a machine-readable consent layer across the web. Directly relevant to any AI system that ingests web content -- establishes the standard for consented data use.\"}, {\"title\": \"Source.Plus\", \"year\": 2024, \"description\": \"Marketplace for searching, curating, and downloading non-infringing media collections for AI training. Hosts all content directly (not link-based scraping). Includes public domain datasets and premium licensed collections from rights holders. Content moderation and provenance verification built in.\", \"relevance\": \"Evolution from opt-out to opt-in: a marketplace where consented, high-quality training data can be sourced. Models how data commons can be commercially viable while respecting creator rights.\"}]}, \"protocol_art_resonance\": {\"protocol_art_summary\": \"Spawning originated from an art practice (Holly Herndon and Mat Dryhurst's work with Spawn and Holly+) and extends protocol art to industry scale. The consent layer IS the artwork at a systemic level -- designing the rules, standards, and infrastructure through which AI training data flows. The ai.txt protocol is a creative intervention in internet infrastructure.\", \"system_designed\": \"HaveIBeenTrained (opt-out search engine and registry); ai.txt protocol (web standard for AI permissions); Do Not Train registry (honored by Stability AI and Hugging Face); Source.Plus (consented training data marketplace); Spawning API and open-source Python package for consent management; WordPress plugin for ai.txt implementation.\"}, \"commons_orientation\": {\"licence_model\": \"Hybrid -- open-source API and Python packages as public goods; ai.txt is an open protocol; Source.Plus operates as a commercial marketplace with premium licensed collections alongside public domain datasets.\", \"commons_summary\": \"Spawning explicitly positions itself as building 'the consent layer for AI' as infrastructure that benefits the entire ecosystem. HaveIBeenTrained and ai.txt are public goods. Source.Plus creates a viable economic model for commons -- artists can monetize consented use of their work. The seed funding framing emphasized 'opt-out and opt-in standards as a public good.' Opposes both unconsented extraction and total prohibition.\"}, \"governance_model\": {\"governance_type\": \"hybrid\", \"governance_detail\": \"Spawning operates as a venture-backed startup ($3M seed from True Ventures, Seed Club Ventures, and angel investors including Balaji Srinivasan). Decision-making is corporate, but the tools it builds enable decentralized governance by creators (individual opt-in/opt-out via ai.txt, collective governance via registries). Source.Plus includes content moderation with remediation features for flagging infringing works.\"}, \"consent_and_authorship\": {\"consent_approach\": \"Consent is the entire mission. Spawning provides multi-layered consent tools: individual (HaveIBeenTrained opt-out), site-level (ai.txt protocol), platform-level (partnerships with Stability AI, Hugging Face), and market-level (Source.Plus licensed collections). Consent is dynamic -- permissions can be updated in real time.\", \"authorship_model\": \"Platform model -- Spawning does not claim authorship over the data it manages. It creates infrastructure for rights holders to maintain authorship and control. The marketplace model explicitly preserves creator attribution and enables direct monetization.\"}, \"liveness_and_duration\": {\"temporal_type\": \"continuously-evolving\", \"temporal_detail\": \"The consent layer is a living system that evolves as artists change permissions, new datasets emerge, new AI developers join partnerships, and the regulatory landscape shifts. ai.txt permissions are checked in real time. Source.Plus grows as new collections are curated. The system is designed to be permanent infrastructure.\"}, \"data_materiality\": {\"data_sources\": \"Indexes LAION-5B (5.8 billion images) for opt-out; hosts curated media collections on Source.Plus (images, potentially other modalities); public domain datasets; licensed premium collections from rights holders and cultural institutions.\", \"data_provenance\": \"Data provenance is the core product. Source.Plus verifies ownership and consent status of all hosted content. Content moderation team verifies data ownership. Public domain status is confirmed. Licensed collections have explicit rights agreements. The entire system exists to solve the provenance problem in AI training.\"}, \"embedding_space_relevance\": {\"embedding_summary\": \"Spawning does not directly work with embedding spaces, but its infrastructure determines what data enters the embedding spaces of AI models trained on its curated datasets. By controlling the consent and provenance of training data, Spawning shapes the latent spaces of downstream AI models.\", \"multimodal\": \"Yes -- HaveIBeenTrained started with images but Spawning's API and ai.txt protocol are media-agnostic, covering text, images, audio, and video. Source.Plus aims to serve multi-modal training data needs.\"}, \"exhibition_modality\": {\"modality\": \"web\", \"spatial_description\": \"Spawning operates entirely in digital/web space: websites (HaveIBeenTrained, Source.Plus), protocols (ai.txt), APIs, and WordPress plugins. No physical exhibition component, though the infrastructure enables physical exhibitions that use ethically sourced AI-generated content.\"}, \"sensory_register\": {\"senses\": \"visual, textual\", \"dominant_register\": \"textual\"}, \"interoperability\": {\"composability\": \"Very high -- designed as interoperable infrastructure. ai.txt is an open web protocol adoptable by any website. Spawning API is public and has an open-source Python package. Do Not Train registry is honored by multiple AI platforms. WordPress plugin enables one-click implementation. Source.Plus outputs (curated datasets) are designed to feed directly into AI training pipelines.\", \"technical_openness\": \"Partially open -- API and Python package are open-source. ai.txt is an open protocol. Source.Plus marketplace has proprietary elements (curation, hosting, moderation). WordPress plugin is open.\"}, \"technical_approach\": {\"stack\": \"Web platform (HaveIBeenTrained search engine, Source.Plus marketplace); ai.txt protocol (plaintext file in website root directory, similar to robots.txt); REST API for consent status queries; open-source Python package; WordPress plugin; content moderation and classification tools; direct media hosting (not link-based); partnerships with Hugging Face and Stability AI for protocol adoption.\"}, \"network_position\": {\"position_type\": \"bridge\", \"scene_affiliation\": \"AI ethics and policy (influenced EU text and data mining policy); AI training data ecosystem; open-source AI community (Hugging Face partnership); commercial AI (Stability AI, Shutterstock partnerships); digital arts and creator rights; Web3/crypto art community (Seed Club Ventures investor, Noise DAO investor).\", \"connections\": \"Holly Herndon and Mat Dryhurst (co-founders, originating from their art practice); Holly+ (predecessor project exploring consent and voice AI); Stability AI (Do Not Train partnership); Hugging Face (protocol adoption); Shutterstock and ArtStation (opt-out partnerships); True Ventures and Seed Club Ventures (investors); Interdependence (conceptual framework).\"}, \"potential_role_in_adai\": {\"role\": \"infrastructure-partner\", \"role_detail\": \"Spawning/Source.Plus could provide the consent and provenance infrastructure A(DAI) needs for any AI-processed creative material in its pipeline. If A(DAI)'s signal processor uses AI to analyze or transform creative content, Spawning's tools ensure consented sourcing. The ai.txt protocol could be adopted by A(DAI) for its own data governance. Source.Plus could be a data source for ethically curated training material. Aligns perfectly with A(DAI)'s commons-first principles.\"}, \"temporal_status\": {\"status\": \"active-infrastructure\"}, \"uncertain\": [\"location\"]}, \"data_provenance\": {\"source\": \"seed-research-2025\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "original_type": "platform",
+      "status": "confirmed",
+      "source_file": "Spawning_AI_SourcePlus.json",
+      "full_profile": {
+        "basic_info": {
+          "name": "Spawning AI / Source.Plus",
+          "type": "platform",
+          "active_years": "2022-present",
+          "location": "Dover, Delaware (registered); Berlin, Germany (operations)",
+          "url": "https://spawning.ai"
+        },
+        "practice_description": {
+          "medium": "Software infrastructure, web protocols, API, marketplace",
+          "practice_summary": "Consent infrastructure for AI training data. Evolved from HaveIBeenTrained.com (artist opt-out search engine for LAION-5B) to Source.Plus (curated marketplace for consented, non-infringing AI training data). Created the ai.txt protocol as an AI-era successor to robots.txt.",
+          "methodology": "Spawning builds tools at the intersection of art, technology, and rights management. The approach is layered: first establish opt-out (HaveIBeenTrained), then create interoperable standards (ai.txt protocol), then build opt-in marketplace (Source.Plus). Partners with major AI developers (Stability AI, Hugging Face) to honor Do Not Train registries. Hosts all images on Source.Plus directly to protect cultural institutions from scraping. Employs moderators for data verification."
+        },
+        "relevance_to_sense_room": {
+          "relevance_summary": "Spawning provides the consent and provenance infrastructure that any ethical graph-curated generative exhibition requires. If A(DAI) uses AI-processed creative material, Spawning's tools and protocols represent the standard for ensuring consented, traceable data sourcing.",
+          "art_as_substrate": "Indirectly -- Spawning does not produce art itself, but it provides the substrate infrastructure (consent verification, provenance tracking, data curation) that enables art-as-substrate to function ethically. Source.Plus curates the raw material (training data) from which generative art is made.",
+          "relational_composition": "Yes, at an infrastructure level. Spawning's system maps relationships between data creators, datasets, AI models, and outputs. The ai.txt protocol creates a relational web of permissions across the internet. Source.Plus mediates relationships between rights holders and AI developers.",
+          "self_recomposing": "Yes -- the consent layer is dynamic. Artists can change their opt-in/opt-out status at any time via ai.txt, and the system responds in real time when datasets are accessed. Source.Plus evolves as new collections are curated and new rights holders join."
+        },
+        "key_works": {
+          "works": [
+            {
+              "title": "HaveIBeenTrained.com",
+              "year": 2022,
+              "description": "Search engine allowing artists to find their work in the LAION-5B dataset (5.8 billion images) used to train Stable Diffusion and Midjourney, and opt out. Over 1 billion artworks opted out by April 2023. Partnered with Shutterstock and ArtStation.",
+              "relevance": "First widely adopted tool for artist agency over AI training data. Demonstrated that consent infrastructure is technically feasible at scale and that artists would use it."
+            },
+            {
+              "title": "ai.txt Protocol",
+              "year": 2023,
+              "description": "Website-level protocol allowing site owners to set permissions for AI data mining, addressing limitations of robots.txt. Checked when dataset links are used to download content, enabling real-time permission adjustments. WordPress plugin available. Adopted by Hugging Face and Stability AI.",
+              "relevance": "Open protocol that creates a machine-readable consent layer across the web. Directly relevant to any AI system that ingests web content -- establishes the standard for consented data use."
+            },
+            {
+              "title": "Source.Plus",
+              "year": 2024,
+              "description": "Marketplace for searching, curating, and downloading non-infringing media collections for AI training. Hosts all content directly (not link-based scraping). Includes public domain datasets and premium licensed collections from rights holders. Content moderation and provenance verification built in.",
+              "relevance": "Evolution from opt-out to opt-in: a marketplace where consented, high-quality training data can be sourced. Models how data commons can be commercially viable while respecting creator rights."
+            }
+          ]
+        },
+        "protocol_art_resonance": {
+          "protocol_art_summary": "Spawning originated from an art practice (Holly Herndon and Mat Dryhurst's work with Spawn and Holly+) and extends protocol art to industry scale. The consent layer IS the artwork at a systemic level -- designing the rules, standards, and infrastructure through which AI training data flows. The ai.txt protocol is a creative intervention in internet infrastructure.",
+          "system_designed": "HaveIBeenTrained (opt-out search engine and registry); ai.txt protocol (web standard for AI permissions); Do Not Train registry (honored by Stability AI and Hugging Face); Source.Plus (consented training data marketplace); Spawning API and open-source Python package for consent management; WordPress plugin for ai.txt implementation."
+        },
+        "commons_orientation": {
+          "licence_model": "Hybrid -- open-source API and Python packages as public goods; ai.txt is an open protocol; Source.Plus operates as a commercial marketplace with premium licensed collections alongside public domain datasets.",
+          "commons_summary": "Spawning explicitly positions itself as building 'the consent layer for AI' as infrastructure that benefits the entire ecosystem. HaveIBeenTrained and ai.txt are public goods. Source.Plus creates a viable economic model for commons -- artists can monetize consented use of their work. The seed funding framing emphasized 'opt-out and opt-in standards as a public good.' Opposes both unconsented extraction and total prohibition."
+        },
+        "governance_model": {
+          "governance_type": "hybrid",
+          "governance_detail": "Spawning operates as a venture-backed startup ($3M seed from True Ventures, Seed Club Ventures, and angel investors including Balaji Srinivasan). Decision-making is corporate, but the tools it builds enable decentralized governance by creators (individual opt-in/opt-out via ai.txt, collective governance via registries). Source.Plus includes content moderation with remediation features for flagging infringing works."
+        },
+        "consent_and_authorship": {
+          "consent_approach": "Consent is the entire mission. Spawning provides multi-layered consent tools: individual (HaveIBeenTrained opt-out), site-level (ai.txt protocol), platform-level (partnerships with Stability AI, Hugging Face), and market-level (Source.Plus licensed collections). Consent is dynamic -- permissions can be updated in real time.",
+          "authorship_model": "Platform model -- Spawning does not claim authorship over the data it manages. It creates infrastructure for rights holders to maintain authorship and control. The marketplace model explicitly preserves creator attribution and enables direct monetization."
+        },
+        "liveness_and_duration": {
+          "temporal_type": "continuously-evolving",
+          "temporal_detail": "The consent layer is a living system that evolves as artists change permissions, new datasets emerge, new AI developers join partnerships, and the regulatory landscape shifts. ai.txt permissions are checked in real time. Source.Plus grows as new collections are curated. The system is designed to be permanent infrastructure."
+        },
+        "data_materiality": {
+          "data_sources": "Indexes LAION-5B (5.8 billion images) for opt-out; hosts curated media collections on Source.Plus (images, potentially other modalities); public domain datasets; licensed premium collections from rights holders and cultural institutions.",
+          "data_provenance": "Data provenance is the core product. Source.Plus verifies ownership and consent status of all hosted content. Content moderation team verifies data ownership. Public domain status is confirmed. Licensed collections have explicit rights agreements. The entire system exists to solve the provenance problem in AI training."
+        },
+        "embedding_space_relevance": {
+          "embedding_summary": "Spawning does not directly work with embedding spaces, but its infrastructure determines what data enters the embedding spaces of AI models trained on its curated datasets. By controlling the consent and provenance of training data, Spawning shapes the latent spaces of downstream AI models.",
+          "multimodal": "Yes -- HaveIBeenTrained started with images but Spawning's API and ai.txt protocol are media-agnostic, covering text, images, audio, and video. Source.Plus aims to serve multi-modal training data needs."
+        },
+        "exhibition_modality": {
+          "modality": "web",
+          "spatial_description": "Spawning operates entirely in digital/web space: websites (HaveIBeenTrained, Source.Plus), protocols (ai.txt), APIs, and WordPress plugins. No physical exhibition component, though the infrastructure enables physical exhibitions that use ethically sourced AI-generated content."
+        },
+        "sensory_register": {
+          "senses": "visual, textual",
+          "dominant_register": "textual"
+        },
+        "interoperability": {
+          "composability": "Very high -- designed as interoperable infrastructure. ai.txt is an open web protocol adoptable by any website. Spawning API is public and has an open-source Python package. Do Not Train registry is honored by multiple AI platforms. WordPress plugin enables one-click implementation. Source.Plus outputs (curated datasets) are designed to feed directly into AI training pipelines.",
+          "technical_openness": "Partially open -- API and Python package are open-source. ai.txt is an open protocol. Source.Plus marketplace has proprietary elements (curation, hosting, moderation). WordPress plugin is open."
+        },
+        "technical_approach": {
+          "stack": "Web platform (HaveIBeenTrained search engine, Source.Plus marketplace); ai.txt protocol (plaintext file in website root directory, similar to robots.txt); REST API for consent status queries; open-source Python package; WordPress plugin; content moderation and classification tools; direct media hosting (not link-based); partnerships with Hugging Face and Stability AI for protocol adoption."
+        },
+        "network_position": {
+          "position_type": "bridge",
+          "scene_affiliation": "AI ethics and policy (influenced EU text and data mining policy); AI training data ecosystem; open-source AI community (Hugging Face partnership); commercial AI (Stability AI, Shutterstock partnerships); digital arts and creator rights; Web3/crypto art community (Seed Club Ventures investor, Noise DAO investor).",
+          "connections": "Holly Herndon and Mat Dryhurst (co-founders, originating from their art practice); Holly+ (predecessor project exploring consent and voice AI); Stability AI (Do Not Train partnership); Hugging Face (protocol adoption); Shutterstock and ArtStation (opt-out partnerships); True Ventures and Seed Club Ventures (investors); Interdependence (conceptual framework)."
+        },
+        "potential_role_in_adai": {
+          "role": "infrastructure-partner",
+          "role_detail": "Spawning/Source.Plus could provide the consent and provenance infrastructure A(DAI) needs for any AI-processed creative material in its pipeline. If A(DAI)'s signal processor uses AI to analyze or transform creative content, Spawning's tools ensure consented sourcing. The ai.txt protocol could be adopted by A(DAI) for its own data governance. Source.Plus could be a data source for ethically curated training material. Aligns perfectly with A(DAI)'s commons-first principles."
+        },
+        "temporal_status": {
+          "status": "active-infrastructure"
+        },
+        "uncertain": [
+          "location"
+        ]
+      },
+      "data_provenance": {
+        "source": "seed-research-2025",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "focus_areas": [
+        {
+          "id": "concept:software infrastructure",
+          "name": "Software infrastructure",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:web protocols",
+          "name": "web protocols",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:api",
+          "name": "API",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:marketplace",
+          "name": "marketplace",
+          "source": "contributor:migration"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -10972,7 +11627,152 @@
     "type": "artwork",
     "name": "Starmirror (Holly Herndon & Mat Dryhurst)",
     "slug": "starmirror-holly-herndon-mat-dryhurst",
-    "metadata": "{\"original_type\": \"artwork\", \"status\": \"confirmed\", \"source_file\": \"Starmirror.json\", \"full_profile\": {\"basic_info\": {\"name\": \"Starmirror (Holly Herndon & Mat Dryhurst)\", \"type\": \"artwork\", \"active_years\": \"2025-2026\", \"location\": \"KW Institute for Contemporary Art, Berlin (31 October 2025 - 18 January 2026); K21 Kunstsammlung Nordrhein-Westfalen, Dusseldorf (27 June - 11 October 2026)\", \"url\": \"https://www.kw-berlin.de/en/exhibitions/holly-herndon-and-mat-dryhurst-starmirror\"}, \"practice_description\": {\"medium\": \"AI installation, sound, sculpture, live choral AI training, image generation, performance\", \"practice_summary\": \"A large-scale exhibition proposing a scenario in which AI models coordinate humans to generate intelligence for collective benefit. Transforms KW Berlin into 'part cathedral, part data center,' staging encounters between human and artificial intelligences through a machine-learning reinterpretation of Hildegard von Bingen's Ordo Virtutum (1151).\", \"methodology\": \"The exhibition centres on reinterpreting Hildegard von Bingen's 12th-century morality play Ordo Virtutum as an AI training dataset, re-coding a historical text about virtue and temptation into a living vocal intelligence. Public Diffusion, a foundation image model, was trained entirely on public domain data. On select Sundays, the KW hall transforms into a recording studio where choirs, ensembles, and visitors contribute voices in call-and-response sessions, building a public choral dataset for a Berlin AI choir that will debut at K21 Dusseldorf. The project extends the Data Trust and collective governance frameworks developed in The Call.\"}, \"relevance_to_sense_room\": {\"relevance_summary\": \"Starmirror extends protocol art into speculative infrastructure, demonstrating how AI models can serve as coordination protocols for collective creative production. Its Public Diffusion model (trained on public domain data) and live participatory training sessions exemplify art-as-substrate that is continuously shaped by relational inputs.\", \"art_as_substrate\": \"Yes. Multiple substrate layers: Public Diffusion generates images from public domain training data; the choral AI models generate vocal compositions; The Hearth transforms GPU infrastructure into sound. Each layer can function as generative ground material.\", \"relational_composition\": \"Yes. The work explicitly positions AI as a coordination protocol -- a structure through which humans relate and produce collectively. The Ordo Virtutum reinterpretation maps a 12th-century relational drama (virtues vs. temptation) onto AI training architectures.\", \"self_recomposing\": \"Yes. The work evolves through live Sunday training sessions where new voices are incorporated into the AI models. The Berlin choral dataset grows throughout the exhibition period, producing an evolving model that will debut in Dusseldorf.\"}, \"key_works\": {\"works\": [{\"title\": \"Ur-Hildegard Training Corpus\", \"year\": 2025, \"description\": \"Machine-learning reinterpretation of Hildegard von Bingen's Ordo Virtutum (1151), where the 12th-century play becomes a training dataset re-coded into a living vocal intelligence.\", \"relevance\": \"Demonstrates how historical cultural material can be re-encoded as AI training data -- treating cultural heritage as substrate for generative intelligence.\"}, {\"title\": \"Public Diffusion\", \"year\": 2025, \"description\": \"A foundation image model created by the artists trained entirely on public domain data, presented in the Arboretum section of the exhibition.\", \"relevance\": \"A commons-based alternative to proprietary image generation models. Directly relevant to A(DAI)'s commons-first orientation.\"}, {\"title\": \"The Hearth\", \"year\": 2024, \"description\": \"Acoustic organ driven by GPU cooling fans, transforming heat and noise -- byproducts of AI computation -- into an art object. Previously shown at Serpentine in The Call.\", \"relevance\": \"Infrastructure made visible and aesthetic. The material conditions of AI production become the artwork.\"}]}, \"protocol_art_resonance\": {\"protocol_art_summary\": \"Starmirror is protocol art at its most ambitious. It proposes that AI models are coordination protocols -- structures through which humans organize collective intelligence. The artists approach protocols as a creative medium, designing systems (recording protocols, data trusts, training pipelines, public domain image models) that rehearse new arrangements between humans and AI. If Hildegard von Bingen was concerned with angelic orders, Herndon and Dryhurst are concerned with the hierarchies of technical protocols.\", \"system_designed\": \"Public Diffusion (public domain foundation image model), a Berlin choral AI training pipeline with participatory Sunday sessions, and governance structures extending the Data Trust model from The Call. The exhibition itself functions as infrastructure for producing a new public choral dataset.\"}, \"commons_orientation\": {\"licence_model\": \"commons-based\", \"commons_summary\": \"Strongly commons-oriented. Public Diffusion is trained entirely on public domain data, offering a commons alternative to proprietary image models. The choral dataset is being built through consented participatory sessions with governance rights for contributors. The project extends the Data Trust framework from The Call.\"}, \"governance_model\": {\"governance_type\": \"collective\", \"governance_detail\": \"Extends the collective governance model from The Call. Choir participants and visitors who contribute voices during Sunday sessions participate in a Data Trust framework governing how the resulting dataset and AI models are used. The Berlin choral dataset will be governed collectively by its contributors.\"}, \"consent_and_authorship\": {\"consent_approach\": \"Participatory consent through deliberate recording sessions. Visitors who join Sunday training sessions knowingly contribute to a shared dataset governed by collective structures. Builds on Herndon/Dryhurst's extensive consent infrastructure work (Spawning, Have I Been Trained, Kudurru).\", \"authorship_model\": \"Collaborative and distributed. Herndon and Dryhurst are lead artists, but the work explicitly credits and empowers contributing choirs, ensembles, and visitors as co-creators through governance mechanisms.\"}, \"liveness_and_duration\": {\"temporal_type\": \"continuously-evolving\", \"temporal_detail\": \"The exhibition actively grows through live Sunday recording sessions where new voices are incorporated into the AI models. The Berlin choral dataset expands throughout the exhibition at KW, and the resulting model debuts at K21 Dusseldorf -- the work literally migrates and evolves between venues.\"}, \"data_materiality\": {\"data_sources\": \"Public domain visual data (for Public Diffusion), live choral recordings from Berlin choirs and visitor participants, Hildegard von Bingen's Ordo Virtutum (1151) as source text/training corpus, Sacred Harp hymn recordings carried forward from The Call.\", \"data_provenance\": \"Ethical and consented. Public Diffusion uses exclusively public domain data. Choral recordings are gathered through participatory sessions with explicit consent and Data Trust governance. The Ordo Virtutum source material is 12th-century public domain.\"}, \"embedding_space_relevance\": {\"embedding_summary\": \"Public Diffusion operates in learned latent spaces of public domain visual culture. The choral AI models navigate latent vocal spaces. The work positions these embedding spaces as 'mirrors' -- reflecting collective human creativity back through AI coordination.\", \"multimodal\": \"Yes. The exhibition spans audio (choral AI, Hearth), visual (Public Diffusion image generation, Arboretum), and sculptural/spatial modalities in a unified conceptual framework.\"}, \"exhibition_modality\": {\"modality\": \"installation\", \"spatial_description\": \"KW Berlin transformed into 'part cathedral, part data center.' Multiple interconnected spaces: Arboretum with Public Diffusion, the main hall with Ur-Hildegard Training Corpus and The Hearth, and Sunday recording sessions transforming the space into a live studio. The architecture of the institution becomes the architecture of the AI training process.\"}, \"sensory_register\": {\"senses\": [\"sonic\", \"visual\"], \"dominant_register\": \"sonic\"}, \"interoperability\": {\"composability\": \"Public Diffusion is a foundation model that could be integrated into other systems. The choral dataset being built is designed to be a shared resource. The recording protocol and Data Trust framework are replicable methodologies for other projects.\", \"technical_openness\": \"Hybrid. Public Diffusion is built on public domain data suggesting openness. The choral dataset governance is determined collectively by contributors through the Data Trust.\"}, \"technical_approach\": {\"stack\": \"Custom choral AI models (extending Choral Diffusion from The Call), Public Diffusion (foundation image model trained on public domain data), GPU cooling fan acoustic organ, multi-channel recording systems, live AI training infrastructure\"}, \"network_position\": {\"position_type\": \"hub\", \"scene_affiliation\": \"Berlin art/technology scene, KW Institute institutional ecosystem, AI art, protocol art, commons/data governance, European institutional art circuit (KW Berlin, K21 Dusseldorf)\", \"connections\": \"The Call (Serpentine, predecessor project), KW Institute for Contemporary Art (host institution), K21 Kunstsammlung Nordrhein-Westfalen (second venue), Fellowship.xyz (gallery representing Herndon/Dryhurst), Serpentine Arts Technologies (prior collaborator), Kulturstiftung des Bundes (funder), Stability AI, IRCAM\"}, \"potential_role_in_adai\": {\"role\": \"artwork-in-graph\", \"role_detail\": \"Starmirror extends the protocol art and collective intelligence frameworks most relevant to A(DAI). Public Diffusion demonstrates a commons-based foundation model. The live participatory training sessions model how A(DAI) might engage communities in building shared intelligence infrastructure. The project's speculative infrastructure -- AI models as coordination protocols -- is conceptually aligned with A(DAI)'s mission.\"}, \"temporal_status\": {\"status\": \"ongoing-practice\"}, \"uncertain\": [\"embedding_summary\", \"technical_openness\"]}, \"data_provenance\": {\"source\": \"seed-research-2025\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "original_type": "artwork",
+      "status": "confirmed",
+      "source_file": "Starmirror.json",
+      "full_profile": {
+        "basic_info": {
+          "name": "Starmirror (Holly Herndon & Mat Dryhurst)",
+          "type": "artwork",
+          "active_years": "2025-2026",
+          "location": "KW Institute for Contemporary Art, Berlin (31 October 2025 - 18 January 2026); K21 Kunstsammlung Nordrhein-Westfalen, Dusseldorf (27 June - 11 October 2026)",
+          "url": "https://www.kw-berlin.de/en/exhibitions/holly-herndon-and-mat-dryhurst-starmirror"
+        },
+        "practice_description": {
+          "medium": "AI installation, sound, sculpture, live choral AI training, image generation, performance",
+          "practice_summary": "A large-scale exhibition proposing a scenario in which AI models coordinate humans to generate intelligence for collective benefit. Transforms KW Berlin into 'part cathedral, part data center,' staging encounters between human and artificial intelligences through a machine-learning reinterpretation of Hildegard von Bingen's Ordo Virtutum (1151).",
+          "methodology": "The exhibition centres on reinterpreting Hildegard von Bingen's 12th-century morality play Ordo Virtutum as an AI training dataset, re-coding a historical text about virtue and temptation into a living vocal intelligence. Public Diffusion, a foundation image model, was trained entirely on public domain data. On select Sundays, the KW hall transforms into a recording studio where choirs, ensembles, and visitors contribute voices in call-and-response sessions, building a public choral dataset for a Berlin AI choir that will debut at K21 Dusseldorf. The project extends the Data Trust and collective governance frameworks developed in The Call."
+        },
+        "relevance_to_sense_room": {
+          "relevance_summary": "Starmirror extends protocol art into speculative infrastructure, demonstrating how AI models can serve as coordination protocols for collective creative production. Its Public Diffusion model (trained on public domain data) and live participatory training sessions exemplify art-as-substrate that is continuously shaped by relational inputs.",
+          "art_as_substrate": "Yes. Multiple substrate layers: Public Diffusion generates images from public domain training data; the choral AI models generate vocal compositions; The Hearth transforms GPU infrastructure into sound. Each layer can function as generative ground material.",
+          "relational_composition": "Yes. The work explicitly positions AI as a coordination protocol -- a structure through which humans relate and produce collectively. The Ordo Virtutum reinterpretation maps a 12th-century relational drama (virtues vs. temptation) onto AI training architectures.",
+          "self_recomposing": "Yes. The work evolves through live Sunday training sessions where new voices are incorporated into the AI models. The Berlin choral dataset grows throughout the exhibition period, producing an evolving model that will debut in Dusseldorf."
+        },
+        "key_works": {
+          "works": [
+            {
+              "title": "Ur-Hildegard Training Corpus",
+              "year": 2025,
+              "description": "Machine-learning reinterpretation of Hildegard von Bingen's Ordo Virtutum (1151), where the 12th-century play becomes a training dataset re-coded into a living vocal intelligence.",
+              "relevance": "Demonstrates how historical cultural material can be re-encoded as AI training data -- treating cultural heritage as substrate for generative intelligence."
+            },
+            {
+              "title": "Public Diffusion",
+              "year": 2025,
+              "description": "A foundation image model created by the artists trained entirely on public domain data, presented in the Arboretum section of the exhibition.",
+              "relevance": "A commons-based alternative to proprietary image generation models. Directly relevant to A(DAI)'s commons-first orientation."
+            },
+            {
+              "title": "The Hearth",
+              "year": 2024,
+              "description": "Acoustic organ driven by GPU cooling fans, transforming heat and noise -- byproducts of AI computation -- into an art object. Previously shown at Serpentine in The Call.",
+              "relevance": "Infrastructure made visible and aesthetic. The material conditions of AI production become the artwork."
+            }
+          ]
+        },
+        "protocol_art_resonance": {
+          "protocol_art_summary": "Starmirror is protocol art at its most ambitious. It proposes that AI models are coordination protocols -- structures through which humans organize collective intelligence. The artists approach protocols as a creative medium, designing systems (recording protocols, data trusts, training pipelines, public domain image models) that rehearse new arrangements between humans and AI. If Hildegard von Bingen was concerned with angelic orders, Herndon and Dryhurst are concerned with the hierarchies of technical protocols.",
+          "system_designed": "Public Diffusion (public domain foundation image model), a Berlin choral AI training pipeline with participatory Sunday sessions, and governance structures extending the Data Trust model from The Call. The exhibition itself functions as infrastructure for producing a new public choral dataset."
+        },
+        "commons_orientation": {
+          "licence_model": "commons-based",
+          "commons_summary": "Strongly commons-oriented. Public Diffusion is trained entirely on public domain data, offering a commons alternative to proprietary image models. The choral dataset is being built through consented participatory sessions with governance rights for contributors. The project extends the Data Trust framework from The Call."
+        },
+        "governance_model": {
+          "governance_type": "collective",
+          "governance_detail": "Extends the collective governance model from The Call. Choir participants and visitors who contribute voices during Sunday sessions participate in a Data Trust framework governing how the resulting dataset and AI models are used. The Berlin choral dataset will be governed collectively by its contributors."
+        },
+        "consent_and_authorship": {
+          "consent_approach": "Participatory consent through deliberate recording sessions. Visitors who join Sunday training sessions knowingly contribute to a shared dataset governed by collective structures. Builds on Herndon/Dryhurst's extensive consent infrastructure work (Spawning, Have I Been Trained, Kudurru).",
+          "authorship_model": "Collaborative and distributed. Herndon and Dryhurst are lead artists, but the work explicitly credits and empowers contributing choirs, ensembles, and visitors as co-creators through governance mechanisms."
+        },
+        "liveness_and_duration": {
+          "temporal_type": "continuously-evolving",
+          "temporal_detail": "The exhibition actively grows through live Sunday recording sessions where new voices are incorporated into the AI models. The Berlin choral dataset expands throughout the exhibition at KW, and the resulting model debuts at K21 Dusseldorf -- the work literally migrates and evolves between venues."
+        },
+        "data_materiality": {
+          "data_sources": "Public domain visual data (for Public Diffusion), live choral recordings from Berlin choirs and visitor participants, Hildegard von Bingen's Ordo Virtutum (1151) as source text/training corpus, Sacred Harp hymn recordings carried forward from The Call.",
+          "data_provenance": "Ethical and consented. Public Diffusion uses exclusively public domain data. Choral recordings are gathered through participatory sessions with explicit consent and Data Trust governance. The Ordo Virtutum source material is 12th-century public domain."
+        },
+        "embedding_space_relevance": {
+          "embedding_summary": "Public Diffusion operates in learned latent spaces of public domain visual culture. The choral AI models navigate latent vocal spaces. The work positions these embedding spaces as 'mirrors' -- reflecting collective human creativity back through AI coordination.",
+          "multimodal": "Yes. The exhibition spans audio (choral AI, Hearth), visual (Public Diffusion image generation, Arboretum), and sculptural/spatial modalities in a unified conceptual framework."
+        },
+        "exhibition_modality": {
+          "modality": "installation",
+          "spatial_description": "KW Berlin transformed into 'part cathedral, part data center.' Multiple interconnected spaces: Arboretum with Public Diffusion, the main hall with Ur-Hildegard Training Corpus and The Hearth, and Sunday recording sessions transforming the space into a live studio. The architecture of the institution becomes the architecture of the AI training process."
+        },
+        "sensory_register": {
+          "senses": [
+            "sonic",
+            "visual"
+          ],
+          "dominant_register": "sonic"
+        },
+        "interoperability": {
+          "composability": "Public Diffusion is a foundation model that could be integrated into other systems. The choral dataset being built is designed to be a shared resource. The recording protocol and Data Trust framework are replicable methodologies for other projects.",
+          "technical_openness": "Hybrid. Public Diffusion is built on public domain data suggesting openness. The choral dataset governance is determined collectively by contributors through the Data Trust."
+        },
+        "technical_approach": {
+          "stack": "Custom choral AI models (extending Choral Diffusion from The Call), Public Diffusion (foundation image model trained on public domain data), GPU cooling fan acoustic organ, multi-channel recording systems, live AI training infrastructure"
+        },
+        "network_position": {
+          "position_type": "hub",
+          "scene_affiliation": "Berlin art/technology scene, KW Institute institutional ecosystem, AI art, protocol art, commons/data governance, European institutional art circuit (KW Berlin, K21 Dusseldorf)",
+          "connections": "The Call (Serpentine, predecessor project), KW Institute for Contemporary Art (host institution), K21 Kunstsammlung Nordrhein-Westfalen (second venue), Fellowship.xyz (gallery representing Herndon/Dryhurst), Serpentine Arts Technologies (prior collaborator), Kulturstiftung des Bundes (funder), Stability AI, IRCAM"
+        },
+        "potential_role_in_adai": {
+          "role": "artwork-in-graph",
+          "role_detail": "Starmirror extends the protocol art and collective intelligence frameworks most relevant to A(DAI). Public Diffusion demonstrates a commons-based foundation model. The live participatory training sessions model how A(DAI) might engage communities in building shared intelligence infrastructure. The project's speculative infrastructure -- AI models as coordination protocols -- is conceptually aligned with A(DAI)'s mission."
+        },
+        "temporal_status": {
+          "status": "ongoing-practice"
+        },
+        "uncertain": [
+          "embedding_summary",
+          "technical_openness"
+        ]
+      },
+      "data_provenance": {
+        "source": "seed-research-2025",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "focus_areas": [
+        {
+          "id": "concept:ai installation",
+          "name": "AI installation",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:sound",
+          "name": "Sound",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:sculpture",
+          "name": "sculpture",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:live choral ai training",
+          "name": "live choral AI training",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:image generation",
+          "name": "image generation",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:performance",
+          "name": "performance",
+          "source": "contributor:migration"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -11830,7 +12630,142 @@
     "type": "artwork",
     "name": "The Call (Holly Herndon & Mat Dryhurst)",
     "slug": "the-call-holly-herndon-mat-dryhurst",
-    "metadata": "{\"original_type\": \"artwork\", \"status\": \"confirmed\", \"source_file\": \"The_Call.json\", \"full_profile\": {\"basic_info\": {\"name\": \"The Call (Holly Herndon & Mat Dryhurst)\", \"type\": \"artwork\", \"active_years\": \"2024-2025\", \"location\": \"Serpentine North Gallery, London, UK (4 October 2024 - 2 February 2025)\", \"url\": \"https://www.serpentinegalleries.org/whats-on/holly-herndon-mat-dryhurst-the-call/\"}, \"practice_description\": {\"medium\": \"AI choral installation, sound, sculpture, interactive AI model\", \"practice_summary\": \"Three interconnected installations (The Hearth, The Wheel, Oratory) that reframe AI as an extension of collective singing traditions, using custom choral AI models trained on consented recordings from 15 UK choirs performing Sacred Harp hymns.\", \"methodology\": \"Herndon and Dryhurst composed a songbook of hymns and singing exercises, then conducted a choral dataset tour across the UK in Spring 2024 (Belfast, Leeds, Bristol, Beith, and other cities) recording 15 professional and community choirs via a multi-channel recording protocol. The AI models (Choral Diffusion) were developed in collaboration with IRCAM-STMS (Nils Demerle, Mateo Fayet, Robin Meier, Philippe Esling) with machine learning support from Stability AI (Zach Evans, CJ Carr). A pioneering Data Trust was established to give choir participants governance over how the resulting AI models are deployed. The project treats the entire pipeline -- from recording protocol to data governance to AI training to installation -- as a unified artwork.\"}, \"relevance_to_sense_room\": {\"relevance_summary\": \"The Call is a paradigmatic example of art-as-substrate for a graph-curated generative exhibition: it produces living AI models whose outputs are shaped by relational structures between choirs, communities, and governance protocols. Its approach to data trust governance directly models how A(DAI) might handle consent and collective intelligence.\", \"art_as_substrate\": \"Yes. The choral AI models produce continuous generative output that could function as substrate material. The Hearth transforms GPU cooling fans into a pipe organ playing AI-generated hymns -- computation's byproducts become the art's ground layer.\", \"relational_composition\": \"Yes. The work is fundamentally relational: 15 choirs contribute to a shared dataset, and the AI models produce outputs that are composites of collective vocal input. The call-and-response structure is inherently graph-like, with each choir as a node contributing to a shared model.\", \"self_recomposing\": \"Yes. The interactive Oratory component allows visitors to contribute their voices in real-time, with the AI harmonizing and layering new inputs. The work continuously evolves through participation.\"}, \"key_works\": {\"works\": [{\"title\": \"The Hearth\", \"year\": 2024, \"description\": \"Acoustic organ built from GPU cooling fans arranged like a pipe organ, filling the gallery with AI-generated hymns. At the organ's centre is an engraving of an infant blowing a lur (ancient wind instrument). Transforms computational infrastructure's byproducts into musical installation.\", \"relevance\": \"Demonstrates how infrastructure itself (GPU fans, heat, noise) becomes artistic material -- directly relevant to A(DAI)'s interest in infrastructure as creative medium.\"}, {\"title\": \"The Wheel\", \"year\": 2024, \"description\": \"Spherical chandelier-like installation in the South Powder Room with gilded panels engraved with imagery from the recording tour, serving as symbolic centre for the choral data.\", \"relevance\": \"Physical manifestation of a data provenance record -- the journey of data collection made visible as sculptural object.\"}, {\"title\": \"Oratory (Interactive Choral AI)\", \"year\": 2024, \"description\": \"Interactive installation where visitors contribute their voices and the choral AI model harmonizes them in real-time, creating an experience akin to joining a choir.\", \"relevance\": \"Live demonstration of human-AI collective composition, where individual contributions are woven into a collective output -- core A(DAI) Sense Room principle.\"}]}, \"protocol_art_resonance\": {\"protocol_art_summary\": \"The Call treats protocols as artistic medium at multiple levels: the recording protocol (how choirs are captured), the Data Trust protocol (how participants govern their data), and the AI training protocol (how models are built from consented data). The entire governance and technical pipeline is the artwork.\", \"system_designed\": \"A Data Trust governance structure where choir participants collectively determine how their recordings and derived AI models are used, shared, and protected. Also developed Choral Diffusion -- custom choral AI models. The Data Trust was incubated by Serpentine's Future Art Ecosystems project with support from King's College London Centre for Data Futures and RadicalxChange.\"}, \"commons_orientation\": {\"licence_model\": \"commons-based (CC-BY-NC-SA recommended by research findings for the choral dataset)\", \"commons_summary\": \"The project is fundamentally commons-oriented. It established a Data Trust where 15 choirs collectively govern their data rather than ceding it to corporate interests. Research from a NeurIPS 2024 paper on the project found 92% of participants preferred choir-level (group) credit over individual credit (34%), and recommended CC-BY-NC-SA licensing. The artists previously built Spawning (haveibeentrained.com, Kudurru, Source.Plus) -- consent infrastructure for AI training data.\"}, \"governance_model\": {\"governance_type\": \"collective\", \"governance_detail\": \"Data Trust model with an appointed data intermediary (Jennifer Ding) who helps choir members exercise agency over dataset and model deployment. The trust includes an elected data trustee who makes decisions on behalf of the group, analogous to an elected representative. Led by Victoria Ivanova, Jennifer Ding, Eva Jager, Ruth Waters, and Mercedes Bunz at Serpentine Arts Technologies.\"}, \"consent_and_authorship\": {\"consent_approach\": \"Explicit, participatory consent. Choirs were recorded through a deliberate protocol tour with full knowledge of intended AI training use. The Data Trust gives participants ongoing governance over how recordings are used. This builds on the artists' prior work: Have I Been Trained (2022, opt-in/out tool for AI datasets), Kudurru (data-defence network blocking AI scrapers), and Spawning (consent layer for AI).\", \"authorship_model\": \"Collective and distributed. Holly Herndon and Mat Dryhurst are the lead artists, but the work explicitly positions the 15 choirs as co-creators with governance rights. Scientific collaboration credited to IRCAM-STMS and Stability AI teams. The NeurIPS research showed participants valued group recognition over individual credit.\"}, \"liveness_and_duration\": {\"temporal_type\": \"responsive-to-input\", \"temporal_detail\": \"The installation had fixed elements (Hearth, Wheel) that played continuously, alongside the interactive Oratory where visitor voice input triggered real-time AI harmonization. The underlying AI models persist beyond the exhibition and are governed by the Data Trust for future use.\"}, \"data_materiality\": {\"data_sources\": \"Multi-channel recordings of 15 UK choirs singing Sacred Harp hymns (19th-century American shape-note tradition derived from old English choral music). Herndon and Dryhurst composed a specific songbook of hymns and singing exercises for the recording protocol.\", \"data_provenance\": \"Fully consented. Custom dataset created specifically for the project through a deliberate recording tour. Governed by a Data Trust structure. No scraped data. The Sacred Harp tradition itself is public domain (19th century).\"}, \"embedding_space_relevance\": {\"embedding_summary\": \"The Choral Diffusion models operate in learned latent spaces of choral vocal timbres. The AI models generate new choral arrangements by navigating these learned vocal spaces, producing outputs that are interpolations and transformations of the training data.\", \"multimodal\": \"Primarily audio, but the installation combines sound with physical sculpture (Hearth, Wheel) and visitor interaction.\"}, \"exhibition_modality\": {\"modality\": \"installation\", \"spatial_description\": \"Three distinct gallery spaces at Serpentine North: The Hearth (main gallery -- GPU fan organ filling the space with AI hymns), The Wheel (South Powder Room -- chandelier sculpture), and Oratory (interactive voice contribution space). The installation transforms a classical gallery into an immersive sonic environment.\"}, \"sensory_register\": {\"senses\": [\"sonic\", \"visual\", \"haptic\"], \"dominant_register\": \"sonic\"}, \"interoperability\": {\"composability\": \"The choral AI models could theoretically be exposed as APIs or used as inputs for other generative systems, subject to Data Trust governance. The recording protocol and Data Trust framework are replicable methodologies. The Choral Diffusion model architecture is a research output.\", \"technical_openness\": \"Hybrid. The Data Trust governs openness -- the choir participants collectively decide whether models and datasets are shared. Research findings suggest CC-BY-NC-SA licensing. The scientific collaboration with IRCAM suggests academic publication norms.\"}, \"technical_approach\": {\"stack\": \"Choral Diffusion (custom AI models developed with IRCAM-STMS), machine learning support from Stability AI, multi-channel recording protocol, GPU cooling fan acoustic organ, custom sculpture fabrication\"}, \"network_position\": {\"position_type\": \"hub\", \"scene_affiliation\": \"Berlin experimental music/art scene, Serpentine institutional ecosystem, AI art, protocol art, commons/data governance, choral music communities across the UK\", \"connections\": \"Serpentine Arts Technologies (commissioner and collaborator), Fellowship.xyz (represents Herndon/Dryhurst), Starmirror (sister work at KW Berlin), Spawning/Have I Been Trained (prior consent infrastructure), IRCAM (scientific collaboration), Stability AI (ML support), Feral File (Herndon/Dryhurst exhibited there for MoMA Sound Machines)\"}, \"potential_role_in_adai\": {\"role\": \"artwork-in-graph\", \"role_detail\": \"The Call is a primary reference artwork for A(DAI)'s Sense Room concept. Its Data Trust governance model is directly applicable to how A(DAI) might handle contributor consent. The choral AI models demonstrate art-as-substrate and collective intelligence coordination. The project's methodology (recording protocol, data governance, AI training pipeline) is a template for how A(DAI) could commission participatory intelligence-generating artworks.\"}, \"temporal_status\": {\"status\": \"completed-project\"}, \"uncertain\": [\"embedding_summary\"]}, \"data_provenance\": {\"source\": \"seed-research-2025\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "original_type": "artwork",
+      "status": "confirmed",
+      "source_file": "The_Call.json",
+      "full_profile": {
+        "basic_info": {
+          "name": "The Call (Holly Herndon & Mat Dryhurst)",
+          "type": "artwork",
+          "active_years": "2024-2025",
+          "location": "Serpentine North Gallery, London, UK (4 October 2024 - 2 February 2025)",
+          "url": "https://www.serpentinegalleries.org/whats-on/holly-herndon-mat-dryhurst-the-call/"
+        },
+        "practice_description": {
+          "medium": "AI choral installation, sound, sculpture, interactive AI model",
+          "practice_summary": "Three interconnected installations (The Hearth, The Wheel, Oratory) that reframe AI as an extension of collective singing traditions, using custom choral AI models trained on consented recordings from 15 UK choirs performing Sacred Harp hymns.",
+          "methodology": "Herndon and Dryhurst composed a songbook of hymns and singing exercises, then conducted a choral dataset tour across the UK in Spring 2024 (Belfast, Leeds, Bristol, Beith, and other cities) recording 15 professional and community choirs via a multi-channel recording protocol. The AI models (Choral Diffusion) were developed in collaboration with IRCAM-STMS (Nils Demerle, Mateo Fayet, Robin Meier, Philippe Esling) with machine learning support from Stability AI (Zach Evans, CJ Carr). A pioneering Data Trust was established to give choir participants governance over how the resulting AI models are deployed. The project treats the entire pipeline -- from recording protocol to data governance to AI training to installation -- as a unified artwork."
+        },
+        "relevance_to_sense_room": {
+          "relevance_summary": "The Call is a paradigmatic example of art-as-substrate for a graph-curated generative exhibition: it produces living AI models whose outputs are shaped by relational structures between choirs, communities, and governance protocols. Its approach to data trust governance directly models how A(DAI) might handle consent and collective intelligence.",
+          "art_as_substrate": "Yes. The choral AI models produce continuous generative output that could function as substrate material. The Hearth transforms GPU cooling fans into a pipe organ playing AI-generated hymns -- computation's byproducts become the art's ground layer.",
+          "relational_composition": "Yes. The work is fundamentally relational: 15 choirs contribute to a shared dataset, and the AI models produce outputs that are composites of collective vocal input. The call-and-response structure is inherently graph-like, with each choir as a node contributing to a shared model.",
+          "self_recomposing": "Yes. The interactive Oratory component allows visitors to contribute their voices in real-time, with the AI harmonizing and layering new inputs. The work continuously evolves through participation."
+        },
+        "key_works": {
+          "works": [
+            {
+              "title": "The Hearth",
+              "year": 2024,
+              "description": "Acoustic organ built from GPU cooling fans arranged like a pipe organ, filling the gallery with AI-generated hymns. At the organ's centre is an engraving of an infant blowing a lur (ancient wind instrument). Transforms computational infrastructure's byproducts into musical installation.",
+              "relevance": "Demonstrates how infrastructure itself (GPU fans, heat, noise) becomes artistic material -- directly relevant to A(DAI)'s interest in infrastructure as creative medium."
+            },
+            {
+              "title": "The Wheel",
+              "year": 2024,
+              "description": "Spherical chandelier-like installation in the South Powder Room with gilded panels engraved with imagery from the recording tour, serving as symbolic centre for the choral data.",
+              "relevance": "Physical manifestation of a data provenance record -- the journey of data collection made visible as sculptural object."
+            },
+            {
+              "title": "Oratory (Interactive Choral AI)",
+              "year": 2024,
+              "description": "Interactive installation where visitors contribute their voices and the choral AI model harmonizes them in real-time, creating an experience akin to joining a choir.",
+              "relevance": "Live demonstration of human-AI collective composition, where individual contributions are woven into a collective output -- core A(DAI) Sense Room principle."
+            }
+          ]
+        },
+        "protocol_art_resonance": {
+          "protocol_art_summary": "The Call treats protocols as artistic medium at multiple levels: the recording protocol (how choirs are captured), the Data Trust protocol (how participants govern their data), and the AI training protocol (how models are built from consented data). The entire governance and technical pipeline is the artwork.",
+          "system_designed": "A Data Trust governance structure where choir participants collectively determine how their recordings and derived AI models are used, shared, and protected. Also developed Choral Diffusion -- custom choral AI models. The Data Trust was incubated by Serpentine's Future Art Ecosystems project with support from King's College London Centre for Data Futures and RadicalxChange."
+        },
+        "commons_orientation": {
+          "licence_model": "commons-based (CC-BY-NC-SA recommended by research findings for the choral dataset)",
+          "commons_summary": "The project is fundamentally commons-oriented. It established a Data Trust where 15 choirs collectively govern their data rather than ceding it to corporate interests. Research from a NeurIPS 2024 paper on the project found 92% of participants preferred choir-level (group) credit over individual credit (34%), and recommended CC-BY-NC-SA licensing. The artists previously built Spawning (haveibeentrained.com, Kudurru, Source.Plus) -- consent infrastructure for AI training data."
+        },
+        "governance_model": {
+          "governance_type": "collective",
+          "governance_detail": "Data Trust model with an appointed data intermediary (Jennifer Ding) who helps choir members exercise agency over dataset and model deployment. The trust includes an elected data trustee who makes decisions on behalf of the group, analogous to an elected representative. Led by Victoria Ivanova, Jennifer Ding, Eva Jager, Ruth Waters, and Mercedes Bunz at Serpentine Arts Technologies."
+        },
+        "consent_and_authorship": {
+          "consent_approach": "Explicit, participatory consent. Choirs were recorded through a deliberate protocol tour with full knowledge of intended AI training use. The Data Trust gives participants ongoing governance over how recordings are used. This builds on the artists' prior work: Have I Been Trained (2022, opt-in/out tool for AI datasets), Kudurru (data-defence network blocking AI scrapers), and Spawning (consent layer for AI).",
+          "authorship_model": "Collective and distributed. Holly Herndon and Mat Dryhurst are the lead artists, but the work explicitly positions the 15 choirs as co-creators with governance rights. Scientific collaboration credited to IRCAM-STMS and Stability AI teams. The NeurIPS research showed participants valued group recognition over individual credit."
+        },
+        "liveness_and_duration": {
+          "temporal_type": "responsive-to-input",
+          "temporal_detail": "The installation had fixed elements (Hearth, Wheel) that played continuously, alongside the interactive Oratory where visitor voice input triggered real-time AI harmonization. The underlying AI models persist beyond the exhibition and are governed by the Data Trust for future use."
+        },
+        "data_materiality": {
+          "data_sources": "Multi-channel recordings of 15 UK choirs singing Sacred Harp hymns (19th-century American shape-note tradition derived from old English choral music). Herndon and Dryhurst composed a specific songbook of hymns and singing exercises for the recording protocol.",
+          "data_provenance": "Fully consented. Custom dataset created specifically for the project through a deliberate recording tour. Governed by a Data Trust structure. No scraped data. The Sacred Harp tradition itself is public domain (19th century)."
+        },
+        "embedding_space_relevance": {
+          "embedding_summary": "The Choral Diffusion models operate in learned latent spaces of choral vocal timbres. The AI models generate new choral arrangements by navigating these learned vocal spaces, producing outputs that are interpolations and transformations of the training data.",
+          "multimodal": "Primarily audio, but the installation combines sound with physical sculpture (Hearth, Wheel) and visitor interaction."
+        },
+        "exhibition_modality": {
+          "modality": "installation",
+          "spatial_description": "Three distinct gallery spaces at Serpentine North: The Hearth (main gallery -- GPU fan organ filling the space with AI hymns), The Wheel (South Powder Room -- chandelier sculpture), and Oratory (interactive voice contribution space). The installation transforms a classical gallery into an immersive sonic environment."
+        },
+        "sensory_register": {
+          "senses": [
+            "sonic",
+            "visual",
+            "haptic"
+          ],
+          "dominant_register": "sonic"
+        },
+        "interoperability": {
+          "composability": "The choral AI models could theoretically be exposed as APIs or used as inputs for other generative systems, subject to Data Trust governance. The recording protocol and Data Trust framework are replicable methodologies. The Choral Diffusion model architecture is a research output.",
+          "technical_openness": "Hybrid. The Data Trust governs openness -- the choir participants collectively decide whether models and datasets are shared. Research findings suggest CC-BY-NC-SA licensing. The scientific collaboration with IRCAM suggests academic publication norms."
+        },
+        "technical_approach": {
+          "stack": "Choral Diffusion (custom AI models developed with IRCAM-STMS), machine learning support from Stability AI, multi-channel recording protocol, GPU cooling fan acoustic organ, custom sculpture fabrication"
+        },
+        "network_position": {
+          "position_type": "hub",
+          "scene_affiliation": "Berlin experimental music/art scene, Serpentine institutional ecosystem, AI art, protocol art, commons/data governance, choral music communities across the UK",
+          "connections": "Serpentine Arts Technologies (commissioner and collaborator), Fellowship.xyz (represents Herndon/Dryhurst), Starmirror (sister work at KW Berlin), Spawning/Have I Been Trained (prior consent infrastructure), IRCAM (scientific collaboration), Stability AI (ML support), Feral File (Herndon/Dryhurst exhibited there for MoMA Sound Machines)"
+        },
+        "potential_role_in_adai": {
+          "role": "artwork-in-graph",
+          "role_detail": "The Call is a primary reference artwork for A(DAI)'s Sense Room concept. Its Data Trust governance model is directly applicable to how A(DAI) might handle contributor consent. The choral AI models demonstrate art-as-substrate and collective intelligence coordination. The project's methodology (recording protocol, data governance, AI training pipeline) is a template for how A(DAI) could commission participatory intelligence-generating artworks."
+        },
+        "temporal_status": {
+          "status": "completed-project"
+        },
+        "uncertain": [
+          "embedding_summary"
+        ]
+      },
+      "data_provenance": {
+        "source": "seed-research-2025",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "focus_areas": [
+        {
+          "id": "concept:ai choral installation",
+          "name": "AI choral installation",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:sound",
+          "name": "Sound",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:sculpture",
+          "name": "sculpture",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:interactive ai model",
+          "name": "interactive AI model",
+          "source": "contributor:migration"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -11975,6 +12910,33 @@
           "id": "practitioner:constant",
           "name": "Constant",
           "type": "practitioner",
+          "source": "contributor:migration"
+        }
+      ],
+      "focus_areas": [
+        {
+          "id": "concept:reading groups",
+          "name": "reading groups",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:publishing",
+          "name": "publishing",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:events",
+          "name": "events",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:study infrastructure",
+          "name": "study infrastructure",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:web platforms",
+          "name": "web platforms",
           "source": "contributor:migration"
         }
       ]
@@ -12416,6 +13378,33 @@
           "type": "practitioner",
           "source": "contributor:migration"
         }
+      ],
+      "focus_areas": [
+        {
+          "id": "concept:publication",
+          "name": "publication",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:exhibition",
+          "name": "exhibition",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:film",
+          "name": "film",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:ai-generated imagery",
+          "name": "AI-generated imagery",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:critical essays",
+          "name": "critical essays",
+          "source": "contributor:migration"
+        }
       ]
     },
     "created_at": "2026-04-21T13:29:05Z",
@@ -12655,6 +13644,23 @@
           "type": "platform",
           "source": "contributor:migration"
         }
+      ],
+      "focus_areas": [
+        {
+          "id": "concept:on-chain generative art",
+          "name": "On-chain generative art",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:multi-chain digital art platform",
+          "name": "multi-chain digital art platform",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:token-based art economy",
+          "name": "token-based art economy",
+          "source": "contributor:migration"
+        }
       ]
     },
     "created_at": "2026-04-21T13:29:05Z",
@@ -12798,6 +13804,23 @@
           "id": "practitioner:refik anadol",
           "name": "Refik Anadol",
           "type": "practitioner",
+          "source": "contributor:migration"
+        }
+      ],
+      "focus_areas": [
+        {
+          "id": "concept:immersive digital installation",
+          "name": "Immersive digital installation",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:projection mapping",
+          "name": "projection mapping",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:real-time generative environments",
+          "name": "real-time generative environments",
           "source": "contributor:migration"
         }
       ]
@@ -17929,6 +18952,23 @@
           "type": "practitioner",
           "source": "contributor:migration"
         }
+      ],
+      "focus_areas": [
+        {
+          "id": "concept:net art",
+          "name": "net art",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:browser-based art",
+          "name": "browser-based art",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:software art",
+          "name": "software art",
+          "source": "contributor:migration"
+        }
       ]
     },
     "created_at": "2026-04-21T13:29:05Z",
@@ -21593,6 +22633,28 @@
           "type": "practitioner",
           "source": "contributor:migration"
         }
+      ],
+      "focus_areas": [
+        {
+          "id": "concept:digital art",
+          "name": "digital art",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:mixed media",
+          "name": "mixed media",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:crypto art",
+          "name": "crypto art",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:mythological illustration",
+          "name": "mythological illustration",
+          "source": "contributor:migration"
+        }
       ]
     },
     "created_at": "2026-04-21T13:29:05Z",
@@ -22345,6 +23407,23 @@
           "id": "practitioner:philip beesley",
           "name": "Philip Beesley",
           "type": "practitioner",
+          "source": "contributor:migration"
+        }
+      ],
+      "focus_areas": [
+        {
+          "id": "concept:installation",
+          "name": "Installation",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:responsive environments",
+          "name": "responsive environments",
+          "source": "contributor:migration"
+        },
+        {
+          "id": "concept:kinetic sculpture",
+          "name": "kinetic sculpture",
           "source": "contributor:migration"
         }
       ]
