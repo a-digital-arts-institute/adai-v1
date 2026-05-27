@@ -511,7 +511,25 @@
         "Whitney Museum",
         "Museum",
         "African Diaspora",
-        "Queens Museum"
+        "Queens Museum",
+        {
+          "id": "institution:moma",
+          "name": "MoMA",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:whitney museum",
+          "name": "Whitney Museum",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:queens museum",
+          "name": "Queens Museum",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "New York contemporary art",
@@ -1029,7 +1047,13 @@
       ],
       "exhibitions": [
         "Gallery",
-        "Long Now Foundation"
+        "Long Now Foundation",
+        {
+          "id": "institution:long now foundation",
+          "name": "Long Now Foundation",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "Bridges ambient music",
@@ -1244,7 +1268,37 @@
         "MoMA PS",
         "Centre Pompidou",
         "Spruth Magers",
-        "UCCA Beijing"
+        "UCCA Beijing",
+        {
+          "id": "institution:serpentine arts technologies",
+          "name": "Serpentine Arts Technologies",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:moma ps1",
+          "name": "MoMA PS1",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:centre pompidou",
+          "name": "Centre Pompidou",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:spruth magers",
+          "name": "Sprüth Magers",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:ucca beijing",
+          "name": "UCCA Beijing",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "Chinese contemporary art (central figure)",
@@ -1487,7 +1541,37 @@
         "SFMOMA",
         "Centre Pompidou",
         "V&A",
-        "Processing Foundation community"
+        "Processing Foundation community",
+        {
+          "id": "institution:whitney museum",
+          "name": "Whitney Museum",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:lacma",
+          "name": "LACMA",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:sfmoma",
+          "name": "SFMOMA",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:centre pompidou",
+          "name": "Centre Pompidou",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:v&a",
+          "name": "V&A",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "Central figure in generative art",
@@ -1675,7 +1759,37 @@
         "Whitney Museum",
         "SFMOMA",
         "V&A",
-        "Cooper Hewitt"
+        "Cooper Hewitt",
+        {
+          "id": "institution:moma",
+          "name": "MoMA",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:whitney museum",
+          "name": "Whitney Museum",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:sfmoma",
+          "name": "SFMOMA",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:v&a",
+          "name": "V&A",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:cooper hewitt",
+          "name": "Cooper Hewitt",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "creative coding",
@@ -1797,7 +1911,13 @@
         }
       ],
       "exhibitions": [
-        "Gallery"
+        "Gallery",
+        {
+          "id": "institution:serpentine arts technologies",
+          "name": "Serpentine Arts Technologies",
+          "type": "institution",
+          "source": "contributor:migration"
+        }
       ],
       "scene_affiliation": [
         "Black trans art and activism",
@@ -2387,7 +2507,25 @@
       "exhibitions": [
         "Brooklyn Academy of Music (Bot Summit)",
         "Newspeak Foundation",
-        "Babycastles"
+        "Babycastles",
+        {
+          "id": "institution:brooklyn academy of music",
+          "name": "Brooklyn Academy of Music",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:newspeak foundation",
+          "name": "Newspeak Foundation",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:babycastles",
+          "name": "Babycastles",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "bot art",
@@ -2714,7 +2852,31 @@
         "Art Blocks Curated",
         "Bright Moments",
         "Unit London",
-        "Pace Gallery"
+        "Pace Gallery",
+        {
+          "id": "platform:art blocks",
+          "name": "Art Blocks",
+          "type": "platform",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:bright moments",
+          "name": "Bright Moments",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:unit london",
+          "name": "Unit London",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:pace gallery",
+          "name": "Pace Gallery",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "on-chain generative art",
@@ -2827,7 +2989,31 @@
         "Whitney Artport",
         "HeK Basel",
         "Transfer Gallery",
-        "Serpentine Galleries"
+        "Serpentine Galleries",
+        {
+          "id": "institution:whitney artport",
+          "name": "Whitney Artport",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:hek basel",
+          "name": "HeK Basel",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:transfer gallery",
+          "name": "Transfer Gallery",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:serpentine arts technologies",
+          "name": "Serpentine Arts Technologies",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "avatar art",
@@ -2894,7 +3080,31 @@
         "bitforms gallery",
         "Rhizome",
         "Venice Biennale",
-        "V&A"
+        "V&A",
+        {
+          "id": "institution:bitforms gallery",
+          "name": "bitforms gallery",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:rhizome artbase",
+          "name": "Rhizome / ArtBase",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:venice biennale",
+          "name": "Venice Biennale",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:v&a",
+          "name": "V&A",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "net.art",
@@ -2963,7 +3173,37 @@
         "MoMA PS1",
         "Centre Pompidou",
         "Fondation Louis Vuitton",
-        "M+ Hong Kong"
+        "M+ Hong Kong",
+        {
+          "id": "institution:venice biennale",
+          "name": "Venice Biennale",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:moma ps1",
+          "name": "MoMA PS1",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:centre pompidou",
+          "name": "Centre Pompidou",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:fondation louis vuitton",
+          "name": "Fondation Louis Vuitton",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:m+ hong kong",
+          "name": "M+ Hong Kong",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "avatar art",
@@ -3310,7 +3550,25 @@
         "Hyperdub 10",
         "Unsound",
         "HAU Berlin",
-        "AV Festival"
+        "AV Festival",
+        {
+          "id": "institution:unsound",
+          "name": "Unsound",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:hau berlin",
+          "name": "HAU Berlin",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:av festival",
+          "name": "AV Festival",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "algorithmic music",
@@ -3374,7 +3632,25 @@
       "exhibitions": [
         "No Fun Fest",
         "Unsound",
-        "Borealis Festival"
+        "Borealis Festival",
+        {
+          "id": "institution:no fun fest",
+          "name": "No Fun Fest",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:unsound",
+          "name": "Unsound",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:borealis festival",
+          "name": "Borealis Festival",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "experimental electronic music",
@@ -3619,7 +3895,31 @@
         "IRCAM",
         "Centre Pompidou",
         "CEMAMu archives",
-        "Philips Pavilion (Brussels 1958, with Le Corbusier)"
+        "Philips Pavilion (Brussels 1958, with Le Corbusier)",
+        {
+          "id": "institution:ircam",
+          "name": "IRCAM",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:centre pompidou",
+          "name": "Centre Pompidou",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:cemamu archives",
+          "name": "CEMAMu archives",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:philips pavilion",
+          "name": "Philips Pavilion",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "computer music",
@@ -3689,7 +3989,31 @@
         "Wien Modern",
         "Darmstadt",
         "Donaueschinger Musiktage",
-        "ISSUE Project Room"
+        "ISSUE Project Room",
+        {
+          "id": "institution:wien modern",
+          "name": "Wien Modern",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:darmstadt",
+          "name": "Darmstadt",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:donaueschinger musiktage",
+          "name": "Donaueschinger Musiktage",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:issue project room",
+          "name": "ISSUE Project Room",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "algorithmic music",
@@ -4388,7 +4712,14 @@
           "relevance": "A precedent for infrastructure that connects art practice with AI capability. Relevant as a model (and cautionary tale, given its corporate context) for A(DAI)'s commons-first alternative."
         }
       ],
-      "exhibitions": [],
+      "exhibitions": [
+        {
+          "id": "institution:serpentine arts technologies",
+          "name": "Serpentine Arts Technologies",
+          "type": "institution",
+          "source": "contributor:migration"
+        }
+      ],
       "scene_affiliation": [
         "AI art community",
         "experimental publishing (Ignota Books",
@@ -4735,7 +5066,37 @@
         "Smithsonian American Art Museum",
         "Fondazione Prada",
         "Van Gogh Museum",
-        "Barbican"
+        "Barbican",
+        {
+          "id": "institution:metro pictures",
+          "name": "Metro Pictures",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:smithsonian american art museum",
+          "name": "Smithsonian American Art Museum",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:fondazione prada",
+          "name": "Fondazione Prada",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:van gogh museum",
+          "name": "Van Gogh Museum",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:barbican",
+          "name": "Barbican",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "surveillance studies",
@@ -5022,7 +5383,19 @@
       ],
       "exhibitions": [
         "Serpentine",
-        "AI. Whitney Biennial"
+        "AI. Whitney Biennial",
+        {
+          "id": "institution:serpentine arts technologies",
+          "name": "Serpentine Arts Technologies",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:whitney museum",
+          "name": "Whitney Museum",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "AI art and music (central figure)",
@@ -5211,7 +5584,13 @@
         }
       ],
       "exhibitions": [
-        "Serpentine North"
+        "Serpentine North",
+        {
+          "id": "institution:serpentine north",
+          "name": "Serpentine North",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "AI art and ethics (TIME 100 most influential voices in AI",
@@ -6069,7 +6448,19 @@
       ],
       "exhibitions": [
         "MoMA",
-        "V&A"
+        "V&A",
+        {
+          "id": "institution:moma",
+          "name": "MoMA",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:v&a",
+          "name": "V&A",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "Critical AI studies",
@@ -7379,7 +7770,31 @@
         "Haus der Kulturen der Welt",
         "HKW Berlin",
         "ZKM",
-        "Lincoln Center"
+        "Lincoln Center",
+        {
+          "id": "institution:haus der kulturen der welt",
+          "name": "Haus der Kulturen der Welt",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:hkw berlin",
+          "name": "HKW Berlin",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:zkm",
+          "name": "ZKM",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:lincoln center",
+          "name": "Lincoln Center",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "forensic art",
@@ -7468,7 +7883,13 @@
         }
       ],
       "exhibitions": [
-        "Venice Biennale"
+        "Venice Biennale",
+        {
+          "id": "institution:venice biennale",
+          "name": "Venice Biennale",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "Quantum computing research community",
@@ -7777,7 +8198,37 @@
         "Ars Electronica",
         "ZKM",
         "Onassis Stegi",
-        "Centre Pompidou-Metz"
+        "Centre Pompidou-Metz",
+        {
+          "id": "institution:sotheby's",
+          "name": "Sotheby's",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:ars electronica",
+          "name": "Ars Electronica",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:zkm",
+          "name": "ZKM",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:onassis stegi",
+          "name": "Onassis Stegi",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:centre pompidou-metz",
+          "name": "Centre Pompidou-Metz",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "AI art",
@@ -7994,7 +8445,13 @@
         }
       ],
       "exhibitions": [
-        "Venice Biennale"
+        "Venice Biennale",
+        {
+          "id": "institution:venice biennale",
+          "name": "Venice Biennale",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "Responsive architecture",
@@ -8292,7 +8749,19 @@
       ],
       "exhibitions": [
         "High Museum",
-        "Centre Pompidou Paris"
+        "Centre Pompidou Paris",
+        {
+          "id": "institution:high museum",
+          "name": "High Museum",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:centre pompidou",
+          "name": "Centre Pompidou",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "Central figure bridging electronic music",
@@ -8494,7 +8963,37 @@
         "Guggenheim",
         "Documenta",
         "Venice Biennale",
-        "Unsound"
+        "Unsound",
+        {
+          "id": "institution:hamburger bahnhof",
+          "name": "Hamburger Bahnhof",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:guggenheim",
+          "name": "Guggenheim",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:documenta",
+          "name": "Documenta",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:venice biennale",
+          "name": "Venice Biennale",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:unsound",
+          "name": "Unsound",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "experimental electronic music",
@@ -8818,7 +9317,25 @@
       "exhibitions": [
         "Furtherfield Gallery",
         "Tate",
-        "V&A"
+        "V&A",
+        {
+          "id": "institution:furtherfield",
+          "name": "Furtherfield",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:tate",
+          "name": "Tate",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:v&a",
+          "name": "V&A",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "blockchain art",
@@ -8956,7 +9473,19 @@
       "exhibitions": [
         "V&A London",
         "MoMA",
-        "V&A collection context"
+        "V&A collection context",
+        {
+          "id": "institution:v&a",
+          "name": "V&A",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:moma",
+          "name": "MoMA",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "Bridges contemporary art",
@@ -9456,7 +9985,31 @@
         "MoMA",
         "Palais",
         "Goodman Gallery",
-        "Palais de Tokyo"
+        "Palais de Tokyo",
+        {
+          "id": "institution:serpentine arts technologies",
+          "name": "Serpentine Arts Technologies",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:moma",
+          "name": "MoMA",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:goodman gallery",
+          "name": "Goodman Gallery",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:palais de tokyo",
+          "name": "Palais de Tokyo",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "Decolonial technology art",
@@ -9710,7 +10263,37 @@
         "Whitney Museum",
         "Kitchen NYC",
         "SFMOMA",
-        "Institute of Contemporary Art Philadelphia"
+        "Institute of Contemporary Art Philadelphia",
+        {
+          "id": "institution:serpentine arts technologies",
+          "name": "Serpentine Arts Technologies",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:whitney museum",
+          "name": "Whitney Museum",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:kitchen nyc",
+          "name": "Kitchen NYC",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:sfmoma",
+          "name": "SFMOMA",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:institute of contemporary art philadelphia",
+          "name": "Institute of Contemporary Art Philadelphia",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "post-internet",
@@ -10056,7 +10639,31 @@
         "Z33 Hasselt",
         "WIELS Brussels",
         "transmediale",
-        "Libre Graphics Meeting"
+        "Libre Graphics Meeting",
+        {
+          "id": "institution:z33 hasselt",
+          "name": "Z33 Hasselt",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:wiels brussels",
+          "name": "WIELS Brussels",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:transmediale",
+          "name": "Transmediale",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:libre graphics meeting",
+          "name": "Libre Graphics Meeting",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "feminist free software",
@@ -10342,7 +10949,31 @@
         "Graz Kunstverein",
         "Asia Society",
         "Eyebeam",
-        "ZKM"
+        "ZKM",
+        {
+          "id": "institution:graz kunstverein",
+          "name": "Graz Kunstverein",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:asia society",
+          "name": "Asia Society",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:eyebeam",
+          "name": "Eyebeam",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:zkm",
+          "name": "ZKM",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "software studies",
@@ -10891,7 +11522,31 @@
         "Cybernetic Serendipity (ICA London 1968)",
         "V&A",
         "ZKM",
-        "The Machine as Seen at the End of the Mechanical Age (MoMA 1968)"
+        "The Machine as Seen at the End of the Mechanical Age (MoMA 1968)",
+        {
+          "id": "institution:ica london",
+          "name": "ICA London",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:v&a",
+          "name": "V&A",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:zkm",
+          "name": "ZKM",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:moma",
+          "name": "MoMA",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "early computer art",
@@ -11015,7 +11670,37 @@
         "ZKM",
         "Kunsthalle Bremen",
         "V&A",
-        "Centre Pompidou"
+        "Centre Pompidou",
+        {
+          "id": "institution:bitforms gallery",
+          "name": "bitforms gallery",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:zkm",
+          "name": "ZKM",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:kunsthalle bremen",
+          "name": "Kunsthalle Bremen",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:v&a",
+          "name": "V&A",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:centre pompidou",
+          "name": "Centre Pompidou",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "early computer art",
@@ -11115,7 +11800,25 @@
         "Museum of Modern Art",
         "Guggenheim",
         "Walker Art Center",
-        "Computer Art Exhibitions 1968-70"
+        "Computer Art Exhibitions 1968-70",
+        {
+          "id": "institution:moma",
+          "name": "MoMA",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:guggenheim",
+          "name": "Guggenheim",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:walker art center",
+          "name": "Walker Art Center",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "early computer art",
@@ -11176,7 +11879,14 @@
           "relevance": "Among the earliest artist-uses of online self-report aggregation as creative material — anticipates later critical AI-art practice."
         }
       ],
-      "exhibitions": [],
+      "exhibitions": [
+        {
+          "id": "institution:rhizome artbase",
+          "name": "Rhizome / ArtBase",
+          "type": "institution",
+          "source": "contributor:migration"
+        }
+      ],
       "scene_affiliation": [
         "late-1990s net"
       ],
@@ -11347,7 +12057,25 @@
       "exhibitions": [
         "Rhizome",
         "HMKV Dortmund",
-        "Tate"
+        "Tate",
+        {
+          "id": "institution:rhizome artbase",
+          "name": "Rhizome / ArtBase",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:hmkv dortmund",
+          "name": "HMKV Dortmund",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:tate",
+          "name": "Tate",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "net.art",
@@ -11455,7 +12183,25 @@
       "exhibitions": [
         "Whitney Biennial",
         "Rhizome",
-        "New Museum"
+        "New Museum",
+        {
+          "id": "institution:whitney museum",
+          "name": "Whitney Museum",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:rhizome artbase",
+          "name": "Rhizome / ArtBase",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:new museum",
+          "name": "New Museum",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "net.art",
@@ -11521,7 +12267,31 @@
         "Transmediale",
         "Ars Electronica",
         "Zentrum für Kunst und Medien Karlsruhe (ZKM)",
-        "HMKV Dortmund"
+        "HMKV Dortmund",
+        {
+          "id": "institution:transmediale",
+          "name": "Transmediale",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:ars electronica",
+          "name": "Ars Electronica",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:zkm",
+          "name": "ZKM",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:hmkv dortmund",
+          "name": "HMKV Dortmund",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "net.art",
@@ -11591,7 +12361,31 @@
         "Whitney Museum",
         "Studio Museum in Harlem",
         "Carnegie Hall",
-        "Knockdown Center"
+        "Knockdown Center",
+        {
+          "id": "institution:whitney museum",
+          "name": "Whitney Museum",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:studio museum in harlem",
+          "name": "Studio Museum in Harlem",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:carnegie hall",
+          "name": "Carnegie Hall",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:knockdown center",
+          "name": "Knockdown Center",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "net.art",
@@ -11648,7 +12442,31 @@
         "ICA London",
         "Walker Art Center",
         "Tate",
-        "Rhizome"
+        "Rhizome",
+        {
+          "id": "institution:ica london",
+          "name": "ICA London",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:walker art center",
+          "name": "Walker Art Center",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:tate",
+          "name": "Tate",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:rhizome artbase",
+          "name": "Rhizome / ArtBase",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "net.art",
@@ -11889,7 +12707,19 @@
       ],
       "exhibitions": [
         "Bienal de São Paulo",
-        "Computer Art Congress"
+        "Computer Art Congress",
+        {
+          "id": "institution:bienal de so paulo",
+          "name": "Bienal de São Paulo",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:computer art congress",
+          "name": "Computer Art Congress",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "early computer art",
@@ -11946,7 +12776,25 @@
         "ZKM Karlsruhe",
         "V&A",
         "Kestner Gesellschaft Hannover",
-        "Compart database"
+        "Compart database",
+        {
+          "id": "institution:zkm",
+          "name": "ZKM",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:v&a",
+          "name": "V&A",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:kestner gesellschaft hannover",
+          "name": "Kestner Gesellschaft Hannover",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "early computer art",
@@ -12046,7 +12894,37 @@
         "V&A",
         "Ludwig Museum Budapest",
         "Tate Modern",
-        "Venice Biennale"
+        "Venice Biennale",
+        {
+          "id": "institution:centre pompidou",
+          "name": "Centre Pompidou",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:v&a",
+          "name": "V&A",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:ludwig museum budapest",
+          "name": "Ludwig Museum Budapest",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:tate",
+          "name": "Tate",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:venice biennale",
+          "name": "Venice Biennale",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "early computer art",
@@ -14956,7 +15834,31 @@
         "SIGGRAPH (Art Gallery)",
         "V&A",
         "Ohio State University Wexner Center",
-        "Cybernetic Serendipity (ICA London, 1968)"
+        "Cybernetic Serendipity (ICA London, 1968)",
+        {
+          "id": "institution:siggraph",
+          "name": "SIGGRAPH",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:v&a",
+          "name": "V&A",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:ohio state university wexner center",
+          "name": "Ohio State University Wexner Center",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:ica london",
+          "name": "ICA London",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "early computer art",
@@ -15084,7 +15986,31 @@
         "Studiengalerie Stuttgart (1965)",
         "ZKM Karlsruhe",
         "Centre Pompidou",
-        "V&A"
+        "V&A",
+        {
+          "id": "institution:studiengalerie stuttgart",
+          "name": "Studiengalerie Stuttgart",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:zkm",
+          "name": "ZKM",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:centre pompidou",
+          "name": "Centre Pompidou",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:v&a",
+          "name": "V&A",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "early computer art",
@@ -15226,7 +16152,31 @@
         "Tate",
         "Walker Art Center",
         "Kiasma",
-        "Transmediale"
+        "Transmediale",
+        {
+          "id": "institution:tate",
+          "name": "Tate",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:walker art center",
+          "name": "Walker Art Center",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:kiasma",
+          "name": "Kiasma",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:transmediale",
+          "name": "Transmediale",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "net.art",
@@ -15409,7 +16359,25 @@
       "exhibitions": [
         "Rhizome",
         "transmediale",
-        "HMKV Dortmund"
+        "HMKV Dortmund",
+        {
+          "id": "institution:rhizome artbase",
+          "name": "Rhizome / ArtBase",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:transmediale",
+          "name": "Transmediale",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:hmkv dortmund",
+          "name": "HMKV Dortmund",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "net.art",
@@ -15506,7 +16474,31 @@
         "Venice Biennale 2001",
         "Walker Art Center",
         "Ars Electronica",
-        "ZKM"
+        "ZKM",
+        {
+          "id": "institution:venice biennale",
+          "name": "Venice Biennale",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:walker art center",
+          "name": "Walker Art Center",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:ars electronica",
+          "name": "Ars Electronica",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:zkm",
+          "name": "ZKM",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "net.art"
@@ -15623,7 +16615,37 @@
         "Ars Electronica",
         "Rhizome",
         "V2 Rotterdam",
-        "Walker Art Center"
+        "Walker Art Center",
+        {
+          "id": "institution:documenta",
+          "name": "Documenta",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:ars electronica",
+          "name": "Ars Electronica",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:rhizome artbase",
+          "name": "Rhizome / ArtBase",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:v2 rotterdam",
+          "name": "V2 Rotterdam",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:walker art center",
+          "name": "Walker Art Center",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "net.art"
@@ -15725,7 +16747,37 @@
         "MoMA",
         "Barbican",
         "Hamburger Bahnhof",
-        "Team Gallery"
+        "Team Gallery",
+        {
+          "id": "institution:whitney museum",
+          "name": "Whitney Museum",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:moma",
+          "name": "MoMA",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:barbican",
+          "name": "Barbican",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:hamburger bahnhof",
+          "name": "Hamburger Bahnhof",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:team gallery",
+          "name": "Team Gallery",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "post-internet",
@@ -15840,7 +16892,37 @@
         "Rhizome",
         "Stedelijk",
         "Foxy Production",
-        "Ullens Center Beijing"
+        "Ullens Center Beijing",
+        {
+          "id": "institution:moma",
+          "name": "MoMA",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:rhizome artbase",
+          "name": "Rhizome / ArtBase",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:stedelijk",
+          "name": "Stedelijk",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:foxy production",
+          "name": "Foxy Production",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:ullens center beijing",
+          "name": "Ullens Center Beijing",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "post-internet",
@@ -15931,7 +17013,31 @@
         "Sprüth Magers",
         "Zabludowicz Collection",
         "New Museum",
-        "Saatchi Gallery"
+        "Saatchi Gallery",
+        {
+          "id": "institution:spruth magers",
+          "name": "Sprüth Magers",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:zabludowicz collection",
+          "name": "Zabludowicz Collection",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:new museum",
+          "name": "New Museum",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:saatchi gallery",
+          "name": "Saatchi Gallery",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "post-internet"
@@ -16039,7 +17145,37 @@
         "Tate Britain",
         "New Museum",
         "DIA Art Foundation",
-        "Stedelijk"
+        "Stedelijk",
+        {
+          "id": "institution:serpentine arts technologies",
+          "name": "Serpentine Arts Technologies",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:tate",
+          "name": "Tate",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:new museum",
+          "name": "New Museum",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:dia art foundation",
+          "name": "DIA Art Foundation",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:stedelijk",
+          "name": "Stedelijk",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "post-internet",
@@ -16159,7 +17295,43 @@
         "New Museum",
         "Serpentine Galleries",
         "Arcadia Missa",
-        "Venice Biennale"
+        "Venice Biennale",
+        {
+          "id": "institution:tate",
+          "name": "Tate",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:whitney museum",
+          "name": "Whitney Museum",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:new museum",
+          "name": "New Museum",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:serpentine arts technologies",
+          "name": "Serpentine Arts Technologies",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:arcadia missa",
+          "name": "Arcadia Missa",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:venice biennale",
+          "name": "Venice Biennale",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "post-internet",
@@ -16341,7 +17513,31 @@
         "Kiasma",
         "Venice Biennale (Estonian Pavilion)",
         "Kunsthalle Basel",
-        "Greene Naftali"
+        "Greene Naftali",
+        {
+          "id": "institution:kiasma",
+          "name": "Kiasma",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:venice biennale",
+          "name": "Venice Biennale",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:kunsthalle basel",
+          "name": "Kunsthalle Basel",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:greene naftali",
+          "name": "Greene Naftali",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "post-internet",
@@ -16462,7 +17658,25 @@
       "exhibitions": [
         "Cooper Hewitt",
         "MOCA Los Angeles",
-        "Onedotzero"
+        "Onedotzero",
+        {
+          "id": "institution:cooper hewitt",
+          "name": "Cooper Hewitt",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:moca los angeles",
+          "name": "MOCA Los Angeles",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:onedotzero",
+          "name": "Onedotzero",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "creative coding",
@@ -16557,7 +17771,31 @@
         "MoMA",
         "Ars Electronica",
         "Onassis Cultural Centre",
-        "Sundance Film Festival"
+        "Sundance Film Festival",
+        {
+          "id": "institution:moma",
+          "name": "MoMA",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:ars electronica",
+          "name": "Ars Electronica",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:onassis stegi",
+          "name": "Onassis Stegi",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:sundance film festival",
+          "name": "Sundance Film Festival",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "creative coding",
@@ -16661,7 +17899,25 @@
       "exhibitions": [
         "Art Blocks Curated",
         "Pace Gallery",
-        "Gray Area SF"
+        "Gray Area SF",
+        {
+          "id": "platform:art blocks",
+          "name": "Art Blocks",
+          "type": "platform",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:pace gallery",
+          "name": "Pace Gallery",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:gray area sf",
+          "name": "Gray Area SF",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "creative coding",
@@ -16775,7 +18031,37 @@
         "Whitney Artport",
         "ZKM",
         "Eyebeam",
-        "Barbican"
+        "Barbican",
+        {
+          "id": "institution:ars electronica",
+          "name": "Ars Electronica",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:whitney artport",
+          "name": "Whitney Artport",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:zkm",
+          "name": "ZKM",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:eyebeam",
+          "name": "Eyebeam",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:barbican",
+          "name": "Barbican",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "creative coding",
@@ -16892,7 +18178,31 @@
         "Art Blocks Marfa",
         "Bright Moments",
         "Pace Gallery",
-        "Sotheby's"
+        "Sotheby's",
+        {
+          "id": "platform:art blocks",
+          "name": "Art Blocks",
+          "type": "platform",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:bright moments",
+          "name": "Bright Moments",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:pace gallery",
+          "name": "Pace Gallery",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:sotheby's",
+          "name": "Sotheby's",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "on-chain generative art",
@@ -16994,7 +18304,25 @@
       "exhibitions": [
         "Art Blocks",
         "Feral File",
-        "Bright Moments"
+        "Bright Moments",
+        {
+          "id": "platform:art blocks",
+          "name": "Art Blocks",
+          "type": "platform",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "platform:feral file",
+          "name": "Feral File",
+          "type": "platform",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:bright moments",
+          "name": "Bright Moments",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "on-chain generative art",
@@ -17090,7 +18418,25 @@
       "exhibitions": [
         "Art Blocks Marfa",
         "Bright Moments",
-        "Pace Gallery"
+        "Pace Gallery",
+        {
+          "id": "platform:art blocks",
+          "name": "Art Blocks",
+          "type": "platform",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:bright moments",
+          "name": "Bright Moments",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:pace gallery",
+          "name": "Pace Gallery",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "on-chain generative art",
@@ -17351,7 +18697,25 @@
       "exhibitions": [
         "Whitney Museum",
         "Sundance Film Festival",
-        "Rhizome"
+        "Rhizome",
+        {
+          "id": "institution:whitney museum",
+          "name": "Whitney Museum",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:sundance film festival",
+          "name": "Sundance Film Festival",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:rhizome artbase",
+          "name": "Rhizome / ArtBase",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "crypto art",
@@ -17487,7 +18851,31 @@
         "Christie's (auction)",
         "M+ Hong Kong",
         "Castello di Rivoli",
-        "Beeple Studios"
+        "Beeple Studios",
+        {
+          "id": "institution:christie's",
+          "name": "Christie's",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:m+ hong kong",
+          "name": "M+ Hong Kong",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:castello di rivoli",
+          "name": "Castello di Rivoli",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:beeple studios",
+          "name": "Beeple Studios",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "crypto art",
@@ -17595,7 +18983,31 @@
         "SuperRare",
         "Nifty Gateway",
         "Feral File",
-        "Unit London"
+        "Unit London",
+        {
+          "id": "platform:superrare",
+          "name": "SuperRare",
+          "type": "platform",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "platform:nifty gateway",
+          "name": "Nifty Gateway",
+          "type": "platform",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "platform:feral file",
+          "name": "Feral File",
+          "type": "platform",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:unit london",
+          "name": "Unit London",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "crypto art",
@@ -17738,7 +19150,25 @@
       "exhibitions": [
         "fxhash",
         "Art Blocks",
-        "FILE Festival"
+        "FILE Festival",
+        {
+          "id": "platform:fxhash v2 tezos ecosystem",
+          "name": "fx(hash) v2 / Tezos ecosystem",
+          "type": "platform",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "platform:art blocks",
+          "name": "Art Blocks",
+          "type": "platform",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:file festival",
+          "name": "FILE Festival",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "glitch art",
@@ -17848,7 +19278,19 @@
       ],
       "exhibitions": [
         "Feral File",
-        "Outland"
+        "Outland",
+        {
+          "id": "platform:feral file",
+          "name": "Feral File",
+          "type": "platform",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "publication:outland",
+          "name": "Outland",
+          "type": "publication",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "conceptual crypto art",
@@ -17962,7 +19404,25 @@
       "exhibitions": [
         "Bitforms",
         "Art Blocks Curated",
-        "Unit London"
+        "Unit London",
+        {
+          "id": "institution:bitforms gallery",
+          "name": "bitforms gallery",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "platform:art blocks",
+          "name": "Art Blocks",
+          "type": "platform",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:unit london",
+          "name": "Unit London",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "crypto art",
@@ -18068,7 +19528,25 @@
       "exhibitions": [
         "Unit London",
         "Feral File",
-        "Bitforms"
+        "Bitforms",
+        {
+          "id": "institution:unit london",
+          "name": "Unit London",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "platform:feral file",
+          "name": "Feral File",
+          "type": "platform",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:bitforms gallery",
+          "name": "bitforms gallery",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "crypto art",
@@ -18270,7 +19748,25 @@
       "exhibitions": [
         "Christie's (indirect, via controversy)",
         "Nature Morte Delhi",
-        "Feral File"
+        "Feral File",
+        {
+          "id": "institution:christie's",
+          "name": "Christie's",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:nature morte delhi",
+          "name": "Nature Morte Delhi",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "platform:feral file",
+          "name": "Feral File",
+          "type": "platform",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "AI art",
@@ -18448,7 +19944,25 @@
       "exhibitions": [
         "Serpentine Galleries",
         "Institute of Contemporary Arts London",
-        "Sónar"
+        "Sónar",
+        {
+          "id": "institution:serpentine arts technologies",
+          "name": "Serpentine Arts Technologies",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:ica london",
+          "name": "ICA London",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:snar",
+          "name": "Sónar",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "post-internet",
@@ -18555,7 +20069,37 @@
         "MoMA PS1",
         "Serpentine Galleries",
         "Sónar",
-        "Node Festival"
+        "Node Festival",
+        {
+          "id": "institution:park avenue armory",
+          "name": "Park Avenue Armory",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:moma ps1",
+          "name": "MoMA PS1",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:serpentine arts technologies",
+          "name": "Serpentine Arts Technologies",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:snar",
+          "name": "Sónar",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:node festival",
+          "name": "Node Festival",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "experimental electronic music",
@@ -18666,7 +20210,43 @@
         "Tate",
         "MoMA",
         "Hirshhorn",
-        "SFMOMA"
+        "SFMOMA",
+        {
+          "id": "institution:mexico city zcalo",
+          "name": "Mexico City Zócalo",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:venice biennale",
+          "name": "Venice Biennale",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:tate",
+          "name": "Tate",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:moma",
+          "name": "MoMA",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:hirshhorn",
+          "name": "Hirshhorn",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:sfmoma",
+          "name": "SFMOMA",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "interactive public art",
@@ -18905,7 +20485,37 @@
         "Serpentine Galleries",
         "K11 Shanghai",
         "Liverpool Biennial",
-        "Hayward Gallery"
+        "Hayward Gallery",
+        {
+          "id": "institution:sadie coles hq",
+          "name": "Sadie Coles HQ",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:serpentine arts technologies",
+          "name": "Serpentine Arts Technologies",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:k11 shanghai",
+          "name": "K11 Shanghai",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:liverpool biennial",
+          "name": "Liverpool Biennial",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:hayward gallery",
+          "name": "Hayward Gallery",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "sinofuturism",
@@ -19045,7 +20655,31 @@
         "Park Avenue Armory",
         "Teatro Colón",
         "Boiler Room",
-        "MoMA PS1"
+        "MoMA PS1",
+        {
+          "id": "institution:park avenue armory",
+          "name": "Park Avenue Armory",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:teatro coln",
+          "name": "Teatro Colón",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:boiler room",
+          "name": "Boiler Room",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:moma ps1",
+          "name": "MoMA PS1",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "experimental electronic music",
@@ -19152,7 +20786,31 @@
         "Furtherfield",
         "Cointemporary",
         "Unit London",
-        "Outland"
+        "Outland",
+        {
+          "id": "institution:furtherfield",
+          "name": "Furtherfield",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:cointemporary",
+          "name": "Cointemporary",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:unit london",
+          "name": "Unit London",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "publication:outland",
+          "name": "Outland",
+          "type": "publication",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "conceptual crypto art",
@@ -19251,7 +20909,37 @@
         "Venice Biennale (NZ Pavilion)",
         "Petzel Gallery",
         "K21 Düsseldorf",
-        "Serpentine Galleries"
+        "Serpentine Galleries",
+        {
+          "id": "institution:moma ps1",
+          "name": "MoMA PS1",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:venice biennale",
+          "name": "Venice Biennale",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:petzel gallery",
+          "name": "Petzel Gallery",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:k21 dsseldorf",
+          "name": "K21 Düsseldorf",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:serpentine arts technologies",
+          "name": "Serpentine Arts Technologies",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "post-internet",
@@ -19353,7 +21041,37 @@
         "bitforms gallery",
         "Whitney Museum",
         "Ars Electronica",
-        "Transmediale"
+        "Transmediale",
+        {
+          "id": "institution:moma ps1",
+          "name": "MoMA PS1",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:bitforms gallery",
+          "name": "bitforms gallery",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:whitney museum",
+          "name": "Whitney Museum",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:ars electronica",
+          "name": "Ars Electronica",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:transmediale",
+          "name": "Transmediale",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "feminist tech",
@@ -19470,7 +21188,37 @@
         "SFMOMA",
         "ZKM",
         "Venice Biennale",
-        "Tate Modern"
+        "Tate Modern",
+        {
+          "id": "institution:whitney museum",
+          "name": "Whitney Museum",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:sfmoma",
+          "name": "SFMOMA",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:zkm",
+          "name": "ZKM",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:venice biennale",
+          "name": "Venice Biennale",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:tate",
+          "name": "Tate",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "feminist digital art",
@@ -19601,7 +21349,25 @@
         "Ars Electronica",
         "Furtherfield",
         "Furtherfield Commons",
-        "ZKM"
+        "ZKM",
+        {
+          "id": "institution:ars electronica",
+          "name": "Ars Electronica",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:furtherfield",
+          "name": "Furtherfield",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        },
+        {
+          "id": "institution:zkm",
+          "name": "ZKM",
+          "type": "institution",
+          "source": "gatherer-enrichment"
+        }
       ],
       "scene_affiliation": [
         "blockchain art",
