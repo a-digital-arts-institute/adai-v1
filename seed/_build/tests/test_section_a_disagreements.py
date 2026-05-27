@@ -2,7 +2,36 @@ import sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
 
 from audit_schema import check_schema_disagreements, Finding
-from schema_contract import EDGE_CLAIMS
+from schema_contract import EDGE_CLAIMS, EdgeClaim
+
+
+# Synthetic contract used by tests that need a sources_md/skill_md divergence
+# for EXHIBITED_AT. The live EDGE_CLAIMS no longer has this divergence as of
+# the May 2026 cleanup (SOURCES.md defers to SKILL.md). The synthetic version
+# preserves the historical 'two-doc-disagreement' shape so the audit's
+# differential-conformance logic can still be exercised by tests.
+_SYNTHETIC_EDGE_CLAIMS = {
+    "EXHIBITED_AT": {
+        "skill_md": EdgeClaim(
+            source_types=("artwork",),
+            target_types=("institution", "platform"),
+            description="(synthetic) artwork-source per SKILL.md",
+            ref="(synthetic for test)",
+        ),
+        "sources_md": EdgeClaim(
+            source_types=("practitioner",),
+            target_types=("institution",),
+            description="(synthetic) practitioner-source per pre-cleanup SOURCES.md",
+            ref="(synthetic for test)",
+        ),
+        "claude_md": EdgeClaim(
+            source_types=("artwork",),
+            target_types=("institution", "platform"),
+            description="(synthetic) artwork-source per CLAUDE.md",
+            ref="(synthetic for test)",
+        ),
+    },
+}
 
 
 def _curated_edges():
@@ -34,7 +63,10 @@ def test_produces_one_finding_per_edge_type_in_contract():
 
 
 def test_exhibited_at_finding_records_per_document_conformance():
-    findings = check_schema_disagreements(_nodes_by_id(), _curated_edges(), EDGE_CLAIMS)
+    """Uses synthetic contract to exercise differential conformance logic.
+    Live contract no longer has this divergence (sources_md aligned in May 2026
+    cleanup), but the audit's per-doc conformance math still needs testing."""
+    findings = check_schema_disagreements(_nodes_by_id(), _curated_edges(), _SYNTHETIC_EDGE_CLAIMS)
     ea = next(f for f in findings if f.subject_id == "EXHIBITED_AT")
     # SOURCES.md says practitioner-source — 9 of 10 conform = 90%
     # SKILL.md and CLAUDE.md say artwork-source — 1 of 10 conform = 10%
@@ -45,7 +77,8 @@ def test_exhibited_at_finding_records_per_document_conformance():
 
 
 def test_disagreement_severity():
-    findings = check_schema_disagreements(_nodes_by_id(), _curated_edges(), EDGE_CLAIMS)
+    """Synthetic contract — see comment on test_exhibited_at_finding_records_per_document_conformance."""
+    findings = check_schema_disagreements(_nodes_by_id(), _curated_edges(), _SYNTHETIC_EDGE_CLAIMS)
     ea = next(f for f in findings if f.subject_id == "EXHIBITED_AT")
     # documents disagree → severity is warning
     assert ea.severity == "warning"
