@@ -354,7 +354,11 @@ def detect_id_collisions(
                 "creators": sorted(set(creator_ids)),
                 "gatherers": sorted({e["created_by"] for e in creator_edges}),
             },
-            suggested_fix="split into per-creator nodes with disambiguated ids",
+            suggested_fix=(
+                "investigate the producers (gatherers in `seed/_build/`) that hit this slug — "
+                "their slug rule is probably too generic. Fix the producer's slug-disambiguation "
+                "and regenerate. Do not hand-edit `seed/*.json`."
+            ),
         ))
     return findings
 
@@ -420,9 +424,19 @@ def detect_forked_created_by(
                 "gatherers": sorted({e["created_by"] for e in creator_edges}),
             },
             suggested_fix={
-                "platform_or_institution_as_creator": "remap non-practitioner CREATED_BY to EXHIBITED_AT or PUBLISHED_ON",
-                "id_collision_overlap": "split node — see Section C.1 finding for same id",
-                "other": "manual review",
+                "platform_or_institution_as_creator": (
+                    "investigate the producer that emitted this shape (see `gatherers` in details). "
+                    "EITHER widen SKILL.md to allow this target type (CLAUDE.md already documents "
+                    "20 collective CREATED_BY edges that embed:derive depends on) OR fix the "
+                    "producer to emit a different edge type."
+                ),
+                "id_collision_overlap": (
+                    "investigate the producers that hit this slug (Section C.1 has the same finding). "
+                    "Fix the slug rule at the producer, then regenerate."
+                ),
+                "other": (
+                    "manual review of the producer that emitted these creators. Do not hand-edit `seed/*.json`."
+                ),
             }[sub_class],
         ))
     return findings
@@ -601,7 +615,12 @@ def detect_era_violations(
                 "edge_type": e["edge_type"],
                 "created_by": e["created_by"],
             },
-            suggested_fix="delete edge OR add to ERA_VIOLATION_WHITELIST if curator attests",
+            suggested_fix=(
+                "investigate the producer (see `created_by` in details) — it's emitting an artwork-to-"
+                "crypto-concept edge for a pre-2009 artwork. EITHER the producer's date heuristic is "
+                "wrong, OR the row is correct in which case add to ERA_VIOLATION_WHITELIST at the "
+                "producer level."
+            ),
         ))
 
     return findings
@@ -630,7 +649,7 @@ def detect_bitemporal_integrity(edges: List[dict]) -> List[Finding]:
                 section="C", category="valid_until_before_valid_from", severity=SEVERITY_BUG,
                 subject_id=eid, subject_kind="edge",
                 details={"valid_from": vf, "valid_until": vu},
-                suggested_fix="repair valid_from or valid_until — temporal range invalid",
+                suggested_fix="investigate the producer that wrote this temporally-invalid range — likely a bug in its supersession handling",
             ))
 
         if invby and invby not in edge_ids:
@@ -638,7 +657,7 @@ def detect_bitemporal_integrity(edges: List[dict]) -> List[Finding]:
                 section="C", category="dangling_invalidated_by", severity=SEVERITY_BUG,
                 subject_id=eid, subject_kind="edge",
                 details={"invalidated_by": invby},
-                suggested_fix="invalidated_by must reference an existing edge id",
+                suggested_fix="investigate the producer that emitted this dangling invalidated_by reference",
             ))
 
         if vu is not None and not invby:
@@ -646,7 +665,7 @@ def detect_bitemporal_integrity(edges: List[dict]) -> List[Finding]:
                 section="C", category="superseded_without_invalidator", severity=SEVERITY_BUG,
                 subject_id=eid, subject_kind="edge",
                 details={"valid_until": vu},
-                suggested_fix="set invalidated_by to the successor edge id, or null out valid_until",
+                suggested_fix="investigate the producer that emitted this — it set valid_until without naming a successor; supersession bookkeeping bug in that producer",
             ))
 
     # Detect supersession loops: follow invalidated_by from each edge,
@@ -662,7 +681,7 @@ def detect_bitemporal_integrity(edges: List[dict]) -> List[Finding]:
                     section="C", category="supersession_loop", severity=SEVERITY_BUG,
                     subject_id=start, subject_kind="edge",
                     details={"loop_through": sorted(seen)},
-                    suggested_fix="break the cycle in invalidated_by chain",
+                    suggested_fix="investigate the producers in this supersession chain — one of them wrote a cycle",
                 ))
                 break
             if cur in seen:
@@ -728,7 +747,7 @@ def detect_self_loops(edges: List[dict]) -> List[Finding]:
                 subject_id=e.get("id", f"{e['source_id']}--{e['edge_type']}--{e['target_id']}"),
                 subject_kind="edge",
                 details={"source_id": e["source_id"], "edge_type": e["edge_type"]},
-                suggested_fix="delete self-referential edge",
+                suggested_fix="investigate the producer that emitted this self-loop — should never occur",
             ))
     return findings
 
@@ -751,9 +770,11 @@ def detect_unknown_edge_types(
             subject_kind="edge",
             details={"edge_type": et, "annotation": annotation,
                      "created_by": e.get("created_by")},
-            suggested_fix=("delete legacy-path edge — should never be in canonical seed"
-                           if annotation == "legacy_path_leak"
-                           else "remap to a known edge type or add the type to EDGE_CLAIMS"),
+            suggested_fix=(
+                "investigate which producer emitted this legacy edge type (the canonical seeder shouldn't be emitting RELATED_TO; check `seed.ts` vs `seed-consolidated.ts` path)"
+                if annotation == "legacy_path_leak"
+                else "investigate the producer (see `created_by` in details); EITHER it's emitting an undocumented edge type that should be added to EDGE_CLAIMS, OR it's a bug in the producer"
+            ),
         ))
     return findings
 
