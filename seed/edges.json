@@ -16131,39 +16131,6 @@
     "charge": null
   },
   {
-    "id": "practitioner:sol lewitt--influences--practitioner:casey reas",
-    "source_id": "practitioner:sol lewitt",
-    "target_id": "practitioner:casey reas",
-    "edge_type": "INFLUENCES",
-    "confidence": "medium",
-    "signal_id": "enrichment-seed-canon-v1-2026-04",
-    "created_by": "gatherer-enrichment",
-    "source_evidence": "Kept-stub anchor rule: target is a historical-influence stub preserved for INFLUENCES",
-    "charge": null
-  },
-  {
-    "id": "practitioner:gilbert simondon--influences--practitioner:yuk hui",
-    "source_id": "practitioner:gilbert simondon",
-    "target_id": "practitioner:yuk hui",
-    "edge_type": "INFLUENCES",
-    "confidence": "medium",
-    "signal_id": "enrichment-seed-canon-v1-2026-04",
-    "created_by": "gatherer-enrichment",
-    "source_evidence": "Kept-stub anchor rule: target is a historical-influence stub preserved for INFLUENCES",
-    "charge": null
-  },
-  {
-    "id": "practitioner:augusto de campos--influences--practitioner:waldemar cordeiro",
-    "source_id": "practitioner:augusto de campos",
-    "target_id": "practitioner:waldemar cordeiro",
-    "edge_type": "INFLUENCES",
-    "confidence": "medium",
-    "signal_id": "enrichment-seed-canon-v1-2026-04",
-    "created_by": "gatherer-enrichment",
-    "source_evidence": "Kept-stub anchor rule: target is a historical-influence stub preserved for INFLUENCES",
-    "charge": null
-  },
-  {
     "id": "artwork:super mario clouds--embodies--concept:obsolescence and decay",
     "source_id": "artwork:super mario clouds",
     "target_id": "concept:obsolescence and decay",
