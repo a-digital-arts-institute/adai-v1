@@ -38030,7 +38030,17 @@
       },
       "scenes": [
         "net art",
-        "tactical media"
+        "tactical media",
+        {
+          "id": "scene:net art",
+          "name": "net art",
+          "source": "gatherer-paul-canon-v1"
+        },
+        {
+          "id": "scene:tactical media",
+          "name": "tactical media",
+          "source": "gatherer-paul-canon-v1"
+        }
       ],
       "role": null,
       "data_provenance": {
@@ -38069,7 +38079,17 @@
       },
       "scenes": [
         "tactical media",
-        "bio art and artificial life"
+        "bio art and artificial life",
+        {
+          "id": "scene:tactical media",
+          "name": "tactical media",
+          "source": "gatherer-paul-canon-v1"
+        },
+        {
+          "id": "scene:bio art and artificial life",
+          "name": "bio art and artificial life",
+          "source": "gatherer-paul-canon-v1"
+        }
       ],
       "role": null,
       "data_provenance": {
@@ -38108,7 +38128,17 @@
       },
       "scenes": [
         "net art",
-        "tactical media"
+        "tactical media",
+        {
+          "id": "scene:net art",
+          "name": "net art",
+          "source": "gatherer-paul-canon-v1"
+        },
+        {
+          "id": "scene:tactical media",
+          "name": "tactical media",
+          "source": "gatherer-paul-canon-v1"
+        }
       ],
       "role": null,
       "data_provenance": {
@@ -38148,7 +38178,17 @@
       },
       "scenes": [
         "tactical media",
-        "net art"
+        "net art",
+        {
+          "id": "scene:tactical media",
+          "name": "tactical media",
+          "source": "gatherer-paul-canon-v1"
+        },
+        {
+          "id": "scene:net art",
+          "name": "net art",
+          "source": "gatherer-paul-canon-v1"
+        }
       ],
       "role": null,
       "data_provenance": {
