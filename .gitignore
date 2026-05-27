@@ -36,6 +36,14 @@ shards.log
 # Caches
 concepts_cache.json
 
+# Schema audit outputs — produced by `npm run audit:schema:fast|full`.
+# These are build output (regeneratable from current seed); per the
+# CLAUDE.md banner's "seed/*.json is build output, not source" principle,
+# audit reports are also not source. Run the tool yourself to see current state.
+docs/SCHEMA_AUDIT_*.md
+docs/schema_audit_*/
+seed/_build/.cache/
+
 # Claude Code project memory
 .claude/
 

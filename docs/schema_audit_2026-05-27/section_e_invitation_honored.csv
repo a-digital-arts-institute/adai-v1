@@ -1,4 +1,0 @@
-subject_id,subject_kind,severity,category,details_json,suggested_fix
-CONTESTS,edge,info,invitation_honored,"{""count"": 0, ""expected"": 0, ""rationale"": ""invitation edge reserved for practitioner voice""}",
-RESPONDS_TO,edge,info,invitation_honored,"{""count"": 0, ""expected"": 0, ""rationale"": ""invitation edge reserved for practitioner voice""}",
-TENSION_WITH,edge,info,invitation_honored,"{""count"": 0, ""expected"": 0, ""rationale"": ""invitation edge reserved for practitioner voice""}",

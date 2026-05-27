@@ -1,2 +1,0 @@
-subject_id,subject_kind,severity,category,details_json,suggested_fix
-(era_check_coverage),node,info,era_check_coverage,"{""coverage_pct"": 25.1, ""covered"": 183, ""excluded_no_year_info"": 486, ""excluded_with_active_years_string"": 2, ""excluded_with_year_raw"": 57, ""total"": 728}",strict mode covers 183 of 728 artworks (25.1%); add metadata.year_start to remaining 545 to expand
