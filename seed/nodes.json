@@ -659,11 +659,14 @@
         }
       ],
       "exhibitions": [
-        "MoMA",
-        "Whitney Museum",
-        "Museum",
-        "African Diaspora",
-        "Queens Museum",
+        {
+          "id": null,
+          "name": "Museum"
+        },
+        {
+          "id": null,
+          "name": "African Diaspora"
+        },
         {
           "id": "institution:moma",
           "name": "MoMA",
@@ -1472,8 +1475,10 @@
         }
       ],
       "exhibitions": [
-        "Gallery",
-        "Long Now Foundation",
+        {
+          "id": null,
+          "name": "Gallery"
+        },
         {
           "id": "institution:long now foundation",
           "name": "Long Now Foundation",
@@ -1690,11 +1695,6 @@
         }
       ],
       "exhibitions": [
-        "Serpentine",
-        "MoMA PS",
-        "Centre Pompidou",
-        "Spruth Magers",
-        "UCCA Beijing",
         {
           "id": "institution:serpentine arts technologies",
           "name": "Serpentine Arts Technologies",
@@ -1962,12 +1962,10 @@
         }
       ],
       "exhibitions": [
-        "Whitney Museum",
-        "LACMA",
-        "SFMOMA",
-        "Centre Pompidou",
-        "V&A",
-        "Processing Foundation community",
+        {
+          "id": null,
+          "name": "Processing Foundation community"
+        },
         {
           "id": "institution:whitney museum",
           "name": "Whitney Museum",
@@ -2181,11 +2179,6 @@
         }
       ],
       "exhibitions": [
-        "MoMA",
-        "Whitney Museum",
-        "SFMOMA",
-        "V&A",
-        "Cooper Hewitt",
         {
           "id": "institution:moma",
           "name": "MoMA",
@@ -2337,7 +2330,10 @@
         }
       ],
       "exhibitions": [
-        "Gallery",
+        {
+          "id": null,
+          "name": "Gallery"
+        },
         {
           "id": "institution:serpentine arts technologies",
           "name": "Serpentine Arts Technologies",
@@ -2931,9 +2927,6 @@
         }
       ],
       "exhibitions": [
-        "Brooklyn Academy of Music (Bot Summit)",
-        "Newspeak Foundation",
-        "Babycastles",
         {
           "id": "institution:brooklyn academy of music",
           "name": "Brooklyn Academy of Music",
@@ -3625,10 +3618,6 @@
         }
       ],
       "exhibitions": [
-        "Art Blocks Curated",
-        "Bright Moments",
-        "Unit London",
-        "Pace Gallery",
         {
           "id": "platform:art blocks",
           "name": "Art Blocks",
@@ -3762,10 +3751,10 @@
         }
       ],
       "exhibitions": [
-        "Whitney Artport",
-        "HeK Basel",
-        "Transfer Gallery",
-        "Serpentine Galleries",
+        {
+          "id": null,
+          "name": "Serpentine Galleries"
+        },
         {
           "id": "institution:whitney artport",
           "name": "Whitney Artport",
@@ -3853,10 +3842,6 @@
         }
       ],
       "exhibitions": [
-        "bitforms gallery",
-        "Rhizome",
-        "Venice Biennale",
-        "V&A",
         {
           "id": "institution:bitforms gallery",
           "name": "bitforms gallery",
@@ -3945,11 +3930,6 @@
         }
       ],
       "exhibitions": [
-        "Venice Biennale 2015",
-        "MoMA PS1",
-        "Centre Pompidou",
-        "Fondation Louis Vuitton",
-        "M+ Hong Kong",
         {
           "id": "institution:venice biennale",
           "name": "Venice Biennale",
@@ -4255,7 +4235,10 @@
         }
       ],
       "exhibitions": [
-        "(not applicable — writer)"
+        {
+          "id": null,
+          "name": "(not applicable — writer)"
+        }
       ],
       "scene_affiliation": [
         "accelerationism",
@@ -4323,10 +4306,10 @@
         }
       ],
       "exhibitions": [
-        "Hyperdub 10",
-        "Unsound",
-        "HAU Berlin",
-        "AV Festival",
+        {
+          "id": null,
+          "name": "Hyperdub 10"
+        },
         {
           "id": "institution:unsound",
           "name": "Unsound",
@@ -4406,9 +4389,6 @@
         }
       ],
       "exhibitions": [
-        "No Fun Fest",
-        "Unsound",
-        "Borealis Festival",
         {
           "id": "institution:no fun fest",
           "name": "No Fun Fest",
@@ -4668,10 +4648,6 @@
         }
       ],
       "exhibitions": [
-        "IRCAM",
-        "Centre Pompidou",
-        "CEMAMu archives",
-        "Philips Pavilion (Brussels 1958, with Le Corbusier)",
         {
           "id": "institution:ircam",
           "name": "IRCAM",
@@ -4762,10 +4738,6 @@
         }
       ],
       "exhibitions": [
-        "Wien Modern",
-        "Darmstadt",
-        "Donaueschinger Musiktage",
-        "ISSUE Project Room",
         {
           "id": "institution:wien modern",
           "name": "Wien Modern",
@@ -5981,11 +5953,6 @@
         }
       ],
       "exhibitions": [
-        "Metro Pictures",
-        "Smithsonian American Art Museum",
-        "Fondazione Prada",
-        "Van Gogh Museum",
-        "Barbican",
         {
           "id": "institution:metro pictures",
           "name": "Metro Pictures",
@@ -6307,8 +6274,10 @@
         }
       ],
       "exhibitions": [
-        "Serpentine",
-        "AI. Whitney Biennial",
+        {
+          "id": null,
+          "name": "AI. Whitney Biennial"
+        },
         {
           "id": "institution:serpentine arts technologies",
           "name": "Serpentine Arts Technologies",
@@ -6509,7 +6478,6 @@
         }
       ],
       "exhibitions": [
-        "Serpentine North",
         {
           "id": "institution:serpentine north",
           "name": "Serpentine North",
@@ -7532,8 +7500,6 @@
         }
       ],
       "exhibitions": [
-        "MoMA",
-        "V&A",
         {
           "id": "institution:moma",
           "name": "MoMA",
@@ -8650,7 +8616,10 @@
         }
       ],
       "exhibitions": [
-        "Gallery"
+        {
+          "id": null,
+          "name": "Gallery"
+        }
       ],
       "scene_affiliation": [
         "Creative coding community (central figure via p5"
@@ -8852,10 +8821,6 @@
         }
       ],
       "exhibitions": [
-        "Haus der Kulturen der Welt",
-        "HKW Berlin",
-        "ZKM",
-        "Lincoln Center",
         {
           "id": "institution:haus der kulturen der welt",
           "name": "Haus der Kulturen der Welt",
@@ -8968,7 +8933,6 @@
         }
       ],
       "exhibitions": [
-        "Venice Biennale",
         {
           "id": "institution:venice biennale",
           "name": "Venice Biennale",
@@ -9279,11 +9243,6 @@
         }
       ],
       "exhibitions": [
-        "Sotheby's",
-        "Ars Electronica",
-        "ZKM",
-        "Onassis Stegi",
-        "Centre Pompidou-Metz",
         {
           "id": "institution:sotheby's",
           "name": "Sotheby's",
@@ -9672,7 +9631,6 @@
         }
       ],
       "exhibitions": [
-        "Venice Biennale",
         {
           "id": "institution:venice biennale",
           "name": "Venice Biennale",
@@ -10111,8 +10069,6 @@
         }
       ],
       "exhibitions": [
-        "High Museum",
-        "Centre Pompidou Paris",
         {
           "id": "institution:high museum",
           "name": "High Museum",
@@ -10322,11 +10278,6 @@
         }
       ],
       "exhibitions": [
-        "Hamburger Bahnhof",
-        "Guggenheim",
-        "Documenta",
-        "Venice Biennale",
-        "Unsound",
         {
           "id": "institution:hamburger bahnhof",
           "name": "Hamburger Bahnhof",
@@ -10446,9 +10397,19 @@
         }
       ],
       "exhibitions": [
-        "Gallery",
-        "Physical",
-        "Haus"
+        {
+          "id": null,
+          "name": "Gallery"
+        },
+        {
+          "id": null,
+          "name": "Physical"
+        },
+        {
+          "id": "institution:haus der kulturen der welt",
+          "name": "Haus der Kulturen der Welt",
+          "type": "institution"
+        }
       ],
       "scene_affiliation": [
         "Blockchain art community (central figure)",
@@ -10827,9 +10788,6 @@
         }
       ],
       "exhibitions": [
-        "Furtherfield Gallery",
-        "Tate",
-        "V&A",
         {
           "id": "institution:furtherfield",
           "name": "Furtherfield",
@@ -11272,9 +11230,14 @@
         }
       ],
       "exhibitions": [
-        "V&A London",
-        "MoMA",
-        "V&A collection context",
+        {
+          "id": null,
+          "name": "V&A London"
+        },
+        {
+          "id": null,
+          "name": "V&A collection context"
+        },
         {
           "id": "institution:v&a",
           "name": "V&A",
@@ -12058,11 +12021,10 @@
         }
       ],
       "exhibitions": [
-        "Serpentine Galleries",
-        "MoMA",
-        "Palais",
-        "Goodman Gallery",
-        "Palais de Tokyo",
+        {
+          "id": null,
+          "name": "Serpentine Galleries"
+        },
         {
           "id": "institution:serpentine arts technologies",
           "name": "Serpentine Arts Technologies",
@@ -12288,7 +12250,10 @@
         }
       ],
       "exhibitions": [
-        "(curator of multiple major exhibitions; not primarily an exhibiting artist)"
+        {
+          "id": null,
+          "name": "(curator of multiple major exhibitions; not primarily an exhibiting artist)"
+        }
       ],
       "scene_affiliation": [
         "AI art criticism",
@@ -12336,11 +12301,10 @@
         }
       ],
       "exhibitions": [
-        "Serpentine Sackler",
-        "Whitney Museum",
-        "Kitchen NYC",
-        "SFMOMA",
-        "Institute of Contemporary Art Philadelphia",
+        {
+          "id": null,
+          "name": "Serpentine Sackler"
+        },
         {
           "id": "institution:serpentine arts technologies",
           "name": "Serpentine Arts Technologies",
@@ -12996,10 +12960,6 @@
         }
       ],
       "exhibitions": [
-        "Z33 Hasselt",
-        "WIELS Brussels",
-        "transmediale",
-        "Libre Graphics Meeting",
         {
           "id": "institution:z33 hasselt",
           "name": "Z33 Hasselt",
@@ -13140,7 +13100,10 @@
         }
       ],
       "exhibitions": [
-        "(not applicable — philosopher)"
+        {
+          "id": null,
+          "name": "(not applicable — philosopher)"
+        }
       ],
       "scene_affiliation": [
         "philosophy of technology",
@@ -13217,7 +13180,10 @@
         }
       ],
       "exhibitions": [
-        "(not applicable — theorist)"
+        {
+          "id": null,
+          "name": "(not applicable — theorist)"
+        }
       ],
       "scene_affiliation": [
         "philosophy of computation",
@@ -13466,10 +13432,6 @@
         }
       ],
       "exhibitions": [
-        "Graz Kunstverein",
-        "Asia Society",
-        "Eyebeam",
-        "ZKM",
         {
           "id": "institution:graz kunstverein",
           "name": "Graz Kunstverein",
@@ -14324,10 +14286,14 @@
         }
       ],
       "exhibitions": [
-        "Cybernetic Serendipity (ICA London 1968)",
-        "V&A",
-        "ZKM",
-        "The Machine as Seen at the End of the Mechanical Age (MoMA 1968)",
+        {
+          "id": null,
+          "name": "Cybernetic Serendipity (ICA London 1968)"
+        },
+        {
+          "id": null,
+          "name": "The Machine as Seen at the End of the Mechanical Age (MoMA 1968)"
+        },
         {
           "id": "institution:ica london",
           "name": "ICA London",
@@ -14412,7 +14378,10 @@
         }
       ],
       "exhibitions": [
-        "(not applicable — researcher, though his algorithm underlies countless exhibited works)"
+        {
+          "id": null,
+          "name": "(not applicable — researcher, though his algorithm underlies countless exhibited works)"
+        }
       ],
       "scene_affiliation": [
         "procedural graphics",
@@ -14471,11 +14440,6 @@
         }
       ],
       "exhibitions": [
-        "Bitforms gallery",
-        "ZKM",
-        "Kunsthalle Bremen",
-        "V&A",
-        "Centre Pompidou",
         {
           "id": "institution:bitforms gallery",
           "name": "bitforms gallery",
@@ -14602,10 +14566,14 @@
         }
       ],
       "exhibitions": [
-        "Museum of Modern Art",
-        "Guggenheim",
-        "Walker Art Center",
-        "Computer Art Exhibitions 1968-70",
+        {
+          "id": null,
+          "name": "Museum of Modern Art"
+        },
+        {
+          "id": null,
+          "name": "Computer Art Exhibitions 1968-70"
+        },
         {
           "id": "institution:moma",
           "name": "MoMA",
@@ -14860,9 +14828,6 @@
         }
       ],
       "exhibitions": [
-        "Rhizome",
-        "HMKV Dortmund",
-        "Tate",
         {
           "id": "institution:rhizome artbase",
           "name": "Rhizome / ArtBase",
@@ -14986,9 +14951,10 @@
         }
       ],
       "exhibitions": [
-        "Whitney Biennial",
-        "Rhizome",
-        "New Museum",
+        {
+          "id": null,
+          "name": "Whitney Biennial"
+        },
         {
           "id": "institution:whitney museum",
           "name": "Whitney Museum",
@@ -15069,10 +15035,10 @@
         }
       ],
       "exhibitions": [
-        "Transmediale",
-        "Ars Electronica",
-        "Zentrum für Kunst und Medien Karlsruhe (ZKM)",
-        "HMKV Dortmund",
+        {
+          "id": null,
+          "name": "Zentrum für Kunst und Medien Karlsruhe (ZKM)"
+        },
         {
           "id": "institution:transmediale",
           "name": "Transmediale",
@@ -15163,10 +15129,6 @@
         }
       ],
       "exhibitions": [
-        "Whitney Museum",
-        "Studio Museum in Harlem",
-        "Carnegie Hall",
-        "Knockdown Center",
         {
           "id": "institution:whitney museum",
           "name": "Whitney Museum",
@@ -15244,10 +15206,6 @@
         }
       ],
       "exhibitions": [
-        "ICA London",
-        "Walker Art Center",
-        "Tate",
-        "Rhizome",
         {
           "id": "institution:ica london",
           "name": "ICA London",
@@ -15511,8 +15469,6 @@
         }
       ],
       "exhibitions": [
-        "Bienal de São Paulo",
-        "Computer Art Congress",
         {
           "id": "institution:bienal de so paulo",
           "name": "Bienal de São Paulo",
@@ -15578,10 +15534,14 @@
         }
       ],
       "exhibitions": [
-        "ZKM Karlsruhe",
-        "V&A",
-        "Kestner Gesellschaft Hannover",
-        "Compart database",
+        {
+          "id": null,
+          "name": "ZKM Karlsruhe"
+        },
+        {
+          "id": null,
+          "name": "Compart database"
+        },
         {
           "id": "institution:zkm",
           "name": "ZKM",
@@ -15695,11 +15655,6 @@
         }
       ],
       "exhibitions": [
-        "Centre Pompidou",
-        "V&A",
-        "Ludwig Museum Budapest",
-        "Tate Modern",
-        "Venice Biennale",
         {
           "id": "institution:centre pompidou",
           "name": "Centre Pompidou",
@@ -18636,10 +18591,10 @@
         }
       ],
       "exhibitions": [
-        "SIGGRAPH (Art Gallery)",
-        "V&A",
-        "Ohio State University Wexner Center",
-        "Cybernetic Serendipity (ICA London, 1968)",
+        {
+          "id": null,
+          "name": "Cybernetic Serendipity (ICA London, 1968)"
+        },
         {
           "id": "institution:siggraph",
           "name": "SIGGRAPH",
@@ -18788,10 +18743,10 @@
         }
       ],
       "exhibitions": [
-        "Studiengalerie Stuttgart (1965)",
-        "ZKM Karlsruhe",
-        "Centre Pompidou",
-        "V&A",
+        {
+          "id": null,
+          "name": "ZKM Karlsruhe"
+        },
         {
           "id": "institution:studiengalerie stuttgart",
           "name": "Studiengalerie Stuttgart",
@@ -19031,10 +18986,6 @@
         }
       ],
       "exhibitions": [
-        "Tate",
-        "Walker Art Center",
-        "Kiasma",
-        "Transmediale",
         {
           "id": "institution:tate",
           "name": "Tate",
@@ -19239,9 +19190,6 @@
         }
       ],
       "exhibitions": [
-        "Rhizome",
-        "transmediale",
-        "HMKV Dortmund",
         {
           "id": "institution:rhizome artbase",
           "name": "Rhizome / ArtBase",
@@ -19353,10 +19301,6 @@
         }
       ],
       "exhibitions": [
-        "Venice Biennale 2001",
-        "Walker Art Center",
-        "Ars Electronica",
-        "ZKM",
         {
           "id": "institution:venice biennale",
           "name": "Venice Biennale",
@@ -19499,11 +19443,6 @@
         }
       ],
       "exhibitions": [
-        "Documenta X",
-        "Ars Electronica",
-        "Rhizome",
-        "V2 Rotterdam",
-        "Walker Art Center",
         {
           "id": "institution:documenta",
           "name": "Documenta",
@@ -19631,11 +19570,6 @@
         }
       ],
       "exhibitions": [
-        "Whitney Museum",
-        "MoMA",
-        "Barbican",
-        "Hamburger Bahnhof",
-        "Team Gallery",
         {
           "id": "institution:whitney museum",
           "name": "Whitney Museum",
@@ -19782,11 +19716,6 @@
         }
       ],
       "exhibitions": [
-        "MoMA",
-        "Rhizome",
-        "Stedelijk",
-        "Foxy Production",
-        "Ullens Center Beijing",
         {
           "id": "institution:moma",
           "name": "MoMA",
@@ -19904,10 +19833,6 @@
         }
       ],
       "exhibitions": [
-        "Sprüth Magers",
-        "Zabludowicz Collection",
-        "New Museum",
-        "Saatchi Gallery",
         {
           "id": "institution:spruth magers",
           "name": "Sprüth Magers",
@@ -20035,11 +19960,10 @@
         }
       ],
       "exhibitions": [
-        "Serpentine Galleries",
-        "Tate Britain",
-        "New Museum",
-        "DIA Art Foundation",
-        "Stedelijk",
+        {
+          "id": null,
+          "name": "Serpentine Galleries"
+        },
         {
           "id": "institution:serpentine arts technologies",
           "name": "Serpentine Arts Technologies",
@@ -20184,12 +20108,10 @@
         }
       ],
       "exhibitions": [
-        "Tate Modern",
-        "Whitney Museum",
-        "New Museum",
-        "Serpentine Galleries",
-        "Arcadia Missa",
-        "Venice Biennale",
+        {
+          "id": null,
+          "name": "Serpentine Galleries"
+        },
         {
           "id": "institution:tate",
           "name": "Tate",
@@ -20404,10 +20326,6 @@
         }
       ],
       "exhibitions": [
-        "Kiasma",
-        "Venice Biennale (Estonian Pavilion)",
-        "Kunsthalle Basel",
-        "Greene Naftali",
         {
           "id": "institution:kiasma",
           "name": "Kiasma",
@@ -20550,9 +20468,6 @@
         }
       ],
       "exhibitions": [
-        "Cooper Hewitt",
-        "MOCA Los Angeles",
-        "Onedotzero",
         {
           "id": "institution:cooper hewitt",
           "name": "Cooper Hewitt",
@@ -20662,10 +20577,10 @@
         }
       ],
       "exhibitions": [
-        "MoMA",
-        "Ars Electronica",
-        "Onassis Cultural Centre",
-        "Sundance Film Festival",
+        {
+          "id": null,
+          "name": "Onassis Cultural Centre"
+        },
         {
           "id": "institution:moma",
           "name": "MoMA",
@@ -20791,9 +20706,6 @@
         }
       ],
       "exhibitions": [
-        "Art Blocks Curated",
-        "Pace Gallery",
-        "Gray Area SF",
         {
           "id": "platform:art blocks",
           "name": "Art Blocks",
@@ -20921,11 +20833,6 @@
         }
       ],
       "exhibitions": [
-        "Ars Electronica",
-        "Whitney Artport",
-        "ZKM",
-        "Eyebeam",
-        "Barbican",
         {
           "id": "institution:ars electronica",
           "name": "Ars Electronica",
@@ -21069,10 +20976,6 @@
         }
       ],
       "exhibitions": [
-        "Art Blocks Marfa",
-        "Bright Moments",
-        "Pace Gallery",
-        "Sotheby's",
         {
           "id": "platform:art blocks",
           "name": "Art Blocks",
@@ -21196,9 +21099,6 @@
         }
       ],
       "exhibitions": [
-        "Art Blocks",
-        "Feral File",
-        "Bright Moments",
         {
           "id": "platform:art blocks",
           "name": "Art Blocks",
@@ -21310,9 +21210,6 @@
         }
       ],
       "exhibitions": [
-        "Art Blocks Marfa",
-        "Bright Moments",
-        "Pace Gallery",
         {
           "id": "platform:art blocks",
           "name": "Art Blocks",
@@ -21589,9 +21486,6 @@
         }
       ],
       "exhibitions": [
-        "Whitney Museum",
-        "Sundance Film Festival",
-        "Rhizome",
         {
           "id": "institution:whitney museum",
           "name": "Whitney Museum",
@@ -21742,10 +21636,6 @@
         }
       ],
       "exhibitions": [
-        "Christie's (auction)",
-        "M+ Hong Kong",
-        "Castello di Rivoli",
-        "Beeple Studios",
         {
           "id": "institution:christie's",
           "name": "Christie's",
@@ -21874,10 +21764,6 @@
         }
       ],
       "exhibitions": [
-        "SuperRare",
-        "Nifty Gateway",
-        "Feral File",
-        "Unit London",
         {
           "id": "platform:superrare",
           "name": "SuperRare",
@@ -22048,9 +21934,10 @@
         }
       ],
       "exhibitions": [
-        "fxhash",
-        "Art Blocks",
-        "FILE Festival",
+        {
+          "id": null,
+          "name": "fxhash"
+        },
         {
           "id": "platform:fxhash v2 tezos ecosystem",
           "name": "fx(hash) v2 / Tezos ecosystem",
@@ -22183,8 +22070,6 @@
         }
       ],
       "exhibitions": [
-        "Feral File",
-        "Outland",
         {
           "id": "platform:feral file",
           "name": "Feral File",
@@ -22308,9 +22193,6 @@
         }
       ],
       "exhibitions": [
-        "Bitforms",
-        "Art Blocks Curated",
-        "Unit London",
         {
           "id": "institution:bitforms gallery",
           "name": "bitforms gallery",
@@ -22432,9 +22314,6 @@
         }
       ],
       "exhibitions": [
-        "Unit London",
-        "Feral File",
-        "Bitforms",
         {
           "id": "institution:unit london",
           "name": "Unit London",
@@ -22729,9 +22608,6 @@
         }
       ],
       "exhibitions": [
-        "Christie's (indirect, via controversy)",
-        "Nature Morte Delhi",
-        "Feral File",
         {
           "id": "institution:christie's",
           "name": "Christie's",
@@ -22931,9 +22807,14 @@
         }
       ],
       "exhibitions": [
-        "Serpentine Galleries",
-        "Institute of Contemporary Arts London",
-        "Sónar",
+        {
+          "id": null,
+          "name": "Serpentine Galleries"
+        },
+        {
+          "id": null,
+          "name": "Institute of Contemporary Arts London"
+        },
         {
           "id": "institution:serpentine arts technologies",
           "name": "Serpentine Arts Technologies",
@@ -23054,11 +22935,10 @@
         }
       ],
       "exhibitions": [
-        "Park Avenue Armory",
-        "MoMA PS1",
-        "Serpentine Galleries",
-        "Sónar",
-        "Node Festival",
+        {
+          "id": null,
+          "name": "Serpentine Galleries"
+        },
         {
           "id": "institution:park avenue armory",
           "name": "Park Avenue Armory",
@@ -23194,12 +23074,6 @@
         }
       ],
       "exhibitions": [
-        "Mexico City Zócalo",
-        "Venice Biennale (Mexican Pavilion)",
-        "Tate",
-        "MoMA",
-        "Hirshhorn",
-        "SFMOMA",
         {
           "id": "institution:mexico city zcalo",
           "name": "Mexico City Zócalo",
@@ -23542,11 +23416,10 @@
         }
       ],
       "exhibitions": [
-        "Sadie Coles HQ",
-        "Serpentine Galleries",
-        "K11 Shanghai",
-        "Liverpool Biennial",
-        "Hayward Gallery",
+        {
+          "id": null,
+          "name": "Serpentine Galleries"
+        },
         {
           "id": "institution:sadie coles hq",
           "name": "Sadie Coles HQ",
@@ -23713,10 +23586,6 @@
         }
       ],
       "exhibitions": [
-        "Park Avenue Armory",
-        "Teatro Colón",
-        "Boiler Room",
-        "MoMA PS1",
         {
           "id": "institution:park avenue armory",
           "name": "Park Avenue Armory",
@@ -23844,10 +23713,6 @@
         }
       ],
       "exhibitions": [
-        "Furtherfield",
-        "Cointemporary",
-        "Unit London",
-        "Outland",
         {
           "id": "institution:furtherfield",
           "name": "Furtherfield",
@@ -23966,11 +23831,10 @@
         }
       ],
       "exhibitions": [
-        "MoMA PS1",
-        "Venice Biennale (NZ Pavilion)",
-        "Petzel Gallery",
-        "K21 Düsseldorf",
-        "Serpentine Galleries",
+        {
+          "id": null,
+          "name": "Serpentine Galleries"
+        },
         {
           "id": "institution:moma ps1",
           "name": "MoMA PS1",
@@ -24098,11 +23962,6 @@
         }
       ],
       "exhibitions": [
-        "MoMA PS1",
-        "bitforms gallery",
-        "Whitney Museum",
-        "Ars Electronica",
-        "Transmediale",
         {
           "id": "institution:moma ps1",
           "name": "MoMA PS1",
@@ -24245,11 +24104,6 @@
         }
       ],
       "exhibitions": [
-        "Whitney Museum",
-        "SFMOMA",
-        "ZKM",
-        "Venice Biennale",
-        "Tate Modern",
         {
           "id": "institution:whitney museum",
           "name": "Whitney Museum",
@@ -24407,10 +24261,6 @@
         }
       ],
       "exhibitions": [
-        "Ars Electronica",
-        "Furtherfield",
-        "Furtherfield Commons",
-        "ZKM",
         {
           "id": "institution:ars electronica",
           "name": "Ars Electronica",
@@ -40305,8 +40155,16 @@
         "isni": "0000000121480566"
       },
       "scenes": [
-        "video art and moving image",
-        "performance art"
+        {
+          "id": "scene:video art and moving image",
+          "name": "video art and moving image",
+          "type": "scene"
+        },
+        {
+          "id": "scene:performance art",
+          "name": "performance art",
+          "type": "scene"
+        }
       ],
       "role": null,
       "data_provenance": {
@@ -40354,8 +40212,16 @@
         "isni": "0000000078661993"
       },
       "scenes": [
-        "digital installation",
-        "sound art"
+        {
+          "id": "scene:digital installation",
+          "name": "digital installation",
+          "type": "scene"
+        },
+        {
+          "id": "scene:sound art",
+          "name": "sound art",
+          "type": "scene"
+        }
       ],
       "role": null,
       "data_provenance": {
@@ -40402,7 +40268,11 @@
         "isni": "0000000114910783"
       },
       "scenes": [
-        "bio art and artificial life"
+        {
+          "id": "scene:bio art and artificial life",
+          "name": "bio art and artificial life",
+          "type": "scene"
+        }
       ],
       "role": null,
       "data_provenance": {
@@ -40539,8 +40409,16 @@
         "isni": "0000000355540736"
       },
       "scenes": [
-        "telematic art and telepresence",
-        "data art"
+        {
+          "id": "scene:telematic art and telepresence",
+          "name": "telematic art and telepresence",
+          "type": "scene"
+        },
+        {
+          "id": "scene:data art",
+          "name": "data art",
+          "type": "scene"
+        }
       ],
       "role": null,
       "data_provenance": {
@@ -40587,8 +40465,16 @@
         "isni": "0000000114876554"
       },
       "scenes": [
-        "bio art and artificial life",
-        "performance art"
+        {
+          "id": "scene:bio art and artificial life",
+          "name": "bio art and artificial life",
+          "type": "scene"
+        },
+        {
+          "id": "scene:performance art",
+          "name": "performance art",
+          "type": "scene"
+        }
       ],
       "role": null,
       "data_provenance": {
@@ -40637,8 +40523,16 @@
         "isni": "0000000110763982"
       },
       "scenes": [
-        "virtual and immersive environments",
-        "digital installation"
+        {
+          "id": "scene:virtual and immersive environments",
+          "name": "virtual and immersive environments",
+          "type": "scene"
+        },
+        {
+          "id": "scene:digital installation",
+          "name": "digital installation",
+          "type": "scene"
+        }
       ],
       "role": null,
       "data_provenance": {
@@ -40687,7 +40581,11 @@
         "isni": "0000000078451902"
       },
       "scenes": [
-        "telematic art and telepresence"
+        {
+          "id": "scene:telematic art and telepresence",
+          "name": "telematic art and telepresence",
+          "type": "scene"
+        }
       ],
       "role": null,
       "data_provenance": {
@@ -40734,7 +40632,11 @@
         "isni": "0000000044552764"
       },
       "scenes": [
-        "digital installation"
+        {
+          "id": "scene:digital installation",
+          "name": "digital installation",
+          "type": "scene"
+        }
       ],
       "role": null,
       "data_provenance": {
@@ -40783,7 +40685,11 @@
         "isni": "0000000083258701"
       },
       "scenes": [
-        "video art and moving image"
+        {
+          "id": "scene:video art and moving image",
+          "name": "video art and moving image",
+          "type": "scene"
+        }
       ],
       "role": null,
       "data_provenance": {
@@ -40831,7 +40737,11 @@
         "isni": "0000000084142639"
       },
       "scenes": [
-        "video art and moving image"
+        {
+          "id": "scene:video art and moving image",
+          "name": "video art and moving image",
+          "type": "scene"
+        }
       ],
       "role": null,
       "data_provenance": {
@@ -40875,8 +40785,16 @@
         "isni": "0000000078661117"
       },
       "scenes": [
-        "bio art and artificial life",
-        "digital installation"
+        {
+          "id": "scene:bio art and artificial life",
+          "name": "bio art and artificial life",
+          "type": "scene"
+        },
+        {
+          "id": "scene:digital installation",
+          "name": "digital installation",
+          "type": "scene"
+        }
       ],
       "role": null,
       "data_provenance": {
@@ -40922,7 +40840,11 @@
         "isni": "0000000117487976"
       },
       "scenes": [
-        "digital art infrastructure"
+        {
+          "id": "scene:digital art infrastructure",
+          "name": "digital art infrastructure",
+          "type": "scene"
+        }
       ],
       "role": "theorist_curator",
       "data_provenance": {
@@ -40965,8 +40887,16 @@
         "isni": "000000007865008X"
       },
       "scenes": [
-        "bio art and artificial life",
-        "digital installation"
+        {
+          "id": "scene:bio art and artificial life",
+          "name": "bio art and artificial life",
+          "type": "scene"
+        },
+        {
+          "id": "scene:digital installation",
+          "name": "digital installation",
+          "type": "scene"
+        }
       ],
       "role": null,
       "data_provenance": {
@@ -41009,7 +40939,11 @@
         "isni": "0000000385846330"
       },
       "scenes": [
-        "virtual and immersive environments"
+        {
+          "id": "scene:virtual and immersive environments",
+          "name": "virtual and immersive environments",
+          "type": "scene"
+        }
       ],
       "role": null,
       "data_provenance": {
@@ -41090,8 +41024,6 @@
         "isni": null
       },
       "scenes": [
-        "net art",
-        "tactical media",
         {
           "id": "scene:net art",
           "name": "net art",
@@ -41139,8 +41071,6 @@
         "isni": "0000000101239724"
       },
       "scenes": [
-        "tactical media",
-        "bio art and artificial life",
         {
           "id": "scene:tactical media",
           "name": "tactical media",
@@ -41188,8 +41118,6 @@
         "isni": null
       },
       "scenes": [
-        "net art",
-        "tactical media",
         {
           "id": "scene:net art",
           "name": "net art",
@@ -41238,8 +41166,6 @@
         "isni": null
       },
       "scenes": [
-        "tactical media",
-        "net art",
         {
           "id": "scene:tactical media",
           "name": "tactical media",
@@ -41289,8 +41215,16 @@
         "isni": null
       },
       "scenes": [
-        "data art",
-        "sound art"
+        {
+          "id": "scene:data art",
+          "name": "data art",
+          "type": "scene"
+        },
+        {
+          "id": "scene:sound art",
+          "name": "sound art",
+          "type": "scene"
+        }
       ],
       "role": null,
       "data_provenance": {
