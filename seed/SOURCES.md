@@ -284,21 +284,11 @@ https://www.sothebys.com/en/articles/a-brief-history-of-nfts-and-digital-art
 
 The graph has 9 edge types curated by humans, plus 2 auto-derived from the Gemini Embedding 2 multimodal pass. Some are dense, some are deliberately sparse, and some important edge types have zero edges. This is intentional.
 
-### What the seed produces honestly
+### Edge type contract
 
-These edge types can be reliably extracted from editorial research, structured data, and AI-assisted profile deepening:
+Edge types, their directions, and their domain/codomain (which node types are valid sources and targets) are defined in **`SKILL.md` §1.4**. Live edge counts and bi-temporal semantics (`valid_from`, `valid_until`, supersession) live in **`CLAUDE.md`**. This document does not redefine them.
 
-| Edge type | Count | Direction | What it captures |
-|---|---|---|---|
-| EMBODIES | 621 | artwork → concept | What a work is *about* conceptually |
-| PRACTICES | 461 | practitioner → concept | What someone works *with* |
-| CREATED_BY | 339 | artwork → practitioner | Who made it |
-| EXHIBITED_AT | 300 | practitioner → institution | Where they've shown |
-| CLASSIFIED_BY | 283 | any → classification regime | Provenance: which research lens saw this node |
-| COLLABORATES_WITH | 183 | practitioner ↔ practitioner | Actual creative collaboration |
-| BELONGS_TO | 155 | practitioner → scene | Which community or practice tradition |
-| USES_TECHNIQUE | 75 | artwork → concept | What method/tool the work employs |
-| INFLUENCES | 4 | practitioner → practitioner | Who shaped whose practice |
+Previous versions of this document included a per-edge-type direction table here. That table had drifted from `SKILL.md` (e.g. claiming `USES_TECHNIQUE: artwork → concept` and `EXHIBITED_AT: practitioner → institution`, both of which contradict the API contract). The table was removed in the May 2026 cleanup pass — see `docs/SCHEMA_AUDIT_BUGS_BY_CAUSE_2026-05-26.md` for the rationale. Refer to `SKILL.md` as the single source of truth for edge shape.
 
 ### What the embedding pipeline produces (auto-derived, low-confidence)
 
