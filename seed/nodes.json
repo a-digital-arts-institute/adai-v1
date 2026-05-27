@@ -12393,7 +12393,34 @@
     "type": "artwork",
     "name": "0xSalon Reading Groups and Publications",
     "slug": "0xsalon-reading-groups-and-publications",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"Ongoing series of reading groups and collaborative publications on PubPub exploring blockchain philosophy, decentralized governance, knowledge commons, and art-technology intersections.\", \"relevance\": \"Models collective knowledge production as creative practice. The relational structure of their inquiries mirrors A(DAI)'s graph-based intelligence approach.\", \"year_start\": 2019, \"year_end\": null, \"year_ongoing\": true, \"year_uncertain\": false, \"year_raw\": \"2019-present\", \"work_type\": \"artwork\", \"practitioner_type_raw\": \"collective\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-0xsalon--0xsalon-reading-groups-and-publications\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "Ongoing series of reading groups and collaborative publications on PubPub exploring blockchain philosophy, decentralized governance, knowledge commons, and art-technology intersections.",
+      "relevance": "Models collective knowledge production as creative practice. The relational structure of their inquiries mirrors A(DAI)'s graph-based intelligence approach.",
+      "year_start": 2019,
+      "year_end": null,
+      "year_ongoing": true,
+      "year_uncertain": false,
+      "year_raw": "2019-present",
+      "work_type": "artwork",
+      "practitioner_type_raw": "collective",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-0xsalon--0xsalon-reading-groups-and-publications",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "collective:0xsalon",
+          "name": "0xSalon",
+          "type": "collective"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -12402,7 +12429,34 @@
     "type": "artwork",
     "name": "Knowledge Graph Experiments",
     "slug": "knowledge-graph-experiments",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"Experiments in building decentralized knowledge graphs that map relationships between concepts, practitioners, and practices in the crypto-art and philosophy space.\", \"relevance\": \"Directly models the kind of relational knowledge infrastructure A(DAI) is building. Their approach to graph-as-medium is a key reference.\", \"year_start\": 2020, \"year_end\": null, \"year_ongoing\": true, \"year_uncertain\": true, \"year_raw\": \"2020-present [uncertain]\", \"work_type\": \"artwork\", \"practitioner_type_raw\": \"collective\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-0xsalon--knowledge-graph-experiments\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "Experiments in building decentralized knowledge graphs that map relationships between concepts, practitioners, and practices in the crypto-art and philosophy space.",
+      "relevance": "Directly models the kind of relational knowledge infrastructure A(DAI) is building. Their approach to graph-as-medium is a key reference.",
+      "year_start": 2020,
+      "year_end": null,
+      "year_ongoing": true,
+      "year_uncertain": true,
+      "year_raw": "2020-present [uncertain]",
+      "work_type": "artwork",
+      "practitioner_type_raw": "collective",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-0xsalon--knowledge-graph-experiments",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "collective:0xsalon",
+          "name": "0xSalon",
+          "type": "collective"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -12411,7 +12465,34 @@
     "type": "artwork",
     "name": "Smart Contract as Cultural Object",
     "slug": "smart-contract-as-cultural-object",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"Explorations of smart contracts as cultural and artistic objects — not just financial instruments but carriers of social agreements and aesthetic propositions.\", \"relevance\": \"Demonstrates protocol-art thinking where the design of systems and agreements is itself creative practice.\", \"year_start\": 2020, \"year_end\": null, \"year_ongoing\": true, \"year_uncertain\": true, \"year_raw\": \"2020-present [uncertain]\", \"work_type\": \"artwork\", \"practitioner_type_raw\": \"collective\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-0xsalon--smart-contract-as-cultural-object\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "Explorations of smart contracts as cultural and artistic objects — not just financial instruments but carriers of social agreements and aesthetic propositions.",
+      "relevance": "Demonstrates protocol-art thinking where the design of systems and agreements is itself creative practice.",
+      "year_start": 2020,
+      "year_end": null,
+      "year_ongoing": true,
+      "year_uncertain": true,
+      "year_raw": "2020-present [uncertain]",
+      "work_type": "artwork",
+      "practitioner_type_raw": "collective",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-0xsalon--smart-contract-as-cultural-object",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "collective:0xsalon",
+          "name": "0xSalon",
+          "type": "collective"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -12771,7 +12852,34 @@
     "type": "artwork",
     "name": "Timemap",
     "slug": "timemap",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"Open-source JavaScript tool for exploration, monitoring and classification of incidents in time and space. Used across multiple investigations.\", \"relevance\": \"A direct example of graph-based relational infrastructure becoming the exhibition interface — users navigate interconnected spatial-temporal evidence nodes.\", \"year_start\": null, \"year_end\": null, \"year_ongoing\": true, \"year_uncertain\": false, \"year_raw\": \"ongoing\", \"work_type\": \"tool\", \"practitioner_type_raw\": \"collective\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-forensic-architecture--timemap\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "Open-source JavaScript tool for exploration, monitoring and classification of incidents in time and space. Used across multiple investigations.",
+      "relevance": "A direct example of graph-based relational infrastructure becoming the exhibition interface — users navigate interconnected spatial-temporal evidence nodes.",
+      "year_start": null,
+      "year_end": null,
+      "year_ongoing": true,
+      "year_uncertain": false,
+      "year_raw": "ongoing",
+      "work_type": "tool",
+      "practitioner_type_raw": "collective",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-forensic-architecture--timemap",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "collective:forensic architecture",
+          "name": "Forensic Architecture",
+          "type": "collective"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -12780,7 +12888,34 @@
     "type": "artwork",
     "name": "Investigative Commons (HKW, Berlin)",
     "slug": "investigative-commons-hkw-berlin",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"Exhibition at Haus der Kulturen der Welt presenting FA's methodology as a shared investigative infrastructure, inviting other groups to adopt and extend their tools.\", \"relevance\": \"The exhibition explicitly frames investigation as commons infrastructure — directly resonant with A(DAI)'s commons-first approach to collective intelligence.\", \"year_start\": 2021, \"year_end\": 2021, \"year_ongoing\": false, \"year_uncertain\": false, \"year_raw\": \"2021\", \"work_type\": \"artwork\", \"practitioner_type_raw\": \"collective\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-forensic-architecture--investigative-commons-hkw-berlin\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "Exhibition at Haus der Kulturen der Welt presenting FA's methodology as a shared investigative infrastructure, inviting other groups to adopt and extend their tools.",
+      "relevance": "The exhibition explicitly frames investigation as commons infrastructure — directly resonant with A(DAI)'s commons-first approach to collective intelligence.",
+      "year_start": 2021,
+      "year_end": 2021,
+      "year_ongoing": false,
+      "year_uncertain": false,
+      "year_raw": "2021",
+      "work_type": "artwork",
+      "practitioner_type_raw": "collective",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-forensic-architecture--investigative-commons-hkw-berlin",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "collective:forensic architecture",
+          "name": "Forensic Architecture",
+          "type": "collective"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -12789,7 +12924,34 @@
     "type": "artwork",
     "name": "Cloud Studies",
     "slug": "cloud-studies",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"Investigation into the use of tear gas and toxic clouds as weapons, using fluid dynamics simulation, open-source video analysis, and spatial reconstruction.\", \"relevance\": \"Demonstrates how heterogeneous data sources (video, simulation, testimony, chemical analysis) are assembled into a coherent relational evidence field.\", \"year_start\": 2020, \"year_end\": 2020, \"year_ongoing\": false, \"year_uncertain\": false, \"year_raw\": \"2020\", \"work_type\": \"artwork\", \"practitioner_type_raw\": \"collective\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-forensic-architecture--cloud-studies\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "Investigation into the use of tear gas and toxic clouds as weapons, using fluid dynamics simulation, open-source video analysis, and spatial reconstruction.",
+      "relevance": "Demonstrates how heterogeneous data sources (video, simulation, testimony, chemical analysis) are assembled into a coherent relational evidence field.",
+      "year_start": 2020,
+      "year_end": 2020,
+      "year_ongoing": false,
+      "year_uncertain": false,
+      "year_raw": "2020",
+      "work_type": "artwork",
+      "practitioner_type_raw": "collective",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-forensic-architecture--cloud-studies",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "collective:forensic architecture",
+          "name": "Forensic Architecture",
+          "type": "collective"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -12925,7 +13087,34 @@
     "type": "artwork",
     "name": "Holly+ Web Instrument (Upload and Transform)",
     "slug": "holly-web-instrument-upload-and-transform",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"First Holly+ instrument: a website where anyone uploads polyphonic audio and receives a version sung in Holly Herndon's AI voice within minutes. The voice model performs audio style transfer using a deep neural network trained on Herndon's vocal recordings.\", \"relevance\": \"Core demonstration of art-as-substrate: a voice becomes a publicly accessible instrument. Anyone can compose with it, creating an open-ended generative system.\", \"year_start\": 2021, \"year_end\": 2021, \"year_ongoing\": false, \"year_uncertain\": false, \"year_raw\": 2021, \"work_type\": \"artwork\", \"practitioner_type_raw\": \"project\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-holly--holly-web-instrument-upload-and-transform\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "First Holly+ instrument: a website where anyone uploads polyphonic audio and receives a version sung in Holly Herndon's AI voice within minutes. The voice model performs audio style transfer using a deep neural network trained on Herndon's vocal recordings.",
+      "relevance": "Core demonstration of art-as-substrate: a voice becomes a publicly accessible instrument. Anyone can compose with it, creating an open-ended generative system.",
+      "year_start": 2021,
+      "year_end": 2021,
+      "year_ongoing": false,
+      "year_uncertain": false,
+      "year_raw": 2021,
+      "work_type": "artwork",
+      "practitioner_type_raw": "project",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-holly--holly-web-instrument-upload-and-transform",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "project:holly+",
+          "name": "Holly+",
+          "type": "project"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -12934,7 +13123,34 @@
     "type": "artwork",
     "name": "Holly+ Real-Time Voice Conversion (Sonar 2021)",
     "slug": "holly-real-time-voice-conversion-sonar-2021",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"Live performance instrument that converts a performer's voice into Holly's voice in real time. Premiered at Sonar festival. Developed with Voctro Labs.\", \"relevance\": \"Extends the substrate concept to live performance: the voice model becomes a real-time instrument for embodied, improvisational use.\", \"year_start\": 2021, \"year_end\": 2021, \"year_ongoing\": false, \"year_uncertain\": false, \"year_raw\": 2021, \"work_type\": \"artwork\", \"practitioner_type_raw\": \"project\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-holly--holly-real-time-voice-conversion-sonar-2021\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "Live performance instrument that converts a performer's voice into Holly's voice in real time. Premiered at Sonar festival. Developed with Voctro Labs.",
+      "relevance": "Extends the substrate concept to live performance: the voice model becomes a real-time instrument for embodied, improvisational use.",
+      "year_start": 2021,
+      "year_end": 2021,
+      "year_ongoing": false,
+      "year_uncertain": false,
+      "year_raw": 2021,
+      "work_type": "artwork",
+      "practitioner_type_raw": "project",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-holly--holly-real-time-voice-conversion-sonar-2021",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "project:holly+",
+          "name": "Holly+",
+          "type": "project"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -12943,7 +13159,34 @@
     "type": "artwork",
     "name": "Holly+ DAO",
     "slug": "holly-dao",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"Decentralized autonomous organization governing the Holly+ voice model. ERC-20 VOICE tokens on Ethereum. Hundreds of stewards vote on commercial uses. Revenue split: 50% creator, 40% DAO treasury, 10% Holly. DAO treasury funds new instrument development. Designed to outlive Herndon.\", \"relevance\": \"Governance-as-artwork: the DAO structure is itself a creative work that determines how a creative identity is collectively managed. Models how A(DAI) might govern creative commons.\", \"year_start\": 2021, \"year_end\": 2021, \"year_ongoing\": false, \"year_uncertain\": false, \"year_raw\": 2021, \"work_type\": \"protocol\", \"practitioner_type_raw\": \"project\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-holly--holly-dao\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "Decentralized autonomous organization governing the Holly+ voice model. ERC-20 VOICE tokens on Ethereum. Hundreds of stewards vote on commercial uses. Revenue split: 50% creator, 40% DAO treasury, 10% Holly. DAO treasury funds new instrument development. Designed to outlive Herndon.",
+      "relevance": "Governance-as-artwork: the DAO structure is itself a creative work that determines how a creative identity is collectively managed. Models how A(DAI) might govern creative commons.",
+      "year_start": 2021,
+      "year_end": 2021,
+      "year_ongoing": false,
+      "year_uncertain": false,
+      "year_raw": 2021,
+      "work_type": "protocol",
+      "practitioner_type_raw": "project",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-holly--holly-dao",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "project:holly+",
+          "name": "Holly+",
+          "type": "project"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -12979,7 +13222,34 @@
     "type": "artwork",
     "name": "Interdependence Podcast",
     "slug": "interdependence-podcast",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"Ongoing weekly podcast hosted by Holly Herndon and Mat Dryhurst. Long-form conversations with artists, technologists, and thinkers on music, AI, crypto, DAOs, energy policy, digital culture. Guests have included Evgeny Morozov, Marianna Simnett, Shawn Reynaldo, and many others across the art/tech spectrum. Patreon-supported.\", \"relevance\": \"The primary output of the interdependence framework. Functions as a living map of the relational field that A(DAI) aims to serve. Episodes surface connections, debates, and emerging practices that would be invisible without this kind of sustained conversational inquiry.\", \"year_start\": 2020, \"year_end\": 2020, \"year_ongoing\": false, \"year_uncertain\": false, \"year_raw\": 2020, \"work_type\": \"theoretical-framework\", \"practitioner_type_raw\": \"theoretical\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-interdependence-podcast-framework--interdependence-podcast\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "Ongoing weekly podcast hosted by Holly Herndon and Mat Dryhurst. Long-form conversations with artists, technologists, and thinkers on music, AI, crypto, DAOs, energy policy, digital culture. Guests have included Evgeny Morozov, Marianna Simnett, Shawn Reynaldo, and many others across the art/tech spectrum. Patreon-supported.",
+      "relevance": "The primary output of the interdependence framework. Functions as a living map of the relational field that A(DAI) aims to serve. Episodes surface connections, debates, and emerging practices that would be invisible without this kind of sustained conversational inquiry.",
+      "year_start": 2020,
+      "year_end": 2020,
+      "year_ongoing": false,
+      "year_uncertain": false,
+      "year_raw": 2020,
+      "work_type": "theoretical-framework",
+      "practitioner_type_raw": "theoretical",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-interdependence-podcast-framework--interdependence-podcast",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "project:interdependence podcast framework",
+          "name": "Interdependence (podcast/framework)",
+          "type": "project"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -12988,7 +13258,34 @@
     "type": "artwork",
     "name": "Interdependence as Theoretical Framework",
     "slug": "interdependence-as-theoretical-framework",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"The conceptual framework underlying the podcast: that creative and technological practices are fundamentally interdependent -- not autonomous or merely 'influenced by' each other, but relationally constituted. Draws on systems thinking, decentralized technology, and Herndon/Dryhurst's own art practice to argue for collective, relational approaches to creative production.\", \"relevance\": \"Provides theoretical grounding for A(DAI)'s graph-based intelligence model. The idea that practices are relationally determined maps directly onto graph topology where nodes gain meaning from their connections.\", \"year_start\": 2020, \"year_end\": 2020, \"year_ongoing\": false, \"year_uncertain\": false, \"year_raw\": 2020, \"work_type\": \"theoretical-framework\", \"practitioner_type_raw\": \"theoretical\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-interdependence-podcast-framework--interdependence-as-theoretical-framework\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "The conceptual framework underlying the podcast: that creative and technological practices are fundamentally interdependent -- not autonomous or merely 'influenced by' each other, but relationally constituted. Draws on systems thinking, decentralized technology, and Herndon/Dryhurst's own art practice to argue for collective, relational approaches to creative production.",
+      "relevance": "Provides theoretical grounding for A(DAI)'s graph-based intelligence model. The idea that practices are relationally determined maps directly onto graph topology where nodes gain meaning from their connections.",
+      "year_start": 2020,
+      "year_end": 2020,
+      "year_ongoing": false,
+      "year_uncertain": false,
+      "year_raw": 2020,
+      "work_type": "theoretical-framework",
+      "practitioner_type_raw": "theoretical",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-interdependence-podcast-framework--interdependence-as-theoretical-framework",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "project:interdependence podcast framework",
+          "name": "Interdependence (podcast/framework)",
+          "type": "project"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -12997,7 +13294,34 @@
     "type": "artwork",
     "name": "Herndon/Dryhurst Public Discourse (Talks, Interviews, Writing)",
     "slug": "herndon-dryhurst-public-discourse-talks-interviews-writing",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"Beyond the podcast, Herndon and Dryhurst articulate interdependence through TED talks, institutional conversations (Hans Ulrich Obrist at Serpentine), press interviews, and Foundation blog posts. These public interventions extend the framework's reach and refine its concepts.\", \"relevance\": \"Extends the interdependence framework into institutional and mainstream discourse, demonstrating how theoretical work translates into policy influence (EU text and data mining), institutional programming (Serpentine), and recognition (TIME 100 AI voices).\", \"year_start\": 2019, \"year_end\": null, \"year_ongoing\": true, \"year_uncertain\": false, \"year_raw\": \"2019-present\", \"work_type\": \"theoretical-framework\", \"practitioner_type_raw\": \"theoretical\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-interdependence-podcast-framework--herndon-dryhurst-public-discourse-talks-interviews-writing\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "Beyond the podcast, Herndon and Dryhurst articulate interdependence through TED talks, institutional conversations (Hans Ulrich Obrist at Serpentine), press interviews, and Foundation blog posts. These public interventions extend the framework's reach and refine its concepts.",
+      "relevance": "Extends the interdependence framework into institutional and mainstream discourse, demonstrating how theoretical work translates into policy influence (EU text and data mining), institutional programming (Serpentine), and recognition (TIME 100 AI voices).",
+      "year_start": 2019,
+      "year_end": null,
+      "year_ongoing": true,
+      "year_uncertain": false,
+      "year_raw": "2019-present",
+      "work_type": "theoretical-framework",
+      "practitioner_type_raw": "theoretical",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-interdependence-podcast-framework--herndon-dryhurst-public-discourse-talks-interviews-writing",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "project:interdependence podcast framework",
+          "name": "Interdependence (podcast/framework)",
+          "type": "project"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -13625,7 +13949,34 @@
     "type": "artwork",
     "name": "Future Art Ecosystems 4: Art x Public AI",
     "slug": "future-art-ecosystems-4-art-x-public-ai",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"Fourth annual strategic briefing addressing art's role in shaping public AI. Called for artists and institutions to become 'stewards' of data. Developed alongside The Call's Data Trust experiment.\", \"relevance\": \"Directly frames the policy and governance context for A(DAI)'s commons-first approach to AI and collective intelligence.\", \"year_start\": 2024, \"year_end\": 2024, \"year_ongoing\": false, \"year_uncertain\": false, \"year_raw\": 2024, \"work_type\": \"report\", \"practitioner_type_raw\": \"institution\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-serpentine-arts-technologies--future-art-ecosystems-4-art-x-public-ai\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "Fourth annual strategic briefing addressing art's role in shaping public AI. Called for artists and institutions to become 'stewards' of data. Developed alongside The Call's Data Trust experiment.",
+      "relevance": "Directly frames the policy and governance context for A(DAI)'s commons-first approach to AI and collective intelligence.",
+      "year_start": 2024,
+      "year_end": 2024,
+      "year_ongoing": false,
+      "year_uncertain": false,
+      "year_raw": 2024,
+      "work_type": "report",
+      "practitioner_type_raw": "institution",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-serpentine-arts-technologies--future-art-ecosystems-4-art-x-public-ai",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "publication:serpentine fae4: art x decentralised ai 2024",
+          "name": "Serpentine FAE4: Art x Decentralised AI (2024)",
+          "type": "publication"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -13652,7 +14003,34 @@
     "type": "artwork",
     "name": "The Call Data Trust (case study within FAE4)",
     "slug": "the-call-data-trust-case-study-within-fae4",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"Documentation of the Data Trust experiment developed alongside Holly Herndon and Mat Dryhurst's The Call at Serpentine, where 15 community choirs contributed vocal data governed by a trust structure rather than individual consent forms.\", \"relevance\": \"Directly models the governance infrastructure A(DAI) needs -- collective data governance for artistic AI training.\", \"year_start\": 2024, \"year_end\": 2024, \"year_ongoing\": false, \"year_uncertain\": false, \"year_raw\": 2024, \"work_type\": \"report\", \"practitioner_type_raw\": \"report\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-serpentine-fae4-art-x-decentralised-ai-2024--the-call-data-trust-case-study-within-fae4\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "Documentation of the Data Trust experiment developed alongside Holly Herndon and Mat Dryhurst's The Call at Serpentine, where 15 community choirs contributed vocal data governed by a trust structure rather than individual consent forms.",
+      "relevance": "Directly models the governance infrastructure A(DAI) needs -- collective data governance for artistic AI training.",
+      "year_start": 2024,
+      "year_end": 2024,
+      "year_ongoing": false,
+      "year_uncertain": false,
+      "year_raw": 2024,
+      "work_type": "report",
+      "practitioner_type_raw": "report",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-serpentine-fae4-art-x-decentralised-ai-2024--the-call-data-trust-case-study-within-fae4",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "publication:serpentine fae4: art x decentralised ai 2024",
+          "name": "Serpentine FAE4: Art x Decentralised AI (2024)",
+          "type": "publication"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -13661,7 +14039,34 @@
     "type": "artwork",
     "name": "FAE series (1-5)",
     "slug": "fae-series-1-5",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"The broader series: FAE1 (Art x Advanced Technologies), FAE2 (Art x Metaverse), FAE3 (Art x Decentralised Tech), FAE4 (Art x Public AI), FAE5 (Art x Creative R&D). Each issue maps a different dimension of art-technology infrastructure.\", \"relevance\": \"The complete series provides the evolving strategic context for A(DAI), tracking how the art-technology landscape has developed year by year.\", \"year_start\": 2020, \"year_end\": 2025, \"year_ongoing\": false, \"year_uncertain\": false, \"year_raw\": \"2020-2025\", \"work_type\": \"report\", \"practitioner_type_raw\": \"report\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-serpentine-fae4-art-x-decentralised-ai-2024--fae-series-1-5\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "The broader series: FAE1 (Art x Advanced Technologies), FAE2 (Art x Metaverse), FAE3 (Art x Decentralised Tech), FAE4 (Art x Public AI), FAE5 (Art x Creative R&D). Each issue maps a different dimension of art-technology infrastructure.",
+      "relevance": "The complete series provides the evolving strategic context for A(DAI), tracking how the art-technology landscape has developed year by year.",
+      "year_start": 2020,
+      "year_end": 2025,
+      "year_ongoing": false,
+      "year_uncertain": false,
+      "year_raw": "2020-2025",
+      "work_type": "report",
+      "practitioner_type_raw": "report",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-serpentine-fae4-art-x-decentralised-ai-2024--fae-series-1-5",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "publication:serpentine fae4: art x decentralised ai 2024",
+          "name": "Serpentine FAE4: Art x Decentralised AI (2024)",
+          "type": "publication"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -13670,7 +14075,34 @@
     "type": "artwork",
     "name": "Artificial Natural History",
     "slug": "artificial-natural-history",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"A series of GAN-generated organisms that form a speculative taxonomy of non-existent life — creatures that sit between known biological categories, generated by training neural networks on diverse biological imagery. Presented as prints, video, and interactive explorations of the latent space of imagined biology.\", \"relevance\": \"Demonstrates the concept of a generative taxonomy — an AI-produced catalogue of entities defined by their relationships to each other. Directly analogous to how A(DAI) could generate relational maps of the digital arts field.\", \"year_start\": 2020, \"year_end\": 2020, \"year_ongoing\": false, \"year_uncertain\": false, \"year_raw\": \"2020\", \"work_type\": \"artwork\", \"practitioner_type_raw\": \"artist-collective\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-sofia-crespo-entangled-others--artificial-natural-history\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "A series of GAN-generated organisms that form a speculative taxonomy of non-existent life — creatures that sit between known biological categories, generated by training neural networks on diverse biological imagery. Presented as prints, video, and interactive explorations of the latent space of imagined biology.",
+      "relevance": "Demonstrates the concept of a generative taxonomy — an AI-produced catalogue of entities defined by their relationships to each other. Directly analogous to how A(DAI) could generate relational maps of the digital arts field.",
+      "year_start": 2020,
+      "year_end": 2020,
+      "year_ongoing": false,
+      "year_uncertain": false,
+      "year_raw": "2020",
+      "work_type": "artwork",
+      "practitioner_type_raw": "artist-collective",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-sofia-crespo-entangled-others--artificial-natural-history",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "collective:sofia crespo entangled others",
+          "name": "Sofia Crespo / Entangled Others",
+          "type": "collective"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -13679,7 +14111,34 @@
     "type": "artwork",
     "name": "Beneath the Neural Waves",
     "slug": "beneath-the-neural-waves",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"An immersive generative video work depicting an AI-imagined deep sea ecosystem. Neural networks trained on deep ocean organism footage generate continuously evolving underwater landscapes populated by speculative creatures. Shown as large-scale projection installation.\", \"relevance\": \"Models an immersive ecosystem generated from trained neural networks — a living environment that visitors can dwell within. Demonstrates how generative AI can produce coherent, relational visual worlds.\", \"year_start\": 2021, \"year_end\": 2022, \"year_ongoing\": false, \"year_uncertain\": false, \"year_raw\": \"2021-2022\", \"work_type\": \"artwork\", \"practitioner_type_raw\": \"artist-collective\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-sofia-crespo-entangled-others--beneath-the-neural-waves\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "An immersive generative video work depicting an AI-imagined deep sea ecosystem. Neural networks trained on deep ocean organism footage generate continuously evolving underwater landscapes populated by speculative creatures. Shown as large-scale projection installation.",
+      "relevance": "Models an immersive ecosystem generated from trained neural networks — a living environment that visitors can dwell within. Demonstrates how generative AI can produce coherent, relational visual worlds.",
+      "year_start": 2021,
+      "year_end": 2022,
+      "year_ongoing": false,
+      "year_uncertain": false,
+      "year_raw": "2021-2022",
+      "work_type": "artwork",
+      "practitioner_type_raw": "artist-collective",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-sofia-crespo-entangled-others--beneath-the-neural-waves",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "collective:sofia crespo entangled others",
+          "name": "Sofia Crespo / Entangled Others",
+          "type": "collective"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -13688,7 +14147,34 @@
     "type": "artwork",
     "name": "A Study of Entanglement",
     "slug": "a-study-of-entanglement",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"Interactive installation by Entangled Others exploring interspecies relationships through real-time generative visuals. Organisms generated by AI models interact with each other on screen, forming and dissolving relationships. Connected to environmental data to reflect real-world ecological conditions.\", \"relevance\": \"The most directly relevant work — a generative relational ecosystem that responds to real-world data. Models exactly what A(DAI)'s Sense Room could look like: a living ecology of entities whose relationships are visible, dynamic, and data-driven.\", \"year_start\": 2022, \"year_end\": 2023, \"year_ongoing\": false, \"year_uncertain\": false, \"year_raw\": \"2022-2023\", \"work_type\": \"artwork\", \"practitioner_type_raw\": \"artist-collective\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-sofia-crespo-entangled-others--a-study-of-entanglement\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "Interactive installation by Entangled Others exploring interspecies relationships through real-time generative visuals. Organisms generated by AI models interact with each other on screen, forming and dissolving relationships. Connected to environmental data to reflect real-world ecological conditions.",
+      "relevance": "The most directly relevant work — a generative relational ecosystem that responds to real-world data. Models exactly what A(DAI)'s Sense Room could look like: a living ecology of entities whose relationships are visible, dynamic, and data-driven.",
+      "year_start": 2022,
+      "year_end": 2023,
+      "year_ongoing": false,
+      "year_uncertain": false,
+      "year_raw": "2022-2023",
+      "work_type": "artwork",
+      "practitioner_type_raw": "artist-collective",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-sofia-crespo-entangled-others--a-study-of-entanglement",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "collective:sofia crespo entangled others",
+          "name": "Sofia Crespo / Entangled Others",
+          "type": "collective"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -13751,7 +14237,33 @@
     "type": "artwork",
     "name": "Ur-Hildegard Training Corpus",
     "slug": "ur-hildegard-training-corpus",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"Machine-learning reinterpretation of Hildegard von Bingen's Ordo Virtutum (1151), where the 12th-century play becomes a training dataset re-coded into a living vocal intelligence.\", \"relevance\": \"Demonstrates how historical cultural material can be re-encoded as AI training data -- treating cultural heritage as substrate for generative intelligence.\", \"year_start\": 2025, \"year_end\": 2025, \"year_ongoing\": false, \"year_uncertain\": false, \"year_raw\": 2025, \"work_type\": \"artwork\", \"practitioner_type_raw\": \"artwork\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-starmirror-holly-herndon-mat-dryhurst--ur-hildegard-training-corpus\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "Machine-learning reinterpretation of Hildegard von Bingen's Ordo Virtutum (1151), where the 12th-century play becomes a training dataset re-coded into a living vocal intelligence.",
+      "relevance": "Demonstrates how historical cultural material can be re-encoded as AI training data -- treating cultural heritage as substrate for generative intelligence.",
+      "year_start": 2025,
+      "year_end": 2025,
+      "year_ongoing": false,
+      "year_uncertain": false,
+      "year_raw": 2025,
+      "work_type": "artwork",
+      "practitioner_type_raw": "artwork",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-starmirror-holly-herndon-mat-dryhurst--ur-hildegard-training-corpus",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "companion_works": [
+        {
+          "id": "artwork:starmirror holly herndon & mat dryhurst",
+          "name": "Starmirror (Holly Herndon & Mat Dryhurst)"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -13760,7 +14272,33 @@
     "type": "artwork",
     "name": "Public Diffusion",
     "slug": "public-diffusion",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"A foundation image model created by the artists trained entirely on public domain data, presented in the Arboretum section of the exhibition.\", \"relevance\": \"A commons-based alternative to proprietary image generation models. Directly relevant to A(DAI)'s commons-first orientation.\", \"year_start\": 2025, \"year_end\": 2025, \"year_ongoing\": false, \"year_uncertain\": false, \"year_raw\": 2025, \"work_type\": \"artwork\", \"practitioner_type_raw\": \"artwork\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-starmirror-holly-herndon-mat-dryhurst--public-diffusion\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "A foundation image model created by the artists trained entirely on public domain data, presented in the Arboretum section of the exhibition.",
+      "relevance": "A commons-based alternative to proprietary image generation models. Directly relevant to A(DAI)'s commons-first orientation.",
+      "year_start": 2025,
+      "year_end": 2025,
+      "year_ongoing": false,
+      "year_uncertain": false,
+      "year_raw": 2025,
+      "work_type": "artwork",
+      "practitioner_type_raw": "artwork",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-starmirror-holly-herndon-mat-dryhurst--public-diffusion",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "companion_works": [
+        {
+          "id": "artwork:starmirror holly herndon & mat dryhurst",
+          "name": "Starmirror (Holly Herndon & Mat Dryhurst)"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -13769,7 +14307,37 @@
     "type": "artwork",
     "name": "The Hearth",
     "slug": "the-hearth",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"Acoustic organ driven by GPU cooling fans, transforming heat and noise -- byproducts of AI computation -- into an art object. Previously shown at Serpentine in The Call.\", \"relevance\": \"Infrastructure made visible and aesthetic. The material conditions of AI production become the artwork.\", \"year_start\": 2024, \"year_end\": 2024, \"year_ongoing\": false, \"year_uncertain\": false, \"year_raw\": 2024, \"work_type\": \"artwork\", \"practitioner_type_raw\": \"artwork\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-starmirror-holly-herndon-mat-dryhurst--the-hearth\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "Acoustic organ driven by GPU cooling fans, transforming heat and noise -- byproducts of AI computation -- into an art object. Previously shown at Serpentine in The Call.",
+      "relevance": "Infrastructure made visible and aesthetic. The material conditions of AI production become the artwork.",
+      "year_start": 2024,
+      "year_end": 2024,
+      "year_ongoing": false,
+      "year_uncertain": false,
+      "year_raw": 2024,
+      "work_type": "artwork",
+      "practitioner_type_raw": "artwork",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-starmirror-holly-herndon-mat-dryhurst--the-hearth",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "companion_works": [
+        {
+          "id": "artwork:starmirror holly herndon & mat dryhurst",
+          "name": "Starmirror (Holly Herndon & Mat Dryhurst)"
+        },
+        {
+          "id": "artwork:the call holly herndon & mat dryhurst",
+          "name": "The Call (Holly Herndon & Mat Dryhurst)"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -13859,7 +14427,33 @@
     "type": "artwork",
     "name": "The Wheel",
     "slug": "the-wheel",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"Spherical chandelier-like installation in the South Powder Room with gilded panels engraved with imagery from the recording tour, serving as symbolic centre for the choral data.\", \"relevance\": \"Physical manifestation of a data provenance record -- the journey of data collection made visible as sculptural object.\", \"year_start\": 2024, \"year_end\": 2024, \"year_ongoing\": false, \"year_uncertain\": false, \"year_raw\": 2024, \"work_type\": \"artwork\", \"practitioner_type_raw\": \"artwork\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-the-call-holly-herndon-mat-dryhurst--the-wheel\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "Spherical chandelier-like installation in the South Powder Room with gilded panels engraved with imagery from the recording tour, serving as symbolic centre for the choral data.",
+      "relevance": "Physical manifestation of a data provenance record -- the journey of data collection made visible as sculptural object.",
+      "year_start": 2024,
+      "year_end": 2024,
+      "year_ongoing": false,
+      "year_uncertain": false,
+      "year_raw": 2024,
+      "work_type": "artwork",
+      "practitioner_type_raw": "artwork",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-the-call-holly-herndon-mat-dryhurst--the-wheel",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "companion_works": [
+        {
+          "id": "artwork:the call holly herndon & mat dryhurst",
+          "name": "The Call (Holly Herndon & Mat Dryhurst)"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -13868,7 +14462,33 @@
     "type": "artwork",
     "name": "Oratory (Interactive Choral AI)",
     "slug": "oratory-interactive-choral-ai",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"Interactive installation where visitors contribute their voices and the choral AI model harmonizes them in real-time, creating an experience akin to joining a choir.\", \"relevance\": \"Live demonstration of human-AI collective composition, where individual contributions are woven into a collective output -- core A(DAI) Sense Room principle.\", \"year_start\": 2024, \"year_end\": 2024, \"year_ongoing\": false, \"year_uncertain\": false, \"year_raw\": 2024, \"work_type\": \"artwork\", \"practitioner_type_raw\": \"artwork\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-the-call-holly-herndon-mat-dryhurst--oratory-interactive-choral-ai\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "Interactive installation where visitors contribute their voices and the choral AI model harmonizes them in real-time, creating an experience akin to joining a choir.",
+      "relevance": "Live demonstration of human-AI collective composition, where individual contributions are woven into a collective output -- core A(DAI) Sense Room principle.",
+      "year_start": 2024,
+      "year_end": 2024,
+      "year_ongoing": false,
+      "year_uncertain": false,
+      "year_raw": 2024,
+      "work_type": "artwork",
+      "practitioner_type_raw": "artwork",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-the-call-holly-herndon-mat-dryhurst--oratory-interactive-choral-ai",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "companion_works": [
+        {
+          "id": "artwork:the call holly herndon & mat dryhurst",
+          "name": "The Call (Holly Herndon & Mat Dryhurst)"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -13877,7 +14497,34 @@
     "type": "artwork",
     "name": "Trust Reading Groups",
     "slug": "trust-reading-groups",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"Ongoing series of collectively organized reading groups on topics spanning technology, philosophy, politics, and ecology. Each series is carefully designed with curated reading lists and structured discussion formats.\", \"relevance\": \"Models how structured collective study can be a creative practice. The curatorial work of selecting texts and designing discussion formats mirrors A(DAI)'s graph curation.\", \"year_start\": 2014, \"year_end\": null, \"year_ongoing\": true, \"year_uncertain\": true, \"year_raw\": \"2014-present [uncertain]\", \"work_type\": \"artwork\", \"practitioner_type_raw\": \"collective\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-trust-berlin--trust-reading-groups\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "Ongoing series of collectively organized reading groups on topics spanning technology, philosophy, politics, and ecology. Each series is carefully designed with curated reading lists and structured discussion formats.",
+      "relevance": "Models how structured collective study can be a creative practice. The curatorial work of selecting texts and designing discussion formats mirrors A(DAI)'s graph curation.",
+      "year_start": 2014,
+      "year_end": null,
+      "year_ongoing": true,
+      "year_uncertain": true,
+      "year_raw": "2014-present [uncertain]",
+      "work_type": "artwork",
+      "practitioner_type_raw": "collective",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-trust-berlin--trust-reading-groups",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "collective:trust berlin",
+          "name": "Trust (Berlin)",
+          "type": "collective"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -13886,7 +14533,34 @@
     "type": "artwork",
     "name": "Relearn",
     "slug": "relearn",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"A recurring self-organized learning event/summer school exploring alternatives to conventional education, often involving Trust members. Participants propose and lead sessions on technology, art, and politics.\", \"relevance\": \"Demonstrates decentralized, commons-based learning infrastructure. The self-organizing format models how A(DAI)'s community might contribute to and reshape the knowledge graph.\", \"year_start\": 2013, \"year_end\": null, \"year_ongoing\": true, \"year_uncertain\": true, \"year_raw\": \"2013-present [uncertain]\", \"work_type\": \"artwork\", \"practitioner_type_raw\": \"collective\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-trust-berlin--relearn\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "A recurring self-organized learning event/summer school exploring alternatives to conventional education, often involving Trust members. Participants propose and lead sessions on technology, art, and politics.",
+      "relevance": "Demonstrates decentralized, commons-based learning infrastructure. The self-organizing format models how A(DAI)'s community might contribute to and reshape the knowledge graph.",
+      "year_start": 2013,
+      "year_end": null,
+      "year_ongoing": true,
+      "year_uncertain": true,
+      "year_raw": "2013-present [uncertain]",
+      "work_type": "artwork",
+      "practitioner_type_raw": "collective",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-trust-berlin--relearn",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "collective:trust berlin",
+          "name": "Trust (Berlin)",
+          "type": "collective"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -13895,7 +14569,34 @@
     "type": "artwork",
     "name": "Trust Publications and Web Presence",
     "slug": "trust-publications-and-web-presence",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"Web-based publishing projects documenting reading groups, discussions, and collective research outputs. The website itself is a designed knowledge commons.\", \"relevance\": \"Shows how web infrastructure can embody commons values while functioning as a persistent, navigable knowledge resource.\", \"year_start\": 2014, \"year_end\": null, \"year_ongoing\": true, \"year_uncertain\": true, \"year_raw\": \"2014-present [uncertain]\", \"work_type\": \"artwork\", \"practitioner_type_raw\": \"collective\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-trust-berlin--trust-publications-and-web-presence\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "Web-based publishing projects documenting reading groups, discussions, and collective research outputs. The website itself is a designed knowledge commons.",
+      "relevance": "Shows how web infrastructure can embody commons values while functioning as a persistent, navigable knowledge resource.",
+      "year_start": 2014,
+      "year_end": null,
+      "year_ongoing": true,
+      "year_uncertain": true,
+      "year_raw": "2014-present [uncertain]",
+      "work_type": "artwork",
+      "practitioner_type_raw": "collective",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-trust-berlin--trust-publications-and-web-presence",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "collective:trust berlin",
+          "name": "Trust (Berlin)",
+          "type": "collective"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -13958,7 +14659,34 @@
     "type": "artwork",
     "name": "alignDRAW 10-Year Anniversary Book",
     "slug": "aligndraw-10-year-anniversary-book",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"Large-format publication featuring essays by Lev Manovich (media theory, art history context), Mat Dryhurst (arXiv as site of cultural production), Eva Jager (institutional and curatorial perspective), Shana Lopes (art history), and Darius Himes (photography and image-making). Includes original alignDRAW outputs from 2015 and new generations.\", \"relevance\": \"Directly models A(DAI)'s approach: treating technical research as field intelligence and building relational narratives that connect engineering, art, and culture.\", \"year_start\": 2024, \"year_end\": 2024, \"year_ongoing\": false, \"year_uncertain\": false, \"year_raw\": 2024, \"work_type\": \"exhibition\", \"practitioner_type_raw\": \"exhibition-publication\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-aligndraw-10-year-anniversary-fellowshipxyz--aligndraw-10-year-anniversary-book\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "Large-format publication featuring essays by Lev Manovich (media theory, art history context), Mat Dryhurst (arXiv as site of cultural production), Eva Jager (institutional and curatorial perspective), Shana Lopes (art history), and Darius Himes (photography and image-making). Includes original alignDRAW outputs from 2015 and new generations.",
+      "relevance": "Directly models A(DAI)'s approach: treating technical research as field intelligence and building relational narratives that connect engineering, art, and culture.",
+      "year_start": 2024,
+      "year_end": 2024,
+      "year_ongoing": false,
+      "year_uncertain": false,
+      "year_raw": 2024,
+      "work_type": "exhibition",
+      "practitioner_type_raw": "exhibition-publication",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-aligndraw-10-year-anniversary-fellowshipxyz--aligndraw-10-year-anniversary-book",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "publication:aligndraw 10-year anniversary fellowshipxyz",
+          "name": "alignDRAW 10-Year Anniversary (Fellowship.xyz)",
+          "type": "publication"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -13967,7 +14695,34 @@
     "type": "artwork",
     "name": "alignDRAW Exhibition at Art Basel Miami Beach",
     "slug": "aligndraw-exhibition-at-art-basel-miami-beach",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"Exhibition presenting the alignDRAW book and related materials at Art Basel Miami Beach, positioning the project within the premier international art fair context.\", \"relevance\": \"Demonstrates how field intelligence (a 2015 arXiv paper) can be exhibited in the highest tier of the art market, validating the canonisation methodology.\", \"year_start\": 2024, \"year_end\": 2024, \"year_ongoing\": false, \"year_uncertain\": false, \"year_raw\": 2024, \"work_type\": \"exhibition\", \"practitioner_type_raw\": \"exhibition-publication\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-aligndraw-10-year-anniversary-fellowshipxyz--aligndraw-exhibition-at-art-basel-miami-beach\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "Exhibition presenting the alignDRAW book and related materials at Art Basel Miami Beach, positioning the project within the premier international art fair context.",
+      "relevance": "Demonstrates how field intelligence (a 2015 arXiv paper) can be exhibited in the highest tier of the art market, validating the canonisation methodology.",
+      "year_start": 2024,
+      "year_end": 2024,
+      "year_ongoing": false,
+      "year_uncertain": false,
+      "year_raw": 2024,
+      "work_type": "exhibition",
+      "practitioner_type_raw": "exhibition-publication",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-aligndraw-10-year-anniversary-fellowshipxyz--aligndraw-exhibition-at-art-basel-miami-beach",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "publication:aligndraw 10-year anniversary fellowshipxyz",
+          "name": "alignDRAW 10-Year Anniversary (Fellowship.xyz)",
+          "type": "publication"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -13976,7 +14731,34 @@
     "type": "artwork",
     "name": "alignDRAW at Worcester Art Museum",
     "slug": "aligndraw-at-worcester-art-museum",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"Museum exhibition bringing the alignDRAW project into an institutional collection context, bridging from art fair to museum.\", \"relevance\": \"Shows the institutional pipeline from research artefact to art fair to museum collection -- a canonisation pathway A(DAI) can learn from.\", \"year_start\": 2025, \"year_end\": 2025, \"year_ongoing\": false, \"year_uncertain\": true, \"year_raw\": \"2025 [uncertain]\", \"work_type\": \"exhibition\", \"practitioner_type_raw\": \"exhibition-publication\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-aligndraw-10-year-anniversary-fellowshipxyz--aligndraw-at-worcester-art-museum\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "Museum exhibition bringing the alignDRAW project into an institutional collection context, bridging from art fair to museum.",
+      "relevance": "Shows the institutional pipeline from research artefact to art fair to museum collection -- a canonisation pathway A(DAI) can learn from.",
+      "year_start": 2025,
+      "year_end": 2025,
+      "year_ongoing": false,
+      "year_uncertain": true,
+      "year_raw": "2025 [uncertain]",
+      "work_type": "exhibition",
+      "practitioner_type_raw": "exhibition-publication",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-aligndraw-10-year-anniversary-fellowshipxyz--aligndraw-at-worcester-art-museum",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "publication:aligndraw 10-year anniversary fellowshipxyz",
+          "name": "alignDRAW 10-Year Anniversary (Fellowship.xyz)",
+          "type": "publication"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -14012,7 +14794,34 @@
     "type": "artwork",
     "name": "teamLab Borderless",
     "slug": "teamlab-borderless",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"A museum without a map where artworks move out of rooms, communicate with and influence each other, and intermingle without boundaries. 1.55 million visitors in first anniversary year at new location. Selected by TIME as World's Greatest Places 2024.\", \"relevance\": \"Direct precedent for graph-curated exhibition — artworks as nodes whose relationships determine the visitor experience. The absence of fixed boundaries between works mirrors graph-based relational composition.\", \"year_start\": 2018, \"year_end\": 2024, \"year_ongoing\": false, \"year_uncertain\": false, \"year_raw\": \"2018 (Odaiba), 2024 (Azabudai Hills reopening)\", \"work_type\": \"artwork\", \"practitioner_type_raw\": \"collective\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-teamlab--teamlab-borderless\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "A museum without a map where artworks move out of rooms, communicate with and influence each other, and intermingle without boundaries. 1.55 million visitors in first anniversary year at new location. Selected by TIME as World's Greatest Places 2024.",
+      "relevance": "Direct precedent for graph-curated exhibition — artworks as nodes whose relationships determine the visitor experience. The absence of fixed boundaries between works mirrors graph-based relational composition.",
+      "year_start": 2018,
+      "year_end": 2024,
+      "year_ongoing": false,
+      "year_uncertain": false,
+      "year_raw": "2018 (Odaiba), 2024 (Azabudai Hills reopening)",
+      "work_type": "artwork",
+      "practitioner_type_raw": "collective",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-teamlab--teamlab-borderless",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "collective:teamlab",
+          "name": "teamLab",
+          "type": "collective"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -14021,7 +14830,34 @@
     "type": "artwork",
     "name": "teamLab Planets",
     "slug": "teamlab-planets",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"A museum where visitors physically immerse themselves in artworks, walking through water with responsive projections. Guinness World Record as most visited museum by a single art group (2.51 million visitors in 2025).\", \"relevance\": \"Demonstrates how bodily immersion and physical interaction (water, floor surfaces) can be primary material for generative art. The visitor's body becomes part of the artwork's computation.\", \"year_start\": 2018, \"year_end\": null, \"year_ongoing\": true, \"year_uncertain\": false, \"year_raw\": \"2018-present (expanded January 2025)\", \"work_type\": \"artwork\", \"practitioner_type_raw\": \"collective\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-teamlab--teamlab-planets\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "A museum where visitors physically immerse themselves in artworks, walking through water with responsive projections. Guinness World Record as most visited museum by a single art group (2.51 million visitors in 2025).",
+      "relevance": "Demonstrates how bodily immersion and physical interaction (water, floor surfaces) can be primary material for generative art. The visitor's body becomes part of the artwork's computation.",
+      "year_start": 2018,
+      "year_end": null,
+      "year_ongoing": true,
+      "year_uncertain": false,
+      "year_raw": "2018-present (expanded January 2025)",
+      "work_type": "artwork",
+      "practitioner_type_raw": "collective",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-teamlab--teamlab-planets",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "collective:teamlab",
+          "name": "teamLab",
+          "type": "collective"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -14030,7 +14866,34 @@
     "type": "artwork",
     "name": "Universe of Water Particles / Flowers and People",
     "slug": "universe-of-water-particles-flowers-and-people",
-    "metadata": "{\"status\": \"confirmed\", \"description\": \"Water simulated as hundreds of thousands of particles following physics-based computation; flowers bloom and scatter seasonally in response to visitor proximity. Real-time rendering means the visual state is always unique.\", \"relevance\": \"Exemplifies art-as-substrate where natural phenomena are computationally modeled and human presence modulates the generative system. The seasonal cycle shows how temporal data feeds can drive artistic change.\", \"year_start\": null, \"year_end\": null, \"year_ongoing\": true, \"year_uncertain\": false, \"year_raw\": \"Ongoing series\", \"work_type\": \"artwork\", \"practitioner_type_raw\": \"collective\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-artworks-preview-2025\", \"original_artwork_id\": \"artwork-teamlab--universe-of-water-particles-flowers-and-people\", \"confidence\": \"high\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "confirmed",
+      "description": "Water simulated as hundreds of thousands of particles following physics-based computation; flowers bloom and scatter seasonally in response to visitor proximity. Real-time rendering means the visual state is always unique.",
+      "relevance": "Exemplifies art-as-substrate where natural phenomena are computationally modeled and human presence modulates the generative system. The seasonal cycle shows how temporal data feeds can drive artistic change.",
+      "year_start": null,
+      "year_end": null,
+      "year_ongoing": true,
+      "year_uncertain": false,
+      "year_raw": "Ongoing series",
+      "work_type": "artwork",
+      "practitioner_type_raw": "collective",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-artworks-preview-2025",
+        "original_artwork_id": "artwork-teamlab--universe-of-water-particles-flowers-and-people",
+        "confidence": "high",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "collective:teamlab",
+          "name": "teamLab",
+          "type": "collective"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -14430,7 +15293,29 @@
     "type": "artwork",
     "name": "wwwwwwwww.jodi.org",
     "slug": "wwwwwwwww-jodi-org",
-    "metadata": "{\"status\": \"draft\", \"description\": \"Website-as-artwork where the visible green ASCII revealed HTML source code as the actual piece.\", \"year_raw\": \"1995\", \"year_start\": null, \"work_type\": \"artwork\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-taxonomy-2026-04\", \"batch\": \"seed-taxonomy-2026-04\", \"confidence\": \"medium\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "draft",
+      "description": "Website-as-artwork where the visible green ASCII revealed HTML source code as the actual piece.",
+      "year_raw": "1995",
+      "year_start": null,
+      "work_type": "artwork",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-taxonomy-2026-04",
+        "batch": "seed-taxonomy-2026-04",
+        "confidence": "medium",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "collective:jodi",
+          "name": "JODI",
+          "type": "collective"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -14439,7 +15324,29 @@
     "type": "artwork",
     "name": "OSS/***",
     "slug": "oss",
-    "metadata": "{\"status\": \"draft\", \"description\": \"Modified applications and games that expose how software constrains behavior.\", \"year_raw\": \"1998\", \"year_start\": null, \"work_type\": \"artwork\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-taxonomy-2026-04\", \"batch\": \"seed-taxonomy-2026-04\", \"confidence\": \"medium\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "draft",
+      "description": "Modified applications and games that expose how software constrains behavior.",
+      "year_raw": "1998",
+      "year_start": null,
+      "work_type": "artwork",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-taxonomy-2026-04",
+        "batch": "seed-taxonomy-2026-04",
+        "confidence": "medium",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "collective:jodi",
+          "name": "JODI",
+          "type": "collective"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -17306,7 +18213,29 @@
     "type": "artwork",
     "name": "Queens+Kings",
     "slug": "queens-kings",
-    "metadata": "{\"status\": \"draft\", \"description\": \"Series of mythological portrait NFTs building a coherent imagined world.\", \"year_raw\": \"2020\", \"year_start\": null, \"work_type\": \"artwork\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-taxonomy-2026-04\", \"batch\": \"seed-taxonomy-2026-04\", \"confidence\": \"medium\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "draft",
+      "description": "Series of mythological portrait NFTs building a coherent imagined world.",
+      "year_raw": "2020",
+      "year_start": null,
+      "work_type": "artwork",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-taxonomy-2026-04",
+        "batch": "seed-taxonomy-2026-04",
+        "confidence": "medium",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "collective:hackatao",
+          "name": "Hackatao",
+          "type": "collective"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -17884,7 +18813,29 @@
     "type": "artwork",
     "name": "Rain Room",
     "slug": "rain-room",
-    "metadata": "{\"status\": \"draft\", \"description\": \"100-square-metre field of falling water that pauses wherever a body is detected — exhibited at MoMA, Barbican, and globally.\", \"year_raw\": \"2012\", \"year_start\": null, \"work_type\": \"artwork\", \"image_url\": null, \"image_license\": null, \"image_source\": null, \"data_provenance\": {\"source\": \"seed-taxonomy-2026-04\", \"batch\": \"seed-taxonomy-2026-04\", \"confidence\": \"medium\", \"trust_tier\": \"reviewed\"}}",
+    "metadata": {
+      "status": "draft",
+      "description": "100-square-metre field of falling water that pauses wherever a body is detected — exhibited at MoMA, Barbican, and globally.",
+      "year_raw": "2012",
+      "year_start": null,
+      "work_type": "artwork",
+      "image_url": null,
+      "image_license": null,
+      "image_source": null,
+      "data_provenance": {
+        "source": "seed-taxonomy-2026-04",
+        "batch": "seed-taxonomy-2026-04",
+        "confidence": "medium",
+        "trust_tier": "reviewed"
+      },
+      "produced_by_org": [
+        {
+          "id": "collective:random international",
+          "name": "Random International",
+          "type": "collective"
+        }
+      ]
+    },
     "created_at": "2026-04-21T13:29:05Z",
     "updated_by": "contributor:migration"
   },
@@ -23348,7 +24299,14 @@
       "signal_id": "moma-ingest-2026-04-22",
       "generated_by": "moma-ingest-2026-04-22",
       "auto_generated": true,
-      "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/0b/0ba95f5c14890873644ad74af32b130763de34453254351ef3c860a1281298cd.jpg"
+      "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/0b/0ba95f5c14890873644ad74af32b130763de34453254351ef3c860a1281298cd.jpg",
+      "produced_by_org": [
+        {
+          "id": "collective:jodi",
+          "name": "JODI",
+          "type": "collective"
+        }
+      ]
     }
   },
   {
