@@ -31,6 +31,65 @@
     window.dispatchEvent(new CustomEvent(name, { detail }));
   }
 
+  // --- Loading indicator (DOM-driven; the element lives in index.html
+  //     so it shows before any JS runs). We set data-state on it as the
+  //     graph fetch progresses, and animate the trailing ellipsis here so
+  //     it's reliable cross-browser (CSS `content` animation isn't).
+  //
+  //     Minimum-visible window: on warm-cache visits the graph resolves
+  //     in <50ms, and a sub-frame flash of the loader reads as flicker.
+  //     We hold the indicator for at least MIN_VISIBLE_MS before allowing
+  //     'ready' to apply, so it always registers as a deliberate cue.
+  //     Errors bypass the hold (the user wants to see them immediately).
+  const MIN_VISIBLE_MS = 600;
+  const loadingEl = typeof document !== 'undefined'
+    ? document.getElementById('field-loading')
+    : null;
+  const loadingShownAt = (typeof performance !== 'undefined' && performance.now)
+    ? performance.now()
+    : Date.now();
+  let loadingDotsTimer = null;
+  let loadingReadyTimer = null;
+  function startLoadingDotsAnim() {
+    if (!loadingEl || loadingDotsTimer) return;
+    const dotsEl = loadingEl.querySelector('.field-loading__dots');
+    if (!dotsEl) return;
+    const frames = ['', '.', '..', '...'];
+    let i = 0;
+    dotsEl.textContent = frames[0];
+    loadingDotsTimer = setInterval(() => {
+      i = (i + 1) % frames.length;
+      dotsEl.textContent = frames[i];
+    }, 380);
+  }
+  function applyLoadingState(state, message) {
+    if (!loadingEl) return;
+    loadingEl.dataset.state = state;
+    if (loadingDotsTimer) { clearInterval(loadingDotsTimer); loadingDotsTimer = null; }
+    if (state === 'error') {
+      const textEl = loadingEl.querySelector('.field-loading__text');
+      const dotsEl = loadingEl.querySelector('.field-loading__dots');
+      if (dotsEl) dotsEl.textContent = '';
+      if (textEl && textEl.firstChild) textEl.firstChild.nodeValue = message || 'field unreachable';
+    }
+  }
+  function setLoadingState(state, message) {
+    if (!loadingEl) return;
+    if (loadingReadyTimer) { clearTimeout(loadingReadyTimer); loadingReadyTimer = null; }
+    if (state === 'ready') {
+      const now = (typeof performance !== 'undefined' && performance.now)
+        ? performance.now()
+        : Date.now();
+      const remaining = MIN_VISIBLE_MS - (now - loadingShownAt);
+      if (remaining > 0) {
+        loadingReadyTimer = setTimeout(() => applyLoadingState('ready'), remaining);
+        return;
+      }
+    }
+    applyLoadingState(state, message);
+  }
+  if (loadingEl) startLoadingDotsAnim();
+
   function writeVitals(stats) {
     const nodesEl = document.getElementById('v-nodes');
     const edgesEl = document.getElementById('v-edges');
@@ -158,6 +217,7 @@
       indexed.fromCache = true;
       indexed.versionStamp = versionStamp;
       window.ADAI_GRAPH = indexed;
+      setLoadingState('ready');
       emit('adai:graph', indexed);
       return indexed;
     }
@@ -170,10 +230,12 @@
       indexed.fromCache = false;
       indexed.versionStamp = versionStamp;
       window.ADAI_GRAPH = indexed;
+      setLoadingState('ready');
       emit('adai:graph', indexed);
       return indexed;
     } catch (err) {
       console.warn('[adai] graph fetch failed:', err.message);
+      setLoadingState('error', 'field unreachable — retry');
       emit('adai:graph', { error: err.message });
       return null;
     }

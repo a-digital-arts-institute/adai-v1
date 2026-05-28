@@ -355,3 +355,66 @@ html, body {
     transform: none !important;
   }
 }
+
+/* ---- Field loading indicator ----
+   Visible until graph-loader.js dispatches `adai:graph` (or errors).
+   The graph payload is ~560 KB; first-visit cold fetch can be a few
+   seconds before any dots appear on the field, hence the cue. */
+#field-loading {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: lowercase;
+  color: var(--text);
+  background: rgba(6, 6, 8, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+  backdrop-filter: blur(14px);
+  pointer-events: none;
+  opacity: 0.7;
+  visibility: visible;
+  transition: opacity 800ms ease, color 400ms ease, visibility 0s linear 0s;
+}
+#field-loading[data-state="ready"] {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 800ms ease, visibility 0s linear 800ms;
+}
+#field-loading[data-state="error"] {
+  color: #d68585;
+  opacity: 0.85;
+}
+.field-loading__pip {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--signal);
+  box-shadow: 0 0 14px rgba(var(--signal-rgb), 0.55);
+  animation: field-loading-pulse 1.4s ease-in-out infinite;
+}
+#field-loading[data-state="error"] .field-loading__pip {
+  background: #d68585;
+  box-shadow: 0 0 14px rgba(214, 133, 133, 0.55);
+  animation: none;
+}
+.field-loading__dots {
+  display: inline-block;
+  width: 1.4em;
+  text-align: left;
+}
+@keyframes field-loading-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.85); }
+  50%      { opacity: 1;    transform: scale(1.15); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .field-loading__pip { animation: none; opacity: 0.85; }
+}
