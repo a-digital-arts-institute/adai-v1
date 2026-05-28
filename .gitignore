@@ -3,6 +3,12 @@
 .env.*
 .env.py
 
+# Operator-side bootstrap: raw admin/contributor bearer tokens, kept on
+# disk so they can be re-inserted via `just restore-tokens` after a
+# volume wipe. See .tokens.json.example for the schema. NEVER commit the
+# real file — these are live API credentials.
+.tokens.json
+
 # Recovery keys
 proton-recovery-kit.pdf
 

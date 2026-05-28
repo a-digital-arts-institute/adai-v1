@@ -1,0 +1,37 @@
+{
+  "_comment": [
+    "Operator-side bootstrap for contributor / admin bearer tokens.",
+    "",
+    "Used by `just restore-tokens` (and `npm run token:restore -- --from .tokens.json`)",
+    "to re-insert previously-issued tokens into contributor_tokens after a",
+    "volume wipe — that table is local-only and does not survive `rm /data/adai.db`.",
+    "",
+    "Copy this file to .tokens.json (gitignored) and fill in the real `raw`",
+    "values. The CLI is idempotent: re-running with the same file is a no-op",
+    "for tokens whose sha256 hash is already present.",
+    "",
+    "Fields per entry:",
+    "  name   (req) contributor name as stored in `contributors.name`",
+    "  raw    (req) full bearer token, format /^adai_[0-9a-f]{40,}$/",
+    "  scope  (opt) 'write' | 'admin' — defaults to `scope_default`",
+    "  tier   (opt) 'auto' | 'reviewed' | 'probationary' — used only when",
+    "                the contributor row has to be created (defaults to `tier_default`)",
+    "  label  (opt) freeform text shown in `just tokens-list` (defaults to `label_default`)"
+  ],
+  "label_default": "ops-bootstrap",
+  "tier_default":  "reviewed",
+  "scope_default": "write",
+  "tokens": [
+    {
+      "name":  "Alice Example",
+      "raw":   "adai_0000000000000000000000000000000000000000000000000000",
+      "scope": "admin",
+      "tier":  "reviewed",
+      "label": "ops-laptop"
+    },
+    {
+      "name":  "Bob Example",
+      "raw":   "adai_1111111111111111111111111111111111111111111111111111"
+    }
+  ]
+}

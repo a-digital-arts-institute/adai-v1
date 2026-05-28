@@ -158,22 +158,42 @@ npm run token:issue -- --contributor "New Person" --label "first" --create --tie
 npm run token:issue -- --contributor "Giovanni" --label "ops" --admin   # admin-scope (CLI-only)
 npm run token:revoke -- --prefix adai_abc12345
 npm run token:revoke -- --list [--contributor "<name>"]
+npm run token:restore -- --from .tokens.json [--dry-run]   # bulk re-insert (disaster recovery)
 
 # Production (writes against /data/adai.db on the volume)
 flyctl ssh console --app adai-basel -C \
   "node /app/dist/cli/issue-token.js --contributor 'Name' --label 'label' --create --tier reviewed"
 flyctl ssh console --app adai-basel -C \
   "node /app/dist/cli/revoke-token.js --prefix adai_xxxxxxxx"
+# Tokens-on-prod ops are wrapped by `just tokens-list` and `just restore-tokens` —
+# see the "Ops via just" section below for the SFTP+CLI+cleanup flow.
 ```
 The CLI resolves its DB path via `src/utils/db-path.ts`: explicit `DB_PATH` env wins, otherwise it prefers `/data/adai.db` if present (Fly volume), falling back to `./adai.db` for local dev. **Don't run the CLI as `node dist/cli/...` without one of those guards** — older versions silently fell back to `./adai.db`, which on Fly creates a throwaway DB at `/app/adai.db` and the token never reaches the running server.
 
-The raw token is printed to **stdout** exactly once. The store keeps only `sha256(token)` and the first 13 characters (`adai_` + 8 hex) for human reference. Issuance is operator-only (no HTTP endpoint).
+The raw token is printed to **stdout** exactly once for `token:issue`. The store keeps only `sha256(token)` and the first 13 characters (`adai_` + 8 hex) for human reference. Issuance is operator-only (no HTTP endpoint).
+
+`token:restore` is the disaster-recovery sister of `token:issue` — it takes a pre-supplied raw token (one you already issued and saved) and re-inserts it into `contributor_tokens` so existing API clients keep working after a `/data` volume wipe. The raw tokens live in `.tokens.json` at the repo root (gitignored; see `.tokens.json.example` for the schema). The restore CLI is **idempotent** (matched by `sha256(raw)`) and wrapped in a transaction, so re-running is a no-op and partial failures roll back. It refuses to silently re-bind a token to a different contributor or change its scope — those raise instead of overwriting.
 
 R2 secrets on Fly: the runtime image-upload path needs `R2_ENDPOINT`, `R2_BUCKET`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_PUBLIC_BASE` set as `flyctl secrets`. Locally they come from `.env` (the same file `seed/_build/upload_to_r2.py` reads); `src/index.ts` calls `process.loadEnvFile()` at startup when `.env` exists. Without them `POST /api/v1/images` returns `503 r2_not_configured`; the other endpoints still work.
 
 `db.sql` adds `contributor_tokens` (local-only, NOT a CRR). Don't `crsql_as_crr` it — token material must never sync.
 
 ## Deploying
+
+### Ops via `just`
+
+The recurring Fly operations are wrapped in a `justfile` at the repo root so the order of the documented dance (deploy → wipe volume → wait → restore tokens) stays honest. `brew install just`; then `just` (no args) lists recipes. The important ones:
+
+- `just deploy` — `FLY_REMOTE_BUILDER_REGION=iad flyctl deploy`.
+- `just nuke-volume` — the destructive `rm /data/adai.db*` + machine-restart sequence, with an interactive `'yes'` confirmation. Use this when you want the freshly-baked seed to land on prod.
+- `just restore-tokens` — re-insert the operator admin tokens from `.tokens.json` (gitignored). SFTPs the file to `/tmp` on the VM, runs the restore CLI in a transaction, deletes the file. Idempotent. Pair with `just restore-tokens-dry` first if you want to see what would happen.
+- `just redeploy-fresh` — the full sequence: `_check-tokens-file → deploy → nuke-volume → wait-healthy → restore-tokens`. Refuses to start if `.tokens.json` is missing, so you can't deploy fresh seed and then discover you've orphaned auth.
+- `just tokens-list` — `node /app/dist/cli/revoke-token.js --list` over SSH.
+- `just warm` / `just logs` / `just ssh` / `just wait-healthy` — low-level building blocks.
+
+`.tokens.json` holds the raw bearer strings keyed by contributor name (see `.tokens.json.example` for the schema). It is gitignored and never lands on the production VM at rest — `just restore-tokens` deletes it from `/tmp` in the same SSH session as the CLI run. The restore CLI is also reachable directly: `flyctl ssh console -C "node /app/dist/cli/restore-tokens.js --from <path>"`.
+
+The raw recipe-less commands still work:
 
 ```bash
 # Deploy to Fly.io (use IAD builder if Depot times out)
@@ -203,7 +223,7 @@ git add seed/embeddings.{bin,json,umap2d.json} && git commit
   flyctl ssh console --app adai-basel -C "sh -c 'rm -f /data/adai.db /data/adai.db-shm /data/adai.db-wal'"
   flyctl machine restart <machine-id> --app adai-basel
   ```
-  On restart, the entrypoint sees no DB and copies the baked one.
+  On restart, the entrypoint sees no DB and copies the baked one. **Use `just nuke-volume` (or the chained `just redeploy-fresh`) for this — it picks the machine ID, confirms, and reminds you to restore tokens.** Wiping the volume drops every local-only row (`contributor_tokens`, `intake_queue`, `archivist_sessions`, `rejected_ai_suggestions`, …); the tokens come back via `just restore-tokens` reading `.tokens.json`, but the rest is gone for good — only do this when you actually want fresh state.
 - **Schema migrations are not automatic**. `initDb` runs `db.sql` against the live DB on every boot — fine for `CREATE TABLE IF NOT EXISTS` and `CREATE INDEX IF NOT EXISTS`, but it will fail if the new schema adds a column to an existing table (observed: adding `valid_until` to `edges` crash-looped an older volume). The May 2026 `intake_queue.kind` column add is wrapped in a `try/catch` in `src/db.ts` keyed to SQLite's stable "duplicate column name" error so it's idempotent — **don't strip the try/catch**. When schema expands further, either reuse the same pattern or blow away the volume.
 - **WAL checkpoint trap in the seeder**: `src/seed-consolidated.ts` ends with `PRAGMA wal_checkpoint(TRUNCATE)` — **keep it**. CR-SQLite runs in WAL mode; small writes at the end of the seeder (e.g. the A(DAI) bootstrap, the embeddings load, the chained derive pass) otherwise sit in `seed.db-wal`. The Dockerfile only copies `seed.db` to the runtime stage, so uncheckpointed writes silently disappear. If you add inserts anywhere after the main node/edge loops, make sure the checkpoint still runs after them.
 - **Embedding sidecar drift**: if `seed/embeddings.bin` (or `.json`) is missing or out of sync with `seed/nodes.json`, the builder will produce a `seed.db` with no `node_embeddings` rows and no STYLE_KIN / VISUALLY_AFFINE edges (the chained derive silently skips when embeddings are absent). Production then 404s `/api/embed-space` and shows empty profile-page sections. Always re-run `embed_nodes.py` + `project_umap.py` after material changes to `seed/nodes.json`, and re-commit the three sidecars. The script is idempotent — only nodes whose `(text_hash, image_hash)` changed get re-embedded.

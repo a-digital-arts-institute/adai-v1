@@ -17,6 +17,7 @@
     "embed:backfill": "tsx src/embed/cli.ts backfill",
     "token:issue": "tsx src/cli/issue-token.ts",
     "token:revoke": "tsx src/cli/revoke-token.ts",
+    "token:restore": "tsx src/cli/restore-tokens.ts",
     "build": "tsc",
     "test": "tsx --test tests/*.test.ts",
     "start": "node dist/index.js"
