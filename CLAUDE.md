@@ -308,6 +308,30 @@ git commit
 ```
 `--apply` without `--write` is a dry-run. It never overwrites a node that already has an image (idempotent), and never touches `nodes.json` or `edges.json`. Skipping step 5 is safe **for non-artwork batches** — those types either don't embed images (institution/platform aren't even in `EMBEDDABLE_TYPES`) or are text-only (practitioner/collective/scene have no images in their embedding inputs by design), so STYLE_KIN/VISUALLY_AFFINE/embed-space are unaffected.
 
+### Canon corrections — `seed/canon_overlay.json`
+
+The image overlay (above) established a pattern: a committed, provenance-bearing, build-time-applied file that adds/corrects data without ever hand-editing `seed/*.json`. `canon_overlay.json` generalises it for **corrections** (not new ingestions — new ingestions still go through gatherers writing to canon files directly).
+
+`seed-consolidated.ts` applies it after the edge INSERT loop and before the WAL checkpoint, in this order — referential integrity matters:
+1. `add_signals` — new signals (a supersession's `invalidated_by` may reference one).
+2. `add_nodes` — new nodes (a new edge may reference these).
+3. `add_edges` — new edges.
+4. `supersede_edges` — `UPDATE edges SET valid_until = ?, invalidated_by = ? WHERE id = ? AND valid_until IS NULL` (idempotent — re-runs don't shift `valid_until` forward).
+
+Use it when:
+- The producer model can't fix a bug retroactively (the existing collided rows in canon were already shipped — fix the producer + supersede the old).
+- A curator decides an edge or claim needs to be retired (bi-temporal supersession is the schema's correction primitive — *never* delete).
+- A manual addition has no natural producer but needs provenance attached.
+
+**Don't use it for:**
+- New ingestion batches — those belong in a gatherer or `apply_image_patches.py` (write to `seed/nodes.json` / `seed/edges.json` as a producer).
+- Bulk image gap-fill — that's `seed/image_overlay.json` (different shape, different apply step, image-only).
+- "Cleanup" passes that aren't real corrections — the CLAUDE.md banner still applies.
+
+Every overlay entry MUST carry a `signal_id` and `invalidated_by` linked to a signal in `add_signals` (or an existing one). The `reason` field on a supersession is human-readable and lives only in the overlay file — it doesn't enter the DB.
+
+**Example: the May 2026 slug-disambiguation pass** (the first use of this mechanism, PR #25). Two artworks had collided slugs — `artwork:untitled` accumulated 3 unrelated CREATED_BY edges from 3 gatherers (Vera Molnár / American Artist / Harold Cohen); `artwork:black hole` accumulated 2 (Suzanne Treister / Addie Wagenknecht). The producer-side fix (`seed/_build/_slug.py` — generic-title disambiguation via source+external_id) closed the gap for future runs; the existing canon was corrected via this overlay: 5 disambiguated nodes added (`artwork:untitled--american-artist` etc.), 8 new edges pointing at them, 8 supersessions of the colliding edges, anchored by `signal:slug-disambiguation-2026-05`. Look for `Canon overlay applied: …` in the seeder's log. The old `artwork:untitled` / `artwork:black hole` nodes remain as historical husks (their live edges are all superseded — `/api/graph` shows no creator until queries are widened to historical state).
+
 ### Legacy path — `results/*.json` via `seed.ts`
 
 Each JSON in `results/` has: basic_info, practice_description, key_works, commons_orientation, governance_model, network_position (connections, scene_affiliation), and more. The legacy seed creates practitioner/concept/scene/related nodes + PRACTICES/BELONGS_TO/RELATED_TO edges from those fields. All rows tagged `confidence: 'low'`, `created_by: 'migration'`, `batch_id: 'seed-migration-2026-04-20'`. ID convention is kebab-dash (`practitioner-casey-reas`) — **do not mix with the canonical path in the same DB**.
