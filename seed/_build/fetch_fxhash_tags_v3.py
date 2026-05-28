@@ -28,6 +28,8 @@ import json, re, time, unicodedata, urllib.error, urllib.request
 from collections import defaultdict
 from pathlib import Path
 
+from _slug import artwork_slug
+
 HERE = Path(__file__).parent
 SEED = HERE.parent
 OUT = HERE / "fxhash_tags_2026-04-28.json"
@@ -163,7 +165,7 @@ def main():
                 # New artwork
                 if name_key(title) in existing_titles_per_prac.get(pid, set()):
                     continue  # duplicate by name with this practitioner
-                artwork_id = f"artwork:{slugify(title)}"
+                artwork_id = artwork_slug(title, source="fxhash", external_id=token_id)
                 if artwork_id in seen_artwork_ids:
                     continue
                 seen_artwork_ids.add(artwork_id)

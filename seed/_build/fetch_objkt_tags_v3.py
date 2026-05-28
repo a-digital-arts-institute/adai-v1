@@ -24,6 +24,8 @@ import json, re, sqlite3, time, unicodedata, urllib.error, urllib.request
 from collections import defaultdict
 from pathlib import Path
 
+from _slug import artwork_slug
+
 HERE = Path(__file__).parent
 SEED = HERE.parent
 ROOT = SEED.parent
@@ -192,7 +194,7 @@ def main():
                 stats["dup_title"] += 1
                 continue
 
-            artwork_id = f"artwork:{slugify(title)}"
+            artwork_id = artwork_slug(title, source="objkt", external_id=f"{fa}-{token_id}" if fa else token_id)
             if artwork_id in seen_artwork_ids:
                 continue
             seen_artwork_ids.add(artwork_id)

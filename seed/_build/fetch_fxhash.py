@@ -31,6 +31,8 @@ import time
 import unicodedata
 import urllib.error
 import urllib.request
+
+from _slug import artwork_slug
 from pathlib import Path
 
 HERE = Path(__file__).parent
@@ -256,7 +258,7 @@ def main() -> int:
                 art_slug = re.sub(r"\s+", " ", art_slug)
                 if not art_slug:
                     continue
-                art_id = f"artwork:{art_slug}"
+                art_id = artwork_slug(tk_name, source="fxhash", external_id=tk.get("id"))
                 if art_id in existing_artwork_ids:
                     continue  # collision — skip
                 existing_artwork_ids.add(art_id)

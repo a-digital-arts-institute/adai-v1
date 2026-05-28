@@ -31,6 +31,8 @@ import csv, json, re, sys, unicodedata, urllib.request
 from collections import Counter, defaultdict
 from pathlib import Path
 
+from _slug import artwork_slug
+
 HERE = Path(__file__).parent
 SEED = HERE.parent
 ARTWORKS_OUT = HERE / "moma_digital_2026-04-28.json"
@@ -155,7 +157,7 @@ def main():
             skipped_dup += 1
             continue
 
-        artwork_id = f"artwork:{slugify(title)}"
+        artwork_id = artwork_slug(title, source="moma", external_id=row.get("ObjectID", "").strip())
         if artwork_id in seen_artwork_ids:
             continue
         seen_artwork_ids.add(artwork_id)

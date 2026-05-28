@@ -27,6 +27,8 @@ import json, re, time, unicodedata, urllib.error, urllib.request, urllib.parse
 from collections import defaultdict
 from pathlib import Path
 
+from _slug import artwork_slug
+
 HERE = Path(__file__).parent
 SEED = HERE.parent
 OUT = HERE / "wikidata_artworks_2026-04-28.json"
@@ -209,7 +211,7 @@ def main():
                 stats["skipped_duplicate"] += 1
                 continue
 
-            artwork_id = f"artwork:{slugify(title)}"
+            artwork_id = artwork_slug(title, source="wikidata", external_id=artwork_qid)
             if artwork_id in seen_artwork_ids:
                 continue
             seen_artwork_ids.add(artwork_id)

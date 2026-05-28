@@ -34,6 +34,8 @@ import json, re, sqlite3, time, unicodedata, urllib.error, urllib.request, urlli
 from collections import defaultdict
 from pathlib import Path
 
+from _slug import artwork_slug
+
 HERE = Path(__file__).parent
 SEED = HERE.parent
 ROOT = SEED.parent
@@ -407,7 +409,7 @@ def main():
                     stats["skipped_duplicate_name"] += 1
                     continue
 
-                artwork_id = f"artwork:{slugify(title)}"
+                artwork_id = artwork_slug(title, source="wikidata", external_id=artwork_qid)
                 if artwork_id in seen_artwork_ids or artwork_id in existing_ids:
                     continue
                 seen_artwork_ids.add(artwork_id)
