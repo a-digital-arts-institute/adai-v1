@@ -239,6 +239,12 @@ def process_node(node: dict, s3, env: dict, dry_run: bool, lock: threading.Lock,
     # as a node's "image". When the server omits or fudges Content-Type
     # entirely, fall through (the existing ext_for() heuristic + URL suffix
     # still works for ct-less but otherwise-valid images).
+    #
+    # Tradeoff: this also rejects `application/octet-stream` even when the
+    # bytes happen to be a valid image. Conservative-correct for an arts
+    # commons (we'd rather miss a few legit-but-mislabelled images than mirror
+    # potentially-wrong bytes as a node's portrait); revisit if we hit a real
+    # source that serves images as octet-stream and we can't fix it upstream.
     if ct and not ct.lower().startswith("image/"):
         return nid, None, f"not an image (content-type: {ct})"
 

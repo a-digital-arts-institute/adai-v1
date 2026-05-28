@@ -348,7 +348,11 @@ def cmd_apply(args) -> int:
               f"{len(overlay_by_id)}). Re-run with --write.")
         return 0
     merged = sorted(overlay_by_id.values(), key=lambda e: e["node_id"])
-    OVERLAY_PATH.write_text(json.dumps(merged, indent=2, ensure_ascii=False) + "\n")
+    # Atomic write (tmp + rename) — matches upload_to_r2.py main_overlay so a
+    # power loss / Ctrl-C mid-write can't leave the overlay half-rewritten.
+    tmp = OVERLAY_PATH.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(merged, indent=2, ensure_ascii=False) + "\n")
+    tmp.replace(OVERLAY_PATH)
     print(f"staged {added} new image(s) → {OVERLAY_PATH.relative_to(ROOT)} ({len(merged)} total)")
     print("next: seed/_build/.venv/bin/python3 seed/_build/upload_to_r2.py --overlay   (mirror + write cdn_image_url)")
     print("then: npm run seed:consolidated   (overlay applies after the node INSERT loop)")
