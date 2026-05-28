@@ -16,6 +16,10 @@ seed/_build/.image_cache.sqlite
 seed/_build/.image_cache.sqlite-shm
 seed/_build/.image_cache.sqlite-wal
 
+# Ephemeral image-tool diagnostic (regenerable per run via sanitize_images.py).
+# The curation worklist (image_candidates.json) IS committed for review.
+seed/_build/image_sanitize_report.json
+
 # Node
 node_modules/
 dist/
