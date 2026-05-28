@@ -1,74 +1,95 @@
-# seed/_build/ — regeneration + enrichment scripts
+# seed/_build/ — offline data pipeline
 
-Everything in this directory is tooling, not canonical data. The canonical data is in `seed/*.json`.
+Tooling, not canonical data. The canonical data is in `seed/*.json` (the
+seeder reads it; the Docker builder bakes it into `seed.db`).
 
-## What's in here
+**If you're new here, read [`PRODUCER_CONTRACT.md`](PRODUCER_CONTRACT.md)
+first.** It's the load-bearing one — every gatherer must conform to it.
+This file is just a map of what's where.
 
-| File | Purpose |
-|---|---|
-| `build_seed.py` | Regenerates `seed/nodes.json`, `edges.json`, `signals.json`, `aliases.json`, `contributors.json` from source inputs. |
-| `validate_seed.py` | Schema + referential-integrity check against `db.sql` on `feat/cr-sqlite-backend`. Exits non-zero on errors. |
-| `new_entries.json` | 45 new practitioners authored from the April 2026 seed-taxonomy article. Input to `build_seed.py`. |
-| `wikidata_verified.json` | 60 practitioner QIDs + images verified via batched SPARQL queries (April 2026). Input to `build_seed.py`. |
-| `fetch_wikidata_artworks.py` | Follow-up pass: fetches artwork images from Wikidata by creator QID. |
-| `fetch_moma_csv.py` | Follow-up pass: joins MoMA's public Artworks.csv (CC0) by artist + title. |
-| `fetch_met_openaccess.py` | Follow-up pass: queries the Met Open Access API for public-domain matches. |
-| `fetch_artblocks.py` | Follow-up pass: queries the Art Blocks Hasura GraphQL API for generative-art project thumbnails. |
-| `apply_image_patches.py` | Merges everything in `image_patches/*.json` into `nodes.json`. |
-| `image_patches/` | Output directory for the four fetcher scripts. One JSON file per source. |
+## The pipeline
 
-## Ordered workflow (Gio)
-
-From a fresh clone on `feat/cr-sqlite-backend`, in this directory:
-
-```bash
-# 1. Regenerate the base seed files (only needed if new_entries.json or
-#    wikidata_verified.json change)
-python3 build_seed.py
-python3 validate_seed.py
-
-# 2. Fill in artwork images from three sources (dry-run first, then --write)
-python3 fetch_wikidata_artworks.py              # ~60 SPARQL queries, ~2 min
-python3 fetch_wikidata_artworks.py --write
-
-python3 fetch_moma_csv.py                        # downloads ~40 MB CSV once
-python3 fetch_moma_csv.py --write
-
-python3 fetch_met_openaccess.py                  # slow: ~80 artist searches, +obj fetches
-python3 fetch_met_openaccess.py --write          # tune with --max=5 to cap per artist
-
-python3 fetch_artblocks.py                       # ~80 Hasura queries (core contracts only)
-python3 fetch_artblocks.py --write
-
-# 3. Merge the patch files into nodes.json
-python3 apply_image_patches.py                   # dry-run, shows counts
-python3 apply_image_patches.py --write           # rewrites nodes.json, backup at .bak
-
-# 4. Re-validate
-python3 validate_seed.py
+```
+gatherer ── writes ──→ runs/<YYYY-MM>/<source>-<ts>.json
+                            ↓
+                        merge (Phase 2.5)
+                            ↓
+                seed/{nodes,edges,signals,contributors,aliases}.json
+                            ↓
+              source-derived curation (Phase 3)
+                            ↓
+                  embed pipeline + image overlay
+                            ↓
+                npm run seed:consolidated  →  adai.db / seed.db
 ```
 
-## Design notes
+## Shared infrastructure
 
-**Dry-run by default.** Every fetcher script prints what it would write. Add `--write` to persist. This keeps accidental runs cheap.
+| File | What it does |
+|---|---|
+| [`PRODUCER_CONTRACT.md`](PRODUCER_CONTRACT.md) | What every gatherer must do — read first. |
+| [`_http.py`](_http.py) | Shared HTTP with retry + per-host throttling + descriptive UA. Stdlib only. |
+| [`_provenance.py`](_provenance.py) | `GathererSignal` — one signal per run, stamps every emitted row. Stdlib only. |
+| [`_node_schema.py`](_node_schema.py) | `Node`/`Edge`/`Alias` dataclasses with per-row `validate()` + the anti-enrichment rule. Stdlib only. |
+| [`_slug.py`](_slug.py) | `node_id` / `node_slug` / `artwork_slug` — shared, with generic-title disambiguation. Stdlib only. |
+| [`validate_seed.py`](validate_seed.py) | `--canon` validates `seed/*.json`; `--batch <path>` validates one gatherer's output. Runs in CI. |
 
-**Patches are additive, never destructive.** `apply_image_patches.py` only fills in `image_url` on artwork nodes that don't already have one. A node with an existing image from an earlier run is left alone. Running all three fetchers twice produces the same result.
+## Live producers
 
-**Priority on conflicts.** When multiple sources claim the same artwork:
-1. `wikidata` wins (stable Commons image + clear licensing metadata on the Commons page)
-2. `met` next (Open Access CC0, unambiguous reuse)
-3. `moma` next (collection thumbnail, per-work rights vary)
-4. `artblocks` last (media.artblocks.io thumbnail — licensing varies per project, verify)
+| Gatherer | Source | Status |
+|---|---|---|
+| `fetch_moma_digital_v3.py` | MoMA digital collection | Will be rewritten to contract (Task #12). |
+| `fetch_wikidata_v3.py` + `_v3b.py` + `_named_anchors.py` | Wikidata SPARQL | Will be unified into `fetch_wikidata.py` (Task #13). |
+| `fetch_fxhash.py` + `fetch_fxhash_tags_v3.py` | fxhash GraphQL | Will be unified into `fetch_fxhash.py` (Task #14). |
+| `fetch_objkt_tags_v3.py` | objkt GraphQL | Will be rewritten (Task #15). |
+| `fetch_artblocks.py` | Art Blocks Hasura | Will be rewritten (Task #16). |
+| `fetch_met_openaccess.py` | Met OpenAccess API | Will be rewritten (Task #17). |
 
-**Name matching is accent- and case-insensitive.** "Vera Molnár" = "Vera Molnar", "Myriad (Tulips)" = "myriad tulips".
+| Image stack | What it does |
+|---|---|
+| `apply_image_patches.py` | Merges per-fetcher image patches into `seed/nodes.json`. |
+| `image_patches/` | Output directory for per-fetcher image patches. |
+| `image_fetch.py` | Image fetcher + Pillow normaliser. Used by `embed_nodes.py`. |
+| `sanitize_images.py` | HEAD-checks every `image_url` / `cdn_image_url` in canon. Diagnoses rot. |
+| `find_missing_images.py` | Tier-1 (Wikidata QID + name search) and `--agentic` (LLM web search) image discovery for imageless nodes. Writes `image_candidates.json` → reviewer approves → `seed/image_overlay.json`. |
+| `upload_to_r2.py` | Mirrors approved images to Cloudflare R2. Content-addressed, idempotent. |
+| `image_candidates.json` | Committed reviewable candidates (each scored low/medium/high). |
+| `image_sanitize_report.json` | Latest `sanitize_images.py` report — committed for visibility. |
 
-**Art Blocks is covered** (`fetch_artblocks.py`, April 2026). The public Hasura endpoint at `data.artblocks.io/v1/graphql` needs no auth and serves project metadata. We only hit the three core contracts (V0/V1/V3) and skip Engine/PBAB. Thumbnails come from `media.artblocks.io/thumb/{token_id}.png` — the first mint of project N is token `N * 1_000_000`. Still no fxhash pass: that one needs a different schema and its own pinning decision.
+| Embed stack | What it does |
+|---|---|
+| `embed_nodes.py` | Gemini Embedding 2 (multimodal) → `seed/embeddings.{bin,json}`. Idempotent. |
+| `project_umap.py` | UMAP-2D projection → `seed/embeddings.umap2d.json`. Deterministic. |
+| `calibrate.py` + `calibration_pairs.json` | Threshold calibration for τ_kin / τ_visual / τ_attribute. |
 
-## What to expect per source (rough guesses)
+## What's NOT here
 
-- **Wikidata artworks**: 20–40 hits, strongest on Vera Molnár, Frieder Nake, Casey Reas, Lynn Hershman Leeson, Lozano-Hemmer, video-art figures.
-- **MoMA**: 20–30 hits, strongest on Arcangel, Reas, Maeda, Steyerl, Random International (Rain Room), Paglen, historical works.
-- **Met**: 5–15 hits at most. The Met is historical-heavy; contemporary digital art is thin in their holdings.
-- **Art Blocks**: 15–30+ hits. Strong on generative/on-chain works: Fidenza, Ringers, Chromie Squiggle, Meridian, Subscapes, The Eternal Pump, Archetype, Gazers, Anticyclone, etc. Covers practitioners the three other sources miss entirely.
+`archive/` is everything frozen for provenance — old gatherer versions,
+one-shot migration scripts, dated run artifacts. **Don't run anything from
+`archive/`** — see `archive/README.md`. The live pipeline is what's in this
+directory.
 
-After all four passes, expect ~70–110 artworks with images out of 239 total. The remainder waits for an fxhash pass or manual sourcing.
+`runs/` is the gitignored ephemeral output of gatherers. Per-batch JSONs
+land there; the merger reads them; nothing else should.
+
+## Quick commands
+
+```bash
+# A new gatherer
+python3 seed/_build/fetch_<source>.py --limit 100
+python3 seed/_build/validate_seed.py --batch seed/_build/runs/<YYYY-MM>/<...>.json
+
+# Validate canon after all batches are merged
+python3 seed/_build/validate_seed.py --canon
+
+# Image gap-fill on the assembled canon
+python3 seed/_build/sanitize_images.py
+python3 seed/_build/find_missing_images.py
+# (review image_candidates.json — set "approved": true)
+python3 seed/_build/find_missing_images.py --apply --write
+seed/_build/.venv/bin/python3 seed/_build/upload_to_r2.py --overlay
+
+# Embeddings — needs GEMINI_API_KEY in .env
+seed/_build/.venv/bin/python3 seed/_build/embed_nodes.py
+seed/_build/.venv/bin/python3 seed/_build/project_umap.py
+```
