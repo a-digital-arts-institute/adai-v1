@@ -230,6 +230,29 @@ All node-level image_urls are mirrored into a Cloudflare R2 bucket so the graph 
 - **Uploader**: `seed/_build/upload_to_r2.py` (Python, runs from `seed/_build/.venv/bin/python3`). Idempotent: skips nodes that already carry `cdn_image_url`, and HEAD-checks the R2 key before re-uploading. Includes a fallback for the dead `gateway.objkt.com` IPFS gateway (tries `ipfs.io` → `nftstorage.link` → `dweb.link`) and per-host concurrency caps to dodge Wikimedia 429s. Reads R2 credentials from project-root `.env` (gitignored): `R2_ENDPOINT`, `R2_BUCKET`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_PUBLIC_BASE`. Run with `seed/_build/.venv/bin/python3 seed/_build/upload_to_r2.py`; `--dry-run` and `--limit N` are available for testing.
 - **Workflow**: when ingesting new images via the `seed/_build` fetchers, just write `image_url` into `seed/nodes.json` and re-run the uploader — it'll find the new entries and write `cdn_image_url` back. No runtime R2 dependency: the cooked DB carries the URLs, the server never talks to R2.
 
+### Image coverage tooling — sanitize + find-missing
+
+Two `seed/_build` producers (PR #21) keep images healthy and fill gaps. They are **producers, not editors**: they propose; the only path that writes canon is `find_missing_images.py --apply`, gated to reviewed candidates. ~650 nodes are imageless (every institution/platform/scene, ~half the artworks, ~60% of practitioners) — that, not the schema, is why the graph renders sparse. Both are stdlib-only (no venv needed) and use a descriptive User-Agent (Wikimedia 403s the default urllib UA).
+
+- **`sanitize_images.py`** (read-only) — HEAD/GET-checks every `image_url` + `cdn_image_url`, classifies each node `ok` / `upstream_rotted` (mirror alive, upstream dead — fine) / `cdn_dead` (re-mirror with `upload_to_r2.py`) / `both_dead` (proposes an IPFS-gateway or Wayback fallback). Healing is `upload_to_r2.py`'s job; this only diagnoses. Report → `seed/_build/image_sanitize_report.json` (gitignored). Flags: `--types`, `--limit`, `--no-upstream`, `--workers`.
+- **`find_missing_images.py`** — proposes images for imageless nodes. Tier 1: Wikidata QID from `seed/aliases.json`, else a `P31`-type-verified name search → `P18`/`P154`. Tier 2: `--agentic` (experimental; needs `ANTHROPIC_API_KEY`) LLM web search for the long tail. Every candidate is HEAD-validated to a live image and provenance-stamped (QID + property). **Artworks are never name-searched** (generic-title slug collisions, e.g. `artwork:untitled`) — QID-alias only. Confidence: `high` = QID-alias · `medium` = type-verified search · `low` = unverified (eyeball — a few are subject misfires, e.g. "Sónar" → SonarQube). Stages to `seed/_build/image_candidates.json` (committed, reviewable).
+
+**Full run sequence (needs a machine with `.env` R2 creds + the `seed/_build/.venv` + `GEMINI_API_KEY`):**
+```bash
+# 1. find candidates (no creds; safe anywhere)
+python3 seed/_build/find_missing_images.py --types institution platform scene collective practitioner
+# 2. review seed/_build/image_candidates.json — set "approved": true on keepers,
+#    OR auto-accept a confidence tier (medium is type-verified and safe; low needs eyes)
+python3 seed/_build/find_missing_images.py --apply --accept-confidence medium --write   # writes image_url → nodes.json
+# 3. mirror to R2 (needs .env R2_* creds) — writes cdn_image_url back
+seed/_build/.venv/bin/python3 seed/_build/upload_to_r2.py
+# 4. images change the multimodal embeddings — re-embed + re-project, then re-commit the sidecars
+seed/_build/.venv/bin/python3 seed/_build/embed_nodes.py
+seed/_build/.venv/bin/python3 seed/_build/project_umap.py
+git add seed/nodes.json seed/embeddings.{bin,json,umap2d.json} && git commit
+```
+`--apply` without `--write` is a dry-run. It never overwrites a node that already has an image (idempotent), and never touches `edges.json`. Skipping step 4 leaves stale embeddings: the new images won't influence STYLE_KIN / VISUALLY_AFFINE or appear correctly in `/embed-space` until re-embedded.
+
 ### Legacy path — `results/*.json` via `seed.ts`
 
 Each JSON in `results/` has: basic_info, practice_description, key_works, commons_orientation, governance_model, network_position (connections, scene_affiliation), and more. The legacy seed creates practitioner/concept/scene/related nodes + PRACTICES/BELONGS_TO/RELATED_TO edges from those fields. All rows tagged `confidence: 'low'`, `created_by: 'migration'`, `batch_id: 'seed-migration-2026-04-20'`. ID convention is kebab-dash (`practitioner-casey-reas`) — **do not mix with the canonical path in the same DB**.
