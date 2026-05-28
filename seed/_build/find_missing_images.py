@@ -6,11 +6,13 @@ scene; ~half the artworks; ~60% of practitioners). That, not bad edges, is why
 the graph looks unfinished. This tool proposes images for them.
 
 Design rules (so this stays additive and rights-aware):
-  * It writes CANDIDATES to a staging file, not the canon. seed/*.json is only
-    touched by `--apply`, and only for candidates a human approved (or whose
-    confidence clears an explicit threshold). The R2 mirror + embedding refresh
-    are separate, documented steps. We are a producer; we propose, curators
-    dispose.
+  * It writes CANDIDATES to a staging file, not the canon. nodes.json is NEVER
+    mutated — `--apply` stages approved images into seed/image_overlay.json (a
+    build-time DB patch that seed-consolidated.ts applies after the node INSERT
+    loop), and only for candidates a human approved (or whose confidence clears
+    an explicit threshold). The R2 mirror (upload_to_r2.py --overlay) + embedding
+    refresh are separate, documented steps. We are a producer; we propose,
+    curators dispose.
   * Every candidate carries provenance (Wikidata QID + property + label) so the
     `image_url` is anchored, exactly like the existing Commons-sourced rows.
   * Artworks are NOT name-searched (generic titles collide — see the
@@ -42,6 +44,12 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent.parent
 NODES_PATH = ROOT / "seed" / "nodes.json"
 ALIASES_PATH = ROOT / "seed" / "aliases.json"
 CANDIDATES_PATH = ROOT / "seed" / "_build" / "image_candidates.json"
+# Approved candidates are staged into a build-time OVERLAY, never written back
+# into nodes.json (which is pristine build output). seed-consolidated.ts applies
+# the overlay as metadata UPDATEs after the node INSERT loop; upload_to_r2.py
+# --overlay fills in cdn_image_url; embed_nodes.py reads it so artwork images
+# still reach the multimodal vectors.
+OVERLAY_PATH = ROOT / "seed" / "image_overlay.json"
 
 UA = "adai-image-tools/0.1 (https://adai-basel.fly.dev; missing-image finder)"
 WD_API = "https://www.wikidata.org/w/api.php"
@@ -288,15 +296,31 @@ def cmd_find(args) -> int:
 
 
 def cmd_apply(args) -> int:
+    """Merge approved candidates into seed/image_overlay.json — NOT nodes.json.
+
+    nodes.json is build output we keep pristine. Images for previously-imageless
+    nodes live in the overlay; seed-consolidated.ts applies them as metadata
+    UPDATEs after the node INSERT loop (image-only, gap-fill). This producer only
+    stages image_url + provenance — cdn_image_url is filled later by
+    `upload_to_r2.py --overlay`. Idempotent: merges by node_id, never overwrites a
+    node that already carries an image (in canon or the overlay).
+    """
     staged = json.loads(CANDIDATES_PATH.read_text())["candidates"]
     accept = {"high", "medium", "low"}
     if args.accept_confidence:
         order = ["high", "medium", "low"]
         accept = set(order[: order.index(args.accept_confidence) + 1])
 
+    # nodes.json is read-only here: only consulted to skip nodes that already
+    # carry an image (never propose over an existing one).
     nodes = json.loads(NODES_PATH.read_text())
     by_id = {n["id"]: n for n in nodes}
-    written = 0
+
+    # Merge into any existing overlay, keyed by node_id (idempotent re-runs).
+    overlay = json.loads(OVERLAY_PATH.read_text()) if OVERLAY_PATH.exists() else []
+    overlay_by_id = {e["node_id"]: e for e in overlay}
+
+    added = 0
     for c in staged:
         if not (c.get("approved") or c.get("confidence") in accept):
             continue
@@ -305,19 +329,29 @@ def cmd_apply(args) -> int:
             continue
         m = md(node)
         if m.get("image_url") or m.get("cdn_image_url"):
-            continue  # never overwrite an existing image (idempotent)
-        m["image_url"] = c["image_url"]
-        m.setdefault("image_provenance", c["provenance"])
-        node["metadata"] = m  # normalise any string-metadata to dict
-        written += 1
+            continue  # node already has an image in canon — leave it
+        prev = overlay_by_id.get(c["node_id"])
+        if prev and (prev.get("image_url") or prev.get("cdn_image_url")):
+            continue  # already staged in the overlay
+        overlay_by_id[c["node_id"]] = {
+            "node_id": c["node_id"],
+            "type": c.get("type"),
+            "name": c.get("name"),
+            "image_url": c["image_url"],
+            "image_provenance": c.get("provenance"),
+        }
+        added += 1
 
     if not args.write:
-        print(f"[dry-run] would write image_url to {written} nodes. Re-run with --write.")
+        print(f"[dry-run] would stage {added} new image(s) into "
+              f"{OVERLAY_PATH.relative_to(ROOT)} (overlay total would be "
+              f"{len(overlay_by_id)}). Re-run with --write.")
         return 0
-    NODES_PATH.write_text(json.dumps(nodes, indent=2, ensure_ascii=False))
-    print(f"wrote image_url to {written} nodes → seed/nodes.json")
-    print("next: python3 seed/_build/upload_to_r2.py   (mirror to R2 + write cdn_image_url)")
-    print("then: re-run embed_nodes.py + project_umap.py (images change multimodal embeddings)")
+    merged = sorted(overlay_by_id.values(), key=lambda e: e["node_id"])
+    OVERLAY_PATH.write_text(json.dumps(merged, indent=2, ensure_ascii=False) + "\n")
+    print(f"staged {added} new image(s) → {OVERLAY_PATH.relative_to(ROOT)} ({len(merged)} total)")
+    print("next: seed/_build/.venv/bin/python3 seed/_build/upload_to_r2.py --overlay   (mirror + write cdn_image_url)")
+    print("then: npm run seed:consolidated   (overlay applies after the node INSERT loop)")
     return 0
 
 

@@ -63,6 +63,7 @@ from image_fetch import open_cache, fetch_and_prepare, pick_image_url  # noqa: E
 
 ROOT = Path(__file__).resolve().parents[2]
 NODES_PATH = ROOT / "seed" / "nodes.json"
+OVERLAY_PATH = ROOT / "seed" / "image_overlay.json"
 EMB_BIN_PATH = ROOT / "seed" / "embeddings.bin"
 EMB_META_PATH = ROOT / "seed" / "embeddings.json"
 ENV_PATH = ROOT / ".env"
@@ -104,6 +105,20 @@ def _parse_metadata(md_raw) -> dict:
         except json.JSONDecodeError:
             return {}
     return md_raw or {}
+
+
+def load_overlay_images() -> dict[str, dict]:
+    """Build-time image overlay (seed/image_overlay.json): image_url/cdn_image_url
+    for nodes that carry no image in nodes.json. Folded into image selection so an
+    artwork image supplied via the overlay still reaches the multimodal embedder
+    (matching seed-consolidated.ts's gap-fill apply rule). Empty when absent."""
+    if not OVERLAY_PATH.exists():
+        return {}
+    try:
+        entries = json.loads(OVERLAY_PATH.read_text())
+    except (json.JSONDecodeError, OSError):
+        return {}
+    return {e["node_id"]: e for e in entries if isinstance(e, dict) and e.get("node_id")}
 
 
 def build_text(node: dict) -> Optional[str]:
@@ -334,6 +349,9 @@ def main() -> int:
 
     existing = load_existing()
     img_cache = open_cache()
+    overlay_images = load_overlay_images()
+    if overlay_images:
+        print(f"image overlay: {len(overlay_images)} entries (gap-fill image source)")
 
     # Plan each row up-front: compute text+image+hashes. This lets us skip
     # hashed-match rows without spinning up the Gemini client.
@@ -361,6 +379,10 @@ def main() -> int:
         image_bytes = image_mime = image_hash = None
         if node["type"] in TYPES_WITH_IMAGE:
             md = _parse_metadata(node.get("metadata"))
+            if not md.get("image_url") and not md.get("cdn_image_url"):
+                ov = overlay_images.get(nid)
+                if ov:  # gap-fill from the build-time overlay (artwork images only)
+                    md = {**md, **{k: ov[k] for k in ("image_url", "cdn_image_url") if ov.get(k)}}
             url = pick_image_url(md)
             if url:
                 got = fetch_and_prepare(url, img_cache)

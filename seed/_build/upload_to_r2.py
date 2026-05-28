@@ -42,6 +42,7 @@ except ImportError:
 
 ROOT = Path(__file__).resolve().parents[2]
 NODES_PATH = ROOT / "seed" / "nodes.json"
+OVERLAY_PATH = ROOT / "seed" / "image_overlay.json"
 ENV_PATH = ROOT / ".env"
 
 UA = "adai-seed-uploader/1.0 (+https://adai-basel.fly.dev)"
@@ -231,6 +232,16 @@ def process_node(node: dict, s3, env: dict, dry_run: bool, lock: threading.Lock,
     except Exception as e:  # noqa: BLE001 — log and move on
         return nid, None, f"fetch failed: {e}"
 
+    # Content-type guard. Defense against the Rhizome-artbase regression:
+    # 48 artworks had their R2 mirror populated with HTML landing-page bytes
+    # because the original uploader trusted whatever came back. If the server
+    # advertises a non-image content-type, refuse — never store HTML/JSON/etc.
+    # as a node's "image". When the server omits or fudges Content-Type
+    # entirely, fall through (the existing ext_for() heuristic + URL suffix
+    # still works for ct-less but otherwise-valid images).
+    if ct and not ct.lower().startswith("image/"):
+        return nid, None, f"not an image (content-type: {ct})"
+
     sha = hashlib.sha256(data).hexdigest()
     ext = ext_for(ct, src)
     key = f"images/{sha[:2]}/{sha}.{ext}"
@@ -261,16 +272,106 @@ def process_node(node: dict, s3, env: dict, dry_run: bool, lock: threading.Lock,
     return nid, cdn_url, None
 
 
+def run_uploads(work: list[dict], s3, env: dict, dry_run: bool, workers: int):
+    """Fetch + upload each work item's image. Shared by the nodes.json and
+    --overlay paths. Returns (results{node_id: cdn_url}, errors, stats)."""
+    stats = {"uploaded": 0, "existed": 0, "already": 0, "would_upload": 0, "errors": 0}
+    results: dict[str, str] = {}
+    errors: list[tuple[str, str]] = []
+    lock = threading.Lock()
+    t0 = time.time()
+
+    with cf.ThreadPoolExecutor(max_workers=workers) as ex:
+        futs = {ex.submit(process_node, n, s3, env, dry_run, lock, stats): n["id"] for n in work}
+        done = 0
+        for fut in cf.as_completed(futs):
+            nid, cdn, err = fut.result()
+            done += 1
+            if err:
+                errors.append((nid, err))
+                stats["errors"] += 1
+                # Print immediately so a hung run is visible
+                print(f"  [err] {nid}: {err}")
+            elif cdn:
+                results[nid] = cdn
+            if done % 25 == 0 or done == len(work):
+                print(f"  [{done}/{len(work)}] up={stats['uploaded']} "
+                      f"exist={stats['existed']} err={stats['errors']}")
+
+    dt = time.time() - t0
+    print(f"\ndone in {dt:.1f}s — uploaded={stats['uploaded']} existed={stats['existed']} "
+          f"errors={stats['errors']}"
+          + (f" would_upload={stats['would_upload']}" if dry_run else ""))
+    return results, errors, stats
+
+
+def main_overlay(args, env: dict, s3) -> int:
+    """Mirror seed/image_overlay.json image_urls to R2 and write cdn_image_url
+    back into the overlay (NOT nodes.json). Used by the image-coverage pipeline:
+    find_missing_images.py --apply stages image_url into the overlay, this fills
+    in cdn_image_url, then seed-consolidated.ts applies the overlay at seed time."""
+    if not OVERLAY_PATH.exists():
+        print(f"no overlay at {OVERLAY_PATH} — nothing to mirror")
+        return 0
+    overlay = json.loads(OVERLAY_PATH.read_text())
+    # process_node reads node["metadata"]; synthesize node-shaped dicts so we
+    # reuse it verbatim. Only entries with an image_url and no cdn_image_url yet.
+    work = [{"id": e["node_id"],
+             "metadata": {"image_url": e.get("image_url"), "cdn_image_url": e.get("cdn_image_url")}}
+            for e in overlay if e.get("image_url") and not e.get("cdn_image_url")]
+    if args.limit:
+        work = work[: args.limit]
+
+    print(f"overlay entries: {len(overlay)}, with image_url & no cdn_image_url: {len(work)}")
+    if not work:
+        print("nothing to do")
+        return 0
+
+    results, errors, _ = run_uploads(work, s3, env, args.dry_run, args.workers)
+
+    if args.dry_run:
+        print("dry-run: overlay untouched")
+        return 0
+    if not results:
+        print("no successful uploads — overlay untouched")
+        return 0 if not errors else 1
+
+    patched = 0
+    for e in overlay:
+        cdn = results.get(e["node_id"])
+        if cdn:
+            e["cdn_image_url"] = cdn
+            patched += 1
+    tmp = OVERLAY_PATH.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(overlay, indent=2, ensure_ascii=False) + "\n")
+    tmp.replace(OVERLAY_PATH)
+    print(f"wrote {patched} cdn_image_url entries → {OVERLAY_PATH}")
+
+    if errors:
+        print(f"\n{len(errors)} errors:")
+        for nid, err in errors[:20]:
+            print(f"  {nid}: {err}")
+        if len(errors) > 20:
+            print(f"  ... +{len(errors) - 20} more")
+        return 1
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true",
-                    help="fetch + hash + plan keys, but neither upload nor write nodes.json")
+                    help="fetch + hash + plan keys, but neither upload nor write back")
+    ap.add_argument("--overlay", action="store_true",
+                    help="mirror seed/image_overlay.json (writes cdn_image_url there, NOT nodes.json)")
     ap.add_argument("--limit", type=int, default=0, help="process at most N nodes (0 = all)")
     ap.add_argument("--workers", type=int, default=8)
     args = ap.parse_args()
 
     env = load_env()
     s3 = make_s3(env) if not args.dry_run else None
+
+    if args.overlay:
+        return main_overlay(args, env, s3)
 
     nodes = json.loads(NODES_PATH.read_text())
 
@@ -295,33 +396,7 @@ def main() -> int:
         print("nothing to do")
         return 0
 
-    stats = {"uploaded": 0, "existed": 0, "already": 0, "would_upload": 0, "errors": 0}
-    results: dict[str, str] = {}
-    errors: list[tuple[str, str]] = []
-    lock = threading.Lock()
-    t0 = time.time()
-
-    with cf.ThreadPoolExecutor(max_workers=args.workers) as ex:
-        futs = {ex.submit(process_node, n, s3, env, args.dry_run, lock, stats): n["id"] for n in work}
-        done = 0
-        for fut in cf.as_completed(futs):
-            nid, cdn, err = fut.result()
-            done += 1
-            if err:
-                errors.append((nid, err))
-                stats["errors"] += 1
-                # Print immediately so a hung run is visible
-                print(f"  [err] {nid}: {err}")
-            elif cdn:
-                results[nid] = cdn
-            if done % 25 == 0 or done == len(work):
-                print(f"  [{done}/{len(work)}] up={stats['uploaded']} "
-                      f"exist={stats['existed']} err={stats['errors']}")
-
-    dt = time.time() - t0
-    print(f"\ndone in {dt:.1f}s — uploaded={stats['uploaded']} existed={stats['existed']} "
-          f"errors={stats['errors']}"
-          + (f" would_upload={stats['would_upload']}" if args.dry_run else ""))
+    results, errors, stats = run_uploads(work, s3, env, args.dry_run, args.workers)
 
     if args.dry_run:
         print("dry-run: nodes.json untouched")
