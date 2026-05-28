@@ -147,6 +147,72 @@ for (const n of nodes) {
 db.exec("COMMIT");
 console.log(`Nodes inserted: ${nodes.length}`);
 
+// --- Image overlay (build-time DB patch) ------------------------------
+// Images for previously-imageless nodes are NOT written into nodes.json
+// (pristine build output). They live in seed/image_overlay.json and are
+// applied here, after the node INSERT loop, as metadata UPDATEs — image
+// fields only, and only for nodes that don't already carry an image
+// (gap-fill, idempotent). Produced by find_missing_images.py --apply
+// (image_url + provenance) + upload_to_r2.py --overlay (cdn_image_url).
+//
+// CRITICAL: like the embeddings block below, this must run BEFORE the
+// PRAGMA wal_checkpoint(TRUNCATE) near the end of this file — otherwise the
+// UPDATEs sit in the WAL and the Dockerfile (which copies only seed.db from
+// the builder) silently loses them.
+type ImageOverlayEntry = {
+  node_id: string;
+  image_url?: string | null;
+  cdn_image_url?: string | null;
+  image_provenance?: unknown;
+};
+let imageOverlay: ImageOverlayEntry[] | null = null;
+try {
+  imageOverlay = JSON.parse(readFileSync(join(seedDir, "image_overlay.json"), "utf-8")) as ImageOverlayEntry[];
+} catch (err) {
+  if ((err as NodeJS.ErrnoException)?.code !== "ENOENT") throw err;
+  console.log("Image overlay: seed/image_overlay.json absent — skipped.");
+}
+if (imageOverlay) {
+  const selectMeta = db.prepare("SELECT metadata FROM nodes WHERE id = ?");
+  const updateMeta = db.prepare("UPDATE nodes SET metadata = ? WHERE id = ?");
+  let overlayApplied = 0;
+  let overlaySkipped = 0;
+  db.exec("BEGIN");
+  for (const e of imageOverlay) {
+    const row = selectMeta.get(e.node_id) as { metadata: string | null } | undefined;
+    if (!row) {
+      overlaySkipped++; // overlay references a node not in the seed
+      continue;
+    }
+    let md: Record<string, unknown> = {};
+    if (row.metadata) {
+      try {
+        md = JSON.parse(row.metadata) as Record<string, unknown>;
+      } catch {
+        md = {};
+      }
+    }
+    // Never overwrite an existing image — overlay only fills gaps.
+    if (md.image_url || md.cdn_image_url) {
+      overlaySkipped++;
+      continue;
+    }
+    if (!e.image_url && !e.cdn_image_url) {
+      overlaySkipped++;
+      continue;
+    }
+    if (e.image_url) md.image_url = e.image_url;
+    if (e.cdn_image_url) md.cdn_image_url = e.cdn_image_url;
+    if (e.image_provenance !== undefined && md.image_provenance === undefined) {
+      md.image_provenance = e.image_provenance;
+    }
+    updateMeta.run(JSON.stringify(md), e.node_id);
+    overlayApplied++;
+  }
+  db.exec("COMMIT");
+  console.log(`Image overlay applied: ${overlayApplied} nodes (${overlaySkipped} skipped) from seed/image_overlay.json`);
+}
+
 const insertEdge = db.prepare(
   `INSERT OR IGNORE INTO edges (
     id, source_id, target_id, edge_type, signal_id, confidence, charge,

@@ -63,6 +63,43 @@ conn.commit()
 
 `seed.shs` (the current Shards ingest script) reads `results/*.json` directly — it will need a small rewrite to read `seed/*.json` instead, since the shape is flattened rather than nested per-file.
 
+## Image coverage tooling
+
+Two `_build` scripts keep node images healthy and fill gaps. Both are
+producers: they propose, curators dispose. Neither hand-edits canon — the only
+write path is `find_missing_images.py --apply`, and only for reviewed
+candidates.
+
+- **`sanitize_images.py`** — link-rot scanner (read-only). HEAD/GET-checks every
+  `image_url` + `cdn_image_url` and classifies each node `ok` /
+  `upstream_rotted` (mirror alive, upstream dead — fine) / `cdn_dead` (re-mirror
+  with `upload_to_r2.py`) / `both_dead` (proposes an IPFS-gateway or Wayback
+  fallback in the report). Healing is `upload_to_r2.py`'s job; this only
+  diagnoses. Report → `image_sanitize_report.json` (gitignored).
+
+- **`find_missing_images.py`** — finds images for the ~650 imageless nodes
+  (every institution/platform/scene, ~half the artworks, ~60% of practitioners
+  — the real reason the graph looks sparse). Tier 1 resolves a Wikidata QID
+  (from `aliases.json`, else a `P31`-verified name search) and pulls `P18` /
+  `P154`; Tier 2 (`--agentic`, experimental, needs `ANTHROPIC_API_KEY`) is an
+  LLM web search for the long tail. Every candidate is HEAD-validated to a live
+  image and carries provenance (QID + property). Artworks are never
+  name-searched (generic-title collisions) — QID-alias only.
+
+  Confidence: `high` = QID-alias match · `medium` = type-verified search ·
+  `low` = unverified search (eyeball these — a few are subject misfires, e.g.
+  "Sónar" → SonarQube). Candidates stage to `image_candidates.json` (committed,
+  reviewable). Workflow:
+
+  ```bash
+  python3 seed/_build/find_missing_images.py                 # stage candidates
+  # review image_candidates.json; set "approved": true on keepers
+  python3 seed/_build/find_missing_images.py --apply --write  # write image_url into nodes.json
+  python3 seed/_build/upload_to_r2.py                         # mirror → cdn_image_url
+  seed/_build/.venv/bin/python3 seed/_build/embed_nodes.py    # images change multimodal embeddings
+  seed/_build/.venv/bin/python3 seed/_build/project_umap.py   # re-project; then re-commit sidecars
+  ```
+
 ## What this does NOT include
 
 - **fxhash full coverage** — the artist-set tags pass (`gatherer-fxhash-tags-v3`) and the initial API pass cover ~45 works total. A schema-deeper fxhash pass plus an objkt-side coverage push would close more gaps.

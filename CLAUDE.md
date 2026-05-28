@@ -230,6 +230,84 @@ All node-level image_urls are mirrored into a Cloudflare R2 bucket so the graph 
 - **Uploader**: `seed/_build/upload_to_r2.py` (Python, runs from `seed/_build/.venv/bin/python3`). Idempotent: skips nodes that already carry `cdn_image_url`, and HEAD-checks the R2 key before re-uploading. Includes a fallback for the dead `gateway.objkt.com` IPFS gateway (tries `ipfs.io` → `nftstorage.link` → `dweb.link`) and per-host concurrency caps to dodge Wikimedia 429s. Reads R2 credentials from project-root `.env` (gitignored): `R2_ENDPOINT`, `R2_BUCKET`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_PUBLIC_BASE`. Run with `seed/_build/.venv/bin/python3 seed/_build/upload_to_r2.py`; `--dry-run` and `--limit N` are available for testing.
 - **Workflow**: when ingesting new images via the `seed/_build` fetchers, just write `image_url` into `seed/nodes.json` and re-run the uploader — it'll find the new entries and write `cdn_image_url` back. No runtime R2 dependency: the cooked DB carries the URLs, the server never talks to R2.
 
+### Image coverage tooling — sanitize + find-missing + overlay apply
+
+Two `seed/_build` producers + a build-time DB-patch mechanism keep images healthy and fill gaps. They are **producers, not editors**: they propose; canon never moves through a hand-edit. **`seed/nodes.json` is never mutated by these tools** — approved images live in `seed/image_overlay.json`, which `seed-consolidated.ts` applies as metadata `UPDATE`s after the node `INSERT` loop (image-only, gap-fill, idempotent, before the WAL checkpoint). The baked `seed.db` ships the images; `nodes.json` stays pristine. May 2026 first pass: **89 previously-imageless nodes filled** via the overlay (54 institution / 25 practitioner / 7 scene / 2 collective / 1 platform); ~560 still imageless (the long tail Wikidata + agentic web-search can't authoritatively cover). `sanitize_images.py` + `find_missing_images.py` are stdlib-only (no venv needed) and use a descriptive User-Agent (Wikimedia 403s the default urllib UA).
+
+- **`sanitize_images.py`** (read-only) — HEAD/GET-checks every `image_url` + `cdn_image_url`, classifies each node `ok` / `upstream_rotted` (mirror alive, upstream dead — fine) / `cdn_dead` (re-mirror with `upload_to_r2.py`) / `both_dead` (proposes an IPFS-gateway or Wayback fallback). Healing is `upload_to_r2.py`'s job; this only diagnoses. Report → `seed/_build/image_sanitize_report.json` (gitignored). Flags: `--types`, `--limit`, `--no-upstream`, `--workers`. **Known data-quality issue**: 48 Rhizome-artbase artworks (`artbase.rhizome.org` upstream) are flagged `both_dead` — the R2 mirror was populated with HTML landing-page bytes by an earlier `upload_to_r2.py` run that had no content-type guard. The guard is now in place (refuses non-`image/*` responses), preventing future repeats, but healing the existing 48 needs a Rhizome-aware fetcher that extracts the artwork screenshot from each landing page (`<meta property="og:image">` or the main `<img>`) — not yet built; ~50-line follow-up.
+- **`find_missing_images.py`** — proposes images for imageless nodes. Tier 1: Wikidata QID from `seed/aliases.json`, else a `P31`-type-verified name search → `P18`/`P154`. Tier 2: `--agentic` (experimental; needs `ANTHROPIC_API_KEY`) LLM web search via `claude-haiku-4-5` + `web_search_20250305` for the long tail. Every candidate is HEAD-validated to a live image and provenance-stamped (QID + property, or `agentic-websearch` + source page). **Artworks are never name-searched** (generic-title slug collisions, e.g. `artwork:untitled`) — QID-alias only. Confidence: `high` = QID-alias · `medium` = type-verified search · `low` = unverified (eyeball — a few are subject misfires, e.g. `Sónar`→SonarQube, `teamLab`→ONLYOFFICE, `Metro Pictures`→an old film studio, `Darmstadt`→the city not the New Music summer courses). Stages to `seed/_build/image_candidates.json` (committed, reviewable). **`--apply --write`** merges approved candidates into `seed/image_overlay.json` — **never into `nodes.json`**.
+- **`upload_to_r2.py --overlay`** — reads `seed/image_overlay.json`, mirrors each `image_url` to R2 (content-addressed, same key scheme as the nodes.json path), and writes `cdn_image_url` back into the overlay. The default (no flag) still mirrors `nodes.json` for the pre-existing 393 images. Both modes refuse responses whose content-type isn't `image/*` (defense against the Rhizome regression above). Wikimedia rate-limits aggressively (HTTP 429); per-host cap is 2 concurrent, and re-running `--overlay` is idempotent (only retries entries still missing `cdn_image_url`) so 429-failed mops up in subsequent passes.
+- **Overlay apply (`src/seed-consolidated.ts`)** — after the node `INSERT` loop and before the WAL checkpoint, each overlay entry's image fields are merged into the matching node's metadata via `UPDATE nodes SET metadata=…`. Image-only, gap-fill (never overwrites an existing image), idempotent. Look for `Image overlay applied: N nodes (M skipped)` in the seeder's log. `embed_nodes.py` reads the same overlay (via `load_overlay_images()`) so an artwork image supplied via the overlay still reaches the multimodal embedder — no-op when the overlay holds only non-artwork types (the common case), since only `artwork` is in `TYPES_WITH_IMAGE`.
+
+**Data flow** — so no one routes images through the wrong path:
+
+```
+seed/_build/find_missing_images.py            proposes
+        │   writes seed/_build/image_candidates.json (committed, reviewable)
+        ▼
+  [human reviews — sets "approved": true on keepers]
+        │
+        ▼
+find_missing_images.py --apply --write        stages
+        │   merges approved candidates into seed/image_overlay.json
+        ▼
+upload_to_r2.py --overlay                     mirrors to R2
+        │   writes cdn_image_url back into seed/image_overlay.json
+        ▼
+  [git add seed/image_overlay.json + seed/_build/image_candidates.json + commit]
+        │
+        ▼
+npm run seed:consolidated   (locally or in Docker builder)   applies
+        │   reads seed/image_overlay.json, runs UPDATE nodes SET metadata=…
+        ▼
+adai.db / seed.db                             carries the images
+```
+
+`seed/image_overlay.json` is **committed, not gitignored** — that's how the Docker builder bakes the images into the shipped `seed.db` (the builder runs `seed:consolidated` after `COPY seed/ ./seed/`). Sample entry:
+
+```json
+{
+  "node_id": "institution:moma",
+  "type": "institution",
+  "name": "MoMA",
+  "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Museum_of_Modern_Art_logo.svg",
+  "cdn_image_url": "https://pub-…r2.dev/images/ab/abc…def.svg",
+  "image_provenance": { "source": "wikidata", "qid": "Q188740", "property": "P154", "match": "search_verified" }
+}
+```
+
+**Two image-add paths — don't confuse them:**
+
+- **Overlay** (this section, `find_missing_images.py` + `upload_to_r2.py --overlay`) — for filling image gaps on nodes that *already exist* in the seed. Writes `seed/image_overlay.json`. Applied at seed time by `seed-consolidated.ts`. `nodes.json` is untouched.
+- **`apply_image_patches.py` (older path)** — for new artwork batches *ingested with* their images together (MoMA / Met / Art Blocks / fxhash / Wikidata fetchers). Reads `seed/_build/image_patches/*.json` (fetcher output) and merges into `seed/nodes.json` directly. Used by the fetcher pipeline; unchanged by the overlay work. Don't route gap-fill images through it, and don't route fetcher-discovered images through the overlay.
+
+**Don't hand-edit `seed/nodes.json` or `seed/image_overlay.json`.** Hand-edits look right locally but lose provenance and get clobbered the next time a producer runs. Use `find_missing_images.py --apply --write` (gap-fill), an existing fetcher (new batches), or the contributor API (`POST /api/v1/images`) at runtime. The overlay's `image_provenance` block is what makes every image traceable back to a Wikidata QID + property or an agentic web-search page — preserve that.
+
+**Full run sequence (needs a machine with `.env` R2 creds + `seed/_build/.venv`; `GEMINI_API_KEY` only if re-embedding artworks; `ANTHROPIC_API_KEY` only for `--agentic`):**
+```bash
+# 1. find candidates (no creds for tier-1; --agentic needs ANTHROPIC_API_KEY exported)
+python3 seed/_build/find_missing_images.py --types institution platform scene collective practitioner
+# (optional Tier 2 long-tail pass)
+ANTHROPIC_API_KEY=... seed/_build/.venv/bin/python3 seed/_build/find_missing_images.py --agentic --types ...
+# 2. review seed/_build/image_candidates.json — set "approved": true on keepers,
+#    OR auto-accept a confidence tier (medium is type-verified and safe; low needs eyes).
+python3 seed/_build/find_missing_images.py --apply --accept-confidence medium --write
+# → merges approved candidates into seed/image_overlay.json (NOT nodes.json)
+# 3. mirror to R2 (needs .env R2_* creds) — writes cdn_image_url back into the overlay
+seed/_build/.venv/bin/python3 seed/_build/upload_to_r2.py --overlay
+# 4. re-seed locally to verify (look for "Image overlay applied: N nodes" in the seeder's log)
+rm -f adai.db adai.db-shm adai.db-wal && npm run seed:consolidated
+# 5. ONLY if the overlay added ARTWORK images: re-embed + re-project + re-commit the sidecars.
+#    Non-artwork overlays are a provable no-op for embed_nodes.py (practitioner/collective/scene
+#    are text-only; institution/platform are non-embeddable; so image_hash never changes).
+seed/_build/.venv/bin/python3 seed/_build/embed_nodes.py
+seed/_build/.venv/bin/python3 seed/_build/project_umap.py
+git add seed/image_overlay.json seed/_build/image_candidates.json
+# + (step 5 only) seed/embeddings.{bin,json,umap2d.json}
+git commit
+```
+`--apply` without `--write` is a dry-run. It never overwrites a node that already has an image (idempotent), and never touches `nodes.json` or `edges.json`. Skipping step 5 is safe **for non-artwork batches** — those types either don't embed images (institution/platform aren't even in `EMBEDDABLE_TYPES`) or are text-only (practitioner/collective/scene have no images in their embedding inputs by design), so STYLE_KIN/VISUALLY_AFFINE/embed-space are unaffected.
+
 ### Legacy path — `results/*.json` via `seed.ts`
 
 Each JSON in `results/` has: basic_info, practice_description, key_works, commons_orientation, governance_model, network_position (connections, scene_affiliation), and more. The legacy seed creates practitioner/concept/scene/related nodes + PRACTICES/BELONGS_TO/RELATED_TO edges from those fields. All rows tagged `confidence: 'low'`, `created_by: 'migration'`, `batch_id: 'seed-migration-2026-04-20'`. ID convention is kebab-dash (`practitioner-casey-reas`) — **do not mix with the canonical path in the same DB**.
