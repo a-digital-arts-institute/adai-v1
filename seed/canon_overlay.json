@@ -1,0 +1,290 @@
+{
+  "_note": "Build-time DB patch for canon CORRECTIONS only (not new ingestions). nodes.json / edges.json / signals.json stay pristine; src/seed-consolidated.ts applies this after the edge INSERT loop and before the WAL checkpoint. Apply order: signals → nodes → edges → supersessions. See CLAUDE.md → 'Canon overlay'.",
+
+  "add_signals": [
+    {
+      "id": "signal:slug-disambiguation-2026-05",
+      "title": "Slug disambiguation pass: split generic-titled artwork-id collisions",
+      "source_url": null,
+      "source_type": "operator",
+      "cla_layer": null,
+      "summary": "Disambiguates 2 generic-titled artwork collisions (artwork:untitled, artwork:black hole) where independent gatherers minted the same slug for unrelated works. The producer-side fix (seed/_build/_slug.py) closes the gap for future runs; this signal anchors the canon-side correction.",
+      "content": "Original collision: artwork:untitled accumulated 3 CREATED_BY edges to unrelated practitioners (Vera Molnár / American Artist / Harold Cohen) from 3 independent gatherers (gatherer-enrichment, gatherer-moma-digital-v3, gatherer-wikidata-v3b); artwork:black hole accumulated 2 (Suzanne Treister via wikidata-v3b, Addie Wagenknecht via objkt-tags-v3). Each colliding edge is now superseded (valid_until + invalidated_by) and replaced by a new edge against a disambiguated node (artwork:<title>--<creator-slug>). Disambiguated nodes carry stub metadata pending future enrichment.",
+      "submitted_by": "contributor:migration",
+      "confidence": "high",
+      "lived_experience": false,
+      "created_at": "2026-05-28T00:00:00Z",
+      "consent_scope": "full_commons",
+      "consent_attribution": "attributed",
+      "consent_revocable": false,
+      "processing_trace": null,
+      "source_origin": "human_secondary",
+      "batch_id": "slug-disambiguation-2026-05",
+      "status": "active",
+      "provenance_chain": null
+    }
+  ],
+
+  "add_nodes": [
+    {
+      "id": "artwork:untitled--vera-molnar",
+      "type": "artwork",
+      "name": "Untitled (Vera Molnár)",
+      "slug": "untitled-vera-molnar",
+      "metadata": {
+        "status": "disambiguation_split",
+        "split_from": "artwork:untitled",
+        "creator_hint": "Vera Molnár",
+        "originating_producer": "gatherer-enrichment",
+        "originating_signal": "moma-ingest-2026-04-22",
+        "note": "Disambiguated from artwork:untitled collision via signal:slug-disambiguation-2026-05. Specific work to be enriched (no MoMA object_id or Wikidata QID captured at original ingest).",
+        "data_provenance": "see signal:slug-disambiguation-2026-05"
+      },
+      "created_at": "2026-05-28T00:00:00Z",
+      "updated_by": "canon-overlay"
+    },
+    {
+      "id": "artwork:untitled--american-artist",
+      "type": "artwork",
+      "name": "Untitled (American Artist)",
+      "slug": "untitled-american-artist",
+      "metadata": {
+        "status": "disambiguation_split",
+        "split_from": "artwork:untitled",
+        "creator_hint": "American Artist",
+        "originating_producer": "gatherer-moma-digital-v3",
+        "originating_signal": "moma-digital-ingest-2026-04-28",
+        "moma_object_id": 435713,
+        "note": "American Artist's 'Curtains and bleachers' (Installation, 2019, MoMA object 435713). Disambiguated from artwork:untitled collision via signal:slug-disambiguation-2026-05.",
+        "data_provenance": "see signal:moma-digital-ingest-2026-04-28 + signal:slug-disambiguation-2026-05"
+      },
+      "created_at": "2026-05-28T00:00:00Z",
+      "updated_by": "canon-overlay"
+    },
+    {
+      "id": "artwork:untitled--harold-cohen",
+      "type": "artwork",
+      "name": "Untitled (Harold Cohen)",
+      "slug": "untitled-harold-cohen",
+      "metadata": {
+        "status": "disambiguation_split",
+        "split_from": "artwork:untitled",
+        "creator_hint": "Harold Cohen",
+        "originating_producer": "gatherer-wikidata-v3b",
+        "originating_signal": "wikidata-artworks-ingest-2026-04-28b",
+        "note": "Harold Cohen's untitled (Wikidata-sourced; original QID not captured at ingest). Disambiguated from artwork:untitled collision via signal:slug-disambiguation-2026-05.",
+        "data_provenance": "see signal:wikidata-artworks-ingest-2026-04-28b + signal:slug-disambiguation-2026-05"
+      },
+      "created_at": "2026-05-28T00:00:00Z",
+      "updated_by": "canon-overlay"
+    },
+    {
+      "id": "artwork:black hole--suzanne-treister",
+      "type": "artwork",
+      "name": "Black Hole (Suzanne Treister)",
+      "slug": "black-hole-suzanne-treister",
+      "metadata": {
+        "status": "disambiguation_split",
+        "split_from": "artwork:black hole",
+        "creator_hint": "Suzanne Treister",
+        "originating_producer": "gatherer-wikidata-v3b",
+        "originating_signal": "wikidata-artworks-ingest-2026-04-28b",
+        "note": "Suzanne Treister's 'Black Hole' (1987 painting per Wikidata Q119409616 per PR #19 research). Disambiguated from artwork:black hole collision via signal:slug-disambiguation-2026-05.",
+        "data_provenance": "see signal:wikidata-artworks-ingest-2026-04-28b + signal:slug-disambiguation-2026-05"
+      },
+      "created_at": "2026-05-28T00:00:00Z",
+      "updated_by": "canon-overlay"
+    },
+    {
+      "id": "artwork:black hole--addie-wagenknecht",
+      "type": "artwork",
+      "name": "Black Hole (Addie Wagenknecht)",
+      "slug": "black-hole-addie-wagenknecht",
+      "metadata": {
+        "status": "disambiguation_split",
+        "split_from": "artwork:black hole",
+        "creator_hint": "Addie Wagenknecht",
+        "originating_producer": "gatherer-objkt-tags-v3",
+        "originating_signal": "objkt-tags-ingest-2026-04-28",
+        "note": "Tezos-platform work by Addie Wagenknecht (objkt-sourced; original fa_contract+token_id not captured at ingest). Disambiguated from artwork:black hole collision via signal:slug-disambiguation-2026-05.",
+        "data_provenance": "see signal:objkt-tags-ingest-2026-04-28 + signal:slug-disambiguation-2026-05"
+      },
+      "created_at": "2026-05-28T00:00:00Z",
+      "updated_by": "canon-overlay"
+    }
+  ],
+
+  "add_edges": [
+    {
+      "id": "artwork:untitled--vera-molnar--created_by--practitioner:vera molnar",
+      "source_id": "artwork:untitled--vera-molnar",
+      "target_id": "practitioner:vera molnar",
+      "edge_type": "CREATED_BY",
+      "signal_id": "signal:slug-disambiguation-2026-05",
+      "confidence": "high",
+      "charge": null,
+      "created_at": "2026-05-28T00:00:00Z",
+      "created_by": "gatherer-enrichment",
+      "event_time": null,
+      "valid_from": "2026-05-28T00:00:00Z",
+      "valid_until": null,
+      "invalidated_by": null
+    },
+    {
+      "id": "artwork:untitled--american-artist--created_by--practitioner:american artist",
+      "source_id": "artwork:untitled--american-artist",
+      "target_id": "practitioner:american artist",
+      "edge_type": "CREATED_BY",
+      "signal_id": "signal:slug-disambiguation-2026-05",
+      "confidence": "high",
+      "charge": null,
+      "created_at": "2026-05-28T00:00:00Z",
+      "created_by": "gatherer-moma-digital-v3",
+      "event_time": null,
+      "valid_from": "2026-05-28T00:00:00Z",
+      "valid_until": null,
+      "invalidated_by": null
+    },
+    {
+      "id": "artwork:untitled--american-artist--uses_technique--concept:installation",
+      "source_id": "artwork:untitled--american-artist",
+      "target_id": "concept:installation",
+      "edge_type": "USES_TECHNIQUE",
+      "signal_id": "signal:slug-disambiguation-2026-05",
+      "confidence": "high",
+      "charge": null,
+      "created_at": "2026-05-28T00:00:00Z",
+      "created_by": "gatherer-moma-digital-v3",
+      "event_time": null,
+      "valid_from": "2026-05-28T00:00:00Z",
+      "valid_until": null,
+      "invalidated_by": null
+    },
+    {
+      "id": "artwork:untitled--harold-cohen--created_by--practitioner:harold cohen",
+      "source_id": "artwork:untitled--harold-cohen",
+      "target_id": "practitioner:harold cohen",
+      "edge_type": "CREATED_BY",
+      "signal_id": "signal:slug-disambiguation-2026-05",
+      "confidence": "high",
+      "charge": null,
+      "created_at": "2026-05-28T00:00:00Z",
+      "created_by": "gatherer-wikidata-v3b",
+      "event_time": null,
+      "valid_from": "2026-05-28T00:00:00Z",
+      "valid_until": null,
+      "invalidated_by": null
+    },
+    {
+      "id": "artwork:black hole--suzanne-treister--created_by--practitioner:suzanne treister",
+      "source_id": "artwork:black hole--suzanne-treister",
+      "target_id": "practitioner:suzanne treister",
+      "edge_type": "CREATED_BY",
+      "signal_id": "signal:slug-disambiguation-2026-05",
+      "confidence": "high",
+      "charge": null,
+      "created_at": "2026-05-28T00:00:00Z",
+      "created_by": "gatherer-wikidata-v3b",
+      "event_time": null,
+      "valid_from": "2026-05-28T00:00:00Z",
+      "valid_until": null,
+      "invalidated_by": null
+    },
+    {
+      "id": "artwork:black hole--addie-wagenknecht--created_by--practitioner:addie wagenknecht",
+      "source_id": "artwork:black hole--addie-wagenknecht",
+      "target_id": "practitioner:addie wagenknecht",
+      "edge_type": "CREATED_BY",
+      "signal_id": "signal:slug-disambiguation-2026-05",
+      "confidence": "high",
+      "charge": null,
+      "created_at": "2026-05-28T00:00:00Z",
+      "created_by": "gatherer-objkt-tags-v3",
+      "event_time": null,
+      "valid_from": "2026-05-28T00:00:00Z",
+      "valid_until": null,
+      "invalidated_by": null
+    },
+    {
+      "id": "artwork:black hole--addie-wagenknecht--embodies--concept:blackhole",
+      "source_id": "artwork:black hole--addie-wagenknecht",
+      "target_id": "concept:blackhole",
+      "edge_type": "EMBODIES",
+      "signal_id": "signal:slug-disambiguation-2026-05",
+      "confidence": "high",
+      "charge": null,
+      "created_at": "2026-05-28T00:00:00Z",
+      "created_by": "gatherer-objkt-tags-v3",
+      "event_time": null,
+      "valid_from": "2026-05-28T00:00:00Z",
+      "valid_until": null,
+      "invalidated_by": null
+    },
+    {
+      "id": "artwork:black hole--addie-wagenknecht--embodies--concept:julianhechenberger",
+      "source_id": "artwork:black hole--addie-wagenknecht",
+      "target_id": "concept:julianhechenberger",
+      "edge_type": "EMBODIES",
+      "signal_id": "signal:slug-disambiguation-2026-05",
+      "confidence": "high",
+      "charge": null,
+      "created_at": "2026-05-28T00:00:00Z",
+      "created_by": "gatherer-objkt-tags-v3",
+      "event_time": null,
+      "valid_from": "2026-05-28T00:00:00Z",
+      "valid_until": null,
+      "invalidated_by": null
+    }
+  ],
+
+  "supersede_edges": [
+    {
+      "edge_id": "artwork:untitled--created_by--practitioner:vera molnar",
+      "valid_until": "2026-05-28T00:00:00Z",
+      "invalidated_by": "signal:slug-disambiguation-2026-05",
+      "reason": "split: this edge belongs to artwork:untitled--vera-molnar (the original artwork:untitled is a slug collision)"
+    },
+    {
+      "edge_id": "artwork:untitled--created_by--practitioner:american artist",
+      "valid_until": "2026-05-28T00:00:00Z",
+      "invalidated_by": "signal:slug-disambiguation-2026-05",
+      "reason": "split: belongs to artwork:untitled--american-artist (MoMA object 435713)"
+    },
+    {
+      "edge_id": "artwork:untitled--uses_technique--concept:installation",
+      "valid_until": "2026-05-28T00:00:00Z",
+      "invalidated_by": "signal:slug-disambiguation-2026-05",
+      "reason": "split: belongs to artwork:untitled--american-artist (same gatherer-moma-digital-v3 ingest)"
+    },
+    {
+      "edge_id": "artwork:untitled--created_by--practitioner:harold cohen",
+      "valid_until": "2026-05-28T00:00:00Z",
+      "invalidated_by": "signal:slug-disambiguation-2026-05",
+      "reason": "split: belongs to artwork:untitled--harold-cohen"
+    },
+    {
+      "edge_id": "artwork:black hole--created_by--practitioner:suzanne treister",
+      "valid_until": "2026-05-28T00:00:00Z",
+      "invalidated_by": "signal:slug-disambiguation-2026-05",
+      "reason": "split: belongs to artwork:black hole--suzanne-treister (Treister's 1987 painting)"
+    },
+    {
+      "edge_id": "artwork:black hole--created_by--practitioner:addie wagenknecht",
+      "valid_until": "2026-05-28T00:00:00Z",
+      "invalidated_by": "signal:slug-disambiguation-2026-05",
+      "reason": "split: belongs to artwork:black hole--addie-wagenknecht (objkt token)"
+    },
+    {
+      "edge_id": "artwork:black hole--embodies--concept:blackhole",
+      "valid_until": "2026-05-28T00:00:00Z",
+      "invalidated_by": "signal:slug-disambiguation-2026-05",
+      "reason": "split: belongs to artwork:black hole--addie-wagenknecht (same gatherer-objkt-tags-v3 ingest)"
+    },
+    {
+      "edge_id": "artwork:black hole--embodies--concept:julianhechenberger",
+      "valid_until": "2026-05-28T00:00:00Z",
+      "invalidated_by": "signal:slug-disambiguation-2026-05",
+      "reason": "split: belongs to artwork:black hole--addie-wagenknecht (same gatherer-objkt-tags-v3 ingest)"
+    }
+  ]
+}

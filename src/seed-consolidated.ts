@@ -240,6 +240,86 @@ for (const e of edges) {
 db.exec("COMMIT");
 console.log(`Edges inserted: ${edges.length}`);
 
+// --- Canon overlay (build-time DB patch for corrections) -------------
+// nodes.json / edges.json / signals.json stay pristine. The overlay carries
+// CORRECTIONS only (not new ingestions — those still come from gatherers
+// writing to the canon files directly). Use it for: slug-collision splits,
+// curator-driven bi-temporal supersessions, manual additions that don't have
+// a natural producer. Apply order: signals → nodes → edges → supersessions
+// (referential integrity: a supersession's invalidated_by may reference a new
+// signal_id; a new edge may reference new node_ids and/or new signal_ids).
+//
+// CRITICAL: must run BEFORE the wal_checkpoint near the end of this file —
+// same WAL trap as the image overlay and the embeddings block.
+type CanonOverlay = {
+  add_signals?: any[];
+  add_nodes?: any[];
+  add_edges?: any[];
+  supersede_edges?: Array<{
+    edge_id: string;
+    valid_until: string;
+    invalidated_by: string;
+    reason?: string;
+  }>;
+};
+let canonOverlay: CanonOverlay | null = null;
+try {
+  canonOverlay = JSON.parse(readFileSync(join(seedDir, "canon_overlay.json"), "utf-8")) as CanonOverlay;
+} catch (err) {
+  if ((err as NodeJS.ErrnoException)?.code !== "ENOENT") throw err;
+  console.log("Canon overlay: seed/canon_overlay.json absent — skipped.");
+}
+if (canonOverlay) {
+  let appliedSignals = 0, appliedNodes = 0, appliedEdges = 0, appliedSupersessions = 0;
+  // UPDATE is idempotent via `valid_until IS NULL`: a second run won't shift
+  // valid_until forward, and won't re-supersede an already-superseded edge.
+  const supersedeEdge = db.prepare(
+    "UPDATE edges SET valid_until = ?, invalidated_by = ? WHERE id = ? AND valid_until IS NULL"
+  );
+  db.exec("BEGIN");
+  for (const s of canonOverlay.add_signals ?? []) {
+    insertSignal.run(
+      s.id, s.title, s.source_url ?? null, s.source_type ?? null,
+      s.cla_layer ?? null, s.summary ?? null, s.content ?? null,
+      s.submitted_by ?? null, s.confidence ?? null, toInt(s.lived_experience ?? false),
+      s.created_at ?? nowSeedIso,
+      s.consent_scope ?? "structural_only", s.consent_attribution ?? "attributed",
+      toInt(s.consent_revocable ?? true),
+      s.processing_trace ?? null, s.source_origin ?? "ai_assisted",
+      s.batch_id ?? null, s.status ?? "active", s.provenance_chain ?? null
+    );
+    appliedSignals++;
+  }
+  for (const n of canonOverlay.add_nodes ?? []) {
+    insertNode.run(
+      n.id, n.type, n.name, n.slug ?? null,
+      asString(n.metadata),
+      n.created_at ?? nowSeedIso,
+      n.updated_by ?? "canon-overlay"
+    );
+    appliedNodes++;
+  }
+  for (const e of canonOverlay.add_edges ?? []) {
+    insertEdge.run(
+      e.id, e.source_id, e.target_id, e.edge_type,
+      e.signal_id ?? null, e.confidence ?? null, e.charge ?? null,
+      e.created_at ?? nowSeedIso, e.created_by ?? "canon-overlay",
+      e.event_time ?? null, e.valid_from ?? null,
+      e.valid_until ?? null, e.invalidated_by ?? null
+    );
+    appliedEdges++;
+  }
+  for (const s of canonOverlay.supersede_edges ?? []) {
+    const result = supersedeEdge.run(s.valid_until, s.invalidated_by, s.edge_id);
+    if (result.changes > 0) appliedSupersessions++;
+  }
+  db.exec("COMMIT");
+  console.log(
+    `Canon overlay applied: ${appliedSignals} signals, ${appliedNodes} nodes, ` +
+    `${appliedEdges} edges, ${appliedSupersessions} supersessions from seed/canon_overlay.json`
+  );
+}
+
 const insertAlias = db.prepare(
   "INSERT OR IGNORE INTO node_aliases (source, external_id, node_id, created_at) VALUES (?, ?, ?, ?)"
 );
