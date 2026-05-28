@@ -239,6 +239,50 @@ Two `seed/_build` producers + a build-time DB-patch mechanism keep images health
 - **`upload_to_r2.py --overlay`** — reads `seed/image_overlay.json`, mirrors each `image_url` to R2 (content-addressed, same key scheme as the nodes.json path), and writes `cdn_image_url` back into the overlay. The default (no flag) still mirrors `nodes.json` for the pre-existing 393 images. Both modes refuse responses whose content-type isn't `image/*` (defense against the Rhizome regression above). Wikimedia rate-limits aggressively (HTTP 429); per-host cap is 2 concurrent, and re-running `--overlay` is idempotent (only retries entries still missing `cdn_image_url`) so 429-failed mops up in subsequent passes.
 - **Overlay apply (`src/seed-consolidated.ts`)** — after the node `INSERT` loop and before the WAL checkpoint, each overlay entry's image fields are merged into the matching node's metadata via `UPDATE nodes SET metadata=…`. Image-only, gap-fill (never overwrites an existing image), idempotent. Look for `Image overlay applied: N nodes (M skipped)` in the seeder's log. `embed_nodes.py` reads the same overlay (via `load_overlay_images()`) so an artwork image supplied via the overlay still reaches the multimodal embedder — no-op when the overlay holds only non-artwork types (the common case), since only `artwork` is in `TYPES_WITH_IMAGE`.
 
+**Data flow** — so no one routes images through the wrong path:
+
+```
+seed/_build/find_missing_images.py            proposes
+        │   writes seed/_build/image_candidates.json (committed, reviewable)
+        ▼
+  [human reviews — sets "approved": true on keepers]
+        │
+        ▼
+find_missing_images.py --apply --write        stages
+        │   merges approved candidates into seed/image_overlay.json
+        ▼
+upload_to_r2.py --overlay                     mirrors to R2
+        │   writes cdn_image_url back into seed/image_overlay.json
+        ▼
+  [git add seed/image_overlay.json + seed/_build/image_candidates.json + commit]
+        │
+        ▼
+npm run seed:consolidated   (locally or in Docker builder)   applies
+        │   reads seed/image_overlay.json, runs UPDATE nodes SET metadata=…
+        ▼
+adai.db / seed.db                             carries the images
+```
+
+`seed/image_overlay.json` is **committed, not gitignored** — that's how the Docker builder bakes the images into the shipped `seed.db` (the builder runs `seed:consolidated` after `COPY seed/ ./seed/`). Sample entry:
+
+```json
+{
+  "node_id": "institution:moma",
+  "type": "institution",
+  "name": "MoMA",
+  "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Museum_of_Modern_Art_logo.svg",
+  "cdn_image_url": "https://pub-…r2.dev/images/ab/abc…def.svg",
+  "image_provenance": { "source": "wikidata", "qid": "Q188740", "property": "P154", "match": "search_verified" }
+}
+```
+
+**Two image-add paths — don't confuse them:**
+
+- **Overlay** (this section, `find_missing_images.py` + `upload_to_r2.py --overlay`) — for filling image gaps on nodes that *already exist* in the seed. Writes `seed/image_overlay.json`. Applied at seed time by `seed-consolidated.ts`. `nodes.json` is untouched.
+- **`apply_image_patches.py` (older path)** — for new artwork batches *ingested with* their images together (MoMA / Met / Art Blocks / fxhash / Wikidata fetchers). Reads `seed/_build/image_patches/*.json` (fetcher output) and merges into `seed/nodes.json` directly. Used by the fetcher pipeline; unchanged by the overlay work. Don't route gap-fill images through it, and don't route fetcher-discovered images through the overlay.
+
+**Don't hand-edit `seed/nodes.json` or `seed/image_overlay.json`.** Hand-edits look right locally but lose provenance and get clobbered the next time a producer runs. Use `find_missing_images.py --apply --write` (gap-fill), an existing fetcher (new batches), or the contributor API (`POST /api/v1/images`) at runtime. The overlay's `image_provenance` block is what makes every image traceable back to a Wikidata QID + property or an agentic web-search page — preserve that.
+
 **Full run sequence (needs a machine with `.env` R2 creds + `seed/_build/.venv`; `GEMINI_API_KEY` only if re-embedding artworks; `ANTHROPIC_API_KEY` only for `--agentic`):**
 ```bash
 # 1. find candidates (no creds for tier-1; --agentic needs ANTHROPIC_API_KEY exported)
