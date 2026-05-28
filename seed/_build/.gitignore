@@ -1,2 +1,13 @@
 __pycache__/
 *.pyc
+
+# Gatherer run artifacts — outputs go in runs/YYYY-MM/<gatherer>-<date>.json,
+# kept ephemeral so the dir doesn't pollute. Committed reviewable artifacts
+# (image_candidates.json, image_sanitize_report.json) live at the top level.
+runs/
+
+# Image-fetch cache for the multimodal embedder (image_fetch.py)
+.image_cache.sqlite
+
+# Local venv (for upload_to_r2.py, embed_nodes.py, project_umap.py)
+.venv/
