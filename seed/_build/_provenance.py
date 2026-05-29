@@ -124,9 +124,19 @@ class GathererSignal:
         return f"signal:{self.producer}-{ym}"
 
     def as_row(self) -> dict[str, Any]:
-        """The ``signals.json`` row this gatherer emits."""
+        """The ``signals.json`` row this gatherer emits. Fields aligned with
+        ``db.sql`` so the seeder binds cleanly (better-sqlite3 rejects
+        ``undefined``; null is fine)."""
         return {
             "id": self.signal_id,
+            "title": f"{self.producer} gatherer run",
+            "source_url": self.source,
+            "source_type": "api",
+            "cla_layer": None,
+            "summary": None,
+            "content": None,
+            "submitted_by": self.contributor,
+            "confidence": 1.0,
             "claim_text": f"{self.producer} gatherer run against {self.source}",
             "source_origin": self.source_origin,
             "batch_id": self.batch_id,

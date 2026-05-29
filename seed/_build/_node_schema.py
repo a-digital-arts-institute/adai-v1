@@ -244,10 +244,12 @@ class Alias:
             raise SchemaError(f"alias node_id must be '<type>:<name>': {self.node_id!r}")
 
     def as_row(self) -> dict[str, Any]:
+        from datetime import datetime, timezone  # noqa: PLC0415
         return {
             "source": self.source,
             "external_id": self.external_id,
             "node_id": self.node_id,
+            "created_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         }
 
 
@@ -306,17 +308,25 @@ def validate_batch(
     nodes: Iterable[dict[str, Any]],
     edges: Iterable[dict[str, Any]],
     signal_ids_known: set[str] | None = None,
+    extra_node_ids: set[str] | None = None,
 ) -> list[str]:
     """Per-row + cross-row validation. Returns a list of error strings; empty = OK.
 
     Doesn't raise — callers decide whether to fail or warn (typically fail
     in CI, warn during interactive dev). Use this in every gatherer right
     before ``write_batch()`` so malformed rows never reach disk.
+
+    Args:
+      extra_node_ids: additional node IDs known to exist outside this batch
+        (e.g. canon nodes when validating a curation batch that emits edges
+        against existing canon nodes). These aren't required to be in the
+        batch's own node list.
     """
     errors: list[str] = []
     nodes_list = list(nodes)
     edges_list = list(edges)
     node_ids = {n["id"] for n in nodes_list if isinstance(n, dict) and "id" in n}
+    all_known = node_ids | (extra_node_ids or set())
 
     # Per-row validation
     for n in nodes_list:
@@ -328,9 +338,9 @@ def validate_batch(
     # validation the caller passes the union of all node ids).
     for e in edges_list:
         sid, tid = e.get("source_id"), e.get("target_id")
-        if sid not in node_ids:
+        if sid not in all_known:
             errors.append(f"edge {e.get('id')} references unknown source_id {sid!r}")
-        if tid not in node_ids:
+        if tid not in all_known:
             errors.append(f"edge {e.get('id')} references unknown target_id {tid!r}")
 
     # signal_id references resolve (if the caller supplied a known set)

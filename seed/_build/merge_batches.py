@@ -194,6 +194,8 @@ def merge() -> dict[str, Any]:
         resolved_edges[e["id"]] = e
 
     # Contributors row — single migration contributor, trust tier reviewed
+    import datetime as _dt
+    _now = _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     contributors = [
         {
             "id": "contributor:migration",
@@ -202,6 +204,7 @@ def merge() -> dict[str, Any]:
             "trust_tier": "reviewed",
             "contributions": len(nodes) + len(resolved_edges),
             "approved_count": len(nodes) + len(resolved_edges),
+            "created_at": _now,
         }
     ]
 
