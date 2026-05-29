@@ -138,7 +138,11 @@ class Node:
             )
 
     def as_row(self) -> dict[str, Any]:
-        self.validate()
+        """Emit the row dict. Does NOT validate — the gatherer typically calls
+        ``sig.stamp(n.as_row())`` and the stamping fills signal_id/created_by/
+        batch_id which validate() requires. Validation happens at batch level
+        via ``validate_batch`` and at canon level via ``validate_seed.py``.
+        """
         return {
             "id": self.id,
             "type": self.type,
@@ -194,7 +198,7 @@ class Edge:
             raise SchemaError(f"edge {self.id} confidence {self.confidence} out of [0,1]")
 
     def as_row(self) -> dict[str, Any]:
-        self.validate()
+        """Emit the row dict. Validation deferred to batch level."""
         row = {
             "id": self.id,
             "source_id": self.source_id,
@@ -240,7 +244,6 @@ class Alias:
             raise SchemaError(f"alias node_id must be '<type>:<name>': {self.node_id!r}")
 
     def as_row(self) -> dict[str, Any]:
-        self.validate()
         return {
             "source": self.source,
             "external_id": self.external_id,
@@ -251,21 +254,75 @@ class Alias:
 # -------------------- Batch-level validation --------------------
 
 
+def _validate_node_row(n: dict[str, Any]) -> list[str]:
+    """Per-row node validation against the contract. Returns list of errors."""
+    errs: list[str] = []
+    nid = n.get("id") or "?"
+    for k in ("id", "type", "name", "slug", "signal_id", "created_by", "batch_id"):
+        if not n.get(k):
+            errs.append(f"node {nid}: missing/empty {k}")
+    if n.get("type") and n["type"] not in NODE_TYPES:
+        errs.append(f"node {nid}: unknown type {n['type']!r}")
+    if n.get("id") and ":" not in n["id"]:
+        errs.append(f"node {nid}: id not in '<type>:<name>' form")
+    md = n.get("metadata") or {}
+    if isinstance(md, str):
+        try:
+            md = _json_loads(md)
+        except Exception:
+            errs.append(f"node {nid}: metadata is a string but not valid JSON")
+            md = {}
+    if isinstance(md, dict):
+        narrative_present = [k for k in NARRATIVE_KEYS if md.get(k)]
+        if narrative_present and not _has_source_url(md):
+            errs.append(
+                f"node {nid}: narrative {narrative_present} without sibling source URL "
+                f"(anti-enrichment rule)"
+            )
+    return errs
+
+
+def _validate_edge_row(e: dict[str, Any]) -> list[str]:
+    errs: list[str] = []
+    eid = e.get("id") or "?"
+    for k in ("source_id", "target_id", "edge_type", "signal_id", "created_by",
+              "batch_id", "valid_from"):
+        if not e.get(k):
+            errs.append(f"edge {eid}: missing/empty {k}")
+    if e.get("edge_type") and e["edge_type"] not in CURATED_EDGE_TYPES:
+        errs.append(f"edge {eid}: non-curated edge_type {e['edge_type']!r}")
+    conf = e.get("confidence")
+    if conf is not None:
+        try:
+            if not (0.0 <= float(conf) <= 1.0):
+                errs.append(f"edge {eid}: confidence {conf} out of [0,1]")
+        except (TypeError, ValueError):
+            errs.append(f"edge {eid}: confidence {conf!r} not numeric")
+    return errs
+
+
 def validate_batch(
     *,
     nodes: Iterable[dict[str, Any]],
     edges: Iterable[dict[str, Any]],
     signal_ids_known: set[str] | None = None,
 ) -> list[str]:
-    """Cross-row validation. Returns a list of error strings; empty = OK.
+    """Per-row + cross-row validation. Returns a list of error strings; empty = OK.
 
     Doesn't raise — callers decide whether to fail or warn (typically fail
-    in CI, warn during interactive dev).
+    in CI, warn during interactive dev). Use this in every gatherer right
+    before ``write_batch()`` so malformed rows never reach disk.
     """
     errors: list[str] = []
     nodes_list = list(nodes)
     edges_list = list(edges)
     node_ids = {n["id"] for n in nodes_list if isinstance(n, dict) and "id" in n}
+
+    # Per-row validation
+    for n in nodes_list:
+        errors.extend(_validate_node_row(n))
+    for e in edges_list:
+        errors.extend(_validate_edge_row(e))
 
     # Edges must reference nodes that exist (or will exist — for cross-batch
     # validation the caller passes the union of all node ids).
@@ -301,6 +358,10 @@ def validate_batch(
         seen.add(eid)
 
     return errors
+
+
+def _json_loads(s: str) -> Any:
+    return json.loads(s)
 
 
 if __name__ == "__main__":
