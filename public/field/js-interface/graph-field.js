@@ -104,6 +104,16 @@
     NAME_TEXT_ALPHA: 1.0,            // text needs to read clearly over the brand
     NAME_TEXT_SIZE: 11,
 
+    // Neighbour cap when zooming into a node. Without this, focusing a
+    // high-degree node (e.g. the A(DAI) regime with 11,665 CLASSIFIED_BY
+    // edges, or a platform) lays out and labels thousands of neighbours —
+    // a flood of overlapping text that can't be read anyway and tanks the
+    // frame rate. We keep the first MAX_NEIGHBORS_PER_TYPE per edge type
+    // (alphabetical, stable) and record how many were hidden so the renderer
+    // can show a "+N more" marker. The full set is always reachable via the
+    // neighbour strip / search, so nothing is lost — just made legible.
+    MAX_NEIGHBORS_PER_TYPE: 28,
+
     // Editorial: practitioners stay as halos/dots (the constellation); only
     // artworks render with their image. Some practitioners carry portrait
     // URLs in the API — we ignore them on purpose. See memory:
@@ -623,7 +633,16 @@
     }
     // Sort groups by edge-type name (stable across visits)
     const ordered = Array.from(byType.entries()).sort((a, b) => a[0].localeCompare(b[0]));
-    return ordered.map(([edgeType, items]) => ({ edgeType, items }));
+    // Cap each group so high-degree nodes don't flood the field with
+    // thousands of dots + labels. Keep the stable first N; report the rest
+    // as hiddenCount for a "+N more" marker.
+    const cap = CFG.MAX_NEIGHBORS_PER_TYPE || Infinity;
+    return ordered.map(([edgeType, items]) => ({
+      edgeType,
+      items: items.slice(0, cap),
+      hiddenCount: Math.max(0, items.length - cap),
+      totalCount: items.length,
+    }));
   }
 
   // Rose / petal layout (case 17 in sketch-brand.js).
