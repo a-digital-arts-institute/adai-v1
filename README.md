@@ -8,17 +8,17 @@ Field intelligence infrastructure for the digital arts. A knowledge commons and 
 
 ---
 
-## What's in the graph (May 2026 — Seed Canon, contract-cleaned)
+## What's in the graph (May 2026 — Seed Canon, digital-art cull)
 
 | | count |
 |---|---|
-| Nodes | **1,491** across 10 types: artwork (728), concept (435), practitioner (146), institution (121), scene (30), collective (12), platform (8), classification_regime (6), publication (3), project (2) |
-| Edges | **3,376 curated** (EMBODIES 1,096 · CREATED_BY 737 · PRACTICES 461 · EXHIBITED_AT 305 · CLASSIFIED_BY 295 · BELONGS_TO 193 · COLLABORATES_WITH 183 · USES_TECHNIQUE 102 · INFLUENCES 4) **+ ~1,196 auto-derived** from embeddings (STYLE_KIN, VISUALLY_AFFINE) = ~4,572 live. RESPONDS_TO empty by design (artist-intent only). |
-| Multimodal embeddings | **1,338** Gemini Embedding 2 vectors (768-d), committed + baked into `seed.db`; refreshed by the daily `embed-derive-daily` GitHub Actions workflow |
+| Nodes | **8,653**: practitioner (4,790), artwork (3,841), concept (13), classification_regime (6), platform (2), institution (1) |
+| Edges | **26,771**: CLASSIFIED_BY 11,665 · CREATED_BY 3,849 · EXHIBITED_AT 3,841 · EMBODIES 3,758 · PRACTICES 3,658. BELONGS_TO / COLLABORATES_WITH / USES_TECHNIQUE / INFLUENCES reserved at 0; RESPONDS_TO empty by design (artist-intent only). |
+| Multimodal embeddings | Regenerated post-deploy by the daily `embed-derive-daily` GitHub Actions workflow (Gemini Embedding 2, 768-d). STYLE_KIN / VISUALLY_AFFINE / `/embed-space` populate after first run. |
 
-**The May 2026 rebuild + restore.** The canon went through a documented arc: a source-attested *sweep* (16k nodes from MoMA/Wikidata/Art Blocks/fxhash gatherers) was built, then **superseded by restoring the original editorial canon, cleaned.** The v1 selection — 146 practitioners chosen under six criteria for field-structural significance (theorists, pioneers, infrastructure builders included; market-only excluded) — was sound. Only its *execution* was contaminated: a Step-6 LLM-enrichment pass wrote unverifiable practitioner prose. `seed/_build/restore_canon.py` restores the full v1 graph and strips that poison (1,186 prose fields removed), normalising it to the producer contract. The broad sweep + its gatherer infrastructure are preserved for post-Basel regrowth. See [`CLAUDE.md`](CLAUDE.md) § "The rebuild journey" and [`seed/_build/PRODUCER_CONTRACT.md`](seed/_build/PRODUCER_CONTRACT.md).
+**The May 2026 rebuild → cull.** The canon went through an arc (full story in [`CLAUDE.md`](CLAUDE.md) § "The rebuild journey"): the contaminated original was wiped; a source-attested *sweep* was generated from MoMA / Wikidata / Art Blocks / fxhash gatherers (poison-free but noisy — MoMA's broad classification swept in non-digital sculptors/filmmakers); then **culled to digital-art-only by a deterministic source-tag rule** (`seed/_build/cull_digital_art.py`): keep a practitioner iff platform-native or carrying a Wikidata digital-art QID. No LLM, no hand-curation — reproducible. Every surviving row traces to a download. The producer contract is in [`seed/_build/PRODUCER_CONTRACT.md`](seed/_build/PRODUCER_CONTRACT.md).
 
-See [`docs/EMBEDDINGS.md`](docs/EMBEDDINGS.md) for the embedding pipeline; [`seed/SOURCES.md`](seed/SOURCES.md) for the six selection criteria + provenance; [`CLAUDE.md`](CLAUDE.md) for architecture + operator notes.
+See [`docs/EMBEDDINGS.md`](docs/EMBEDDINGS.md) for the embedding pipeline; [`seed/SOURCES.md`](seed/SOURCES.md) for the selection criteria + provenance; [`CLAUDE.md`](CLAUDE.md) for architecture + operator notes.
 
 ---
 
@@ -141,7 +141,7 @@ adai-v1/
 ├── db.sql                       — CR-SQLite schema (CRR + local-only tables)
 ├── seed/
 │   ├── nodes.json, edges.json, signals.json, contributors.json, aliases.json
-│   ├── embeddings.bin           — 1,338 × 768 f32 LE (committed, ~4 MB)
+│   ├── embeddings.{bin,json}    — regenerated post-deploy by daily GH Action
 │   ├── embeddings.json          — sidecar metadata (offsets, hashes)
 │   ├── embeddings.umap2d.json   — UMAP projection, served at /api/embed-space
 │   ├── SOURCES.md               — canonical edge types + source provenance

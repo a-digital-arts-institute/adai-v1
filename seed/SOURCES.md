@@ -1,16 +1,14 @@
 # Seed Canon: Sources & Methodology
 
-> **⚠️ Status note (May 2026).** What ships is the **cleaned v1 editorial
-> canon** (1,491 nodes), produced by `_build/restore_canon.py`. Parts of
-> this doc were updated mid-session to describe a v2 *source-attested
-> sweep* (16k nodes) that was built and then **superseded** by the restore.
-> The **six selection criteria below are the authoritative editorial logic**
-> and still describe the shipped canon. Where the methodology / counts
-> mention the four-gatherer sweep (MoMA/Wikidata/Art Blocks/fxhash) or
-> 16k/50k figures, treat that as the *regrowth pipeline* (infrastructure for
-> expanding past the 146 post-Basel), not the current canon. Authoritative
-> counts + the full arc live in [`../CLAUDE.md`](../CLAUDE.md) § "The rebuild
-> journey".
+> **⚠️ Status note (May 2026).** What ships is the **digital-art cull of the
+> source-attested sweep — 8,653 nodes / 26,771 edges**, produced by
+> `_build/cull_digital_art.py` (keep a practitioner iff platform-native or
+> carrying a Wikidata digital-art QID; artworks cascade; deterministic, no
+> LLM). The **six selection criteria below remain the authoritative editorial
+> logic** — the cull rule is their machine-applicable proxy (digital-art QID
+> / platform-native = field-structural digital practice). Counts in the body
+> mentioning a v1 restore (1,491) or the uncut sweep (16k) are superseded.
+> Full arc: [`../CLAUDE.md`](../CLAUDE.md) § "The rebuild journey".
 
 ## What this document is
 
