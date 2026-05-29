@@ -104,6 +104,16 @@
     NAME_TEXT_ALPHA: 1.0,            // text needs to read clearly over the brand
     NAME_TEXT_SIZE: 11,
 
+    // Label "reading lens": every neighbour dot stays drawn, but names only
+    // render within LABEL_LENS_RADIUS px of the cursor, fading out toward the
+    // edge of the lens. This keeps a high-degree node's full constellation
+    // visible (density is signal) while the per-frame text cost stays tiny —
+    // a few labels near the cursor instead of thousands. The hovered node is
+    // always labelled at full strength. With the pointer off-canvas, no
+    // neighbour labels draw (only the focused node's).
+    LABEL_LENS_RADIUS: 150,          // px — radius of the reveal lens
+    LABEL_LENS_MAX: 20,              // hard cap on labels drawn per frame (safety)
+
     // Editorial: practitioners stay as halos/dots (the constellation); only
     // artworks render with their image. Some practitioners carry portrait
     // URLs in the API — we ignore them on purpose. See memory:
@@ -1746,6 +1756,11 @@
     const panel = createEntityPanel();
     let hoveredId = null;
     let selectedId = null;
+    // Live cursor position (canvas space) for the label "reading lens" —
+    // labels reveal only near the cursor so the full constellation can stay
+    // dense without flooding the GPU with thousands of text draws. null when
+    // the pointer is off-canvas.
+    let cursorX = null, cursorY = null;
 
     function onResize() {
       const next = sizeCanvas(canvas);
@@ -1758,6 +1773,7 @@
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
+      cursorX = x; cursorY = y;
       let hit = null;
       if (!bundle.viewLevel || bundle.viewLevel === '30k') {
         hit = nearestSim(bundle, x, y, CFG.CLICK_TOLERANCE);
@@ -1780,6 +1796,7 @@
     }, { passive: true });
 
     canvas.addEventListener('mouseleave', () => {
+      cursorX = null; cursorY = null;
       if (hoveredId) {
         hoveredId = null;
         canvas.style.cursor = 'default';
@@ -2036,16 +2053,46 @@
         // Cache each label's hit-rect on the neighbour so the click handler
         // can treat the label as part of the click target.
         if (!bundle.transitioning) {
-          ctx.font = `${CFG.NAME_TEXT_SIZE}px 'SF Mono', monospace`;
-          ctx.textBaseline = 'middle';
-          ctx.fillStyle = '#FFFFFF';
+          // Reading lens: every neighbour dot is already drawn above. Labels
+          // reveal only within LABEL_LENS_RADIUS of the cursor (plus the
+          // hovered node, always), fading toward the lens edge. This keeps the
+          // full constellation dense while drawing only a handful of labels
+          // per frame instead of thousands. Pointer off-canvas → no neighbour
+          // labels (clean field; the focused node's name still shows below).
+          const lensR = CFG.LABEL_LENS_RADIUS;
+          const lensR2 = lensR * lensR;
+          const haveCursor = cursorX != null && cursorY != null;
+
+          // Rank candidates by cursor distance; keep the hovered node + the
+          // nearest LABEL_LENS_MAX within the lens.
+          const candidates = [];
           for (const n of bundle.zoomNeighbors) {
             const baseA = (n.alpha != null ? n.alpha : 1) * CFG.NAME_TEXT_ALPHA;
             const a = filterMatch(n) ? baseA : baseA * dimmedAlpha;
             if (a < 0.05) { n.labelBBox = null; continue; }
-            ctx.globalAlpha = a;
-            const nx = n.tx ?? n.x;
-            const ny = n.ty ?? n.y;
+            const nx = n.tx ?? n.x, ny = n.ty ?? n.y;
+            const isHovered = n.id === hoveredId;
+            let lensFade = 0;
+            if (isHovered) {
+              lensFade = 1;
+            } else if (haveCursor) {
+              const cdx = nx - cursorX, cdy = ny - cursorY;
+              const cd2 = cdx * cdx + cdy * cdy;
+              if (cd2 <= lensR2) lensFade = 1 - Math.sqrt(cd2) / lensR;
+            }
+            if (lensFade <= 0.01) { n.labelBBox = null; continue; }
+            candidates.push({ n, nx, ny, a: a * lensFade, isHovered });
+          }
+          candidates.sort((p, q) => (q.isHovered - p.isHovered) || (q.a - p.a));
+          const shown = candidates.slice(0, CFG.LABEL_LENS_MAX);
+          for (const c of candidates.slice(CFG.LABEL_LENS_MAX)) c.n.labelBBox = null;
+
+          ctx.font = `${CFG.NAME_TEXT_SIZE}px 'SF Mono', monospace`;
+          ctx.textBaseline = 'middle';
+          ctx.fillStyle = '#FFFFFF';
+          for (const c of shown) {
+            const { n, nx, ny } = c;
+            ctx.globalAlpha = c.a;
             const dx = nx - cx, dy = ny - cy;
             const d = Math.hypot(dx, dy) || 1;
             // Push labels past the thumbnail radius for artwork tiles.
