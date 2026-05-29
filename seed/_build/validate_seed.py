@@ -220,8 +220,12 @@ def validate_edge(e: dict[str, Any], report: Report, *, node_ids: set[str], sign
     if e["signal_id"] and e["signal_id"] not in signal_ids:
         report.err(f"edges: {eid} references unknown signal_id {e['signal_id']!r}")
     conf = e.get("confidence")
-    if conf is not None and not (0.0 <= float(conf) <= 1.0):
-        report.err(f"edges: {eid} confidence {conf} out of [0,1]")
+    if conf is not None:
+        try:
+            if not (0.0 <= float(conf) <= 1.0):
+                report.err(f"edges: {eid} confidence {conf} out of [0,1]")
+        except (TypeError, ValueError):
+            report.err(f"edges: {eid} confidence {conf!r} is not numeric (legacy string?)")
 
 
 def validate_signal(s: dict[str, Any], report: Report) -> None:
