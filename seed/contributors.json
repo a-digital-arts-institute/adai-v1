@@ -1,14 +1,3 @@
 [
-  {"id":"contributor:migration","name":"seed consolidation migration","type":"script","trust_tier":"reviewed","contributions":1670,"approved_count":1670,"created_at":"2026-04-21T13:29:05Z"},
-  {"id":"gatherer-objkt-tags-v3","name":"objkt.com tags ingest (v3)","type":"agent","trust_tier":"reviewed","contributions":1154,"approved_count":1154,"created_at":"2026-04-28T21:18:00Z"},
-  {"id":"gatherer-enrichment","name":"A(DAI) Seed Canon v1 enrichment pass","type":"agent","trust_tier":"probationary","contributions":722,"approved_count":722,"created_at":"2026-04-22T00:00:00Z"},
-  {"id":"gatherer-wikidata-v3b","name":"Wikidata depicts/genre ingest (v3b)","type":"agent","trust_tier":"reviewed","contributions":117,"approved_count":117,"created_at":"2026-04-28T21:18:00Z"},
-  {"id":"gatherer-moma-digital-v3","name":"MoMA digital department CSV ingest (v3)","type":"agent","trust_tier":"reviewed","contributions":53,"approved_count":53,"created_at":"2026-04-28T21:18:00Z"},
-  {"id":"gatherer-rhizome-artbase-v1","name":"Rhizome ArtBase SPARQL ingest (v1)","type":"agent","trust_tier":"reviewed","contributions":49,"approved_count":49,"created_at":"2026-04-28T21:18:00Z"},
-  {"id":"gatherer-fxhash-tags-v3","name":"fxhash artist-set tags ingest (v3)","type":"agent","trust_tier":"reviewed","contributions":37,"approved_count":37,"created_at":"2026-04-28T21:18:00Z"},
-  {"id":"gatherer-paul-canon-v1","name":"Christiane Paul canon practitioner reconciliation (v1)","type":"agent","trust_tier":"reviewed","contributions":31,"approved_count":31,"created_at":"2026-04-28T21:18:00Z"},
-  {"id":"gatherer-artblocks-v1","name":"Art Blocks Hasura API ingest (v1)","type":"agent","trust_tier":"reviewed","contributions":30,"approved_count":30,"created_at":"2026-04-21T13:45:48Z"},
-  {"id":"gatherer-wikidata-named-anchors","name":"Wikidata named-anchors ingest (12 canonical figures)","type":"agent","trust_tier":"reviewed","contributions":27,"approved_count":27,"created_at":"2026-04-28T22:16:00Z"},
-  {"id":"gatherer-theorist-completion","name":"Theorist edge completion (post Paul-canon)","type":"agent","trust_tier":"reviewed","contributions":5,"approved_count":5,"created_at":"2026-04-29T14:13:52Z"},
-  {"id":"contributor:embedding-pipeline","name":"Gemini Embedding 2 multimodal pipeline","type":"system","trust_tier":"probationary","contributions":0,"approved_count":0,"created_at":"2026-05-12T00:00:00Z"}
+  {"id":"contributor:migration","name":"Canon Rebuild Pipeline","type":"system","trust_tier":"reviewed","contributions":76411,"approved_count":76411,"created_at":"2026-05-29T06:24:47Z"}
 ]
