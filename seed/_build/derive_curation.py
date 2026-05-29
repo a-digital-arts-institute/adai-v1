@@ -80,7 +80,9 @@ CONCEPT_VOCAB: list[dict[str, Any]] = [
     {"name": "Performance Art",     "qid": "Q213156",  "desc": "artwork created through actions executed by the artist"},
     {"name": "Experimental Film",   "qid": "Q935956",  "desc": "cinematic mode that uses film for purposes other than narrative entertainment"},
     {"name": "Software Art",        "qid": "Q2245958", "desc": "art form which uses computer software as a medium or the means of production"},
-    {"name": "Media Art",           "qid": "Q4904305", "desc": "art created with new media technologies, including digital art"},  # alias of New Media Art
+    # NB: "Media Art" (Q4904305) was removed — it duplicated New Media Art's QID,
+    # and MoMA's "Media" classification maps to new-media-art (see below), so the
+    # node was orphaned. Keep one concept per QID; the guard in derive() enforces it.
 ]
 
 # QID → concept slug mapping for PRACTICES / EMBODIES derivation.
@@ -137,12 +139,18 @@ def derive() -> tuple[list[Node], list[Edge], list[Alias], dict[str, int]]:
     for c in CONCEPT_VOCAB:
         cid = node_id("concept", c["name"])
         slug = node_slug("concept", c["name"])
+        # Already emitted? (duplicate name in the vocab)
+        if any(n.id == cid for n in out_nodes):
+            continue
         slug_to_concept_id[slug] = cid
         if c.get("qid"):
+            prior = qid_to_concept_id.get(c["qid"])
+            if prior is not None and prior != cid:
+                raise ValueError(
+                    f"QID collision in CONCEPT_VOCAB: {c['qid']} maps to both "
+                    f"{prior} and {cid} — one concept per QID."
+                )
             qid_to_concept_id[c["qid"]] = cid
-        # Already exists?
-        if cid in slug_to_concept_id and any(n.id == cid for n in out_nodes):
-            continue
         metadata: dict[str, Any] = {
             "wikidata_description": c["desc"],
             "source_url": f"https://www.wikidata.org/wiki/{c['qid']}" if c.get("qid") else "https://www.moma.org/collection/about/classification",
