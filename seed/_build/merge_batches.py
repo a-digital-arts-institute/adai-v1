@@ -268,12 +268,46 @@ def main() -> int:
             n2["metadata"] = json.dumps(md, ensure_ascii=False, sort_keys=True)
         out_nodes.append(n2)
 
+    # Backfill schema-required fields the seeder binds positionally. The
+    # seeder rejects `undefined` (TypeError ERR_INVALID_ARG_TYPE); None is
+    # fine. Done at merge time so older batches stay forward-compatible.
+    import datetime as _dt
+    _backfill_now = _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    for s in result["signals"]:
+        s.setdefault("title", s.get("claim_text") or s.get("id"))
+        try:
+            pc = json.loads(s.get("provenance_chain") or "{}")
+            s.setdefault("source_url", pc.get("source"))
+        except Exception:
+            s.setdefault("source_url", None)
+        s.setdefault("source_type", "api")
+        s.setdefault("cla_layer", None)
+        s.setdefault("summary", None)
+        s.setdefault("content", None)
+        s.setdefault("submitted_by", s.get("created_by"))
+        s.setdefault("confidence", 1.0)
+    for a in result["aliases"]:
+        a.setdefault("created_at", _backfill_now)
+
+    # Compact JSON, one record per line. These are build outputs (never
+    # hand-edited); compact form keeps line counts in GitHub PR diffs sane.
+    # An indent=2 nodes.json is 162k lines; this form is len(rows)+2. The
+    # .gitattributes -diff hides per-file rendering, but GitHub's PR line
+    # counter is on raw line count regardless. One record per line preserves
+    # row-level diff usefulness when a reviewer does need to inspect.
+    def _compact_lines(rows: list[dict[str, Any]]) -> str:
+        body = ",\n".join(
+            "  " + json.dumps(r, ensure_ascii=False, separators=(",", ":"))
+            for r in rows
+        )
+        return f"[\n{body}\n]\n" if rows else "[]\n"
+
     SEED.mkdir(exist_ok=True)
-    (SEED / "nodes.json").write_text(json.dumps(out_nodes, ensure_ascii=False, indent=2))
-    (SEED / "edges.json").write_text(json.dumps(result["edges"], ensure_ascii=False, indent=2))
-    (SEED / "signals.json").write_text(json.dumps(result["signals"], ensure_ascii=False, indent=2))
-    (SEED / "aliases.json").write_text(json.dumps(result["aliases"], ensure_ascii=False, indent=2))
-    (SEED / "contributors.json").write_text(json.dumps(result["contributors"], ensure_ascii=False, indent=2))
+    (SEED / "nodes.json").write_text(_compact_lines(out_nodes))
+    (SEED / "edges.json").write_text(_compact_lines(result["edges"]))
+    (SEED / "signals.json").write_text(_compact_lines(result["signals"]))
+    (SEED / "aliases.json").write_text(_compact_lines(result["aliases"]))
+    (SEED / "contributors.json").write_text(_compact_lines(result["contributors"]))
     print()
     print(f"Wrote seed/{{nodes,edges,signals,contributors,aliases}}.json")
 
