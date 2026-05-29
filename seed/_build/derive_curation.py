@@ -207,15 +207,32 @@ def derive() -> tuple[list[Node], list[Edge], list[Alias], dict[str, int]]:
             mvmt = md.get("movement_qids", []) or []
             occ = md.get("occupation_qids", []) or []
             has_moma = bool(md.get("moma_constituent_id"))
+            is_primary = md.get("canon_tier") == "primary"
             digital_qids = [q for q in (mvmt + occ) if q in qid_to_concept_id]
 
-            # CLASSIFIED_BY A(DAI) regime if practitioner is in our scope
-            if digital_qids or has_moma:
+            # CLASSIFIED_BY A(DAI) regime if practitioner is in our scope.
+            # canon_tier=primary (the v1 editorial whitelist) counts: being
+            # hand-selected for the canon IS an act of classification under
+            # the A(DAI) lens. This is what connects the theorists / pioneers
+            # (Yuk Hui, Lillian Schwartz) the source-tag rules can't reach —
+            # they carry no digital-art QID precisely because they're the
+            # figures a source-tag sweep structurally misses.
+            if digital_qids or has_moma or is_primary:
                 out_edges.append(Edge(
                     source_id=nid, target_id=adai_regime_id,
                     edge_type="CLASSIFIED_BY", valid_from=now, confidence=1.0,
                 ))
                 stats["classified_by_adai"] += 1
+
+            # Primary-tier practitioners also classify under Academic
+            # Media-Art History — the whitelist was assembled from field
+            # scholarship (Christiane Paul's index, etc.).
+            if is_primary:
+                out_edges.append(Edge(
+                    source_id=nid, target_id=sub_regime_ids["Academic Media-Art History"],
+                    edge_type="CLASSIFIED_BY", valid_from=now, confidence=1.0,
+                ))
+                stats["classified_by_primary_academic"] += 1
 
             # Sub-regime CLASSIFIED_BY
             # Euro-American Institutional: MoMA ConstituentID present
