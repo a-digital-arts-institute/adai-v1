@@ -107,6 +107,9 @@ def gather(*, limit: int | None) -> tuple[list[Node], list[Edge], list[Alias], d
         if not name or not artist:
             stats["skipped_missing_name_or_artist"] += 1
             continue
+        if not slugify(name) or not slugify(artist):
+            stats["skipped_unslugifiable"] += 1
+            continue
 
         # Practitioner — dedupe across multiple projects by same artist
         norm = slugify(artist)

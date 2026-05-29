@@ -40,7 +40,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from _http import HttpError, get_text  # noqa: E402
 from _node_schema import Alias, Edge, Node, validate_batch  # noqa: E402
 from _provenance import GathererSignal, now_iso, write_batch  # noqa: E402
-from _slug import node_id, node_slug  # noqa: E402
+from _slug import node_id, node_slug, slugify  # noqa: E402
 
 PRODUCER = "moma"
 ARTWORKS_URL = "https://media.githubusercontent.com/media/MuseumofModernArt/collection/main/Artworks.csv"
@@ -134,7 +134,13 @@ def gather(*, limit: int | None, use_cache: bool) -> tuple[list[Node], list[Edge
         dept = (row.get("Department") or "").strip()
         if classif not in RELEVANT_CLASSIFICATIONS and dept not in RELEVANT_DEPARTMENTS:
             continue
-        if not row.get("Title", "").strip():
+        title = (row.get("Title") or "").strip()
+        if not title:
+            continue
+        if not slugify(title):
+            # Title is non-empty but slugifies to nothing (e.g. all emoji /
+            # non-ASCII). Can't mint a stable id; skip.
+            stats["skipped_title_unslugifiable"] += 1
             continue
         if not row.get("ObjectID", "").strip():
             continue

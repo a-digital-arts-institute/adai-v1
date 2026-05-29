@@ -113,22 +113,43 @@ def node_id(
     external_id: str | int | None = None,
     creator_slug: str | None = None,
 ) -> str:
-    """Build a canonical ``<type>:<…>`` id, disambiguated for generic names.
+    """Build a canonical ``<type>:<…>`` id, disambiguated when needed.
 
-    For non-generic names: returns ``<type>:<slugify(name)>`` — unique
-    rows round-trip identically.
+    Disambiguation rules:
 
-    For generic names: appends a disambiguator. Preference order:
+      - **Artworks** with ``source`` + ``external_id`` ALWAYS get a
+        ``--<source>-<external_id>`` suffix. Non-generic titles collide at
+        scale too — MoMA has thousands of "Composition", "Landscape",
+        "Painting" works, and fxhash artists routinely reuse short titles
+        across drops. The producer always knows its source identifier;
+        carrying it makes the id deterministic and collision-proof.
+      - **Other types** (practitioner, institution, etc.) only get
+        disambiguated if the name is in the type's GENERIC_TITLES_BY_TYPE
+        set. Adding ``--moma-1234`` to ``practitioner:casey reas`` would be
+        noise; ``Casey Reas`` is identity-unique.
+      - **Generic-titled non-artwork** rows: same suffix logic, gated on
+        the per-type generic set. Used for the practitioner "American Artist"
+        case if needed.
+
+    Preference order for the suffix value:
       1. ``--<source>-<external_id>`` — strongest, deterministic per source.
       2. ``--<creator_slug>`` — fallback when only the creator is known.
-      3. Plain ``<type>:<slug>`` — last-resort; risks future collision,
-         but at least matches pre-disambiguation behaviour.
+      3. Plain ``<type>:<slug>`` — last-resort; risks future collision.
     """
     base = f"{node_type}:{slugify(name)}"
-    if not is_generic(node_type, name):
-        return base
+
     def _suffix(s: str) -> str:
         return slugify(s).replace(" ", "-")
+
+    # Artworks are ALWAYS disambiguated when the producer can identify them.
+    # See docstring — MoMA / fxhash / artblocks repeat short titles freely.
+    if node_type == "artwork" and source and external_id is not None and external_id != "":
+        return f"{base}--{_suffix(source)}-{_suffix(str(external_id))}"
+
+    # Other types only disambiguate if the generic-title set says so.
+    if not is_generic(node_type, name):
+        return base
+
     if source and external_id is not None and external_id != "":
         return f"{base}--{_suffix(source)}-{_suffix(str(external_id))}"
     if creator_slug:
@@ -166,8 +187,11 @@ def artwork_slug(
 # Self-test (run as: python3 seed/_build/_slug.py). Cheap, no dependencies.
 if __name__ == "__main__":
     cases: list[tuple[str, dict[str, object], str]] = [
-        # artwork_slug back-compat
+        # Fidenza without source/external_id — no disambiguator.
         ("Fidenza", {}, "artwork:fidenza"),
+        # Fidenza WITH source/external_id — disambiguated (new behaviour).
+        ("Fidenza", {"source": "artblocks", "external_id": "0xabc:78"},
+         "artwork:fidenza--artblocks-0xabc78"),
         ("Untitled", {}, "artwork:untitled"),
         ("Untitled", {"source": "moma", "external_id": 435713},
          "artwork:untitled--moma-435713"),
@@ -177,8 +201,9 @@ if __name__ == "__main__":
          "artwork:black hole--suzanne-treister"),
         ("Sin Título", {"creator_slug": "Foo Bar"},
          "artwork:sin titulo--foo-bar"),
+        # "Composition #4" now disambiguated because source+external_id is supplied.
         ("Composition #4", {"source": "wikidata", "external_id": "Q12345"},
-         "artwork:composition 4"),
+         "artwork:composition 4--wikidata-q12345"),
     ]
     failed = 0
     for title, kwargs, expected in cases:

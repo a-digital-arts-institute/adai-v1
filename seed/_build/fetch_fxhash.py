@@ -32,7 +32,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from _http import HttpError, post_json  # noqa: E402
 from _node_schema import Alias, Edge, Node, validate_batch  # noqa: E402
 from _provenance import GathererSignal, now_iso, write_batch  # noqa: E402
-from _slug import node_id, node_slug  # noqa: E402
+from _slug import node_id, node_slug, slugify  # noqa: E402
 
 PRODUCER = "fxhash"
 FXHASH_GQL = "https://api.fxhash.xyz/graphql"
@@ -128,6 +128,9 @@ def gather(*, limit: int | None, page_size: int) -> tuple[list[Node], list[Edge]
             if not name or not token_id:
                 stats["skipped_no_name_or_id"] += 1
                 continue
+            if not slugify(name):
+                stats["skipped_title_unslugifiable"] += 1
+                continue
             if tk.get("flag") in ("MALICIOUS", "HIDDEN"):
                 stats["skipped_flag"] += 1
                 continue
@@ -136,6 +139,9 @@ def gather(*, limit: int | None, page_size: int) -> tuple[list[Node], list[Edge]
             author_name = (author.get("name") or "").strip()
             if not author_id or not author_name:
                 stats["skipped_no_author"] += 1
+                continue
+            if not slugify(author_name):
+                stats["skipped_author_unslugifiable"] += 1
                 continue
 
             # Practitioner row (dedupe by fxhash user id)
