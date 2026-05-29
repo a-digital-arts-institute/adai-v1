@@ -210,31 +210,75 @@
     }
   }
 
-  // Draw an image clipped to a circle, with a hairline white ring.
-  // ctx.globalAlpha is honoured (caller sets it).
+  // Pre-rendered circular thumbnail sprites. The clip + cover-fit + ring is
+  // expensive (ctx.clip() especially) and was being paid PER thumbnail PER
+  // frame — the dominant cost once artworks render as images. We do it ONCE
+  // per (image, radius) into an offscreen canvas and then just blit that
+  // sprite each frame (a single drawImage, no clip/save/restore). Built at
+  // devicePixelRatio resolution so it stays crisp on retina.
+  const _thumbSpriteCache = new Map();
+  const _THUMB_CACHE_MAX = 600;
+  function getThumbSprite(img, r) {
+    const iw = img.naturalWidth || img.width;
+    const ih = img.naturalHeight || img.height;
+    if (!iw || !ih) return null;
+    const rr = Math.round(r);
+    const key = (img.currentSrc || img.src || '') + '|' + rr;
+    let sprite = _thumbSpriteCache.get(key);
+    if (sprite) return sprite;
+
+    const dpr = window.devicePixelRatio || 1;
+    const sizePx = Math.max(2, Math.ceil(2 * rr * dpr));
+    const off = document.createElement('canvas');
+    off.width = sizePx;
+    off.height = sizePx;
+    const octx = off.getContext('2d');
+    octx.scale(dpr, dpr);
+    const c = rr; // logical centre
+    // cover-fit
+    const scale = (2 * rr) / Math.min(iw, ih);
+    const dw = iw * scale, dh = ih * scale;
+    octx.beginPath();
+    octx.arc(c, c, rr, 0, Math.PI * 2);
+    octx.closePath();
+    octx.clip();
+    octx.drawImage(img, c - dw / 2, c - dh / 2, dw, dh);
+    // ring (drawn inside the clip so it never bleeds past the circle edge)
+    octx.lineWidth = CFG.THUMB_RING_WIDTH * 2; // half is clipped away → hairline
+    octx.strokeStyle = 'rgba(255,255,255,0.85)';
+    octx.beginPath();
+    octx.arc(c, c, rr, 0, Math.PI * 2);
+    octx.stroke();
+
+    if (_thumbSpriteCache.size >= _THUMB_CACHE_MAX) {
+      // simple FIFO evict — keeps memory bounded under lots of radii/images
+      _thumbSpriteCache.delete(_thumbSpriteCache.keys().next().value);
+    }
+    sprite = { canvas: off, r: rr };
+    _thumbSpriteCache.set(key, sprite);
+    return sprite;
+  }
+
+  // Blit a circular thumbnail sprite. ctx.globalAlpha is honoured (caller sets
+  // it). Falls back to a direct clipped draw only if the sprite can't build.
   function drawCircleImage(ctx, img, cx, cy, r) {
-    // Fit cover: scale so the shorter side fills 2r, then crop centred.
+    const sprite = getThumbSprite(img, r);
+    if (sprite) {
+      const rr = sprite.r;
+      ctx.drawImage(sprite.canvas, cx - rr, cy - rr, 2 * rr, 2 * rr);
+      return;
+    }
     const iw = img.naturalWidth || img.width;
     const ih = img.naturalHeight || img.height;
     if (!iw || !ih) return;
     const scale = (2 * r) / Math.min(iw, ih);
-    const dw = iw * scale;
-    const dh = ih * scale;
-    const dx = cx - dw / 2;
-    const dy = cy - dh / 2;
+    const dw = iw * scale, dh = ih * scale;
     ctx.save();
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.closePath();
     ctx.clip();
-    ctx.drawImage(img, dx, dy, dw, dh);
+    ctx.drawImage(img, cx - dw / 2, cy - dh / 2, dw, dh);
     ctx.restore();
-    // Hairline ring for legibility against the brand field.
-    ctx.lineWidth = CFG.THUMB_RING_WIDTH;
-    ctx.strokeStyle = 'rgba(255,255,255,0.85)';
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.stroke();
   }
 
   // ---- DOM setup ----
