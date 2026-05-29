@@ -104,15 +104,20 @@
     NAME_TEXT_ALPHA: 1.0,            // text needs to read clearly over the brand
     NAME_TEXT_SIZE: 11,
 
-    // Label "reading lens": every neighbour dot stays drawn, but names only
-    // render within LABEL_LENS_RADIUS px of the cursor, fading out toward the
-    // edge of the lens. This keeps a high-degree node's full constellation
-    // visible (density is signal) while the per-frame text cost stays tiny —
-    // a few labels near the cursor instead of thousands. The hovered node is
-    // always labelled at full strength. With the pointer off-canvas, no
-    // neighbour labels draw (only the focused node's).
-    LABEL_LENS_RADIUS: 150,          // px — radius of the reveal lens
-    LABEL_LENS_MAX: 20,              // hard cap on labels drawn per frame (safety)
+    // Label legibility model. The dots are always all drawn (density is
+    // signal); only NAMES are managed, since per-frame text is what floods
+    // the GPU and the eye.
+    //   - LABEL_MAX_SHOWN doubles as the few-vs-many switch AND the per-frame
+    //     cap. If a focused node has <= this many neighbours, every name shows
+    //     always (sparse nodes read like a plain labelled graph). Above it,
+    //     names reveal only near the cursor (the "reading lens") so you sweep
+    //     to read a dense node without a thousand-label flood.
+    //   - LABEL_LENS_RADIUS: reveal radius around the cursor in many-mode.
+    //   - Collision avoidance + a dark backing pill keep names readable even
+    //     where the layout packs dots tightly (the real legibility problem).
+    LABEL_MAX_SHOWN: 60,
+    LABEL_LENS_RADIUS: 170,
+    LABEL_BACKING_ALPHA: 0.55,       // dark pill behind each name for contrast
 
     // Editorial: practitioners stay as halos/dots (the constellation); only
     // artworks render with their image. Some practitioners carry portrait
@@ -2053,49 +2058,55 @@
         // Cache each label's hit-rect on the neighbour so the click handler
         // can treat the label as part of the click target.
         if (!bundle.transitioning) {
-          // Reading lens: every neighbour dot is already drawn above. Labels
-          // reveal only within LABEL_LENS_RADIUS of the cursor (plus the
-          // hovered node, always), fading toward the lens edge. This keeps the
-          // full constellation dense while drawing only a handful of labels
-          // per frame instead of thousands. Pointer off-canvas → no neighbour
-          // labels (clean field; the focused node's name still shows below).
+          const all = bundle.zoomNeighbors;
+          const many = all.length > CFG.LABEL_MAX_SHOWN;
           const lensR = CFG.LABEL_LENS_RADIUS;
           const lensR2 = lensR * lensR;
           const haveCursor = cursorX != null && cursorY != null;
 
-          // Rank candidates by cursor distance; keep the hovered node + the
-          // nearest LABEL_LENS_MAX within the lens.
+          // Build candidate labels with a priority score.
+          //   sparse node (<= LABEL_MAX_SHOWN): EVERY name is a candidate at
+          //     full strength — reads like a normal labelled graph.
+          //   dense node: only the hovered name + names within the cursor lens
+          //     are candidates (priority by proximity) — sweep to read.
           const candidates = [];
-          for (const n of bundle.zoomNeighbors) {
+          for (const n of all) {
             const baseA = (n.alpha != null ? n.alpha : 1) * CFG.NAME_TEXT_ALPHA;
             const a = filterMatch(n) ? baseA : baseA * dimmedAlpha;
             if (a < 0.05) { n.labelBBox = null; continue; }
             const nx = n.tx ?? n.x, ny = n.ty ?? n.y;
             const isHovered = n.id === hoveredId;
-            let lensFade = 0;
+            let prio;
             if (isHovered) {
-              lensFade = 1;
+              prio = 2;                       // hovered always wins
+            } else if (!many) {
+              prio = 1;                       // sparse → always show
             } else if (haveCursor) {
               const cdx = nx - cursorX, cdy = ny - cursorY;
               const cd2 = cdx * cdx + cdy * cdy;
-              if (cd2 <= lensR2) lensFade = 1 - Math.sqrt(cd2) / lensR;
+              if (cd2 > lensR2) { n.labelBBox = null; continue; }
+              prio = 1 - Math.sqrt(cd2) / lensR;   // nearer cursor = higher
+            } else {
+              n.labelBBox = null; continue;   // dense + no cursor → no labels
             }
-            if (lensFade <= 0.01) { n.labelBBox = null; continue; }
-            candidates.push({ n, nx, ny, a: a * lensFade, isHovered });
+            candidates.push({ n, nx, ny, a, prio, isHovered });
           }
-          candidates.sort((p, q) => (q.isHovered - p.isHovered) || (q.a - p.a));
-          const shown = candidates.slice(0, CFG.LABEL_LENS_MAX);
-          for (const c of candidates.slice(CFG.LABEL_LENS_MAX)) c.n.labelBBox = null;
+          candidates.sort((p, q) => q.prio - p.prio);
 
+          // Draw highest-priority first, skipping any name whose box collides
+          // with one already drawn. This thins clutter where dots pack tight
+          // (the "can't read it" problem) — the most relevant names win the
+          // space. A dark backing pill lifts each name off the busy field.
           ctx.font = `${CFG.NAME_TEXT_SIZE}px 'SF Mono', monospace`;
           ctx.textBaseline = 'middle';
-          ctx.fillStyle = '#FFFFFF';
-          for (const c of shown) {
+          const half = CFG.NAME_TEXT_SIZE * 0.7;
+          const drawn = [];
+          let count = 0;
+          for (const c of candidates) {
             const { n, nx, ny } = c;
-            ctx.globalAlpha = c.a;
+            if (count >= CFG.LABEL_MAX_SHOWN) { n.labelBBox = null; continue; }
             const dx = nx - cx, dy = ny - cy;
             const d = Math.hypot(dx, dy) || 1;
-            // Push labels past the thumbnail radius for artwork tiles.
             const nNode = graph.byId.get(n.id);
             const labelOff = (nNode && getImageFor(nNode))
               ? thumbPetalRadiusFor(n.groupArtworkCount || 1) + 6
@@ -2103,15 +2114,30 @@
             const lx = nx + (dx / d) * labelOff;
             const ly = ny + (dy / d) * labelOff;
             const align = dx >= 0 ? 'left' : 'right';
-            ctx.textAlign = align;
             const name = n.name || (n.id || '').split(':')[1] || n.id;
+            ctx.textAlign = align;
+            const wText = ctx.measureText(name).width;
+            const x0 = align === 'left' ? lx : lx - wText;
+            const x1 = align === 'left' ? lx + wText : lx;
+            const box = { x0, y0: ly - half, x1, y1: ly + half };
+            // collision check (3px padding) against already-drawn labels
+            let collides = false;
+            for (const b of drawn) {
+              if (box.x0 < b.x1 + 3 && box.x1 + 3 > b.x0 &&
+                  box.y0 < b.y1 + 3 && box.y1 + 3 > b.y0) { collides = true; break; }
+            }
+            if (collides) { n.labelBBox = null; continue; }
+            // backing pill
+            ctx.globalAlpha = c.a * CFG.LABEL_BACKING_ALPHA;
+            ctx.fillStyle = '#0a0a0c';
+            ctx.fillRect(x0 - 3, box.y0 - 1, (x1 - x0) + 6, (box.y1 - box.y0) + 2);
+            // name
+            ctx.globalAlpha = c.a;
+            ctx.fillStyle = '#FFFFFF';
             ctx.fillText(name, lx, ly);
-            // Cache label bounding rect for click hit-testing
-            const m = ctx.measureText(name);
-            const half = CFG.NAME_TEXT_SIZE * 0.7;
-            const x0 = align === 'left' ? lx : lx - m.width;
-            const x1 = align === 'left' ? lx + m.width : lx;
-            n.labelBBox = { x0, y0: ly - half, x1, y1: ly + half };
+            n.labelBBox = box;
+            drawn.push(box);
+            count++;
           }
         } else {
           for (const n of bundle.zoomNeighbors) n.labelBBox = null;
