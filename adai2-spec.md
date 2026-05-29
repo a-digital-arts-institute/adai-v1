@@ -32,7 +32,7 @@ Rewrite the initialization and layout logic in `public/field/js-interface/graph-
 1. **Background Texture:** Leave `sketch-brand.js` intact. It will continue to draw the generative spiral on the background canvas (`#mopey`).
 2. **Visual Hierarchy:** 
    - The graph nodes (drawn on `#graph-canvas`) will float over the spiral.
-   - Since the 30k view is now "unbound" (showing ~1,300+ nodes instead of just ~117 practitioners), rendering them all as bright white targets (`CFG.DOT_HEX`) will be visually overwhelming and clash with the white spiral.
+   - Since the 30k view is now "unbound" (showing ~16k nodes post-v2-rebuild, instead of just ~117 practitioners), rendering them all as bright white targets (`CFG.DOT_HEX`) will be very overwhelming and clash with the white spiral.
    - **Update rendering:** Color-code the 30k dots based on their node `type` (e.g., artworks in gold, practitioners in blue, concepts in gray) to make the semantic clusters readable against the monochrome spiral. Adjust base alpha/radius so the field feels like a glowing constellation.
 
 ## 5. Phase 4: Interaction & Zoom Mechanics (10k View)

@@ -291,7 +291,7 @@ CR-SQLite extends SQLite with CRDT capabilities — databases that merge without
 
 CRDTs guarantee syntactic merge. When a fork re-merges and contradictory edges appear, both persist with full provenance. The merge boundary flags the contradiction. Resolution is human, not mechanical.
 
-**Current state:** Single-DB deployment (1,007 nodes / 2,486 edges / 9 edge types / 1 canonical lens — see CLAUDE.md for the live counts). Per-practitioner split designed, not implemented. Not a blocker for the prototype.
+**Current state:** Single-DB deployment (16,244 nodes / 50,793 edges post-v2-rebuild / 5 live edge types + 4 reserved at zero + RESPONDS_TO empty by design / 1 canonical lens + 5 sub-regimes — see CLAUDE.md for the live counts). Per-practitioner split designed, not implemented. Not a blocker for the prototype.
 
 **Decision: single DB first, Matryoshka later.** The full nested architecture is the destination. For the prototype, one database handles everything. The schema is the same either way — the split is a deployment change, not a data model change. Don't build distribution before the data is worth distributing.
 
@@ -584,7 +584,7 @@ CR-SQLite backend (Gio, Shards) deployed at [adai-basel.fly.dev](https://adai-ba
 | CR-SQLite schema (4 CRR tables, composite PK on edges) | ✅ Live |
 | Shards HTTP server (all endpoints) | ✅ Live |
 | Fly.io deployment (Docker) | ✅ Live |
-| Seed data pipeline (59 JSON + April enrichment → 1,007 nodes / 2,486 edges) | ✅ Done |
+| Seed data pipeline (contract-based gatherers → 16,244 nodes / 50,793 edges, v2 May 2026 rebuild) | ✅ Done |
 | Contribution flow (`/contribute` → intake_queue → `/review`) | ✅ Working |
 | Practitioner profiles (`/practitioner/:slug`) | ✅ Working |
 | Data export (`/practitioner/:slug/data` as JSON) | ✅ Working |

@@ -97,7 +97,7 @@ A split between offline batch (heavy, occasional, API-bound) and online derive (
 | The batch embed is API-bound, costs money, runs rarely | Python — matches existing `seed/_build/` pipeline (`fetch_moma_csv.py`, `upload_to_r2.py`, etc) |
 | Runtime container should stay lean | Python and the Gemini SDK never ship to runtime |
 | Derive (cosine pairwise) is fast and self-contained | TypeScript — runs inside the Node server, no Python boundary |
-| Re-derive after a curator approval should be cheap | `npm run embed:derive` in-process; 0.3 s pass over 1338 vectors |
+| Re-derive after a curator approval should be cheap | `npm run embed:derive` in-process; sub-second pass over the current vector set (~16k post-rebuild) |
 
 Sidecars (`embeddings.bin`, `embeddings.json`, `embeddings.umap2d.json`) are **committed to git** so the Docker build picks them up at build time. The `.gitignore` carries a warning against re-ignoring them — accidentally stripping them would silently produce an empty embedding space in production.
 
@@ -285,7 +285,7 @@ On approve, the existing review handler materialises a real `CREATED_BY` edge ta
 | **Profile pages** (`/practitioner/:slug`, `/artwork/:slug`, `/concept/:slug`, `/scene/:slug`) | Style kin / Visually affine / Style proximity / pending AI proposals — computed on-demand from in-memory vectors (~1 ms per request) | `src/routes/pages.ts::renderEmbeddingSections` |
 | **`/neighbours/:type/:slug`** | Top-K cosine neighbours of any node; shareable URL with knobs for query/candidate kind, type prefix, k | `src/routes/pages.ts` (handler) + `src/embed/neighbours.ts` |
 | **`/field`** | Derived edges render dashed by default. Press **`e`** (or click the chrome chip) to flip into "embeddings mode": curatorial edges fade to ~3 % alpha, STYLE_KIN + VISUALLY_AFFINE rise to ~60 % | `public/field/sketch-graph.js::edgeDimming` |
-| **`/embed-space`** | UMAP 2D scatter of all 1,338 vectors; pan / zoom / hover / search / click-to-profile. Practitioners cluster by aesthetic, artworks by visual similarity, concepts by semantic field | `src/routes/pages.ts` (handler) + `src/routes/api.ts::/api/embed-space` |
+| **`/embed-space`** | UMAP 2D scatter of all embedding vectors; pan / zoom / hover / search / click-to-profile. Practitioners cluster by aesthetic, artworks by visual similarity, concepts by semantic field | `src/routes/pages.ts` (handler) + `src/routes/api.ts::/api/embed-space` |
 | **`/review?kind=ai_suggestion`** | Curatorial queue for AI attribution proposals with cosine scores visible | `src/routes/pages.ts::/review` + `src/routes/api.ts` approve/reject handlers |
 
 ### Edge colors
@@ -314,7 +314,7 @@ The recurring failure mode: **sidecar drift**. If `seed/nodes.json` changes but 
 
 ## 8. Empirical results (first pass, May 2026)
 
-Against 1,338 multimodal embeddings (out of 1,351 candidates — 13 stubborn API failures, see CLAUDE.md):
+Against the v1 canon's 1,338 multimodal embeddings (May 2026 first-pass results below). v2 rebuild numbers re-populate after the daily `embed-derive-daily` GitHub Actions workflow runs against the new canon (~16k nodes):
 
 ```
 {
