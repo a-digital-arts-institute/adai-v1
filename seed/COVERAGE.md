@@ -1,4 +1,16 @@
-# seed/ coverage — Seed Canon v2 (May 2026 rebuild)
+# seed/ coverage — Seed Canon (May 2026)
+
+> **⚠️ Status note.** This file's tables below describe the v2 *source-
+> attested sweep* (16k nodes) that was built and then **superseded**. What
+> actually ships is the **cleaned v1 editorial canon: 1,491 nodes / 3,376
+> curated edges** (artwork 728, concept 435, practitioner 146, institution
+> 121, scene 30, collective 12, platform 8, regime 6, publication 3,
+> project 2; edges EMBODIES 1,096 · CREATED_BY 737 · PRACTICES 461 ·
+> EXHIBITED_AT 305 · CLASSIFIED_BY 295 · BELONGS_TO 193 · COLLABORATES_WITH
+> 183 · USES_TECHNIQUE 102 · INFLUENCES 4; + ~1,196 derived STYLE_KIN /
+> VISUALLY_AFFINE; 1,338 embeddings). See [`../CLAUDE.md`](../CLAUDE.md)
+> § "The rebuild journey" for why, and `_build/restore_canon.py` for how.
+> The sweep numbers below remain useful as the *regrowth* coverage map.
 
 Post-rebuild snapshot. The full v1 enrichment narrative (Apr 20–28 task
 reports, heuristic EMBODIES → source-attested swap, etc.) is preserved

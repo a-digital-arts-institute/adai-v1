@@ -1,5 +1,17 @@
 # Seed Canon: Sources & Methodology
 
+> **⚠️ Status note (May 2026).** What ships is the **cleaned v1 editorial
+> canon** (1,491 nodes), produced by `_build/restore_canon.py`. Parts of
+> this doc were updated mid-session to describe a v2 *source-attested
+> sweep* (16k nodes) that was built and then **superseded** by the restore.
+> The **six selection criteria below are the authoritative editorial logic**
+> and still describe the shipped canon. Where the methodology / counts
+> mention the four-gatherer sweep (MoMA/Wikidata/Art Blocks/fxhash) or
+> 16k/50k figures, treat that as the *regrowth pipeline* (infrastructure for
+> expanding past the 146 post-Basel), not the current canon. Authoritative
+> counts + the full arc live in [`../CLAUDE.md`](../CLAUDE.md) § "The rebuild
+> journey".
+
 ## What this document is
 
 This file documents how the A(DAI) seed canon was assembled — the selection criteria, the sources consulted, the methodology applied, and the gaps acknowledged. It exists to make the canon's provenance transparent and its editorial decisions defensible.

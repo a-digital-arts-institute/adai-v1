@@ -2,6 +2,15 @@
 
 One place to look to answer "what is in the canon right now?"
 
+> **⚠️ Status note (May 2026).** The shipped canon is the **cleaned v1
+> editorial canon (1,491 nodes / 3,376 curated edges + ~1,196 derived)**,
+> produced by `_build/restore_canon.py` from commit `163ffa0` with the
+> Step-6 LLM prose stripped. Sections below that describe a four-gatherer
+> *sweep* and 16k/50k counts refer to the v2 rebuild that was built and then
+> **superseded** by the restore — that machinery is kept as the *regrowth*
+> path, not the current canon. Authoritative summary: [`../CLAUDE.md`](../CLAUDE.md)
+> § "The rebuild journey".
+
 Post-rebuild (May 2026): assembled from four source-attested gatherers
 ([`_build/fetch_moma.py`](_build/fetch_moma.py),
 [`_build/fetch_wikidata.py`](_build/fetch_wikidata.py),
