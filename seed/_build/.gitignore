@@ -1,13 +1,22 @@
+# Local-only working files inside seed/_build/.
+# Everything checked into the live pipeline is one directory up; the archive/
+# subtree is committed (frozen provenance). This file ignores ephemera only.
+
+# Python bytecode
 __pycache__/
 *.pyc
 
-# Gatherer run artifacts — outputs go in runs/YYYY-MM/<gatherer>-<date>.json,
-# kept ephemeral so the dir doesn't pollute. Committed reviewable artifacts
-# (image_candidates.json, image_sanitize_report.json) live at the top level.
-runs/
+# Local venv for upload_to_r2.py, embed_nodes.py, project_umap.py
+.venv/
 
-# Image-fetch cache for the multimodal embedder (image_fetch.py)
+# Per-source HTTP caches (MoMA CSVs etc) — re-downloaded by gatherers as needed
+.cache/
+
+# Image-fetch cache for the multimodal embedder
 .image_cache.sqlite
 
-# Local venv (for upload_to_r2.py, embed_nodes.py, project_umap.py)
-.venv/
+# Per-gatherer batch outputs — kept ephemeral; merge_batches.py folds them
+# into canon, then they're disposable. Committed reviewable artifacts
+# (image_candidates.json, image_sanitize_report.json) live at this directory's
+# top level, not under runs/.
+runs/

@@ -1,28 +1,21 @@
-# Environment & secrets
+# ─────────────────────────────────────────────────────────────────────────────
+# Secrets & environment
+# ─────────────────────────────────────────────────────────────────────────────
 .env
 .env.*
 .env.py
-
-# Recovery keys
 proton-recovery-kit.pdf
 
-# Runtime databases
+# ─────────────────────────────────────────────────────────────────────────────
+# Build outputs / runtime
+# ─────────────────────────────────────────────────────────────────────────────
+node_modules/
+dist/
+
+# SQLite (local dev DB, WAL sidecars)
 *.db
 *.db-shm
 *.db-wal
-
-# Local Python pipeline caches (image_fetch.py writes here at build time)
-seed/_build/.image_cache.sqlite
-seed/_build/.image_cache.sqlite-shm
-seed/_build/.image_cache.sqlite-wal
-
-# Ephemeral image-tool diagnostic (regenerable per run via sanitize_images.py).
-# The curation worklist (image_candidates.json) IS committed for review.
-seed/_build/image_sanitize_report.json
-
-# Node
-node_modules/
-dist/
 
 # Python
 __pycache__/
@@ -30,29 +23,69 @@ __pycache__/
 *.pyo
 seed/_build/.venv/
 
+# ─────────────────────────────────────────────────────────────────────────────
 # Logs
+# ─────────────────────────────────────────────────────────────────────────────
 /tmp/
 *.log
 errors.log
 pipeline.log
 shards.log
 
-# Caches
-concepts_cache.json
-
-# Claude Code project memory
-.claude/
-
-# OS
+# ─────────────────────────────────────────────────────────────────────────────
+# Editor / OS
+# ─────────────────────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
-
-# Editors
 *.swp
 *.swo
 *~
 
-# Large binary files — keep in local folder, not in git
+# ─────────────────────────────────────────────────────────────────────────────
+# Claude Code project memory
+# ─────────────────────────────────────────────────────────────────────────────
+.claude/
+
+# ─────────────────────────────────────────────────────────────────────────────
+# seed/ — committed canon is the source of truth.
+# Ignore intermediate / cache / ephemeral files only.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Backup files from older enrichment passes
+seed/*.bak
+seed/*.pre-enrichment.bak
+
+# Per-source HTTP caches (gatherers re-download as needed)
+seed/_build/.cache/
+
+# Image-fetch cache for the multimodal embedder
+seed/_build/.image_cache.sqlite
+seed/_build/.image_cache.sqlite-shm
+seed/_build/.image_cache.sqlite-wal
+
+# Ephemeral diagnostic outputs (regenerable per run)
+seed/_build/image_sanitize_report.json
+concepts_cache.json
+
+# Per-gatherer run artifacts — staged in runs/<YYYY-MM>/<source>-<ts>.json
+# and folded into canon by merge_batches.py. Ephemeral by design.
+# (Archived outputs from PRIOR runs live in seed/_build/archive/runs/.)
+seed/_build/runs/
+
+# Pre-merge staged batches from older fetcher prototypes
+seed/_build/task3_input.json
+seed/_build/fxhash_new_artworks.json
+seed/_build/moma_new_artworks.json
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Notion / external setup artifacts
+# ─────────────────────────────────────────────────────────────────────────────
+schema_update_log.txt
+notion_ids.txt
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Misc large binaries kept locally
+# ─────────────────────────────────────────────────────────────────────────────
 Brief/
 Meeting notes/
 *.mp4
@@ -60,21 +93,11 @@ Meeting notes/
 *.docx
 *.pdf
 
-# Notion setup artifacts (one-time scripts, keep for reference but ignore logs)
-schema_update_log.txt
-notion_ids.txt
-
-# Seed enrichment intermediate artifacts — not for commit
-seed/*.bak
-seed/*.pre-enrichment.bak
-seed/_build/task3_input.json
-seed/_build/fxhash_new_artworks.json
-seed/_build/moma_new_artworks.json
-
-# NOTE: seed/embeddings.{bin,json,umap2d.json} are intentionally committed
-# (decision May 2026) so the Docker builder bakes them into seed.db and the
-# runtime image. Re-embed locally via:
+# ─────────────────────────────────────────────────────────────────────────────
+# NOTE: seed/embeddings.{bin,json,umap2d.json} are intentionally NOT ignored
+# (decision May 2026) so the Docker builder bakes them into seed.db. Recreate
+# via:
 #   seed/_build/.venv/bin/python3 seed/_build/embed_nodes.py
 #   seed/_build/.venv/bin/python3 seed/_build/project_umap.py
-# then commit the diffs. Adding them back here would silently strip
-# embeddings from the next build.
+# then commit. Stripping them here silently breaks embeddings on next build.
+# ─────────────────────────────────────────────────────────────────────────────
