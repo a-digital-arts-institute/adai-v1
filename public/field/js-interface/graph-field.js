@@ -177,6 +177,39 @@
     }
     return entry.status === 'ready' ? entry.img : null;
   }
+  // Batched dot draw. Drawing N dots as N separate beginPath/arc/fill calls
+  // (with a fillStyle + globalAlpha change each) is the dominant per-frame
+  // cost at 8k+ nodes — it saturates the main thread and makes mousemove lag.
+  // Here we bucket dots by (colour, quantised alpha) and emit ONE path + ONE
+  // fill per bucket, so ~17k fill() calls collapse to a few dozen. The
+  // moveTo before each arc prevents the subpaths joining with stray lines.
+  // `dots` is an array of {x, y, r, color, alpha}; alpha < 0.005 is skipped.
+  function drawDotsBatched(ctx, dots) {
+    const TWO_PI = Math.PI * 2;
+    const buckets = new Map();
+    for (let i = 0; i < dots.length; i++) {
+      const d = dots[i];
+      if (d.alpha < 0.005) continue;
+      const aQ = Math.round(d.alpha * 40) / 40; // 0.025 alpha buckets
+      const key = d.color + '|' + aQ;
+      let b = buckets.get(key);
+      if (!b) { b = { color: d.color, alpha: aQ, pts: [] }; buckets.set(key, b); }
+      b.pts.push(d.x, d.y, d.r);
+    }
+    for (const b of buckets.values()) {
+      ctx.fillStyle = b.color;
+      ctx.globalAlpha = b.alpha;
+      ctx.beginPath();
+      const p = b.pts;
+      for (let i = 0; i < p.length; i += 3) {
+        const x = p[i], y = p[i + 1], r = p[i + 2];
+        ctx.moveTo(x + r, y);
+        ctx.arc(x, y, r, 0, TWO_PI);
+      }
+      ctx.fill();
+    }
+  }
+
   // Draw an image clipped to a circle, with a hairline white ring.
   // ctx.globalAlpha is honoured (caller sets it).
   function drawCircleImage(ctx, img, cx, cy, r) {
@@ -1892,32 +1925,23 @@
       // ---- 30k snapshot layer (always draws, alpha modulated by zoom) ----
       // Two passes: halos first (so cores draw over them), each per-type so
       // the constellation reads as semantic clusters against the spiral.
-      // Halos
+      // Apply drift once, then batch both passes by colour+alpha (see
+      // drawDotsBatched). Halos first (larger, fainter), cores over them.
+      const halos = [];
+      const cores = [];
       for (let i = 0; i < bundle.sim.length; i++) {
         const s = bundle.sim[i];
         if (drift) {
           s.x += (Math.random() - 0.5) * drift;
           s.y += (Math.random() - 0.5) * drift;
         }
-        const alpha = (s.alpha != null ? s.alpha : 1) * CFG.HALO_ALPHA;
-        if (alpha < 0.005) continue;
-        ctx.fillStyle = colorForType(s.type);
-        ctx.globalAlpha = alpha;
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r * CFG.HALO_RADIUS_MULT, 0, Math.PI * 2);
-        ctx.fill();
+        const base = (s.alpha != null ? s.alpha : 1);
+        const color = colorForType(s.type);
+        halos.push({ x: s.x, y: s.y, r: s.r * CFG.HALO_RADIUS_MULT, color, alpha: base * CFG.HALO_ALPHA });
+        cores.push({ x: s.x, y: s.y, r: s.r, color, alpha: base * CFG.BASE_ALPHA });
       }
-      // Cores
-      for (let i = 0; i < bundle.sim.length; i++) {
-        const s = bundle.sim[i];
-        const alpha = (s.alpha != null ? s.alpha : 1) * CFG.BASE_ALPHA;
-        if (alpha < 0.005) continue;
-        ctx.fillStyle = colorForType(s.type);
-        ctx.globalAlpha = alpha;
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fill();
-      }
+      drawDotsBatched(ctx, halos);
+      drawDotsBatched(ctx, cores);
       // Reset fillStyle for any non-snapshot draw paths below that still
       // assume DOT_HEX is current.
       ctx.fillStyle = CFG.DOT_HEX;
@@ -2022,38 +2046,39 @@
           ctx.stroke();
         }
 
-        // Neighbour halos
-        ctx.fillStyle = CFG.DOT_HEX;
+        // Neighbour halos — batched (one fill per alpha bucket instead of one
+        // per neighbour; matters when a high-degree node has thousands).
+        const nHalos = [];
         for (const n of bundle.zoomNeighbors) {
           const baseA = (n.alpha != null ? n.alpha : 1) * CFG.HALO_ALPHA * 1.4;
           const a = filterMatch(n) ? baseA : baseA * dimmedAlpha;
           if (a < 0.005) continue;
-          ctx.globalAlpha = a;
-          ctx.beginPath();
-          ctx.arc(n.tx ?? n.x, n.ty ?? n.y, (n.tr ?? n.r) * CFG.HALO_RADIUS_MULT, 0, Math.PI * 2);
-          ctx.fill();
+          nHalos.push({ x: n.tx ?? n.x, y: n.ty ?? n.y, r: (n.tr ?? n.r) * CFG.HALO_RADIUS_MULT, color: CFG.DOT_HEX, alpha: a });
         }
-        // Neighbour cores. Artwork neighbours with a ready CDN image render
-        // as a thumbnail (circle clip) instead of a white dot — practitioners
-        // and other types stay as the constellation. Loading or invalid URLs
-        // fall back to the dot so the layout never has empty slots.
+        drawDotsBatched(ctx, nHalos);
+        // Neighbour cores. Artwork neighbours with a ready CDN image render as
+        // a thumbnail (drawImage — can't batch); non-image neighbours batch as
+        // dots. Two passes: collect dot-cores, then blit thumbnails over them.
+        const nCores = [];
+        const thumbs = [];
         for (const n of bundle.zoomNeighbors) {
           const baseA = (n.alpha != null ? n.alpha : 1) * CFG.BASE_ALPHA;
           const a = filterMatch(n) ? baseA : baseA * dimmedAlpha;
           if (a < 0.005) continue;
-          ctx.globalAlpha = a;
           const node = graph.byId.get(n.id);
           const img = getImageFor(node);
           if (img) {
-            const tr = thumbPetalRadiusFor(n.groupArtworkCount || 1);
-            drawCircleImage(ctx, img, n.tx ?? n.x, n.ty ?? n.y, tr);
-            ctx.fillStyle = CFG.DOT_HEX; // restore for any subsequent dot draws
+            thumbs.push({ img, x: n.tx ?? n.x, y: n.ty ?? n.y, tr: thumbPetalRadiusFor(n.groupArtworkCount || 1), a });
           } else {
-            ctx.beginPath();
-            ctx.arc(n.tx ?? n.x, n.ty ?? n.y, n.tr ?? n.r, 0, Math.PI * 2);
-            ctx.fill();
+            nCores.push({ x: n.tx ?? n.x, y: n.ty ?? n.y, r: n.tr ?? n.r, color: CFG.DOT_HEX, alpha: a });
           }
         }
+        drawDotsBatched(ctx, nCores);
+        for (const t of thumbs) {
+          ctx.globalAlpha = t.a;
+          drawCircleImage(ctx, t.img, t.x, t.y, t.tr);
+        }
+        ctx.fillStyle = CFG.DOT_HEX;
         // Neighbour labels (only after transition done, to keep motion clean).
         // Cache each label's hit-rect on the neighbour so the click handler
         // can treat the label as part of the click target.
