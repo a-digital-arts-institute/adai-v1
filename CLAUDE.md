@@ -40,7 +40,7 @@ src/
     api.ts                — JSON API route handlers
 db.sql                    — CR-SQLite schema (CRR tables + local tables)
 seed/                     — canonical seed data (nodes/edges/signals/contributors/aliases JSON)
-  _build/                 — offline Python pipeline (fetch_moma_csv, fetch_wikidata_artworks/portraits, fetch_fxhash, fetch_artblocks, fetch_met_openaccess + normalisation/dedup tasks); regenerates seed/*.json
+  _build/                 — offline Python pipeline (fetch_artblocks, fetch_fxhash gatherers + merge_batches + derive_curation + validate_seed + embed/image tooling); produces seed/*.json. fetch_wikidata.py is present but QUARANTINED (corrupt QID list — see its banner)
 results/                  — 59 legacy per-practitioner research JSONs (kept for reference)
   _drafts/                — bridge practitioners, classification-lens drafts, artwork previews
 pipeline/                 — offline Python scripts (clean_artworks, embed, snapshot)
@@ -82,20 +82,26 @@ Single SQLite file `adai.db` with CR-SQLite CRDT extensions (`@shards-lang/crsql
 - `intake_queue` — contribution review pipeline (pending/approved/rejected)
 - `settings` — key-value config
 
-> **⚠️ What ships right now: the digital-art cull of the clean sweep (8,653 nodes).**
+> **⚠️ What ships right now: the clean two-platform canon (4,509 nodes, May 2026).**
 >
-> This branch went on a journey (see "The rebuild journey" below). Final
-> state: the source-attested **sweep** (MoMA/Wikidata/Art Blocks/fxhash,
-> commit `b12b15e`, poison-free) **culled to digital-art-only** by
-> `seed/_build/cull_digital_art.py`. The earlier v1-restore (`restore_canon.py`,
-> 1,491 nodes) is abandoned — it re-imported an April LLM-enrichment
-> hallucination and was reverted. If `git log` or older doc revisions
-> mention 1,491 nodes (v1 restore) or 16,244/16,351 (uncut sweep), those
-> are superseded. Trust the counts below.
+> The canon is the genuine output of two source-of-truth gatherers —
+> **Art Blocks + fxhash** — plus the rule-derived editorial layer. Every node
+> traces to an on-chain generative artwork or its artist. There is **no MoMA,
+> no Wikidata, no named-anchors** layer: those were dropped after the Wikidata
+> `digital_art_qids` list was found to be **corrupt** (a bee species, moths,
+> "combat", and "graphic artist" — the last alone dragged 3,652 non-digital
+> painters/sculptors, Duchamp and Miró among them, into a generative-art canon).
+> See "The rebuild journey" below for the full story. The canon is now clean
+> **by construction**: `merge_batches.py` assembles it from only the two clean
+> batches, so off-domain rows can't enter — no filter/cull step exists.
+>
+> If `git log` or older doc revisions mention 8,653 nodes (digital-art cull),
+> 1,491 (v1 restore), or 16,244/16,351 (uncut sweep), those are all superseded.
+> Trust the counts below.
 
-**Node types** — live in Seed Canon (8,653 nodes total, May 2026, from `cull_digital_art.py`): practitioner (4,790), artwork (3,841), concept (13), classification_regime (6 — A(DAI) canonical lens + 5 sub-regimes), platform (2 — Art Blocks, fxhash), institution (1 — MoMA). Schema reserves `scene`, `collective`, `publication`, `project`, `event`, `related` — empty. Every practitioner is digital-art-tagged by structured source data: either platform-native (Art Blocks/fxhash) or carrying a Wikidata digital-art QID. The cull dropped 1,567 MoMA-only-no-QID practitioners (sculptors / filmmakers / performance artists swept in by MoMA's broad Installation/Performance/Film classification) + their 6,131 non-digital artworks. A dropped practitioner re-enters the moment a QID or contributor vouches — bounded, recoverable.
+**Node types** — live in Seed Canon (4,509 nodes total, May 2026, from the Art Blocks + fxhash pipeline): artwork (3,477), practitioner (1,016), concept (8), classification_regime (6 — A(DAI) canonical lens + 5 sub-regimes), platform (2 — Art Blocks, fxhash). Schema reserves `institution`, `scene`, `collective`, `publication`, `project`, `event`, `related` — empty. Every practitioner is a platform-native generative artist (Art Blocks or fxhash); every artwork is an on-chain generative token. No node carries a Wikidata occupation/movement QID anymore — the contamination is gone at the root. New practitioners/artworks enter via the contributor API or by re-running the gatherers; broader sources (a *correctly-configured* Wikidata, objkt, etc.) are the "try more later" path — see `fetch_wikidata.py`'s quarantine note before re-enabling it.
 
-**Edge types** — 9 curated + 2 auto-derived. Curated counts (May 2026, post-cull): CLASSIFIED_BY (11,665), CREATED_BY (3,849), EXHIBITED_AT (3,841), EMBODIES (3,758), PRACTICES (3,658), BELONGS_TO / COLLABORATES_WITH / USES_TECHNIQUE / INFLUENCES (0 — reserved). Auto-derived from `npm run embed:derive`, refreshed by the daily `embed-derive-daily` GitHub Actions workflow: STYLE_KIN (creator ↔ creator), VISUALLY_AFFINE (artwork ↔ artwork) — **currently empty: the embedding sidecars were dropped at the cull (they were keyed to old node ids) and regenerate post-deploy.** The canonical edge-type list lives in [seed/SOURCES.md](seed/SOURCES.md), which adds one intentionally empty edge: **RESPONDS_TO** (artwork → artwork) — zero because it requires evidence of artist intent, not thematic similarity. It's the highest-value edge type for Basel-floor practitioner contributions. `db.sql` has no CHECK constraint on `edge_type`. When adding rows, prefer the existing 9 unless the relation is genuinely new, and update these counts rather than letting them drift.
+**Edge types** — 9 curated + 2 auto-derived. Curated counts (May 2026, two-platform pipeline): CLASSIFIED_BY (6,954 — every artwork → A(DAI) lens + crypto sub-regime), CREATED_BY (3,477), EXHIBITED_AT (3,477), EMBODIES (3,477 — every artwork → generative-art), PRACTICES (0 — was QID-derived; platform artists carry no QIDs, so it's empty until a QID-bearing source returns), BELONGS_TO / COLLABORATES_WITH / USES_TECHNIQUE / INFLUENCES (0 — reserved). Auto-derived from `npm run embed:derive`, refreshed by the daily `embed-derive-daily` GitHub Actions workflow: STYLE_KIN (creator ↔ creator, ~694 rows), VISUALLY_AFFINE (artwork ↔ artwork, ~9,052 rows) — bounded by the per-node mutual-kNN cap. The canonical edge-type list lives in [seed/SOURCES.md](seed/SOURCES.md), which adds one intentionally empty edge: **RESPONDS_TO** (artwork → artwork) — zero because it requires evidence of artist intent, not thematic similarity. It's the highest-value edge type for Basel-floor practitioner contributions. `db.sql` has no CHECK constraint on `edge_type`. When adding rows, prefer the existing 9 unless the relation is genuinely new, and update these counts rather than letting them drift.
 
 **Embedding pipeline** (Gemini Embedding 2, multimodal, 768-d, L2-normalised): batch embed lives in Python under `seed/_build/embed_nodes.py` and writes `seed/embeddings.{bin,json}` (committed alongside the seed JSONs — the Docker builder needs them in context). `src/seed-consolidated.ts` reads the sidecar into the local-only `node_embeddings` table. Derive lives in TypeScript: `npm run embed:derive` chains `centroids → derive`, recomputing style centroids for both **practitioners and collectives** from live `CREATED_BY` edges (artwork → creator direction) and emitting STYLE_KIN + VISUALLY_AFFINE rows plus SUGGESTS_CREATED_BY proposals into `intake_queue` (`kind='ai_suggestion'`). Calibrated thresholds (May 2026): τ_attribute=0.88, τ_kin=0.91, τ_visual=0.84 — override via `TAU_ATTRIBUTE`, `TAU_KIN`, `TAU_VISUAL` env vars. Curators approve attributions at `/review?kind=ai_suggestion`; rejected pairs land in `rejected_ai_suggestions` so the next derive run skips them. These proposals often surface real **attribution gaps** in the seed — artworks whose only `CREATED_BY` edge points to a non-practitioner target (project / platform / institution / publication / parent-artwork), so the derive treats them as orphans and proposes the human creator from the closest style centroid. See #24 for the May 2026 Holly+ / Webrecorder / etc. cluster. Every `embed:derive` starts with `DELETE FROM edges WHERE created_by='embedding-multimodal-v1'` so re-runs are clean. Derived edges render dashed in `/field` (press `e` to flip into 'embeddings mode' where they're the foreground). **The pipeline refuses to auto-emit INFLUENCES or RESPONDS_TO** — semantic similarity is the wrong signal for either, by design.
 
@@ -241,33 +247,68 @@ decisions, and the final one reverses the middle ones. Commit order:
    305 EXHIBITED_AT edges stamped `confidence:high` with no source. Stripping
    prose didn't remove that fabricated *structure*. The owner caught it.
    Reverted.
-4. **Cull (4be8e49) — THE SHIPPED STATE** — went back to the clean sweep
-   (`b12b15e`, poison-free) and culled it to digital-art-only with a
-   deterministic source-tag rule (`cull_digital_art.py`). **This is what
-   ships: 8,653 nodes.** The hallucination source (`deepening.json` + task
-   scripts) was `git rm`'d from the repo.
+4. **Cull (4be8e49) — superseded** — went back to the clean sweep
+   (`b12b15e`) and culled it to digital-art-only via a source-tag rule
+   (`cull_digital_art.py`) → 8,653 nodes. Shipped for a while, but the cull
+   *trusted the sweep's source tags*, and one class of tag was poison (next).
+5. **Bee-QID discovery + two-platform rebuild (May 2026) — THE SHIPPED STATE.**
+   The owner could feel the canon was wrong — full of painters, not digital
+   artists. Tracing it: the Wikidata gatherer's `DIGITAL_ART_QIDS` list was
+   **corrupt**. Every QID resolved to an insect (Q649652 "digital art" = a bee
+   species; Q4671798 "generative art" = a moth), a 404, or an unrelated item —
+   except **Q1925963 = "graphic artist"**, which via `wdt:P106` matched 3,652
+   non-digital painters/sculptors (Duchamp, Miró, Dubuffet). The *same* garbage
+   list was duplicated in `derive_curation.py`'s `CONCEPT_VOCAB`, so the concept
+   provenance pointed at bees too. The cull couldn't catch this — it trusted the
+   tag. **Fix:** delete the tainted sources entirely (MoMA = too broad; Wikidata
+   = corrupt QIDs; named-anchors = by-name re-fetch of non-digital theorists),
+   correct the QIDs in `derive_curation.py`, quarantine `fetch_wikidata.py`, and
+   **re-run the pipeline from the two genuinely-clean platform gatherers
+   (Art Blocks + fxhash) only**. The cull, the v1 restore, and every MoMA/
+   Wikidata/named-anchors script were `git rm`'d.
 
-So: the **clean sweep + its gatherers are the foundation**; the **shipped
-canon is the digital-art cull of that sweep**. The v1 restore is a dead end
-(`restore_canon.py` left in tree as history, doesn't feed canon). Don't
-"fix" the doc counts back to 1,491 (v1 restore) or 16k (uncut sweep).
+So: the **shipped canon is genuine two-platform pipeline output** — Art Blocks +
+fxhash gatherers → merge → rule-derived curation. No sweep, no cull, no Wikidata,
+no MoMA. The lesson: a deterministic rule that *trusts a corrupt source tag* is
+still poison; the fix lives in the producer config, not a downstream filter.
+Don't "fix" the doc counts back to 8,653 (cull), 1,491 (v1 restore), or 16k
+(uncut sweep).
 
 ### Canonical path — `seed/*.json` via `seed-consolidated.ts`
 
 The flat JSON files in `seed/` map 1:1 to schema rows (nodes, edges, signals, contributors, node_aliases). `seed/_build/` contains the offline Python pipeline. Every gatherer conforms to [`seed/_build/PRODUCER_CONTRACT.md`](seed/_build/PRODUCER_CONTRACT.md) — read that file before writing any new gatherer. It's the load-bearing one.
 
-**How the shipped canon was produced** — `seed/_build/cull_digital_art.py`:
-- Reads the clean sweep canon (stage from git: `mkdir -p /tmp/sweep60k && for f in nodes edges signals contributors aliases; do git show b12b15e:seed/$f.json > /tmp/sweep60k/$f.json; done`).
-- **Deterministic digital-art rule, no LLM, no review:** keep a practitioner iff platform-native (`artblocks_artist_name`/`fxhash_user_id`) OR carrying a Wikidata digital-art QID (`movement_qids`/`occupation_qids`). Drop MoMA-only-no-QID. Artworks cascade (kept iff creator survives); edges kept iff both ends survive; concepts/regimes/platforms/institution kept wholesale.
-- Re-run / re-tune: `python3 seed/_build/cull_digital_art.py --src /tmp/sweep60k --out seed --dry-run` (shows before/after), then without `--dry-run`, then `validate_seed.py --canon` + `npm run seed:consolidated`. The "dial" is the keep-rule — tighten the QID set if 4,790 practitioners is still too broad.
+**How the shipped canon is produced — the two-platform pipeline.** Clean *by construction*: `merge_batches.py` assembles canon from only the batches present in `seed/_build/runs/<YYYY-MM>/`, so if the only batches are Art Blocks + fxhash, off-domain rows physically cannot enter. There is no cull/filter step.
 
-**The regrowth pipeline** (NOT currently feeding canon — for expanding beyond the 146 post-Basel): four contract-conformant gatherers (`fetch_moma.py`, `fetch_wikidata.py`, `fetch_artblocks.py`, `fetch_fxhash.py`) write per-source batches to `seed/_build/runs/<YYYY-MM>/<source>-<ts>.json` (gitignored, ephemeral); `merge_batches.py` folds them into canon (compact one-record-per-line JSON, cross-source dedup via the alias table) and runs `validate_seed.py --canon`; `derive_curation.py` emits the rule-based editorial layer (concepts + CLASSIFIED_BY + PRACTICES + EMBODIES) from source tags; `fetch_named_anchors.py` re-fetches a curated whitelist (`named_anchors.json`) occupation-agnostically. To regrow: run gatherers → merge → derive → re-embed → re-seed. The validator enforces the contract: every row has a signal_id, no narrative metadata without a sibling source URL (anti-enrichment), no orphan edges, no auto-derived edge types in canon.
+```bash
+rm -rf seed/_build/runs/*                                   # 1. clean batch dir
+seed/_build/.venv/bin/python3 seed/_build/fetch_artblocks.py            # 2. ~477 artworks, 297 artists (3 core contracts)
+seed/_build/.venv/bin/python3 seed/_build/fetch_fxhash.py --limit 3000  # 3. ~3000 tokens, ~742 artists
+seed/_build/.venv/bin/python3 seed/_build/merge_batches.py             # 4. assemble canon (cross-source dedup)
+seed/_build/.venv/bin/python3 seed/_build/derive_curation.py           # 5. rule-derived editorial batch
+seed/_build/.venv/bin/python3 seed/_build/merge_batches.py             # 6. fold curation in
+seed/_build/.venv/bin/python3 seed/_build/validate_seed.py --canon     # 7. 0 errors / 0 warnings
+# then reuse the cache (next section) → embed → project → seed
+```
 
-Deferred / archived: `fetch_met_openaccess.py` + `fetch_objkt_tags_v3.py` (Met empty, objkt lower quality) live in `seed/_build/archive/legacy/`. The April-2026 one-shot migration scripts (`task1-5`, `fold_*`, `deepening.json`, etc.) live in `seed/_build/archive/migrations/2026-04/` — **frozen, do not run.**
+Both gatherers are **deterministic** (Art Blocks orders `project_id asc`; fxhash pages `skip/take`), and node IDs embed the on-chain token id (`artwork:delineation--fxhash-31648`), so a re-run returns the same artworks with the same IDs — only newly-minted tokens append. That's what makes the embedding/image cache reuse work (see below). `derive_curation.py` emits the rule-based editorial layer (8 concepts + A(DAI) regime + 5 sub-regimes + CLASSIFIED_BY + EMBODIES `generative-art`); **PRACTICES is empty** on this base (it was QID-derived, and platform artists carry no QIDs). The validator enforces the contract: every row has a signal_id, no narrative metadata without a sibling source URL (anti-enrichment), no orphan edges, no auto-derived edge types in canon.
+
+**Cache reuse on re-run** (the expensive steps skip unchanged nodes):
+```bash
+seed/_build/.venv/bin/python3 seed/_build/upload_to_r2.py --mirror   # only new tokens' images upload (content-addressed)
+seed/_build/.venv/bin/python3 seed/_build/embed_nodes.py             # reuses vectors by (text_hash,image_hash) — only new tokens hit Gemini
+seed/_build/.venv/bin/python3 seed/_build/project_umap.py
+rm -f adai.db && npm run seed:consolidated                           # chains the capped embed:derive
+```
+Keep `seed/embeddings.{bin,json}` + `seed/image_mirror.json` across rebuilds — that's the cache. On the May 2026 rebuild, 4,500/4,501 embeddings and 3,451/3,477 images reused (1 Gemini call, 26 uploads).
+
+**Expanding the canon ("try more").** Add a *correctly-configured* source: a new gatherer, or re-enable `fetch_wikidata.py` after curating real digital-art **occupation** QIDs (its genre QIDs are already corrected; the occupation list is intentionally empty — see the quarantine banner in that file). New batch in `runs/` → merge → derive → cache-reuse embed → seed. Never hand-edit canon; never re-add the corrupt QID list.
+
+Deleted in the May-2026 cleanup (recoverable from git history): the cull (`cull_digital_art.py`), the v1 restore (`restore_canon.py`), every dropped-source gatherer (`fetch_moma*`, `fetch_wikidata_v3*`, `fetch_named_anchors*`, `fetch_met_openaccess`, `fetch_objkt_tags_v3`, `fetch_fxhash_tags_v3`), and the whole `seed/_build/archive/` tree (frozen 2026-04 migrations + legacy). The current `seed/_build/` is only the live two-platform pipeline + embedding/image tooling.
 
 See `seed/_build/README.md` for the producer map, `seed/SOURCES.md` for the six selection criteria + methodology, `seed/COVERAGE.md` for the gap analysis.
 
-ID convention: `<type>:<name>` with spaces preserved and lowercase (e.g. `practitioner:casey reas`, `artwork:fidenza`, `classification_regime:a(dai) seed canon v1 (april 2026)`). The `slug` field is the kebab-case URL-safe form (regenerated by `restore_canon.py` via `_slug.slugify`).
+ID convention: `<type>:<name>` with spaces preserved and lowercase (e.g. `practitioner:casey reas`, `artwork:fidenza`, `classification_regime:a(dai) seed canon v1 (april 2026)`). The `slug` field is the kebab-case URL-safe form (produced by `seed/_build/_slug.py`'s `node_slug`).
 
 Seed signals (15 in `seed/signals.json`): the 12 original v1 provenance batches (seed-taxonomy, enrichment, the April-28 real-source + named-anchors gatherers) kept as history, plus the v2-era producer signals where they survived, plus `signal:restore-canon-*` stamping the restore. Some are orphaned (their Step-6 rows were stripped) — orphan signals are history, not errors. The migration contributor (`contributor:migration`) is trust tier `reviewed` — contributions attributed to it auto-approve.
 
@@ -287,7 +328,7 @@ All node-level image_urls are mirrored into a Cloudflare R2 bucket so the graph 
 
 > **Use `upload_to_r2.py --mirror`, NOT the default `nodes.json`-writing mode, on the cull canon.**
 
-The default `upload_to_r2.py` (no flag) writes `cdn_image_url` back into `seed/nodes.json`. That's fine for hand-maintained canon, but **`nodes.json` is now pristine output of `cull_digital_art.py`** — a cull re-run (anticipated: tightening the digital-art QID set) regenerates `nodes.json` and **silently drops every `cdn_image_url`** written into it. You'd lose the mirror on every rebuild and re-fetch all ~5.5k upstream images to recompute the content-addressed keys.
+The default `upload_to_r2.py` (no flag) writes `cdn_image_url` back into `seed/nodes.json`. That's fine for hand-maintained canon, but **`nodes.json` is pristine pipeline output** (`merge_batches.py`) — a pipeline re-run regenerates `nodes.json` and **silently drops every `cdn_image_url`** written into it. You'd lose the mirror on every rebuild and re-fetch all upstream images to recompute the content-addressed keys.
 
 `--mirror` solves this. It mirrors every `nodes.json` `metadata.image_url` to R2 exactly like the default, but records the cdn in a **separate committed sidecar `seed/image_mirror.json`** (`[{node_id, image_url, cdn_image_url}]`, keyed by node_id) that the cull never touches. It survives rebuilds.
 
