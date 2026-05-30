@@ -74,9 +74,11 @@ function cmdDerive() {
   const tauAttribute = parseEnvFloat("TAU_ATTRIBUTE");
   const tauKin = parseEnvFloat("TAU_KIN");
   const tauVisual = parseEnvFloat("TAU_VISUAL");
+  const kinTopK = parseEnvFloat("KIN_TOP_K");
+  const visualTopK = parseEnvFloat("VISUAL_TOP_K");
   const dryRun = process.argv.includes("--dry-run");
   const t0 = Date.now();
-  const stats = derive(db, { tauAttribute, tauKin, tauVisual, dryRun });
+  const stats = derive(db, { tauAttribute, tauKin, tauVisual, kinTopK, visualTopK, dryRun });
   const dt = ((Date.now() - t0) / 1000).toFixed(1);
   console.log(`derive complete in ${dt}s${dryRun ? " (dry-run)" : ""}:`);
   console.log(JSON.stringify(stats, null, 2));

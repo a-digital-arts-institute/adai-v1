@@ -43,12 +43,29 @@ const DEFAULTS = {
   tauAttribute: 0.88,
   tauKin: 0.91,
   tauVisual: 0.84,
+  // Per-node mutual-kNN cap on STYLE_KIN / VISUALLY_AFFINE. The threshold τ
+  // alone holds a fixed *percentile*, so on a large, tightly-clustered corpus
+  // (the cull is heavy in generative fxhash art whose outputs sit near-on-top
+  // of each other in embedding space) it still emits tens of thousands of
+  // edges — a /field hairball. The cap keeps only each node's k strongest
+  // neighbours *that also keep it* (mutual kNN), bounding per-node degree to k
+  // and pruning dense hubs while leaving sparse, genuinely-distinct nodes
+  // untouched. 0 disables the cap (pure-threshold behaviour). Override via env.
+  // kinTopK is higher than visualTopK because mutual-kNN reciprocation is much
+  // rarer in the creator-centroid space (hub creators sit in everyone's top-k
+  // but their own top-k are other hubs), so a lower k starves STYLE_KIN. 20/10
+  // lands ~400 STYLE_KIN + ~4.9k VISUALLY_AFFINE on the May-2026 cull — legible
+  // in /field, vs ~94k at pure-threshold. Re-check after any large re-embed.
+  kinTopK: 20,
+  visualTopK: 10,
 };
 
 export interface DeriveOptions {
   tauAttribute?: number;
   tauKin?: number;
   tauVisual?: number;
+  kinTopK?: number;
+  visualTopK?: number;
   dryRun?: boolean;
   // Skip computing centroids — useful for cheap re-tunes when nothing
   // about CREATED_BY edges changed. Default false (chained from CLI).
@@ -57,10 +74,46 @@ export interface DeriveOptions {
 
 export interface DeriveStats {
   thresholds: { tau_attribute: number; tau_kin: number; tau_visual: number };
-  style_kin: { pairs: number; rows_written: number };
-  visually_affine: { pairs: number; rows_written: number };
+  caps: { kin_top_k: number; visual_top_k: number };
+  style_kin: { pairs: number; pairs_pre_cap: number; rows_written: number };
+  visually_affine: { pairs: number; pairs_pre_cap: number; rows_written: number };
   suggests_created_by: { proposals: number; rejected_skipped: number };
   unattributed_artworks_scored: number;
+}
+
+// Mutual k-NN cap. Keeps a candidate pair only when EACH endpoint ranks the
+// other within its k strongest neighbours — so a node's surviving degree is
+// ≤ k and dense hubs (a generative-art cluster where everything is affine to
+// everything) collapse to their tightest links instead of a clique. Input
+// pairs carry their cosine sim; output is the surviving subset. k ≤ 0 → no-op.
+// Deterministic: ties broken by neighbour id so re-runs are byte-identical.
+function mutualTopK(
+  pairs: Array<{ a: string; b: string; sim: number }>,
+  k: number
+): Array<{ a: string; b: string; sim: number }> {
+  if (k <= 0) return pairs;
+  const byNode = new Map<string, Array<{ other: string; sim: number }>>();
+  const add = (n: string, other: string, sim: number) => {
+    let arr = byNode.get(n);
+    if (!arr) {
+      arr = [];
+      byNode.set(n, arr);
+    }
+    arr.push({ other, sim });
+  };
+  for (const p of pairs) {
+    add(p.a, p.b, p.sim);
+    add(p.b, p.a, p.sim);
+  }
+  const topk = new Map<string, Set<string>>();
+  for (const [n, arr] of byNode) {
+    arr.sort((x, y) => y.sim - x.sim || (x.other < y.other ? -1 : 1));
+    const keep = new Set<string>();
+    const lim = Math.min(k, arr.length);
+    for (let i = 0; i < lim; i++) keep.add(arr[i]!.other);
+    topk.set(n, keep);
+  }
+  return pairs.filter((p) => topk.get(p.a)?.has(p.b) && topk.get(p.b)?.has(p.a));
 }
 
 function nowIso(): string {
@@ -79,6 +132,8 @@ export function derive(db: DatabaseSync, opts: DeriveOptions = {}): DeriveStats 
   const tauA = opts.tauAttribute ?? DEFAULTS.tauAttribute;
   const tauK = opts.tauKin ?? DEFAULTS.tauKin;
   const tauV = opts.tauVisual ?? DEFAULTS.tauVisual;
+  const kinK = opts.kinTopK ?? DEFAULTS.kinTopK;
+  const visualK = opts.visualTopK ?? DEFAULTS.visualTopK;
   const dry = !!opts.dryRun;
 
   // 1. Refresh centroids unless explicitly skipped.
@@ -138,8 +193,9 @@ export function derive(db: DatabaseSync, opts: DeriveOptions = {}): DeriveStats 
   // 4. Compute three passes.
   const stats: DeriveStats = {
     thresholds: { tau_attribute: tauA, tau_kin: tauK, tau_visual: tauV },
-    style_kin: { pairs: 0, rows_written: 0 },
-    visually_affine: { pairs: 0, rows_written: 0 },
+    caps: { kin_top_k: kinK, visual_top_k: visualK },
+    style_kin: { pairs: 0, pairs_pre_cap: 0, rows_written: 0 },
+    visually_affine: { pairs: 0, pairs_pre_cap: 0, rows_written: 0 },
     suggests_created_by: { proposals: 0, rejected_skipped: 0 },
     unattributed_artworks_scored: 0,
   };
@@ -169,6 +225,7 @@ export function derive(db: DatabaseSync, opts: DeriveOptions = {}): DeriveStats 
   const creators = [...centroidByCreator.keys()].sort();
   if (!dry) db.exec("BEGIN");
   try {
+    const kinCandidates: Array<{ a: string; b: string; sim: number }> = [];
     for (let i = 0; i < creators.length; i++) {
       const a = creators[i]!;
       const va = centroidByCreator.get(a)!;
@@ -177,8 +234,14 @@ export function derive(db: DatabaseSync, opts: DeriveOptions = {}): DeriveStats 
         const vb = centroidByCreator.get(b)!;
         const sim = cosine(va, vb);
         if (sim < tauK) continue;
-        stats.style_kin.pairs++;
-        if (dry) continue;
+        kinCandidates.push({ a, b, sim });
+      }
+    }
+    stats.style_kin.pairs_pre_cap = kinCandidates.length;
+    const kinPairs = mutualTopK(kinCandidates, kinK);
+    stats.style_kin.pairs = kinPairs.length;
+    if (!dry) {
+      for (const { a, b } of kinPairs) {
         // Two rows, one per direction.
         insertEdge.run(edgeId(a, "STYLE_KIN", b), a, b, "STYLE_KIN", SIGNAL_ID, now, CREATED_BY_TAG, now);
         insertEdge.run(edgeId(b, "STYLE_KIN", a), b, a, "STYLE_KIN", SIGNAL_ID, now, CREATED_BY_TAG, now);
@@ -192,6 +255,7 @@ export function derive(db: DatabaseSync, opts: DeriveOptions = {}): DeriveStats 
     // artworks lack a known creator ARE emitted — those are exactly the
     // attribution-candidate use case.
     const arts = [...identityByNode.keys()].filter((id) => id.startsWith("artwork:")).sort();
+    const visCandidates: Array<{ a: string; b: string; sim: number }> = [];
     for (let i = 0; i < arts.length; i++) {
       const a = arts[i]!;
       const va = identityByNode.get(a)!;
@@ -210,8 +274,14 @@ export function derive(db: DatabaseSync, opts: DeriveOptions = {}): DeriveStats 
             if (shared) continue;
           }
         }
-        stats.visually_affine.pairs++;
-        if (dry) continue;
+        visCandidates.push({ a, b, sim });
+      }
+    }
+    stats.visually_affine.pairs_pre_cap = visCandidates.length;
+    const visPairs = mutualTopK(visCandidates, visualK);
+    stats.visually_affine.pairs = visPairs.length;
+    if (!dry) {
+      for (const { a, b } of visPairs) {
         insertEdge.run(edgeId(a, "VISUALLY_AFFINE", b), a, b, "VISUALLY_AFFINE", SIGNAL_ID, now, CREATED_BY_TAG, now);
         insertEdge.run(edgeId(b, "VISUALLY_AFFINE", a), b, a, "VISUALLY_AFFINE", SIGNAL_ID, now, CREATED_BY_TAG, now);
         stats.visually_affine.rows_written += 2;
