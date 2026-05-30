@@ -1,5 +1,6 @@
 import { Router } from "express";
 import crypto from "node:crypto";
+import { createGzip } from "node:zlib";
 import { readFileSync, existsSync, statSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -145,7 +146,7 @@ router.get("/api/graph", (req, res) => {
 //
 // stamp = `${nodes}:${curated_edges}` — matches /api/stats so the worker can
 // check its IndexedDB cache (via /api/stats) before deciding to stream.
-router.get("/api/graph/stream", (_req, res) => {
+router.get("/api/graph/stream", (req, res) => {
   const db = getDb();
   const NODE_COLS =
     "id, name, type, slug, " +
@@ -167,10 +168,24 @@ router.get("/api/graph/stream", (_req, res) => {
     )
     .all() as any[];
 
+  // Compress at the app level. Fly's edge does NOT compress chunked/streamed
+  // responses, so without this the raw NDJSON ships at ~7 MB (vs ~1 MB gzipped)
+  // — 7× the wire transfer, which dominates load time. gzip is a Transform
+  // stream, so the response stays chunked/streamed; the worker still parses
+  // incrementally. gzip (not brotli) keeps CPU low on the 1-core Fly machine.
+  const acceptsGzip = /\bgzip\b/.test(String(req.headers["accept-encoding"] || ""));
   res.set({
     "Content-Type": "application/x-ndjson; charset=utf-8",
     "Cache-Control": "no-cache",
   });
+  let sink: NodeJS.WritableStream = res;
+  if (acceptsGzip) {
+    res.set("Content-Encoding", "gzip");
+    res.set("Vary", "Accept-Encoding");
+    const gzip = createGzip();
+    gzip.pipe(res);
+    sink = gzip;
+  }
 
   // Batch writes (~64 KB) so we don't issue one syscall per row.
   let buf = "";
@@ -178,7 +193,7 @@ router.get("/api/graph/stream", (_req, res) => {
   const push = (obj: unknown) => {
     buf += JSON.stringify(obj) + "\n";
     if (buf.length >= FLUSH_AT) {
-      res.write(buf);
+      sink.write(buf);
       buf = "";
     }
   };
@@ -201,8 +216,8 @@ router.get("/api/graph/stream", (_req, res) => {
   for (const e of edgeRows) {
     push({ e: { source: e.source_id, target: e.target_id, type: e.edge_type, confidence: e.confidence, created_by: e.created_by } });
   }
-  if (buf) res.write(buf);
-  res.end();
+  if (buf) sink.write(buf);
+  sink.end();
 });
 
 // GET /api/graph/derived — ONLY the embedding-derived edges (STYLE_KIN /
