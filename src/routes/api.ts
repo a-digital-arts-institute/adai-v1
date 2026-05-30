@@ -41,11 +41,24 @@ router.get("/api/stats", (_req, res) => {
   // IndexedDB cache on (nodes, curated_edges) so a nightly re-derive — which
   // only changes derived_edges — doesn't needlessly invalidate the curated
   // graph cache; the derived layer is lazy-loaded and stamped separately.
+  //
+  // curated_edges MUST be computed with the exact same WHERE clause as
+  // /api/graph/stream's edge query (live, non-derived, both endpoints
+  // non-'related') — the stamp it forms (`${nodes}:${curated_edges}`) has to
+  // equal the stream's meta stamp, or the IndexedDB cache never validates and
+  // every visit re-streams. 'related' is reserved/empty today so the related
+  // filter is a no-op, but pinning the clauses together keeps it that way.
+  const { count: curatedEdges } = db
+    .prepare(
+      `SELECT COUNT(*) as count FROM edges e
+       WHERE e.valid_until IS NULL
+         AND e.created_by IS NOT '${DERIVED_CREATED_BY}'
+         AND e.source_id IN (SELECT id FROM nodes WHERE type != 'related')
+         AND e.target_id IN (SELECT id FROM nodes WHERE type != 'related')`
+    )
+    .get() as any;
   const { count: derivedEdges } = db
     .prepare(`SELECT COUNT(*) as count FROM edges WHERE valid_until IS NULL AND created_by = '${DERIVED_CREATED_BY}'`)
-    .get() as any;
-  const { count: liveEdges } = db
-    .prepare("SELECT COUNT(*) as count FROM edges WHERE valid_until IS NULL")
     .get() as any;
 
   res.set(JSON_HEADERS).json({
@@ -53,7 +66,7 @@ router.get("/api/stats", (_req, res) => {
     total_edges: totalEdges,
     total_signals: totalSignals,
     pending_reviews: pendingReviews,
-    curated_edges: liveEdges - derivedEdges,
+    curated_edges: curatedEdges,
     derived_edges: derivedEdges,
   });
 });
