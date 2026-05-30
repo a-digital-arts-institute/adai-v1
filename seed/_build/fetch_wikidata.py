@@ -55,41 +55,46 @@ COMMONS_FILEPATH = "https://commons.wikimedia.org/wiki/Special:FilePath/"
 # Wikidata QIDs that mark a practitioner as digital-art relevant. Conservative
 # — occupations and movements that are unambiguously about digital / electronic /
 # new-media practice. Wider categories (Q1028181 "painter") would over-include.
-DIGITAL_ART_QIDS = [
-    "Q649652",       # digital art
-    "Q9418008",      # computer art
-    "Q170630",       # video art  (genre)
-    "Q4671777",      # algorithmic art
-    "Q4671798",      # generative art
-    "Q650711",       # net.art
-    "Q4904305",      # new media art
-    "Q19798649",     # interactive art
-    "Q1925963",      # sound art
-    "Q15265344",     # new media artist (occupation)
-    "Q33231",        # photographer       (kept off — too broad)
-]
-# Trim back the over-broad ones; keep the unambiguous digital movements.
-DIGITAL_ART_QIDS = [
-    "Q649652", "Q9418008", "Q170630", "Q4671777", "Q4671798",
-    "Q650711", "Q4904305", "Q19798649", "Q1925963", "Q15265344",
+# ═══════════════════════════════════════════════════════════════════════════
+# ⚠️ QUARANTINED 2026-05 — DO NOT RUN UNTIL THE OCCUPATION QIDS ARE CURATED.
+#
+# The original lists below (preserved in git history) were CORRUPT: every QID
+# resolved to an insect / a 404 / an unrelated item, while the inline comments
+# *claimed* they were digital-art genres. Q649652 ("digital art") was a bee
+# species (Lasioglossum baudini); Q4671777/Q4671798 ("algorithmic/generative
+# art") were moths; Q650711 ("net.art") was "combat"; Q1925963 ("sound art")
+# was actually "graphic artist" — a valid but far-too-broad OCCUPATION that
+# single-handedly matched 3,652 non-digital painters/sculptors (Duchamp, Miró,
+# Dubuffet) via wdt:P106, poisoning the whole canon. The insect QIDs matched
+# nobody (people aren't bees), so the only thing this gatherer ever returned
+# was the 20th-century graphic-art canon.
+#
+# GENRE QIDs are now corrected (verified against live Wikidata, 2026-05).
+# OCCUPATION matching is the unsolved part: a person's P106 occupation is not a
+# genre — you want digital-art *occupation* items (e.g. Q7016454 new-media
+# artist, Q106208189 computer artist, Q21764863 algorithm artist), curated by
+# hand. Until that's done, leave the occupation list empty so this gatherer
+# can never re-import the broad-occupation poison.
+# ═══════════════════════════════════════════════════════════════════════════
+DIGITAL_ART_QIDS: list[str] = [
+    # Occupation/movement filter — intentionally EMPTY pending curation (see above).
+    # Corrected digital-art occupation candidates to vet before enabling:
+    #   "Q7016454"   # new media artist
+    #   "Q106208189" # computer artist
+    #   "Q21764863"  # algorithm artist
+    #   "Q106208042" # internet artist
 ]
 
-# For artwork-side query: genres / instance-of values that are unambiguously
-# digital-art artefacts.
+# Artwork-side genre / instance-of filter. QIDs verified correct 2026-05.
 DIGITAL_ART_GENRE_QIDS = [
-    "Q649652",    # digital art
-    "Q9418008",   # computer art
-    "Q170630",    # video art
-    "Q4671777",   # algorithmic art
-    "Q4671798",   # generative art
-    "Q650711",    # net.art
-    "Q4904305",   # new media art
-    "Q19798649",  # interactive art
-    "Q3305213",   # painting              (kept off — too broad)
-]
-DIGITAL_ART_GENRE_QIDS = [
-    "Q649652", "Q9418008", "Q170630", "Q4671777", "Q4671798",
-    "Q650711", "Q4904305", "Q19798649",
+    "Q860372",   # digital art
+    "Q1376265",  # computer art
+    "Q2835759",  # algorithmic art
+    "Q1502032",  # generative art
+    "Q1569950",  # internet art (was mislabelled "net.art" → "combat")
+    "Q378604",   # new media art
+    "Q2394336",  # interactive art
+    "Q2864686",  # software art
 ]
 
 
