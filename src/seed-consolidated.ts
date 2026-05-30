@@ -213,6 +213,72 @@ if (imageOverlay) {
   console.log(`Image overlay applied: ${overlayApplied} nodes (${overlaySkipped} skipped) from seed/image_overlay.json`);
 }
 
+// --- Image mirror (build-time DB patch) -------------------------------
+// The R2 cdn_image_url for nodes that ALREADY carry an upstream image_url in
+// nodes.json. Kept out of nodes.json (pristine cull output — cull_digital_art.py
+// would clobber any cdn written there on its next re-run) and out of the image
+// overlay (which is gap-fill for IMAGELESS nodes and refuses to touch a node
+// that already has an image). This block is the inverse: it sets cdn_image_url
+// ADDITIVELY on nodes that have image_url but no cdn yet. image_url is never
+// overwritten (provenance stays). Produced by upload_to_r2.py --mirror; keyed
+// by node_id; survives canon rebuilds. Same WAL trap as above — must run before
+// the PRAGMA wal_checkpoint(TRUNCATE) at the end of this file.
+type ImageMirrorEntry = {
+  node_id: string;
+  image_url?: string | null;
+  cdn_image_url?: string | null;
+};
+let imageMirror: ImageMirrorEntry[] | null = null;
+try {
+  imageMirror = JSON.parse(readFileSync(join(seedDir, "image_mirror.json"), "utf-8")) as ImageMirrorEntry[];
+} catch (err) {
+  if ((err as NodeJS.ErrnoException)?.code !== "ENOENT") throw err;
+  console.log("Image mirror: seed/image_mirror.json absent — skipped.");
+}
+if (imageMirror) {
+  const selectMeta = db.prepare("SELECT metadata FROM nodes WHERE id = ?");
+  const updateMeta = db.prepare("UPDATE nodes SET metadata = ? WHERE id = ?");
+  let mirrorApplied = 0;
+  let mirrorSkipped = 0;
+  db.exec("BEGIN");
+  for (const e of imageMirror) {
+    if (!e.cdn_image_url) {
+      mirrorSkipped++;
+      continue;
+    }
+    const row = selectMeta.get(e.node_id) as { metadata: string | null } | undefined;
+    if (!row) {
+      mirrorSkipped++; // mirror references a node not in the seed (e.g. culled out)
+      continue;
+    }
+    let md: Record<string, unknown> = {};
+    if (row.metadata) {
+      try {
+        md = JSON.parse(row.metadata) as Record<string, unknown>;
+      } catch {
+        md = {};
+      }
+    }
+    // Idempotent — don't re-stamp an existing cdn.
+    if (md.cdn_image_url) {
+      mirrorSkipped++;
+      continue;
+    }
+    // Correctness guard: the cdn is content-addressed to the image_url that was
+    // mirrored. If the node's current image_url drifted from what the mirror
+    // recorded, the cdn is stale — skip and let upload_to_r2.py --mirror re-run.
+    if (e.image_url && md.image_url && md.image_url !== e.image_url) {
+      mirrorSkipped++;
+      continue;
+    }
+    md.cdn_image_url = e.cdn_image_url;
+    updateMeta.run(JSON.stringify(md), e.node_id);
+    mirrorApplied++;
+  }
+  db.exec("COMMIT");
+  console.log(`Image mirror applied: ${mirrorApplied} nodes (${mirrorSkipped} skipped) from seed/image_mirror.json`);
+}
+
 const insertEdge = db.prepare(
   `INSERT OR IGNORE INTO edges (
     id, source_id, target_id, edge_type, signal_id, confidence, charge,

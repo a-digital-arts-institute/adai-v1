@@ -64,6 +64,11 @@ from image_fetch import open_cache, fetch_and_prepare, pick_image_url  # noqa: E
 ROOT = Path(__file__).resolve().parents[2]
 NODES_PATH = ROOT / "seed" / "nodes.json"
 OVERLAY_PATH = ROOT / "seed" / "image_overlay.json"
+# Mirror sidecar (upload_to_r2.py --mirror): cdn_image_url for nodes that
+# already carry image_url in nodes.json. We prefer the stable R2 cdn over the
+# rotting upstream url so the multimodal embedder doesn't fall back to text-only
+# whenever fxhash/artblocks/MoMA rate-limit or rot. See CLAUDE.md.
+MIRROR_PATH = ROOT / "seed" / "image_mirror.json"
 EMB_BIN_PATH = ROOT / "seed" / "embeddings.bin"
 EMB_META_PATH = ROOT / "seed" / "embeddings.json"
 ENV_PATH = ROOT / ".env"
@@ -119,6 +124,24 @@ def load_overlay_images() -> dict[str, dict]:
     except (json.JSONDecodeError, OSError):
         return {}
     return {e["node_id"]: e for e in entries if isinstance(e, dict) and e.get("node_id")}
+
+
+def load_mirror_images() -> dict[str, str]:
+    """Build-time R2 mirror (seed/image_mirror.json): node_id -> cdn_image_url
+    for nodes that ALREADY carry image_url in nodes.json. Folded into image
+    selection so the embedder fetches the stable R2 copy instead of the rotting
+    upstream url. Empty when absent (embedder falls back to upstream image_url)."""
+    if not MIRROR_PATH.exists():
+        return {}
+    try:
+        entries = json.loads(MIRROR_PATH.read_text())
+    except (json.JSONDecodeError, OSError):
+        return {}
+    return {
+        e["node_id"]: e["cdn_image_url"]
+        for e in entries
+        if isinstance(e, dict) and e.get("node_id") and e.get("cdn_image_url")
+    }
 
 
 def build_text(node: dict) -> Optional[str]:
@@ -352,6 +375,9 @@ def main() -> int:
     overlay_images = load_overlay_images()
     if overlay_images:
         print(f"image overlay: {len(overlay_images)} entries (gap-fill image source)")
+    mirror_images = load_mirror_images()
+    if mirror_images:
+        print(f"image mirror: {len(mirror_images)} entries (R2 cdn source, preferred over upstream)")
 
     # Plan each row up-front: compute text+image+hashes. This lets us skip
     # hashed-match rows without spinning up the Gemini client.
@@ -383,6 +409,13 @@ def main() -> int:
                 ov = overlay_images.get(nid)
                 if ov:  # gap-fill from the build-time overlay (artwork images only)
                     md = {**md, **{k: ov[k] for k in ("image_url", "cdn_image_url") if ov.get(k)}}
+            # Prefer the stable R2 cdn (mirror sidecar) over rotting upstream for
+            # nodes that already have image_url. pick_image_url() then returns the
+            # cdn, so fetch_and_prepare hits R2 instead of fxhash/artblocks/MoMA.
+            if not md.get("cdn_image_url"):
+                cdn = mirror_images.get(nid)
+                if cdn:
+                    md = {**md, "cdn_image_url": cdn}
             url = pick_image_url(md)
             if url:
                 got = fetch_and_prepare(url, img_cache)
