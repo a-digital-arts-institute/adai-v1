@@ -99,32 +99,37 @@ async function writeCache(stamp, nodes, edges) {
 // Reads the response body as it arrives, splitting on newlines and parsing
 // each complete line. Carries a partial trailing line across chunk
 // boundaries. Returns { nodes, edges, meta }.
-async function streamGraph(url) {
+async function streamGraph(url, onNodesReady) {
   const res = await fetch(url, { cache: 'no-cache' });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  if (!res.body || !res.body.getReader) {
-    // No streaming support — fall back to a single text read.
-    const text = await res.text();
-    return parseLines(text.split('\n'));
-  }
-
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
   const nodes = [];
   const edges = [];
   let meta = null;
-  let carry = '';
-  let lastPing = 0;
-
+  let nodesFlushed = false;
+  // The server emits the meta line, then every node, then every edge. The
+  // first edge line means all nodes are in — flush them so the field can paint
+  // the constellation while the edges (only needed on zoom) keep streaming.
   const handle = (line) => {
     if (!line) return;
     let obj;
     try { obj = JSON.parse(line); } catch { return; }
     if (obj.n) nodes.push(obj.n);
-    else if (obj.e) edges.push(obj.e);
-    else if (obj.meta) meta = obj.meta;
+    else if (obj.e) {
+      if (!nodesFlushed) { nodesFlushed = true; onNodesReady(nodes); }
+      edges.push(obj.e);
+    } else if (obj.meta) meta = obj.meta;
   };
 
+  if (!res.body || !res.body.getReader) {
+    // No streaming support — fall back to a single text read.
+    for (const line of (await res.text()).split('\n')) handle(line);
+    if (!nodesFlushed) onNodesReady(nodes);
+    return { nodes, edges, meta };
+  }
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let carry = '';
   for (;;) {
     const { done, value } = await reader.read();
     if (done) break;
@@ -134,17 +139,13 @@ async function streamGraph(url) {
       handle(carry.slice(0, nl));
       carry = carry.slice(nl + 1);
     }
-    // Throttle progress pings (~10/s) so we don't flood postMessage.
-    const now = Date.now();
-    if (now - lastPing > 100) {
-      lastPing = now;
-      self.postMessage({ type: 'progress', phase: 'stream', nodes: nodes.length, edges: edges.length });
-    }
   }
   carry += decoder.decode();
   if (carry) {
     for (const line of carry.split('\n')) handle(line);
   }
+  // Edge-free graph: nodes never got flushed via a first-edge line.
+  if (!nodesFlushed) onNodesReady(nodes);
   return { nodes, edges, meta };
 }
 
@@ -200,7 +201,12 @@ function buildIndex(nodes, edges) {
     mT.set(type, (mT.get(type) || 0) + 1);
   }
 
+  // Seed intention from the server-provided per-node value (n.int) so the
+  // node-only first paint can order the layout correctly before edges exist;
+  // once edges are indexed, the computed count overrides it (identical value
+  // for the curated graph, richer once the derived overlay merges).
   const intention = new Map();
+  for (const n of nodes) if (typeof n.int === 'number') intention.set(n.id, n.int);
   for (const [id, m] of edgeTypeCount) intention.set(id, m.size);
 
   return { nodes, edges, byId, byType, neighbors, edgesOf, edgeTypeCount, intention };
@@ -208,18 +214,23 @@ function buildIndex(nodes, edges) {
 
 // ---- message handlers ----------------------------------------------------
 async function handleLoad(stamp, streamUrl) {
-  // 1. Cache hit?
+  // 1. Cache hit? Repeat visits are instant — no need to stage, post the full
+  //    index in one go.
   const cached = await readCache(stamp);
   if (cached) {
     const payload = buildIndex(cached.nodes, cached.edges);
     self.postMessage({ type: 'ready', fromCache: true, payload });
     return;
   }
-  // 2. Stream from the network.
-  const { nodes, edges } = await streamGraph(streamUrl);
+  // 2. Stream. Post the node-only index the moment all nodes are in (the field
+  //    paints the constellation), then post the edges for the main thread to
+  //    merge once the rest of the stream lands.
+  const { nodes, edges } = await streamGraph(streamUrl, (nodesSoFar) => {
+    if (!nodesSoFar.length) return;
+    self.postMessage({ type: 'nodes', payload: buildIndex(nodesSoFar, []) });
+  });
   if (!nodes.length) throw new Error('stream returned no nodes');
-  const payload = buildIndex(nodes, edges);
-  self.postMessage({ type: 'ready', fromCache: false, payload });
+  self.postMessage({ type: 'edges', edges });
   // 3. Persist for next time (after posting, so render isn't delayed).
   await writeCache(stamp, nodes, edges);
 }

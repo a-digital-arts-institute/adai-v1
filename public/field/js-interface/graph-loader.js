@@ -222,7 +222,19 @@
     worker.addEventListener('message', (ev) => {
       const m = ev.data || {};
       if (m.type === 'ready') {
+        // Cache hit — full index in one shot.
         publish(m.payload, { stamp, fromCache: m.fromCache });
+      } else if (m.type === 'nodes') {
+        // Progressive: nodes are in, paint the constellation now. Edges follow.
+        publish(m.payload, { stamp, fromCache: false, progressive: true });
+      } else if (m.type === 'edges') {
+        // Edges arrived — merge into the live index (curated edges are only
+        // needed for zoom interactions, which happen well after first paint).
+        const g = window.ADAI_GRAPH;
+        if (g && typeof g.mergeEdges === 'function') {
+          g.mergeEdges(m.edges);
+          emit('adai:graph-edges', { count: m.edges.length });
+        }
       } else if (m.type === 'error' && m.fatal) {
         console.warn('[adai] worker load failed, falling back:', m.message);
         loadFallback(stats);

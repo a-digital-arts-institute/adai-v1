@@ -168,6 +168,18 @@ router.get("/api/graph/stream", (req, res) => {
     )
     .all() as any[];
 
+  // Per-node "intention" = count of distinct curated edge types touching it.
+  // The client's /field layout snaps nodes to brand-dot positions in intention
+  // order, so it needs this BEFORE edges arrive — that's what lets the worker
+  // render the node constellation progressively (nodes first) while the edges
+  // (67% of the payload, only needed on zoom) are still streaming.
+  const typesByNode = new Map<string, Set<string>>();
+  for (const e of edgeRows) {
+    let s = typesByNode.get(e.source_id); if (!s) { s = new Set(); typesByNode.set(e.source_id, s); }
+    let t = typesByNode.get(e.target_id); if (!t) { t = new Set(); typesByNode.set(e.target_id, t); }
+    s.add(e.edge_type); t.add(e.edge_type);
+  }
+
   // Compress at the app level. Fly's edge does NOT compress chunked/streamed
   // responses, so without this the raw NDJSON ships at ~7 MB (vs ~1 MB gzipped)
   // — 7× the wire transfer, which dominates load time. gzip is a Transform
@@ -201,20 +213,30 @@ router.get("/api/graph/stream", (req, res) => {
   push({ meta: { nodes: nodeRows.length, edges: edgeRows.length, stamp: `${nodeRows.length}:${edgeRows.length}` } });
   for (const n of nodeRows) {
     const year = n.type === "artwork" ? formatArtworkYear(n) : null;
+    const intention = typesByNode.get(n.id)?.size ?? 0;
     push({
       n: {
         id: n.id,
         name: n.name,
         type: n.type,
         slug: n.slug,
+        int: intention,
         ...(year ? { year } : {}),
-        ...(n.cdn_image_url ? { cdn_image_url: n.cdn_image_url } : {}),
-        ...(n.image_url ? { image_url: n.image_url } : {}),
+        // Prefer the R2 cdn; only ship the upstream image_url when there's no
+        // cdn (the client falls cdn -> image_url, so the upstream is redundant
+        // when a cdn exists — ~4.7k nodes worth of long URLs saved).
+        ...(n.cdn_image_url
+          ? { cdn_image_url: n.cdn_image_url }
+          : n.image_url
+            ? { image_url: n.image_url }
+            : {}),
       },
     });
   }
+  // created_by is omitted — every curated edge carries the same constant
+  // ('contributor:migration') and the client filters by type, not provenance.
   for (const e of edgeRows) {
-    push({ e: { source: e.source_id, target: e.target_id, type: e.edge_type, confidence: e.confidence, created_by: e.created_by } });
+    push({ e: { source: e.source_id, target: e.target_id, type: e.edge_type, confidence: e.confidence } });
   }
   if (buf) sink.write(buf);
   sink.end();

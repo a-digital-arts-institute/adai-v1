@@ -1836,6 +1836,16 @@
     renderEmbedStrip(bundle, graph);
     renderBookmarksStrip(bundle, graph);
 
+    // Curated edges stream in just after the constellation paints (the loader
+    // posts nodes first). Re-render the edge-dependent chrome once they land so
+    // the filter chip counts reflect the real graph. The frame loop reads
+    // edgesFor() live, so the field itself needs no nudge. once:true — a fresh
+    // page load only streams once (repeat visits arrive complete from cache).
+    window.addEventListener('adai:graph-edges', () => {
+      renderEdgeFilter(bundle, graph);
+      renderBreadcrumb(bundle, graph);
+    }, { once: true });
+
     // If the URL has ?reading=..., auto-replay it on load.
     const urlPath = readingFromUrl();
     if (urlPath && urlPath.length > 0) {
