@@ -1812,6 +1812,19 @@
     bundle.setMode = (mode) => {
       if (mode !== 'curatorial' && mode !== 'embeddings') return;
       bundle.fieldMode = mode;
+      // STYLE_KIN / VISUALLY_AFFINE are excluded from the initial streamed
+      // payload (they're ~10k edges only ever shown here) and lazy-loaded the
+      // first time we enter embeddings mode. Once the loader merges them into
+      // the live index, re-apply filters so the chips + edge rendering pick
+      // them up. The frame loop reads edgesFor() live, so no explicit redraw.
+      if (mode === 'embeddings' && !bundle.derivedRequested
+          && typeof window.ADAI_LOAD_DERIVED === 'function') {
+        bundle.derivedRequested = true;
+        window.ADAI_LOAD_DERIVED().then(() => {
+          applyDefaultFiltersForMode(bundle);
+          renderEdgeFilter(bundle, graph);
+        }).catch(() => {});
+      }
       applyDefaultFiltersForMode(bundle);
       renderEdgeFilter(bundle, graph);
     };

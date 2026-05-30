@@ -20,6 +20,11 @@ const PROJECT_ROOT = join(__dirname, "..", "..");
 
 const router = Router();
 
+// Tag stamped on every embedding-derived edge by src/embed/derive.ts
+// (CREATED_BY_TAG). The /field streaming loader splits these out of the initial
+// payload and lazy-loads them only when the user enters embeddings ('e') mode.
+const DERIVED_CREATED_BY = "embedding-multimodal-v1";
+
 // GET /api/stats
 router.get("/api/stats", (_req, res) => {
   const db = getDb();
@@ -30,11 +35,25 @@ router.get("/api/stats", (_req, res) => {
     .prepare("SELECT COUNT(*) as count FROM intake_queue WHERE status = 'pending'")
     .get() as any;
 
+  // Split the *live* (valid_until IS NULL) edge count into curated vs the
+  // embedding-derived overlay. The /field streaming loader stamps its
+  // IndexedDB cache on (nodes, curated_edges) so a nightly re-derive — which
+  // only changes derived_edges — doesn't needlessly invalidate the curated
+  // graph cache; the derived layer is lazy-loaded and stamped separately.
+  const { count: derivedEdges } = db
+    .prepare(`SELECT COUNT(*) as count FROM edges WHERE valid_until IS NULL AND created_by = '${DERIVED_CREATED_BY}'`)
+    .get() as any;
+  const { count: liveEdges } = db
+    .prepare("SELECT COUNT(*) as count FROM edges WHERE valid_until IS NULL")
+    .get() as any;
+
   res.set(JSON_HEADERS).json({
     total_nodes: totalNodes,
     total_edges: totalEdges,
     total_signals: totalSignals,
     pending_reviews: pendingReviews,
+    curated_edges: liveEdges - derivedEdges,
+    derived_edges: derivedEdges,
   });
 });
 
@@ -101,6 +120,109 @@ router.get("/api/graph", (req, res) => {
         ...(n.image_url ? { image_url: n.image_url } : {}),
       };
     }),
+    edges: edgeRows.map((e: any) => ({
+      source: e.source_id,
+      target: e.target_id,
+      type: e.edge_type,
+      confidence: e.confidence,
+      created_by: e.created_by,
+    })),
+  });
+});
+
+// GET /api/graph/stream — the /field graph as newline-delimited JSON (NDJSON).
+//
+// Same projection as /api/graph but (a) streamed line-by-line so the client
+// can parse + index in a Web Worker as bytes arrive (no 9 MB main-thread
+// JSON.parse freeze), and (b) CURATED-ONLY by default — the ~10k derived
+// STYLE_KIN / VISUALLY_AFFINE edges are excluded and lazy-loaded via
+// /api/graph/derived when the user enters embeddings mode.
+//
+// Wire format, one JSON object per line:
+//   {"meta":{"nodes":N,"edges":M,"stamp":"N:M"}}   ← always first
+//   {"n":{id,name,type,slug,year?,cdn_image_url?,image_url?}}
+//   {"e":{source,target,type,confidence,created_by}}
+//
+// stamp = `${nodes}:${curated_edges}` — matches /api/stats so the worker can
+// check its IndexedDB cache (via /api/stats) before deciding to stream.
+router.get("/api/graph/stream", (_req, res) => {
+  const db = getDb();
+  const NODE_COLS =
+    "id, name, type, slug, " +
+    "json_extract(metadata,'$.image_url') AS image_url, " +
+    "json_extract(metadata,'$.cdn_image_url') AS cdn_image_url, " +
+    YEAR_SQL_FRAGMENT;
+
+  const nodeRows = db
+    .prepare(`SELECT ${NODE_COLS} FROM nodes WHERE type != 'related' ORDER BY name`)
+    .all() as any[];
+  const edgeRows = db
+    .prepare(
+      `SELECT e.source_id, e.target_id, e.edge_type, e.confidence, e.created_by
+       FROM edges e
+       WHERE e.valid_until IS NULL
+         AND e.created_by IS NOT '${DERIVED_CREATED_BY}'
+         AND e.source_id IN (SELECT id FROM nodes WHERE type != 'related')
+         AND e.target_id IN (SELECT id FROM nodes WHERE type != 'related')`
+    )
+    .all() as any[];
+
+  res.set({
+    "Content-Type": "application/x-ndjson; charset=utf-8",
+    "Cache-Control": "no-cache",
+  });
+
+  // Batch writes (~64 KB) so we don't issue one syscall per row.
+  let buf = "";
+  const FLUSH_AT = 64 * 1024;
+  const push = (obj: unknown) => {
+    buf += JSON.stringify(obj) + "\n";
+    if (buf.length >= FLUSH_AT) {
+      res.write(buf);
+      buf = "";
+    }
+  };
+
+  push({ meta: { nodes: nodeRows.length, edges: edgeRows.length, stamp: `${nodeRows.length}:${edgeRows.length}` } });
+  for (const n of nodeRows) {
+    const year = n.type === "artwork" ? formatArtworkYear(n) : null;
+    push({
+      n: {
+        id: n.id,
+        name: n.name,
+        type: n.type,
+        slug: n.slug,
+        ...(year ? { year } : {}),
+        ...(n.cdn_image_url ? { cdn_image_url: n.cdn_image_url } : {}),
+        ...(n.image_url ? { image_url: n.image_url } : {}),
+      },
+    });
+  }
+  for (const e of edgeRows) {
+    push({ e: { source: e.source_id, target: e.target_id, type: e.edge_type, confidence: e.confidence, created_by: e.created_by } });
+  }
+  if (buf) res.write(buf);
+  res.end();
+});
+
+// GET /api/graph/derived — ONLY the embedding-derived edges (STYLE_KIN /
+// VISUALLY_AFFINE), as one JSON payload. Lazy-loaded by /field the first time
+// the user enters embeddings ('e') mode; merged into the already-indexed graph
+// client-side. Small enough (~10k edges) not to need streaming.
+router.get("/api/graph/derived", (_req, res) => {
+  const db = getDb();
+  const edgeRows = db
+    .prepare(
+      `SELECT e.source_id, e.target_id, e.edge_type, e.confidence, e.created_by
+       FROM edges e
+       WHERE e.valid_until IS NULL
+         AND e.created_by = '${DERIVED_CREATED_BY}'
+         AND e.source_id IN (SELECT id FROM nodes WHERE type != 'related')
+         AND e.target_id IN (SELECT id FROM nodes WHERE type != 'related')`
+    )
+    .all() as any[];
+  res.set(JSON_HEADERS).json({
+    stamp: String(edgeRows.length),
     edges: edgeRows.map((e: any) => ({
       source: e.source_id,
       target: e.target_id,
