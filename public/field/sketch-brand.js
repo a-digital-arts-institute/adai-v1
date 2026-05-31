@@ -2444,7 +2444,7 @@ window.addEventListener("load", function () {
     cycleFieldBackground,
     setFieldBackground
   } = window.ADAI_SYSTEM;
-  const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+  const dpr = Math.max(1, Math.min(4, (window.devicePixelRatio || 1) * 2));
   let canvas = null;
   let overlayCanvas = null;
   let ctx = null;
@@ -2462,6 +2462,7 @@ window.addEventListener("load", function () {
     context.clearRect(0, 0, target.width, target.height);
     context.setTransform(dpr, 0, 0, dpr, 0, 0);
     context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = "high";
     return context;
   }
 

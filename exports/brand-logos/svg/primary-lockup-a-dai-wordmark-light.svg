@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="4096" height="1536" viewBox="0 0 4096 1536">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@300;400;500;700&display=swap');
+      .mono { font-family: Courier Prime, Courier New, monospace; font-size: 430px; font-weight: 400; letter-spacing: 0.08em; fill: #F2F2F2; }
+      .word { font-family: Courier Prime, Courier New, monospace; font-size: 118px; font-weight: 300; letter-spacing: 0.16em; fill: #F2F2F2; }
+    </style>
+  </defs>
+  <text class="mono" x="2048" y="585" text-anchor="middle">a(dai)</text>
+  <text class="word" x="2048" y="820" text-anchor="middle">a digital arts institute</text>
+</svg>

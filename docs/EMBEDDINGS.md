@@ -81,8 +81,8 @@ A split between offline batch (heavy, occasional, API-bound) and online derive (
                 │                                          │
                 │  • Profile pages → on-demand topK        │
                 │  • /neighbours/:type/:slug → topK        │
-                │  • /field — dashed derived edges,        │
-                │             'e' toggles embed mode       │
+                │  • /field — UMAP-snapped graph field     │
+                │             + neighbour overlays         │
                 │  • /embed-space — UMAP scatter           │
                 │  • /review?kind=ai_suggestion            │
                 │  • Approval → real CREATED_BY edge       │
@@ -284,18 +284,16 @@ On approve, the existing review handler materialises a real `CREATED_BY` edge ta
 |---|---|---|
 | **Profile pages** (`/practitioner/:slug`, `/artwork/:slug`, `/concept/:slug`, `/scene/:slug`) | Style kin / Visually affine / Style proximity / pending AI proposals — computed on-demand from in-memory vectors (~1 ms per request) | `src/routes/pages.ts::renderEmbeddingSections` |
 | **`/neighbours/:type/:slug`** | Top-K cosine neighbours of any node; shareable URL with knobs for query/candidate kind, type prefix, k | `src/routes/pages.ts` (handler) + `src/embed/neighbours.ts` |
-| **`/field`** | Derived edges render dashed by default. Press **`e`** (or click the chrome chip) to flip into "embeddings mode": curatorial edges fade to ~3 % alpha, STYLE_KIN + VISUALLY_AFFINE rise to ~60 % | `public/field/sketch-graph.js::edgeDimming` |
+| **`/field`** | Shape of Time + graph frontend. `graph-field.js` fetches `/api/embed-space`, snaps embedded nodes onto the p5 dot registry, keeps unembedded nodes reachable at the periphery/through search, and uses `/api/neighbours/:type/:slug` for focused embedding-neighbour strips and entity overlays. | `public/field/js-interface/graph-field.js` + `public/field/js-interface/entity-view.js` |
 | **`/embed-space`** | UMAP 2D scatter of all 1,338 vectors; pan / zoom / hover / search / click-to-profile. Practitioners cluster by aesthetic, artworks by visual similarity, concepts by semantic field | `src/routes/pages.ts` (handler) + `src/routes/api.ts::/api/embed-space` |
 | **`/review?kind=ai_suggestion`** | Curatorial queue for AI attribution proposals with cosine scores visible | `src/routes/pages.ts::/review` + `src/routes/api.ts` approve/reject handlers |
 
-### Edge colors
+### Field frontend note
 
-The two new edge types render in muted variants of their semantic neighbours:
-
-- `STYLE_KIN` — muted lavender (`#8a7aa8`), adjacent to `BELONGS_TO`
-- `VISUALLY_AFFINE` — muted ochre (`#a89a7a`), adjacent to `CREATED_BY`
-
-Plus the dashed stroke (`setLineDash([5, 4])`) so they're trivially distinguishable from curatorial edges at a glance.
+The current `/field` route does not expose the older global `e` embeddings-mode
+toggle. Embedding information reaches the frontend through the UMAP-snapped 30k
+layout, the focused-node neighbour strip, and the entity-view embedding sections.
+See [`docs/FIELD.md`](FIELD.md) for the current route handoff.
 
 ---
 
@@ -353,7 +351,7 @@ Before shipping a new auto-derived edge type:
 
 - Update [`seed/SOURCES.md`](../seed/SOURCES.md) — the canonical edge-type list.
 - Update [`CLAUDE.md`](../CLAUDE.md) edge counts and the embedding pipeline section.
-- Add it to `EDGE_COLORS` in [`public/field/sketch-graph.js`](../public/field/sketch-graph.js) so the field viz colors it.
+- Add it to the relevant field color map if the frontend needs to render it (`public/field/js-interface/edge-type-colors.js` for relation accents, and/or `public/field/js-interface/graph-field.js` for node-type palette changes).
 - Re-think whether the new type should be bidirectional (recommended: yes, unless the edge is genuinely directional).
 - **Do not** auto-emit `INFLUENCES` or `RESPONDS_TO` — see § 1.
 

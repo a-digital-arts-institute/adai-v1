@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="4096" height="1024" viewBox="0 0 4096 1024">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:wght@300;400;500;700&display=swap');
+      text { font-family: Courier Prime, Courier New, monospace; font-size: 520px; font-weight: 700; letter-spacing: 0.12em; fill: #0C0C0E; }
+    </style>
+  </defs>
+  <text x="2048" y="650" text-anchor="middle">A(DAI)</text>
+</svg>

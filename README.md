@@ -93,7 +93,7 @@ Full reference: [`docs/EMBEDDINGS.md`](docs/EMBEDDINGS.md).
 | Route | Description |
 |---|---|
 | `/graph` | D3 force-directed graph view |
-| `/field` | Generative dot-field view (press `e` for embeddings mode) |
+| `/field` | Canonical data-driven dot-field frontend: Shape of Time + graph, search, readings, entity overlays |
 | `/embed-space` | UMAP 2D scatter of all 1,338 embedding vectors |
 | `/neighbours/:type/:slug` | Top-K cosine neighbours of any node, with knobs |
 
@@ -153,6 +153,7 @@ adai-v1/
 │   └── field/                   — /field generative dot-field view
 ├── results/                     — 59 legacy per-practitioner JSONs (reference)
 ├── docs/
+│   ├── FIELD.md                 — /field frontend route, data flow, and handoff notes
 │   ├── EMBEDDINGS.md            — canonical reference for the embedding pipeline
 │   ├── SPEC-GAP-ANALYSIS.md     — early spec gap audit
 │   └── BUILD-INSTRUCTIONS.md    — original build spec
@@ -220,6 +221,7 @@ Human-readable with type prefix: `artwork:fidenza`, `practitioner:casey reas`, `
 ## Further reading
 
 - [`CLAUDE.md`](CLAUDE.md) — authoritative architecture spec: data model, edge types, trust tiers, gravity model, embedding pipeline operator notes, deploy gotchas
+- [`docs/FIELD.md`](docs/FIELD.md) — current `/field` frontend route, file map, data flow, and interaction model
 - [`docs/EMBEDDINGS.md`](docs/EMBEDDINGS.md) — embedding pipeline reference: design rationale, schema, calibration, visualisation surfaces
 - [`seed/SOURCES.md`](seed/SOURCES.md) — canonical edge-type list and source provenance
 - [`seed/COVERAGE.md`](seed/COVERAGE.md) — coverage gaps and known issues

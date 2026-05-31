@@ -268,6 +268,408 @@
   // startCanvasDrift();
   startLogotypeTypewriter();
 
+  function startStudyZoom() {
+    const DEFAULT_ZOOM = 2;
+    const MIN_ZOOM = 1;
+    const MAX_ZOOM = 14;
+    const BITMAP_SCALE_CAP = 2.35;
+    const TARGET_SCREEN_RADIUS_RATIO = 0.01;
+    const MIN_TARGET_SCREEN_RADIUS = 5;
+    const MAX_TARGET_SCREEN_RADIUS = 8;
+    const PICK_SCREEN_RADIUS = 96;
+    const DURATION_MS = 1250;
+    const DETAIL_MOTION_DPR_CAP = 1.35;
+    const DETAIL_FINAL_DPR_CAP = 2;
+    let zoomed = false;
+    let animationFrame = 0;
+    let camera = { scale: 1, x: 0, y: 0 };
+    let lastDetailMotionFrame = 0;
+
+    const findStage = () => document.getElementById('mopey-stage');
+    const fieldCanvases = () => [
+      document.getElementById('myCanvas'),
+      document.getElementById('myCanvasOverlay'),
+    ].filter(Boolean);
+    const graphCanvas = () => document.getElementById('graph-canvas');
+    const cameraTargets = () => [...fieldCanvases(), graphCanvas()].filter(Boolean);
+    let detailCanvas = null;
+    let detailCtx = null;
+    let detailDpr = 1;
+
+    function isUiClick(e) {
+      return !!e.target.closest?.(
+        '#chrome, #search-palette, #entity-view, #chat-narrator, #coming-soon, #philosophy, a, button, input, textarea, select, label'
+      );
+    }
+
+    function easeCamera(t) {
+      return t < 0.5
+        ? 4 * t * t * t
+        : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function getStageScreenScale(stage, rect = stage.getBoundingClientRect()) {
+      return rect.width && stage.offsetWidth ? rect.width / stage.offsetWidth : 1;
+    }
+
+    function getTargetScreenRadius() {
+      const shortSide = Math.min(window.innerWidth || 0, window.innerHeight || 0);
+      return clamp(shortSide * TARGET_SCREEN_RADIUS_RATIO, MIN_TARGET_SCREEN_RADIUS, MAX_TARGET_SCREEN_RADIUS);
+    }
+
+    function getVisibleDots() {
+      return Array.isArray(window.__adaiDotRegistry) ? window.__adaiDotRegistry : [];
+    }
+
+    function constrainCamera(nextCamera) {
+      const stage = findStage();
+      if (!stage) return nextCamera;
+
+      const width = stage.offsetWidth;
+      const height = stage.offsetHeight;
+      const minX = width - width * nextCamera.scale;
+      const minY = height - height * nextCamera.scale;
+
+      return {
+        scale: nextCamera.scale,
+        x: clamp(nextCamera.x, minX, 0),
+        y: clamp(nextCamera.y, minY, 0)
+      };
+    }
+
+    function findNearestDot(fieldX, fieldY, stageScreenScale) {
+      const dots = getVisibleDots();
+      if (!dots.length) return null;
+
+      let nearest = null;
+      let nearestEdgeDistance = Infinity;
+      const maxEdgeDistance = PICK_SCREEN_RADIUS / Math.max(stageScreenScale, 0.001);
+
+      for (let i = 0; i < dots.length; i++) {
+        const dot = dots[i];
+        const x = Number(dot.x);
+        const y = Number(dot.y);
+        const radius = Number(dot.radius);
+        if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(radius) || radius <= 0) continue;
+
+        const edgeDistance = Math.max(0, Math.hypot(x - fieldX, y - fieldY) - radius);
+        if (edgeDistance < nearestEdgeDistance) {
+          nearestEdgeDistance = edgeDistance;
+          nearest = { x, y, radius };
+        }
+      }
+
+      return nearestEdgeDistance <= maxEdgeDistance ? nearest : null;
+    }
+
+    function zoomForDot(dot, stageScreenScale) {
+      if (!dot) {
+        return {
+          scale: DEFAULT_ZOOM,
+          rawScale: DEFAULT_ZOOM,
+          targetScreenRadius: getTargetScreenRadius()
+        };
+      }
+
+      const targetScreenRadius = getTargetScreenRadius();
+      const rawScale = targetScreenRadius / Math.max(dot.radius * stageScreenScale, 0.001);
+      return {
+        scale: clamp(rawScale, MIN_ZOOM, MAX_ZOOM),
+        rawScale,
+        targetScreenRadius
+      };
+    }
+
+    function cameraWithScale(nextCamera, scale) {
+      const stage = findStage();
+      if (!stage || !nextCamera.scale) return { scale: 1, x: 0, y: 0 };
+
+      const focusX = (stage.offsetWidth / 2 - nextCamera.x) / nextCamera.scale;
+      const focusY = (stage.offsetHeight / 2 - nextCamera.y) / nextCamera.scale;
+      return constrainCamera({
+        scale,
+        x: stage.offsetWidth / 2 - focusX * scale,
+        y: stage.offsetHeight / 2 - focusY * scale
+      });
+    }
+
+    function ensureDetailCanvas() {
+      if (detailCanvas?.isConnected) return detailCanvas;
+
+      detailCanvas = document.createElement('canvas');
+      detailCanvas.id = 'field-detail-canvas';
+      detailCanvas.setAttribute('aria-hidden', 'true');
+      detailCanvas.style.transition = 'none';
+      document.body.appendChild(detailCanvas);
+      detailCtx = detailCanvas.getContext('2d', { alpha: true, desynchronized: true }) || detailCanvas.getContext('2d');
+      resizeDetailCanvas('final');
+      return detailCanvas;
+    }
+
+    function resizeDetailCanvas(renderMode = 'final') {
+      if (!detailCanvas) return;
+      const cap = renderMode === 'motion' ? DETAIL_MOTION_DPR_CAP : DETAIL_FINAL_DPR_CAP;
+      detailDpr = Math.max(1, Math.min(cap, window.devicePixelRatio || 1));
+      const width = Math.max(1, window.innerWidth || document.documentElement.clientWidth || 1);
+      const height = Math.max(1, window.innerHeight || document.documentElement.clientHeight || 1);
+      const nextWidth = Math.round(width * detailDpr);
+      const nextHeight = Math.round(height * detailDpr);
+
+      if (detailCanvas.width !== nextWidth || detailCanvas.height !== nextHeight) {
+        detailCanvas.width = nextWidth;
+        detailCanvas.height = nextHeight;
+        detailCanvas.style.width = `${width}px`;
+        detailCanvas.style.height = `${height}px`;
+      }
+
+      detailCtx?.setTransform(detailDpr, 0, 0, detailDpr, 0, 0);
+    }
+
+    function clearDetailCanvas() {
+      if (!detailCanvas || !detailCtx) return;
+      resizeDetailCanvas();
+      detailCtx.clearRect(0, 0, detailCanvas.width / detailDpr, detailCanvas.height / detailDpr);
+      detailCanvas.style.transition = 'none';
+      detailCanvas.style.opacity = '0';
+    }
+
+    function drawDetailDot(ctx, x, y, radius, color, alpha, renderMode = 'final') {
+      if (radius < 0.35) return;
+
+      const lineWidth = clamp(radius * 0.14, 0.75, 2.6);
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = lineWidth;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.stroke();
+
+      if (renderMode === 'motion') {
+        ctx.restore();
+        return;
+      }
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(x, y, Math.max(0.2, radius - lineWidth * 0.9), 0, Math.PI * 2);
+      ctx.clip();
+
+      let theta = 0;
+      let first = true;
+      const spiralStroke = clamp(lineWidth * 0.62, 0.55, 1.45);
+      const spacing = Math.max(spiralStroke * 1.35, radius * 0.13);
+      const b = spacing / (Math.PI * 2);
+      const rMax = Math.max(0, radius - lineWidth * 1.15);
+      const thetaMax = rMax / Math.max(b, 0.001);
+      const desiredChord = clamp(radius / 18, 0.65, 2.2);
+
+      ctx.globalAlpha = alpha * 0.78;
+      ctx.lineWidth = spiralStroke;
+      ctx.beginPath();
+      while (theta <= thetaMax) {
+        const rr = b * theta;
+        const px = x + rr * Math.cos(theta);
+        const py = y + rr * Math.sin(theta);
+        if (first) {
+          ctx.moveTo(px, py);
+          first = false;
+        } else {
+          ctx.lineTo(px, py);
+        }
+        theta += clamp(desiredChord / Math.max(rr, 1), Math.PI / 180, Math.PI / 16);
+      }
+      ctx.stroke();
+      ctx.restore();
+      ctx.restore();
+    }
+
+    function renderDetailCanvas(renderMode = 'final') {
+      if (renderMode === 'hidden') {
+        clearDetailCanvas();
+        return;
+      }
+
+      const canvas = ensureDetailCanvas();
+      if (!detailCtx) return;
+
+      const stage = findStage();
+      const dots = getVisibleDots();
+      if (!stage || !dots.length || camera.scale <= 1.01) {
+        clearDetailCanvas();
+        return;
+      }
+
+      if (renderMode === 'motion') {
+        const now = performance.now();
+        if (now - lastDetailMotionFrame < 48) {
+          canvas.style.opacity = String(clamp((camera.scale - 1.15) / 1.5, 0, 0.72));
+          return;
+        }
+        lastDetailMotionFrame = now;
+      }
+
+      resizeDetailCanvas(renderMode);
+      const rect = stage.getBoundingClientRect();
+      const stageScreenScale = getStageScreenScale(stage, rect);
+      const width = detailCanvas.width / detailDpr;
+      const height = detailCanvas.height / detailDpr;
+      const fadeMax = renderMode === 'motion' ? 0.72 : 1;
+      const fade = clamp((camera.scale - 1.15) / 1.5, 0, fadeMax);
+
+      detailCtx.clearRect(0, 0, width, height);
+      canvas.style.opacity = String(fade);
+
+      for (let i = 0; i < dots.length; i++) {
+        const dot = dots[i];
+        const fieldX = Number(dot.x);
+        const fieldY = Number(dot.y);
+        const fieldRadius = Number(dot.radius);
+        if (!Number.isFinite(fieldX) || !Number.isFinite(fieldY) || !Number.isFinite(fieldRadius) || fieldRadius <= 0) continue;
+
+        const screenX = rect.left + (fieldX * camera.scale + camera.x) * stageScreenScale;
+        const screenY = rect.top + (fieldY * camera.scale + camera.y) * stageScreenScale;
+        const screenRadius = fieldRadius * camera.scale * stageScreenScale;
+        const margin = Math.max(18, screenRadius + 8);
+        if (screenX < -margin || screenX > width + margin || screenY < -margin || screenY > height + margin) continue;
+
+        const opacity = clamp(0.22 + screenRadius / 24, 0.38, 0.86);
+        drawDetailDot(detailCtx, screenX, screenY, screenRadius, dot.strokeCol || '#F2F2F2', opacity, renderMode);
+      }
+    }
+
+    function applyCamera(nextCamera, renderMode = 'final') {
+      camera = constrainCamera(nextCamera);
+      const displayCamera = cameraWithScale(camera, Math.min(camera.scale, BITMAP_SCALE_CAP));
+      const contextOpacity = camera.scale > 1.01
+        ? clamp(1 - (camera.scale - 1) / 3.4, 0.16, 1)
+        : 1;
+
+      cameraTargets().forEach((canvas) => {
+        canvas.style.transformOrigin = '0 0';
+        canvas.style.transform = `translate3d(${displayCamera.x.toFixed(2)}px, ${displayCamera.y.toFixed(2)}px, 0) scale(${displayCamera.scale.toFixed(4)})`;
+      });
+
+      fieldCanvases().forEach((canvas) => {
+        canvas.style.transition = 'none';
+        canvas.style.opacity = String(contextOpacity);
+      });
+      renderDetailCanvas(renderMode);
+    }
+
+    function animateCamera(targetCamera, onComplete, renderMode = 'zoom') {
+      if (animationFrame) cancelAnimationFrame(animationFrame);
+      const from = { ...camera };
+      const start = performance.now();
+      lastDetailMotionFrame = 0;
+
+      function tick(now) {
+        const progress = Math.min(1, (now - start) / DURATION_MS);
+        const eased = easeCamera(progress);
+        const frameMode = renderMode === 'reset'
+          ? 'hidden'
+          : progress < 1
+            ? 'motion'
+            : 'final';
+
+        applyCamera({
+          scale: from.scale + (targetCamera.scale - from.scale) * eased,
+          x: from.x + (targetCamera.x - from.x) * eased,
+          y: from.y + (targetCamera.y - from.y) * eased
+        }, frameMode);
+
+        if (progress < 1) {
+          animationFrame = requestAnimationFrame(tick);
+          return;
+        }
+
+        animationFrame = 0;
+        applyCamera(targetCamera, renderMode === 'reset' ? 'hidden' : 'final');
+        onComplete?.();
+      }
+
+      animationFrame = requestAnimationFrame(tick);
+    }
+
+    function zoomTo(clientX, clientY) {
+      const stage = findStage();
+      if (!stage) return;
+      const rect = stage.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+
+      const stageX = (clientX - rect.left) * (stage.offsetWidth / rect.width);
+      const stageY = (clientY - rect.top) * (stage.offsetHeight / rect.height);
+      const fieldX = (stageX - camera.x) / camera.scale;
+      const fieldY = (stageY - camera.y) / camera.scale;
+      const stageScreenScale = getStageScreenScale(stage, rect);
+      const dot = findNearestDot(fieldX, fieldY, stageScreenScale);
+      const focusX = dot ? dot.x : fieldX;
+      const focusY = dot ? dot.y : fieldY;
+      const zoom = zoomForDot(dot, stageScreenScale);
+
+      document.body.classList.add('field-study-zoomed');
+      document.body.dataset.fieldZoomScale = zoom.scale.toFixed(4);
+      document.body.dataset.fieldZoomRawScale = zoom.rawScale.toFixed(4);
+      document.body.dataset.fieldZoomRadius = dot ? dot.radius.toFixed(4) : '';
+      document.body.dataset.fieldZoomTargetRadius = zoom.targetScreenRadius.toFixed(2);
+      zoomed = true;
+      animateCamera({
+        scale: zoom.scale,
+        x: stage.offsetWidth / 2 - focusX * zoom.scale,
+        y: stage.offsetHeight / 2 - focusY * zoom.scale
+      });
+    }
+
+    function reset() {
+      clearDetailCanvas();
+      if (camera.scale > BITMAP_SCALE_CAP) {
+        camera = cameraWithScale(camera, BITMAP_SCALE_CAP);
+      }
+      animateCamera({ scale: 1, x: 0, y: 0 }, () => {
+        cameraTargets().forEach((canvas) => {
+          canvas.style.transformOrigin = '';
+          canvas.style.transform = '';
+          canvas.style.transition = 'none';
+          canvas.style.opacity = '';
+        });
+        clearDetailCanvas();
+      }, 'reset');
+      document.body.classList.remove('field-study-zoomed');
+      delete document.body.dataset.fieldZoomScale;
+      delete document.body.dataset.fieldZoomRawScale;
+      delete document.body.dataset.fieldZoomRadius;
+      delete document.body.dataset.fieldZoomTargetRadius;
+      zoomed = false;
+    }
+
+    document.addEventListener('click', (e) => {
+      if (isUiClick(e)) return;
+      if (e.detail >= 2) {
+        reset();
+        return;
+      }
+      zoomTo(e.clientX, e.clientY);
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (!zoomed || e.key !== 'Escape') return;
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) return;
+      e.preventDefault();
+      reset();
+    });
+
+    window.addEventListener('resize', reset);
+  }
+
+  startStudyZoom();
+
   // Room navigation. Two rooms (#query, #contribute) are entry points to
   // global tools rather than separate views — clicking them opens the search
   // palette / archivist chat. When that surface closes, we revert the active
