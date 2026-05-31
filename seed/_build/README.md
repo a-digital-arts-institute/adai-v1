@@ -37,16 +37,19 @@ gatherer ── writes ──→ runs/<YYYY-MM>/<source>-<ts>.json
 
 ## Live producers
 
-The shipped canon (May 2026) is **two platform gatherers + the V&A historical
-gatherer + a rule-derived curation pass**. The old multi-source script zoo
-(MoMA / objkt / Met / `*_v3` / named-anchors) was `git rm`'d in the rebuild —
-recoverable from git history, gone from the live tree.
+The shipped canon (May 2026) is **four source gatherers — Art Blocks +
+curated-fxhash + V&A + SuperRare — plus a rule-derived curation pass**. Each
+contributes its most-significant slice (curated generative / 2021 fxhash canon /
+1960s–70s computer-art spine / 2018 crypto-art genesis). The old multi-source
+script zoo (MoMA / objkt / Met / `*_v3` / named-anchors) was `git rm`'d in the
+rebuild — recoverable from git history, gone from the live tree.
 
 | Gatherer | Source | Status |
 |---|---|---|
 | `fetch_artblocks.py` | Art Blocks Hasura (V0/V1/V3 core contracts) | **Live.** ~477 artworks + 297 artists. |
 | `fetch_fxhash.py` | fxhash GraphQL | **Live (curated).** `--curate` selects a quality slice by fxhash **relevance** + a transparent secondary-market demand gate (`secVolumeNb` ≥ N, or enough mints with high sell-through; `--preview` to calibrate, stats stored in metadata) → the collector-validated 2021 generative canon, *not* a chronological dump. `--refresh-from-canon` re-pulls the EXACT current token ids (adds tags without reshaping → embeddings stay aligned); plain paged mode is `mintOpensAt ASC`. |
 | `fetch_va.py` | V&A `api.vam.ac.uk/v2` | **Live (de-bias pass).** The Victoria & Albert Museum's Computer Arts Society collection — `q=computer art&images_exist=1`. ~1,159 artworks + 207 practitioners + 6 collectives + 1 institution, the 1960s–70s computer-art spine (Nake, Cohen, Mohr, Molnár, Nees …). **IIIF images** (`framemark.vam.ac.uk`, no Commons-429 throttle) so every record clears `--require-cdn`. Individual-maker filter (skips publisher/curator/org/Unknown) so CREATED_BY always resolves; deterministic "Surname, Forename" flip for cross-source dedup; named groups → `collective`. V&A images are NOT CC0 — provenance preserved. |
+| `fetch_superrare.py` | SuperRare `api.superrare.com/graphql` | **Live (augment / de-bias).** Curated 1/1 Ethereum art. Default = the **V1 genesis canon** (`--sort NFT_CREATED_AT --order asc` on contract `0x41a3…`) — the 2018-2019 founding of crypto art (XCOPY, Robbie Barrat …). Images via **imgix** (`superrare-artworks.imgix.net`, no throttle; `proxy.image.medium` avif/jpeg, decodable by the embed venv), IPFS original kept as provenance. Inlines pagination (the API mis-coerces a `$take` variable). `--sort LAST_SALE_TIME` / `--contract` for other slices. NOT CC0 (creator-copyright) — provenance preserved. **Open item:** curated "Spaces" aren't API-enumerable; targets the flagship contract instead. |
 | `fetch_wikidata.py` | Wikidata SPARQL | **Shelved.** QIDs verified-clean (no bees) + bare-stub filter, but Commons-429 starves its artwork images vs the every-artwork-imaged invariant. The V&A pass exists because it clears that exact bar. Practitioner-only is viable; dormant on the branch. |
 | `merge_batches.py` | `runs/*.json` | Assembles batches → canon (cross-source dedup, alias placeholder resolution). `--require-cdn` drops any artwork lacking a mirrored R2 cdn (cascades edges/aliases; practitioners untouched) — enforces "every artwork has an image". |
 | `derive_curation.py` | post-merge canon | Rule-derived editorial layer: 8 base concepts + **tag-concepts** from fxhash tags (`--tag-min-artworks` gate, `TAG_STOPLIST` for junk) + A(DAI) regime + 5 sub-regimes + CLASSIFIED_BY / EMBODIES (incl. attested tag-EMBODIES + V&A → `computer-art`) + **V&A-maker PRACTICES** (→ computer-art) + V&A classification under euro-american-institutional / academic-media-art-history. |
@@ -92,6 +95,7 @@ rm -rf seed/_build/runs/*
 python3 seed/_build/fetch_artblocks.py
 python3 seed/_build/fetch_fxhash.py --curate --top 1200 --min-secondary-sales 10 --min-minted 40 --min-sellthrough 0.7  # curated quality slice (--preview to calibrate)
 python3 seed/_build/fetch_va.py                           # V&A "computer art" — the 1960s-70s spine, IIIF-imaged
+python3 seed/_build/fetch_superrare.py                    # SuperRare V1 genesis 1/1 canon (2018-19; --sort/--contract for other slices)
 python3 seed/_build/merge_batches.py --no-validate                  # PLAIN merge first (net-new V&A imgs must be present for the mirror)
 seed/_build/.venv/bin/python3 seed/_build/upload_to_r2.py --mirror  # MIRROR BEFORE CULL/EMBED
 python3 seed/_build/merge_batches.py --require-cdn --no-validate     # cull imageless + re-assemble

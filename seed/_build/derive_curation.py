@@ -410,8 +410,9 @@ def derive(tag_min_artworks: int = TAG_MIN_ARTWORKS) -> tuple[list[Node], list[E
         is_artblocks = nid in artblocks_artworks
         is_fxhash = nid in fxhash_artworks
         is_va = bool(md.get("va_system_number"))
+        is_superrare = bool(md.get("superrare_universal_token_id"))
         genre_qids = md.get("genre_qids", []) or []
-        in_scope = is_moma or is_artblocks or is_fxhash or is_va or genre_qids
+        in_scope = is_moma or is_artblocks or is_fxhash or is_va or is_superrare or genre_qids
 
         # CLASSIFIED_BY A(DAI) regime
         if in_scope:
@@ -428,7 +429,7 @@ def derive(tag_min_artworks: int = TAG_MIN_ARTWORKS) -> tuple[list[Node], list[E
                 edge_type="CLASSIFIED_BY", valid_from=now, confidence=1.0,
             ))
             stats["classified_by_euro_amer_artwork"] += 1
-        if is_artblocks or is_fxhash:
+        if is_artblocks or is_fxhash or is_superrare:
             out_edges.append(Edge(
                 source_id=nid, target_id=sub_regime_ids["Crypto Market-Native"],
                 edge_type="CLASSIFIED_BY", valid_from=now, confidence=1.0,
@@ -462,6 +463,19 @@ def derive(tag_min_artworks: int = TAG_MIN_ARTWORKS) -> tuple[list[Node], list[E
                     edge_type="EMBODIES", valid_from=now, confidence=1.0,
                 ))
                 stats["embodies_va"] += 1
+
+        # EMBODIES — SuperRare → digital-art (the broad base concept; SuperRare is
+        # curated 1/1 digital art, NOT specifically generative, so the honest flat
+        # anchor is digital-art. Artist-applied tags add the finer vocabulary via
+        # the tag-concept machinery below).
+        if is_superrare:
+            da = slug_to_concept_id.get("digital-art")
+            if da:
+                out_edges.append(Edge(
+                    source_id=nid, target_id=da,
+                    edge_type="EMBODIES", valid_from=now, confidence=1.0,
+                ))
+                stats["embodies_superrare"] += 1
 
         # EMBODIES — Wikidata genre QIDs → concept
         for q in set(genre_qids):

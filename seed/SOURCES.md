@@ -2,7 +2,7 @@
 
 > **⚠️ Status note (May 2026).** What ships is the **curated-platform + V&A
 > pipeline**, assembled from Art Blocks + a `--curate`d slice of fxhash + the V&A
-> Computer Arts Society collection, plus a rule-derived editorial layer. No MoMA,
+> Computer Arts Society collection + SuperRare (curated 1/1 Ethereum art), plus a rule-derived editorial layer. No MoMA,
 > no Wikidata, no cull: the four-source sweep and its cull were dropped after the
 > Wikidata `digital_art_qids` list was found corrupt (one QID, "graphic artist",
 > dragged in 3,652 non-digital painters). Two May-2026 passes shaped it: the **V&A
@@ -150,7 +150,7 @@ Every gatherer:
 4. Uses shared `_http` (retry + per-host throttling + descriptive UA) so
    no producer reinvents fetching.
 
-The three contract-conformant producers that ship:
+The four contract-conformant producers that ship:
 
 - `fetch_artblocks.py` — data.artblocks.io/v1/graphql, V0/V1/V3 core
   contracts only. 477 projects + 297 distinct artists with thumbnails.
@@ -158,12 +158,18 @@ The three contract-conformant producers that ship:
   `tags`. ~3,000 tokens + 742 distinct authors, IPFS displayUri rewritten to
   gateway.fxhash2.xyz. `--refresh-from-canon` re-pulls the exact current set.
 - `fetch_va.py` — api.vam.ac.uk/v2 search, the V&A Computer Arts Society
-  collection (`q=computer art&images_exist=1`). 1,159 artworks + 207
-  practitioners + 6 collectives + 1 institution — the 1960s–70s computer-art
+  collection (`q=computer art&images_exist=1`) — the 1960s–70s computer-art
   spine. IIIF images (`framemark.vam.ac.uk`, no Commons-429 throttle) so every
   record clears `--require-cdn`. Individual-maker filter so CREATED_BY always
-  resolves; deterministic "Surname, Forename" flip for cross-source dedup. The
+  resolves; deterministic "Surname, Forename" flip for cross-source dedup. A
   **de-bias pass** (May 2026). V&A images are NOT CC0 — provenance preserved.
+- `fetch_superrare.py` — api.superrare.com/graphql (no auth). Curated 1/1
+  Ethereum art; default selection is the **V1 genesis canon** (oldest-first on the
+  2018 contract = the founding of crypto art: XCOPY, Robbie Barrat …). imgix
+  images (no throttle, embed-decodable), IPFS original kept as provenance →
+  clears `--require-cdn`. An **augmenting pass** (May 2026): widens the canon
+  beyond generative to curated 1/1. NOT CC0 (creator-copyright) — provenance
+  preserved. (Pagination inlined — the API mis-coerces a `$take` variable.)
 
 `fetch_wikidata.py` is present but **quarantined** (its genre QID list was
 corrupt — a bee species, moths, and "graphic artist" which alone matched
@@ -242,6 +248,7 @@ its QID list is curated; see the rebuild journey).
 | Art Blocks Hasura API | ✅ shipped | Generative artwork metadata + thumbnails | Platform data | Generative, Crypto |
 | fxhash API | ✅ shipped | Tezos generative artwork data + artist tags | Platform data | Generative |
 | V&A `api.vam.ac.uk/v2` | ✅ shipped | Computer Arts Society collection + IIIF images | Museum data (images NOT CC0) | Early Computer Art Pioneers (1960s–80s) |
+| SuperRare `api.superrare.com/graphql` | ✅ shipped | Curated 1/1 Ethereum art + imgix images | Platform data (creator-copyright, NOT CC0) | Crypto/NFT Art (2018 genesis 1/1) |
 | Wikidata SPARQL | quarantined | Biographical data, artwork images (P18) | CC0 | All (institutional) |
 | MoMA Collection CSV | candidate | Artworks + thumbnails for MoMA holdings | CC0 | All (institutional crossover) |
 | Met Open Access API | candidate | Public domain artwork images | CC0 / public domain | Pioneers, Institutional |
@@ -432,4 +439,4 @@ scraping.
 
 ## How to cite this seed
 
-> A(DAI) Seed Canon (May 2026, curated-platform + V&A rebuild; exact counts in [`STATS.md`](STATS.md)). Practitioners (platform-native generative artists + V&A 1960s–70s computer-art pioneers), collectives, an institution, and artworks across 5 live edge types (CLASSIFIED_BY, CREATED_BY, EXHIBITED_AT, EMBODIES, PRACTICES), against base + fxhash-tag concept nodes and 6 classification regimes. Assembled by three contract-conformant gatherers — Art Blocks Hasura (V0/V1/V3 contracts), fxhash GraphQL (`--curate`: relevance + secondary-market demand gate → the collector-validated 2021 canon), and the Victoria & Albert Museum's Computer Arts Society collection (api.vam.ac.uk/v2, IIIF images) — folded into canon by `merge_batches.py` with a single rule-derived curation pass (`derive_curation.py`) for the editorial layer; clean by construction (no MoMA, no Wikidata, no cull). Two de-bias/de-trash passes: V&A added the historical spine; the fxhash curation replaced a permissionless chronological dump with collector-validated work. Every artwork carries a mirrored R2 image (`--require-cdn`). Every row carries `signal_id` pointing back to its producer's batch; validator-enforced anti-enrichment rule (no narrative field without sibling source URL). 4 ingest signals + 1 migration contributor (trust tier `reviewed`) recorded as the provenance trail. APIs only — no scraping, no LLM-generated prose (V&A images are not CC0; provenance preserved). The remaining editorial layer (scenes / non-V&A institutions / net-art / INFLUENCES / RESPONDS_TO) is deferred to a post-deploy curation pass via the contributor API or further correctly-configured sources. Commons-licensed under A(DAI) full commons consent scope.
+> A(DAI) Seed Canon (May 2026, curated-platform + V&A rebuild; exact counts in [`STATS.md`](STATS.md)). Practitioners (platform-native generative artists + V&A 1960s–70s computer-art pioneers), collectives, an institution, and artworks across 5 live edge types (CLASSIFIED_BY, CREATED_BY, EXHIBITED_AT, EMBODIES, PRACTICES), against base + fxhash-tag concept nodes and 6 classification regimes. Assembled by three contract-conformant gatherers — Art Blocks Hasura (V0/V1/V3 contracts), fxhash GraphQL (`--curate`: relevance + secondary-market demand gate → the collector-validated 2021 canon), the Victoria & Albert Museum's Computer Arts Society collection (api.vam.ac.uk/v2, IIIF images), and SuperRare (api.superrare.com/graphql, curated 1/1 Ethereum art — the 2018 genesis canon) — folded into canon by `merge_batches.py` with a single rule-derived curation pass (`derive_curation.py`) for the editorial layer; clean by construction (no MoMA, no Wikidata, no cull). Three refinement passes: V&A added the 1960s–70s historical spine; the fxhash curation replaced a permissionless chronological dump with collector-validated work; SuperRare augmented with the 2018 crypto-art genesis 1/1 canon. Every artwork carries a mirrored R2 image (`--require-cdn`). Every row carries `signal_id` pointing back to its producer's batch; validator-enforced anti-enrichment rule (no narrative field without sibling source URL). One ingest signal per producer + 1 migration contributor (trust tier `reviewed`) recorded as the provenance trail. APIs only — no scraping, no LLM-generated prose (V&A images are not CC0; provenance preserved). The remaining editorial layer (scenes / non-V&A institutions / net-art / INFLUENCES / RESPONDS_TO) is deferred to a post-deploy curation pass via the contributor API or further correctly-configured sources. Commons-licensed under A(DAI) full commons consent scope.

@@ -84,15 +84,15 @@ Single SQLite file `adai.db` with CR-SQLite CRDT extensions (`@shards-lang/crsql
 
 > **⚠️ What ships right now: curated platforms + the V&A historical layer (May 2026). Counts: [`seed/STATS.md`](seed/STATS.md).**
 >
-> The canon is the genuine output of three source-of-truth gatherers —
-> **Art Blocks** (curated Ethereum generative) **+ a curated slice of fxhash**
-> (the collector-validated 2021 Tezos generative canon — SMOLSKULL, RGB
-> Elementary Cellular Automaton, Dragons …, selected by `--curate`: relevance +
-> a secondary-market demand gate, NOT a chronological dump) **+ the Victoria &
-> Albert Museum's Computer Arts Society collection** (the 1960s–70s computer-art
-> spine: Nake, Cohen, Mohr, Molnár, Nees, Noll, Verostko, the Computer Technique
-> Group …) — plus the rule-derived editorial layer. Each source contributes its
-> *most significant slice*, not a random sample. There is still **no MoMA,
+> The canon is the genuine output of four source-of-truth gatherers, **each
+> contributing its most significant slice, not a random sample**: **Art Blocks**
+> (curated Ethereum generative) **+ a curated slice of fxhash** (the collector-
+> validated 2021 Tezos generative canon — SMOLSKULL, RGB Elementary Cellular
+> Automaton …, selected by `--curate`: relevance + a secondary-market demand gate)
+> **+ the Victoria & Albert Museum's Computer Arts Society collection** (the
+> 1960s–70s computer-art spine: Nake, Cohen, Mohr, Molnár, Nees …) **+ SuperRare**
+> (the 2018-2019 genesis of crypto art — XCOPY, Robbie Barrat …, the V1 1/1 canon)
+> — plus the rule-derived editorial layer. There is still **no MoMA,
 > no Wikidata, no named-anchors** layer: those were dropped after the Wikidata
 > `digital_art_qids` list was found to be **corrupt** (a bee species, moths,
 > "combat", and "graphic artist" — the last alone dragged 3,652 non-digital
@@ -118,7 +118,7 @@ Single SQLite file `adai.db` with CR-SQLite CRDT extensions (`@shards-lang/crsql
 > narrative (they tell the de-bias story); when they and `STATS.md` disagree,
 > `STATS.md` wins — regenerate it and don't hand-reconcile the prose.
 
-**Node types** — live in Seed Canon (May 2026, from the Art Blocks + curated-fxhash + V&A pipeline; **counts in [`seed/STATS.md`](seed/STATS.md)**): **artwork** (curated-fxhash 2021 generative tokens + Art Blocks generative tokens + V&A computer-art holdings; **every one carries a mirrored R2 image**, see the `--require-cdn` invariant below), **practitioner** (platform-native generative artists + the V&A 1960s–70s computer-art spine, pre-platform, recognised through the museum + scholarship), **concept** (8 base + **tag-concepts** minted from attested fxhash tags at the ≥25 frequency gate, `TAG_STOPLIST`-filtered; see "Tag-derived concepts"), **classification_regime** (A(DAI) canonical lens + 5 sub-regimes), **collective** (V&A artistic groups, e.g. the Computer Technique Group), **platform** (Art Blocks, fxhash), **institution** (Victoria and Albert Museum). Schema reserves `scene`, `publication`, `project`, `event`, `related` — empty. Cross-source identity merges by node id (e.g. Licia He on both V&A and Art Blocks → one node). Every artwork is an on-chain generative token or a V&A computer-art holding. No node carries a Wikidata occupation/movement QID — the contamination is gone at the root. New practitioners/artworks enter via the contributor API or by re-running the gatherers. **Wikidata was re-attempted in May 2026 and dropped again**: the practitioner gatherer is verified-clean (occupation QIDs, no bees), but Wikidata *artworks* are Wikimedia-Commons-hosted and Commons' bot-throttle (429) starves the image mirror — which collides with the "every artwork has a mirrored image" invariant. The V&A pass exists because it clears that exact bar (IIIF, no throttle). So Wikidata stays shelved (practitioner-only would be viable; the gatherer + occupation→concept map are on the branch, dormant). objkt / a correctly-configured non-Commons source remain the "try more later" path.
+**Node types** — live in Seed Canon (May 2026, from the Art Blocks + curated-fxhash + V&A pipeline; **counts in [`seed/STATS.md`](seed/STATS.md)**): **artwork** (curated-fxhash 2021 generative tokens + Art Blocks generative tokens + V&A computer-art holdings; **every one carries a mirrored R2 image**, see the `--require-cdn` invariant below), **practitioner** (platform-native generative artists + the V&A 1960s–70s computer-art spine, pre-platform, recognised through the museum + scholarship), **concept** (8 base + **tag-concepts** minted from attested fxhash tags at the ≥25 frequency gate, `TAG_STOPLIST`-filtered; see "Tag-derived concepts"), **classification_regime** (A(DAI) canonical lens + 5 sub-regimes), **collective** (V&A artistic groups, e.g. the Computer Technique Group), **platform** (Art Blocks, fxhash, SuperRare), **institution** (Victoria and Albert Museum). Schema reserves `scene`, `publication`, `project`, `event`, `related` — empty. Cross-source identity merges by node id (e.g. XCOPY appears on more than one platform → one node). Every artwork is an on-chain generative token, a V&A computer-art holding, or a SuperRare curated 1/1. No node carries a Wikidata occupation/movement QID — the contamination is gone at the root. New practitioners/artworks enter via the contributor API or by re-running the gatherers. **Wikidata was re-attempted in May 2026 and dropped again**: the practitioner gatherer is verified-clean (occupation QIDs, no bees), but Wikidata *artworks* are Wikimedia-Commons-hosted and Commons' bot-throttle (429) starves the image mirror — which collides with the "every artwork has a mirrored image" invariant. The V&A pass exists because it clears that exact bar (IIIF, no throttle). So Wikidata stays shelved (practitioner-only would be viable; the gatherer + occupation→concept map are on the branch, dormant). objkt / a correctly-configured non-Commons source remain the "try more later" path.
 
 **Edge types** — 9 curated + 2 auto-derived (**counts in [`seed/STATS.md`](seed/STATS.md)**). Curated: **CLASSIFIED_BY** (every artwork → A(DAI) lens + its sub-regime: platform artworks → crypto-market-native, V&A artworks → euro-american-institutional; V&A makers → academic-media-art-history + euro-american-institutional), **CREATED_BY** (artwork → its maker), **EXHIBITED_AT** (platform artworks → their platform, V&A artworks → institution:victoria and albert museum), **EMBODIES** (**two-tier**: every platform artwork → generative-art + artwork → fxhash tag-concept, every V&A artwork → computer-art, all Tier-1 confidence 1.0 in canon; see "Tag-derived concepts"), **PRACTICES** (V&A makers → computer-art; **revived by the V&A pass** — it was empty on the platform-only canon because platform artists carry no QIDs), **BELONGS_TO / COLLABORATES_WITH / USES_TECHNIQUE / INFLUENCES** (reserved, empty). Auto-derived from `npm run embed:derive`, refreshed by the daily `embed-derive-daily` GitHub Actions workflow: **STYLE_KIN** (creator ↔ creator — note the 1960s V&A pioneers form a tight internally-coherent cluster, Nake↔Nees↔Mohr↔Molnár↔Noll↔Verostko; the embeddings correctly do *not* fabricate cross-era visual rhymes with 2021 platform work), **VISUALLY_AFFINE** (artwork ↔ artwork), and **Tier-2 concept-EMBODIES** (inferred artwork→tag-concept for visually-similar untagged works, `created_by='embedding-multimodal-v1'`, dashed; ~0 land on V&A works — they cluster apart from tagged fxhash work, so the eras connect through shared *curated* concepts, not forced similarity) — bounded by the per-node mutual-kNN cap / gates. The canonical edge-type list lives in [seed/SOURCES.md](seed/SOURCES.md), which adds one intentionally empty edge: **RESPONDS_TO** (artwork → artwork) — zero because it requires evidence of artist intent, not thematic similarity. It's the highest-value edge type for Basel-floor practitioner contributions. `db.sql` has no CHECK constraint on `edge_type`. When adding rows, prefer the existing 9 unless the relation is genuinely new, and update these counts rather than letting them drift.
 
@@ -328,7 +328,7 @@ Don't "fix" the doc counts back to 4,558 (clean two-platform, pre-V&A), 8,653
    Caveat: V&A images are **not CC0** (unlike Met/Smithsonian) — provenance is
    the V&A; we mirror for graph-renderability with attribution preserved.
 
-7. **fxhash curation pass (May 2026) — THE CURRENT STATE.** With the V&A in, the
+7. **fxhash curation pass (May 2026).** With the V&A in, the
    remaining problem was the fxhash layer itself: it dominated the canon (~3,000
    of ~4,600 artworks) and was a *provenance-murky* set (a 2023–2025 slice the
    `--refresh-from-canon` mechanism had been perpetuating from an earlier, non-
@@ -351,10 +351,28 @@ Don't "fix" the doc counts back to 4,558 (clean two-platform, pre-V&A), 8,653
    rule) that trusts the wrong signal — here "first N chronological" — is its own
    kind of poison; fix it at the producer's selection criteria.
 
-So: the **shipped canon is genuine curated-platform + V&A pipeline output** —
-Art Blocks + curated-fxhash + V&A gatherers → merge → rule-derived curation. Each
-source is its most-significant slice, not a dump. Don't "fix" the doc counts back
-to 5,930 (V&A pass, pre-curation) or 4,558 (two-platform). **Trust [`seed/STATS.md`](seed/STATS.md)** — it's generated from the canon and can't drift.
+8. **SuperRare genesis pass (May 2026) — THE CURRENT STATE.** The augmenting
+   move the SuperRare investigation recommended (see the agent report): the canon
+   was still all *generative* on the crypto side. SuperRare adds curated 1/1
+   Ethereum art via `fetch_superrare.py` (`api.superrare.com/graphql`, no auth).
+   Default selection = the **V1 genesis canon** (oldest-first on the 2018 contract
+   = the founding of crypto art: XCOPY, Robbie Barrat, videodrome …) — the same
+   "most-significant-slice" instinct as the others, deterministic. Images via an
+   imgix CDN (no throttle; avif/jpeg, embed-venv-decodable), IPFS original kept as
+   provenance → clears `--require-cdn`. Classified crypto-market-native, EMBODIES
+   the broad `digital-art` concept (it's 1/1 art, not generative) + artist tags.
+   Implementation note: the SuperRare server mis-coerces a GraphQL variable named
+   `$take`, so the gatherer inlines pagination. Not CC0 (creator-copyright) —
+   thumbnail-mirror posture documented, like the V&A. Open item: curated "Spaces"
+   aren't API-enumerable, so this targets the flagship contract; Space-targeting
+   needs an external contract list (a follow-up).
+
+So: the **shipped canon is genuine four-source pipeline output** — Art Blocks +
+curated-fxhash + V&A + SuperRare gatherers → merge → rule-derived curation. Each
+source is its most-significant slice, not a dump (curated generative / 2021 fxhash
+canon / 1960s–70s computer-art spine / 2018 crypto-art genesis). Don't "fix" the
+doc counts back to 5,930 (V&A pass, pre-curation) or 4,558 (two-platform). **Trust
+[`seed/STATS.md`](seed/STATS.md)** — it's generated from the canon and can't drift.
 
 ### Canonical path — `seed/*.json` via `seed-consolidated.ts`
 
@@ -370,6 +388,7 @@ seed/_build/.venv/bin/python3 seed/_build/fetch_artblocks.py            # 2. Art
 seed/_build/.venv/bin/python3 seed/_build/fetch_fxhash.py --curate --top 1200 \
     --min-secondary-sales 10 --min-minted 40 --min-sellthrough 0.7      # 3. curated fxhash (relevance + demand gate); --preview first to calibrate
 seed/_build/.venv/bin/python3 seed/_build/fetch_va.py                   # 4. V&A "computer art" (imaged, IIIF)
+seed/_build/.venv/bin/python3 seed/_build/fetch_superrare.py            # 4b. SuperRare V1 genesis 1/1 canon (2018-19)
 seed/_build/.venv/bin/python3 seed/_build/merge_batches.py --no-validate           # 5. PLAIN merge — net-new imgs present so the mirror can see them
 seed/_build/.venv/bin/python3 seed/_build/upload_to_r2.py --mirror                 # 6. mirror new images → image_mirror.json (MIRROR BEFORE CULL/EMBED)
 seed/_build/.venv/bin/python3 seed/_build/merge_batches.py --require-cdn --no-validate  # 7. cull imageless, re-assemble

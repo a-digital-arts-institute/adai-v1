@@ -5,7 +5,8 @@ One place to look to answer "what is in the canon right now?"
 > **⚠️ Status note (May 2026).** The shipped canon is the **curated-platform + V&A
 > pipeline** — Art Blocks + a `--curate`d slice of fxhash (relevance + demand gate
 > → the collector-validated 2021 generative canon) + the V&A Computer Arts Society
-> collection (1960s–70s spine) + a rule-derived editorial layer. **No MoMA, no
+> collection (1960s–70s spine) + SuperRare (the 2018 crypto-art genesis 1/1 canon)
+> + a rule-derived editorial layer. **No MoMA, no
 > Wikidata, no cull**: the four-source sweep + its digital-art cull were dropped
 > after the Wikidata `digital_art_qids` list was found corrupt (it dragged 3,652
 > non-digital painters in). Clean *by construction* — `merge_batches.py` assembles
@@ -14,7 +15,7 @@ One place to look to answer "what is in the canon right now?"
 > (pre-curation 5,930, two-platform 4,558, cull 8,653, sweep 16k, v1 1,491), trust
 > STATS.md. Full arc: [`../CLAUDE.md`](../CLAUDE.md) § "The rebuild journey".
 
-Post-rebuild (May 2026): assembled from three source-attested gatherers
+Post-rebuild (May 2026): assembled from four source-attested gatherers
 ([`_build/fetch_artblocks.py`](_build/fetch_artblocks.py),
 [`_build/fetch_fxhash.py`](_build/fetch_fxhash.py),
 [`_build/fetch_va.py`](_build/fetch_va.py) — the V&A Computer Arts Society

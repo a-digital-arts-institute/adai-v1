@@ -3,7 +3,8 @@
 > **⚠️ Status note (May 2026).** What ships is the **curated-platform + V&A
 > pipeline** — Art Blocks (curated Ethereum generative) + a `--curate`d slice of
 > fxhash (the collector-validated 2021 Tezos generative canon) + the V&A Computer
-> Arts Society collection (1960s–70s computer-art spine). No MoMA, no Wikidata,
+> Arts Society collection (1960s–70s computer-art spine) + SuperRare (the 2018
+> genesis of crypto art, curated 1/1). No MoMA, no Wikidata,
 > no cull. Two May-2026 passes shaped it: the **V&A de-bias pass** (historical
 > spine, IIIF-imaged) and the **fxhash curation pass** (relevance + secondary-
 > market demand gate — killed the permissionless trash + over-dominance). **Exact
