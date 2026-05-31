@@ -7,9 +7,10 @@ Replaces five legacy fetchers (fetch_wikidata_v3, _v3b, _named_anchors,
 _artworks, _portraits — see archive/). Single unified pipeline, two SPARQL
 queries:
 
-  1. Digital-art practitioners — anyone tagged with an occupation or movement
-     in DIGITAL_ART_QIDS. Returns: QID, label, image (P18), birth (P569),
-     death (P570), country (P27), occupations, movements.
+  1. Digital-art practitioners — anyone tagged with a P106 occupation in
+     OCCUPATION_QIDS (or a P135 movement in MOVEMENT_QIDS, if set). Returns:
+     QID, label, image (P18), birth (P569), death (P570), country (P27),
+     occupations, movements.
   2. Digital-art artworks — anyone classified as an instance of art genre
      in DIGITAL_ART_GENRE_QIDS. Returns: QID, label, image (P18), creator
      (P170) QID, inception (P571), depicts (P180).
@@ -53,39 +54,45 @@ SPARQL_URL = "https://query.wikidata.org/sparql"
 COMMONS_FILEPATH = "https://commons.wikimedia.org/wiki/Special:FilePath/"
 
 # Wikidata QIDs that mark a practitioner as digital-art relevant. Conservative
-# — occupations and movements that are unambiguously about digital / electronic /
-# new-media practice. Wider categories (Q1028181 "painter") would over-include.
+# — occupations that are unambiguously about digital / electronic / new-media
+# practice. Wider categories (Q1028181 "painter") would over-include.
 # ═══════════════════════════════════════════════════════════════════════════
-# ⚠️ QUARANTINED 2026-05 — DO NOT RUN UNTIL THE OCCUPATION QIDS ARE CURATED.
+# ✅ VERIFIED + ENABLED 2026-05 (was QUARANTINED). Every QID below was checked
+# against LIVE Wikidata (labels + descriptions + instance counts + sample
+# names) before enabling — not trusted from a comment.
 #
-# The original lists below (preserved in git history) were CORRUPT: every QID
-# resolved to an insect / a 404 / an unrelated item, while the inline comments
-# *claimed* they were digital-art genres. Q649652 ("digital art") was a bee
-# species (Lasioglossum baudini); Q4671777/Q4671798 ("algorithmic/generative
-# art") were moths; Q650711 ("net.art") was "combat"; Q1925963 ("sound art")
-# was actually "graphic artist" — a valid but far-too-broad OCCUPATION that
-# single-handedly matched 3,652 non-digital painters/sculptors (Duchamp, Miró,
-# Dubuffet) via wdt:P106, poisoning the whole canon. The insect QIDs matched
-# nobody (people aren't bees), so the only thing this gatherer ever returned
-# was the 20th-century graphic-art canon.
+# The ORIGINAL lists (in git history) were CORRUPT: every QID resolved to an
+# insect / a 404 / an unrelated item while the comments *claimed* digital-art
+# genres. Q649652 ("digital art") = a bee (Lasioglossum baudini); Q4671777/
+# Q4671798 ("algorithmic/generative art") = moths; Q650711 ("net.art") =
+# "combat"; Q1925963 ("sound art") = "graphic artist" — a far-too-broad
+# OCCUPATION that single-handedly dragged 3,652 painters/sculptors (Duchamp,
+# Miró) into the canon via wdt:P106. THE LESSON: a P106 occupation must be a
+# *digital-art* occupation, never a generic art occupation.
 #
-# GENRE QIDs are now corrected (verified against live Wikidata, 2026-05).
-# OCCUPATION matching is the unsolved part: a person's P106 occupation is not a
-# genre — you want digital-art *occupation* items (e.g. Q7016454 new-media
-# artist, Q106208189 computer artist, Q21764863 algorithm artist), curated by
-# hand. Until that's done, leave the occupation list empty so this gatherer
-# can never re-import the broad-occupation poison.
-# ═══════════════════════════════════════════════════════════════════════════
-DIGITAL_ART_QIDS: list[str] = [
-    # Occupation/movement filter — intentionally EMPTY pending curation (see above).
-    # Corrected digital-art occupation candidates to vet before enabling:
-    #   "Q7016454"   # new media artist
-    #   "Q106208189" # computer artist
-    #   "Q21764863"  # algorithm artist
-    #   "Q106208042" # internet artist
+# OCCUPATION_QIDS — matched against wdt:P106. Yields ~1,015 distinct humans
+# (new media artist 775 · computer artist 217 · internet artist 47 · algorithm
+# artist 4), e.g. Carolee Schneemann, Dara Birnbaum, Shu Lea Cheang — the
+# video/net/media-art spine the NFT platforms structurally miss. A little
+# mis-tag noise (e.g. a fashion designer tagged "new media artist") is curated
+# downstream, NOT by widening the filter.
+OCCUPATION_QIDS: list[str] = [
+    "Q7016454",   # new media artist
+    "Q106208189", # computer artist
+    "Q21764863",  # algorithm artist
+    "Q106208042", # internet artist
 ]
 
-# Artwork-side genre / instance-of filter. QIDs verified correct 2026-05.
+# MOVEMENT_QIDS — matched against wdt:P135 (art movement), SEPARATE from
+# occupation. Intentionally empty: Wikidata's digital-art "movements" are fuzzy
+# and over-include. Curate real digital-art movement QIDs here if/when needed;
+# an empty list drops the P135 branch entirely (no broad re-import).
+MOVEMENT_QIDS: list[str] = []
+
+# Artwork-side genre / instance-of filter (wdt:P136). All 8 verified correct
+# against live Wikidata 2026-05; yields ~400 artworks (new media 188 · internet
+# 70 · digital 68 · interactive 61 · generative 20 · computer 12 · software 4 ·
+# algorithmic 2). Thin but real, with images + creators.
 DIGITAL_ART_GENRE_QIDS = [
     "Q860372",   # digital art
     "Q1376265",  # computer art
@@ -105,16 +112,27 @@ def _values_clause(qids: list[str]) -> str:
 def _practitioners_query(limit: int) -> str:
     # Simpler query: no GROUP_CONCAT (the SPARQL planner was timing it out at
     # query.wikidata.org). Multiple rows per practitioner are deduped in Python.
+    # Occupation (P106) and movement (P135) are matched against SEPARATE lists;
+    # an empty list drops its UNION branch (so an empty MOVEMENT_QIDS can never
+    # emit an invalid empty VALUES clause or re-introduce broad matches).
+    branches: list[str] = []
+    if OCCUPATION_QIDS:
+        branches.append(
+            f"  {{\n    ?person wdt:P106 ?occupation .\n"
+            f"    VALUES ?occupation {{ {_values_clause(OCCUPATION_QIDS)} }}\n  }}"
+        )
+    if MOVEMENT_QIDS:
+        branches.append(
+            f"  {{\n    ?person wdt:P135 ?movement .\n"
+            f"    VALUES ?movement {{ {_values_clause(MOVEMENT_QIDS)} }}\n  }}"
+        )
+    if not branches:
+        raise ValueError("fetch_wikidata: both OCCUPATION_QIDS and MOVEMENT_QIDS are empty — nothing to query.")
+    union = "\n  UNION\n".join(branches)
     return f"""
 SELECT DISTINCT ?person ?personLabel ?birth ?death ?image ?country ?occupation ?movement
 WHERE {{
-  {{
-    ?person wdt:P106 ?occupation .
-    VALUES ?occupation {{ {_values_clause(DIGITAL_ART_QIDS)} }}
-  }} UNION {{
-    ?person wdt:P135 ?movement .
-    VALUES ?movement {{ {_values_clause(DIGITAL_ART_QIDS)} }}
-  }}
+{union}
   ?person wdt:P31 wd:Q5 .
   OPTIONAL {{ ?person wdt:P569 ?birth . }}
   OPTIONAL {{ ?person wdt:P570 ?death . }}
@@ -349,7 +367,8 @@ def main() -> int:
         producer=PRODUCER,
         source=SPARQL_URL,
         config={
-            "digital_art_qids": DIGITAL_ART_QIDS,
+            "occupation_qids": OCCUPATION_QIDS,
+            "movement_qids": MOVEMENT_QIDS,
             "digital_art_genre_qids": DIGITAL_ART_GENRE_QIDS,
             "limit_practitioners": args.limit_practitioners,
             "limit_artworks": args.limit_artworks,
