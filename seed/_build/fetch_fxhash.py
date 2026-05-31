@@ -4,7 +4,9 @@
 Source: ``https://api.fxhash.xyz/graphql``.
 
 What it emits, source-attested only:
-  - ``artwork`` nodes — one per generative token.
+  - ``artwork`` nodes — one per generative token, carrying artist-applied
+    ``tags`` (lowercased/deduped) in metadata when present. Tags are the
+    attested vocabulary that ``derive_curation.py`` turns into concept nodes.
   - ``practitioner`` nodes — one per distinct author.
   - ``platform:fxhash`` — the platform node.
   - ``CREATED_BY`` edges — artwork → practitioner.
@@ -41,11 +43,16 @@ PLATFORM_ID = "platform:fxhash"
 PLATFORM_NAME = "fxhash"
 
 # Paged scan of generative tokens. ``skip`` paginates; ``take`` is page size.
+# ``sort:{mintOpensAt:"ASC"}`` makes the scan DETERMINISTIC and chronological:
+# a re-run returns the same first N tokens (token #0 onward), so node ids are
+# stable across rebuilds and the embedding/image cache reuse holds. ``tags``
+# are artist-applied, source-attested — the vocabulary for tag-derived concepts.
 TOKENS_QUERY = """query Tokens($skip: Int!, $take: Int!) {
-  generativeTokens(skip: $skip, take: $take) {
+  generativeTokens(skip: $skip, take: $take, sort: {mintOpensAt: "ASC"}) {
     id
     name
     slug
+    tags
     displayUri
     thumbnailUri
     supply
@@ -57,6 +64,22 @@ TOKENS_QUERY = """query Tokens($skip: Int!, $take: Int!) {
     }
   }
 }"""
+
+
+def _clean_tags(raw: Any) -> list[str]:
+    """Normalise fxhash tags: lowercase, strip, drop empties, dedupe, keep order."""
+    if not isinstance(raw, list):
+        return []
+    seen: set[str] = set()
+    out: list[str] = []
+    for t in raw:
+        if not isinstance(t, str):
+            continue
+        tag = t.strip().lower()
+        if tag and tag not in seen:
+            seen.add(tag)
+            out.append(tag)
+    return out
 
 
 def _ipfs_to_https(uri: str | None) -> str | None:
@@ -181,6 +204,9 @@ def gather(*, limit: int | None, page_size: int) -> tuple[list[Node], list[Edge]
             slug = tk.get("slug")
             if slug:
                 metadata["fxhash_slug"] = slug
+            tags = _clean_tags(tk.get("tags"))
+            if tags:
+                metadata["tags"] = tags
 
             nodes.append(Node(
                 id=artwork_id,

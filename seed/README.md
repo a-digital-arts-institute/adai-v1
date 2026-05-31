@@ -36,7 +36,7 @@ The graph holds both readings in tension, never collapses them. See
 
 | File | Maps to table | Contents |
 |---|---|---|
-| `nodes.json` | `nodes` | Every node: artworks (3,477), practitioners (1,016), concepts (8), classification_regimes (6), platforms (2 — Art Blocks, fxhash). 4,509 nodes total. |
+| `nodes.json` | `nodes` | Every node: artworks (3,477), practitioners (1,016), concepts (8 — base vocab; the next regen adds ~80+ **tag-concepts** from attested fxhash tags, see CLAUDE.md → "Tag-derived concepts"), classification_regimes (6), platforms (2 — Art Blocks, fxhash). 4,509 nodes total. |
 | `edges.json` | `edges` | Typed edges: CLASSIFIED_BY (6,954), CREATED_BY (3,477), EXHIBITED_AT (3,477), EMBODIES (3,477). PRACTICES 0 (was QID-derived; platform artists carry no QIDs). Every edge carries `signal_id`, `valid_from`, optional `valid_until` (bi-temporal). BELONGS_TO / COLLABORATES_WITH / USES_TECHNIQUE / INFLUENCES schema-reserved at zero; RESPONDS_TO empty by design. 17,385 edges total. |
 | `signals.json` | `signals` | 3 records — one per producer (artblocks, fxhash, curation). Each carries `source_url`, `processing_trace` (gatherer config, not LLM reasoning), `provenance_chain` (endpoint + fetched_at), consent posture. |
 | `contributors.json` | `contributors` | 1 record — `contributor:migration` (trust tier `reviewed`). |

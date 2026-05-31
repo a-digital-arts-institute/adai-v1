@@ -29,9 +29,12 @@ What it emits, RULE-derived (not curated by hand):
 
   EMBODIES edges (artwork → concept):
     Rule-derived from artwork.metadata.moma_classification (MoMA artworks),
-    artwork.metadata.genre_qids (Wikidata artworks), and platform implication
+    artwork.metadata.genre_qids (Wikidata artworks), platform implication
     (every Art Blocks / fxhash artwork EMBODIES generative-art — the platform
-    *is* the genre).
+    *is* the genre), and artist-applied fxhash tags that pass the frequency
+    gate (Tier 1, attested — the artist wrote the tag). Tags become concept
+    nodes (see TAG_MIN_ARTWORKS); the embedding pipeline later proposes
+    additional low-confidence EMBODIES for visually-similar untagged works.
 
 No description / bio / summary fields are written. The validator's
 anti-enrichment rule guards this.
@@ -89,6 +92,22 @@ CONCEPT_VOCAB: list[dict[str, Any]] = [
     {"name": "Internet Art",    "qid": "Q1569950", "desc": "art that uses the Internet as a medium or subject"},
 ]
 
+# --- Tag-derived concepts (Tier 1, attested) --------------------------------
+# fxhash artworks carry artist-applied ``tags`` (source-attested). Any tag
+# carried by >= TAG_MIN_ARTWORKS distinct artworks becomes a concept node, and
+# every artwork carrying it gets an attested EMBODIES edge (confidence 1.0).
+# This is what turns the flat single-target EMBODIES (every artwork → just
+# generative-art) into a real vocabulary — without inventing anything: the
+# artist wrote the tag.
+#
+# Pure frequency gate (the chosen policy): no allowlist, no semantic filter. A
+# tag that normalises to an existing CONCEPT_VOCAB slug (e.g. "generative art")
+# folds into that base concept rather than minting a duplicate. TAG_STOPLIST is
+# the escape hatch for obvious non-concepts (left empty by default — fill it if
+# platform/blockchain tags like "tezos"/"nft" become a nuisance).
+TAG_MIN_ARTWORKS = 25
+TAG_STOPLIST: set[str] = set()
+
 # QID → concept slug mapping for PRACTICES / EMBODIES derivation.
 # Built from CONCEPT_VOCAB so the mapping stays consistent with the vocabulary.
 
@@ -127,7 +146,7 @@ def _parse_md(n: dict[str, Any]) -> dict[str, Any]:
     return md or {}
 
 
-def derive() -> tuple[list[Node], list[Edge], list[Alias], dict[str, int]]:
+def derive(tag_min_artworks: int = TAG_MIN_ARTWORKS) -> tuple[list[Node], list[Edge], list[Alias], dict[str, int]]:
     nodes_in = json.loads((SEED / "nodes.json").read_text())
     edges_in = json.loads((SEED / "edges.json").read_text())
     print(f"Loaded canon: {len(nodes_in)} nodes, {len(edges_in)} edges")
@@ -138,6 +157,7 @@ def derive() -> tuple[list[Node], list[Edge], list[Alias], dict[str, int]]:
     stats: Counter = Counter()
     qid_to_concept_id: dict[str, str] = {}
     slug_to_concept_id: dict[str, str] = {}
+    tag_to_concept_id: dict[str, str] = {}  # fxhash tag string → concept node id
 
     # 1. Concept nodes
     for c in CONCEPT_VOCAB:
@@ -166,6 +186,39 @@ def derive() -> tuple[list[Node], list[Edge], list[Alias], dict[str, int]]:
             id=cid, type="concept", name=c["name"], slug=slug, metadata=metadata,
         ))
         stats["concepts_emitted"] += 1
+
+    # 1b. Tag-derived concepts (attested vocabulary from fxhash tags).
+    #     Count distinct artworks per tag; gate by frequency; mint a concept
+    #     per surviving tag (folding into a base concept when the slug matches).
+    tag_counts: Counter = Counter()
+    for n in nodes_in:
+        if n["type"] != "artwork":
+            continue
+        for tag in _parse_md(n).get("tags", []) or []:
+            if isinstance(tag, str) and tag.strip():
+                tag_counts[tag.strip().lower()] += 1
+
+    for tag, cnt in sorted(tag_counts.items(), key=lambda kv: (-kv[1], kv[0])):
+        if cnt < tag_min_artworks or tag in TAG_STOPLIST:
+            continue
+        cid = node_id("concept", tag)
+        slug = node_slug("concept", tag)
+        tag_to_concept_id[tag] = cid
+        if any(n.id == cid for n in out_nodes):
+            # Folds into an existing concept (base vocab or an earlier tag
+            # whose slug collides) — reuse, don't mint a duplicate.
+            stats["tag_concepts_folded"] += 1
+            continue
+        slug_to_concept_id[slug] = cid
+        out_nodes.append(Node(
+            id=cid, type="concept", name=tag, slug=slug,
+            metadata={
+                "tag_origin": "fxhash",
+                "artwork_count": cnt,
+                "source_url": "https://www.fxhash.xyz/",
+            },
+        ))
+        stats["tag_concepts_emitted"] += 1
 
     # 2. A(DAI) regime + sub-regimes
     adai_regime_id = node_id("classification_regime", ADAI_REGIME_NAME)
@@ -331,6 +384,17 @@ def derive() -> tuple[list[Node], list[Edge], list[Alias], dict[str, int]]:
             ))
             stats["embodies_platform"] += 1
 
+        # EMBODIES — artist-applied tags → tag-concept (attested, Tier 1).
+        # Only tags that passed the frequency gate are in tag_to_concept_id.
+        for tag in md.get("tags", []) or []:
+            cid = tag_to_concept_id.get(tag.strip().lower()) if isinstance(tag, str) else None
+            if cid:
+                out_edges.append(Edge(
+                    source_id=nid, target_id=cid,
+                    edge_type="EMBODIES", valid_from=now, confidence=1.0,
+                ))
+                stats["embodies_tag"] += 1
+
     # Dedup edges (deterministic id_for already does this implicitly via
     # source|type|target — but a single artwork could derive EMBODIES
     # generative-art twice if BOTH wikidata genre_qids AND platform say so).
@@ -345,6 +409,8 @@ def derive() -> tuple[list[Node], list[Edge], list[Alias], dict[str, int]]:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true")
+    ap.add_argument("--tag-min-artworks", type=int, default=TAG_MIN_ARTWORKS,
+                    help="min distinct artworks for a tag to become a concept")
     args = ap.parse_args()
 
     sig = GathererSignal(
@@ -355,10 +421,11 @@ def main() -> int:
             "regime_name": ADAI_REGIME_NAME,
             "sub_regimes": SUB_REGIMES,
             "moma_classification_map": MOMA_CLASSIFICATION_TO_CONCEPT,
+            "tag_min_artworks": args.tag_min_artworks,
         },
     )
 
-    nodes, edges, aliases, stats = derive()
+    nodes, edges, aliases, stats = derive(tag_min_artworks=args.tag_min_artworks)
     node_rows = [sig.stamp(n.as_row()) for n in nodes]
     edge_rows = [sig.stamp(e.as_row()) for e in edges]
     alias_rows = [a.as_row() for a in aliases]

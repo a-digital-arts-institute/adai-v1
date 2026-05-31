@@ -26,6 +26,12 @@ import type { DatabaseSync } from "node:sqlite";
 import { createHash } from "node:crypto";
 import { cosine, loadAll } from "./vectors.js";
 import { computeCentroids } from "./centroids.js";
+import {
+  propagateConcepts,
+  CONCEPT_DEFAULTS,
+  type ConceptStats,
+  type ConceptPropagateOptions,
+} from "./concept-edges.js";
 
 const SIGNAL_ID = "signal:embedding-multimodal-2026-05";
 const CONTRIBUTOR_ID = "contributor:embedding-pipeline";
@@ -70,6 +76,9 @@ export interface DeriveOptions {
   // Skip computing centroids — useful for cheap re-tunes when nothing
   // about CREATED_BY edges changed. Default false (chained from CLI).
   skipCentroids?: boolean;
+  // Tier-2 concept propagation knobs (EMBODIES from tag-concepts). Partial
+  // override; unset fields fall back to CONCEPT_DEFAULTS.
+  concept?: Partial<ConceptPropagateOptions>;
 }
 
 export interface DeriveStats {
@@ -79,6 +88,7 @@ export interface DeriveStats {
   visually_affine: { pairs: number; pairs_pre_cap: number; rows_written: number };
   suggests_created_by: { proposals: number; rejected_skipped: number };
   unattributed_artworks_scored: number;
+  concept_embodies: ConceptStats;
 }
 
 // Mutual k-NN cap. Keeps a candidate pair only when EACH endpoint ranks the
@@ -198,7 +208,16 @@ export function derive(db: DatabaseSync, opts: DeriveOptions = {}): DeriveStats 
     visually_affine: { pairs: 0, pairs_pre_cap: 0, rows_written: 0 },
     suggests_created_by: { proposals: 0, rejected_skipped: 0 },
     unattributed_artworks_scored: 0,
+    concept_embodies: {
+      concepts_considered: 0,
+      gated_too_few_members: 0,
+      gated_coherence: 0,
+      gated_creators: 0,
+      concepts_propagated: 0,
+      edges_emitted: 0,
+    },
   };
+  const conceptOpts: ConceptPropagateOptions = { ...CONCEPT_DEFAULTS, ...(opts.concept ?? {}) };
 
   const now = nowIso();
 
@@ -287,6 +306,23 @@ export function derive(db: DatabaseSync, opts: DeriveOptions = {}): DeriveStats 
         stats.visually_affine.rows_written += 2;
       }
     }
+
+    // ----- CONCEPT EMBODIES (Tier-2, centred kNN-vote) -------------------
+    // Propagate tag-concepts to visually-similar untagged artworks. Emits
+    // low-confidence EMBODIES (artwork → concept) tagged like the other
+    // derived edges, so the DELETE above already cleans them on re-run.
+    stats.concept_embodies = propagateConcepts(
+      db,
+      identityByNode,
+      creatorsByArtwork,
+      insertEdge,
+      edgeId,
+      SIGNAL_ID,
+      CREATED_BY_TAG,
+      now,
+      conceptOpts,
+      dry
+    );
 
     // ----- SUGGESTS_CREATED_BY (intake_queue) ----------------------------
     // For each unattributed artwork A (no live CREATED_BY edge), score

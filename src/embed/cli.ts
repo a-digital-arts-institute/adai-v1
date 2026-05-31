@@ -76,9 +76,24 @@ function cmdDerive() {
   const tauVisual = parseEnvFloat("TAU_VISUAL");
   const kinTopK = parseEnvFloat("KIN_TOP_K");
   const visualTopK = parseEnvFloat("VISUAL_TOP_K");
+  // Tier-2 concept-propagation knobs (only set keys that are present in env,
+  // so unset ones fall back to CONCEPT_DEFAULTS rather than become undefined).
+  const conceptEnv: Record<string, number> = {};
+  const concPairs: Array<[string, string]> = [
+    ["TAU_CONCEPT_COH", "tauCoherence"],
+    ["CONCEPT_MIN_CREATORS", "minCreators"],
+    ["CONCEPT_MIN_MEMBERS", "minMembers"],
+    ["CONCEPT_KNN_K", "knnK"],
+    ["CONCEPT_VOTE", "voteThreshold"],
+    ["CONCEPT_MAX_PER", "maxPerConcept"],
+  ];
+  for (const [envName, key] of concPairs) {
+    const v = parseEnvFloat(envName);
+    if (v !== undefined) conceptEnv[key] = v;
+  }
   const dryRun = process.argv.includes("--dry-run");
   const t0 = Date.now();
-  const stats = derive(db, { tauAttribute, tauKin, tauVisual, kinTopK, visualTopK, dryRun });
+  const stats = derive(db, { tauAttribute, tauKin, tauVisual, kinTopK, visualTopK, dryRun, concept: conceptEnv });
   const dt = ((Date.now() - t0) / 1000).toFixed(1);
   console.log(`derive complete in ${dt}s${dryRun ? " (dry-run)" : ""}:`);
   console.log(JSON.stringify(stats, null, 2));
