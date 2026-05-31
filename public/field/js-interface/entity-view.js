@@ -38,7 +38,7 @@
   }
 
   // ---------- Image helpers (artworks only — practitioners stay text/hatch) ----------
-  const IMG_EXT_RE = /\.(jpe?g|png|gif|webp)(\?|$)/i;
+  const IMG_EXT_RE = /\.(jpe?g|png|gif|webp|avif)(\?|$)/i;
   function isRenderableImageUrl(url) {
     return typeof url === 'string' && IMG_EXT_RE.test(url);
   }
@@ -189,27 +189,36 @@
   // back to the graph's CREATED_BY edges with a minimal shape (title +
   // optional image). Empty sections never collapse — they invite contribution.
   function gatherWorks(node, showcase) {
-    if (showcase?.works?.length) return { works: showcase.works, source: 'showcase' };
     const g = window.ADAI_GRAPH;
-    if (!g) return { works: [], source: 'none' };
-    // Pull artworks via CREATED_BY edges where the practitioner is the target.
-    const edges = g.edgesFor(node.id).filter(e => e.type === 'CREATED_BY');
-    const works = edges.map(e => {
-      const otherId = e.source === node.id ? e.target : e.source;
-      const aw = g.byId.get(otherId);
-      if (!aw || aw.type !== 'artwork') return null;
-      return {
-        slug: aw.slug || aw.id.split(':').slice(1).join(':'),
-        title: aw.name,
-        graph_id: aw.id,
-        // The /api/graph endpoint projects `year` onto artwork nodes
-        // (extracted from year_raw / year_start[/_end] / legacy
-        // basic_info.active_years). Medium/method/blurb still absent —
-        // honest stub.
-        year: aw.year || undefined,
-      };
-    }).filter(Boolean);
-    return { works, source: 'graph' };
+    // Real artworks via CREATED_BY edges (the practitioner is one endpoint).
+    let graphWorks = [];
+    if (g && node) {
+      const edges = g.edgesFor(node.id).filter(e => e.type === 'CREATED_BY');
+      graphWorks = edges.map(e => {
+        const otherId = e.source === node.id ? e.target : e.source;
+        const aw = g.byId.get(otherId);
+        if (!aw || aw.type !== 'artwork') return null;
+        return {
+          slug: aw.slug || aw.id.split(':').slice(1).join(':'),
+          title: aw.name,
+          graph_id: aw.id,
+          // /api/graph projects `year` onto artwork nodes; medium/blurb absent.
+          year: aw.year || undefined,
+        };
+      }).filter(Boolean);
+    }
+    // Real IMAGED graph works win over hand-curated showcase stubs: the canon
+    // now carries mirrored artworks for showcased pioneers (e.g. Vera Molnár,
+    // whose 6 hardcoded placeholder works predate her V&A artworks). Showcase
+    // prose (bio/quote/metadata) still renders independently. Falls back to the
+    // showcase works only when the graph has no imaged works for this entity.
+    const graphHasImages = graphWorks.some(w => {
+      const gn = resolveGraphNode(w.graph_id);
+      return gn && pickArtworkImage(gn);
+    });
+    if (graphHasImages) return { works: graphWorks, source: 'graph' };
+    if (showcase?.works?.length) return { works: showcase.works, source: 'showcase' };
+    return { works: graphWorks, source: graphWorks.length ? 'graph' : 'none' };
   }
 
   function renderWorks(node, showcase) {
