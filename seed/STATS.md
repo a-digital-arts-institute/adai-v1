@@ -7,15 +7,15 @@
 > change: `python3 seed/_build/gen_stats.py`. Live counts on a
 > running server: `GET /api/stats`.
 
-**Totals:** 5,930 nodes · 30,631 curated edges · 4 signals · 1 contributor(s) · 5,873 aliases
+**Totals:** 3,746 nodes · 16,243 curated edges · 4 signals · 1 contributor(s) · 3,741 aliases
 
 ## Nodes by type
 
 | type | count |
 |---|--:|
-| artwork | 4,610 |
-| practitioner | 1,222 |
-| concept | 83 |
+| artwork | 2,808 |
+| practitioner | 887 |
+| concept | 36 |
 | classification_regime | 6 |
 | collective | 6 |
 | platform | 2 |
@@ -25,21 +25,21 @@
 
 | edge_type | count |
 |---|--:|
-| EMBODIES | 11,339 |
-| CLASSIFIED_BY | 9,859 |
-| CREATED_BY | 4,610 |
-| EXHIBITED_AT | 4,610 |
+| CLASSIFIED_BY | 6,255 |
+| EMBODIES | 4,159 |
+| CREATED_BY | 2,808 |
+| EXHIBITED_AT | 2,808 |
 | PRACTICES | 213 |
 
 ## Auto-derived edges (embedding pipeline)
 
-From the baked `adai.db` (`created_by='embedding-multimodal-v1'`), over 5,921 node embeddings:
+From the baked `adai.db` (`created_by='embedding-multimodal-v1'`), over 3,737 node embeddings:
 
 | edge_type | count |
 |---|--:|
-| VISUALLY_AFFINE | 10,592 |
-| STYLE_KIN | 1,380 |
-| EMBODIES | 751 |
+| VISUALLY_AFFINE | 6,360 |
+| STYLE_KIN | 1,604 |
+| EMBODIES | 93 |
 
 _Refreshed on every `npm run embed:derive` (daily on Fly). These are NOT in the committed JSON — they're recomputed from vectors._
 

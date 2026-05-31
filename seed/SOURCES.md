@@ -1,21 +1,20 @@
 # Seed Canon: Sources & Methodology
 
-> **⚠️ Status note (May 2026).** What ships is the **two-platform + V&A
-> pipeline — 5,930 nodes / 30,631 curated edges**, assembled from the Art Blocks
-> + fxhash + V&A gatherers plus a rule-derived editorial layer. No MoMA, no
-> Wikidata, no cull: the four-source sweep and its cull were dropped after the
+> **⚠️ Status note (May 2026).** What ships is the **curated-platform + V&A
+> pipeline**, assembled from Art Blocks + a `--curate`d slice of fxhash + the V&A
+> Computer Arts Society collection, plus a rule-derived editorial layer. No MoMA,
+> no Wikidata, no cull: the four-source sweep and its cull were dropped after the
 > Wikidata `digital_art_qids` list was found corrupt (one QID, "graphic artist",
-> dragged in 3,652 non-digital painters). The V&A Computer Arts Society pass is
-> the **de-bias step** — it adds the 1960s–70s computer-art spine (criterion 1:
-> early computer-art pioneers) the two platforms structurally missed, with IIIF
-> images that clear the every-artwork-imaged bar Wikidata's Commons images
-> couldn't. The **six selection criteria below remain the authoritative
-> editorial logic** — the shipped canon now satisfies two slices (platform-
-> native generative practice + early computer art); the rest is the post-deploy
-> contribution + "try more" agenda. Counts mentioning the pre-V&A two-platform
-> state (4,558 / 23,984), a v1 restore (1,491), the uncut sweep (16k), or the
-> cull (8,653) are superseded. Full arc: [`../CLAUDE.md`](../CLAUDE.md) § "The
-> rebuild journey".
+> dragged in 3,652 non-digital painters). Two May-2026 passes shaped it: the **V&A
+> de-bias pass** (the 1960s–70s computer-art spine — criterion 1 — with IIIF images
+> that clear the every-artwork-imaged bar Wikidata's Commons images couldn't) and
+> the **fxhash curation pass** (relevance + secondary-market demand gate, replacing
+> a permissionless chronological dump with the collector-validated 2021 canon). The
+> **six selection criteria below remain the authoritative editorial logic** — the
+> shipped canon satisfies the generative-practice + early-computer-art slices; the
+> rest is the post-deploy + "try more" agenda. **Exact counts: [`STATS.md`](STATS.md)**
+> (generated, can't drift) / `GET /api/stats`; any number in the body is illustrative.
+> Full arc: [`../CLAUDE.md`](../CLAUDE.md) § "The rebuild journey".
 
 ## What this document is
 
@@ -31,8 +30,8 @@ The Relational Intelligence Protocol that governs A(DAI) is built around **two r
 
 This seed contains one of those two readings. Specifically:
 
-- **The 1,222 practitioners** in the shipped canon are mostly platform-native generative artists (everyone who minted on Art Blocks or fxhash within the gatherers' scope), plus **207 V&A makers** — the 1960s–70s computer-art pioneers (Nake, Cohen, Mohr, Molnár, Nees, Noll, Verostko …) the platform sweep structurally missed. The V&A pass closes part of the non-platform-spine gap; the remainder (theorists, sound artists, contemporary curators) still shapes the post-deploy contribution agenda. The selection criteria below describe what *belongs* in a fuller curated seed.
-- **The 30,631 curated edges** describing who made each work, where it lives, what concept it embodies, and which lens classifies it — those are a **machine reading**, gathered from the two platform APIs + the V&A's catalogue. They are source-attested. They are not the practitioners' own words.
+- **The practitioners** in the shipped canon are mostly platform-native generative artists (collector-validated Art Blocks + curated fxhash), plus the **V&A makers** — the 1960s–70s computer-art pioneers (Nake, Cohen, Mohr, Molnár, Nees, Noll, Verostko …) the platform sweep structurally missed. The V&A pass closes part of the non-platform-spine gap; the remainder (theorists, sound artists, contemporary curators) still shapes the post-deploy contribution agenda. The selection criteria below describe what *belongs* in a fuller curated seed.
+- **The curated edges** describing who made each work, where it lives, what concept it embodies, and which lens classifies it — those are a **machine reading**, gathered from the platform APIs + the V&A's catalogue. They are source-attested. They are not the practitioners' own words.
 
 The practitioner reading lives in the empty edge types: **RESPONDS_TO** (artwork → artwork, "this work answers that one"), **CONTESTS** (signal → edge, "this is wrong"), **TENSION_WITH** (concept ↔ concept, "these don't sit easily together"). Those are zero by design. They are reserved for first-person testimony — the kind of knowledge that lives in practitioners' studios, not on platform tag clouds.
 
@@ -176,7 +175,7 @@ and the other sweep-era gatherers were `git rm`'d (recoverable from history).
 `derive_curation.py` emits the editorial layer mechanically from existing
 metadata:
 
-- 8 base concept nodes anchored to Wikidata QIDs with verbatim (+ 75 fxhash tag-concepts, TAG_STOPLIST-filtered, minted from artist-applied tags)
+- 8 base concept nodes anchored to Wikidata QIDs with verbatim (+ fxhash tag-concepts, TAG_STOPLIST-filtered, minted from artist-applied tags; count in `STATS.md`)
   `schema:description` (digital / computer / generative / algorithmic /
   software / interactive / new-media / internet art — source-attested).
 - 6 classification regimes (A(DAI) canon + 5 sub-regimes — Academic
@@ -217,7 +216,7 @@ Artworks enter through three paths:
 
 **Institutional collection data.** Artworks ingested from Tier 1 licensed sources — MoMA Collection CSV (CC0), Art Blocks Hasura API, fxhash API — enter with institutional provenance and, where available, images. Source origin: `human_secondary`.
 
-Current seed (May 2026): 4,610 artwork nodes — fxhash generative tokens (~2,974) + Art Blocks core contracts (477) + V&A Computer Arts Society holdings (1,159). Each carries an image URL directly from its source (fxhash `displayUri` → gateway.fxhash2.xyz, Art Blocks `media.artblocks.io/thumb/`, V&A IIIF `framemark.vam.ac.uk`), all mirrored to R2 (every artwork, enforced by `--require-cdn`) for rot-insurance.
+Current seed (May 2026): artwork nodes from a `--curate`d fxhash slice (collector-validated 2021 generative canon) + Art Blocks core contracts + V&A Computer Arts Society holdings (counts in [`STATS.md`](STATS.md)). Each carries an image URL directly from its source (fxhash `displayUri` → gateway.fxhash2.xyz, Art Blocks `media.artblocks.io/thumb/`, V&A IIIF `framemark.vam.ac.uk`), all mirrored to R2 (every artwork, enforced by `--require-cdn`) for rot-insurance.
 
 ---
 
@@ -433,4 +432,4 @@ scraping.
 
 ## How to cite this seed
 
-> A(DAI) Seed Canon (May 2026, two-platform + V&A rebuild). 1,222 practitioners (incl. 207 V&A computer-art pioneers), 6 collectives, 1 institution, and 4,610 artworks across 5 live edge types (CLASSIFIED_BY, CREATED_BY, EXHIBITED_AT, EMBODIES, PRACTICES), totalling 30,631 curated edges, against 83 concept nodes (8 source-anchored base + 75 fxhash tag-concepts) and 6 classification regimes. Assembled by three contract-conformant gatherers — Art Blocks Hasura (V0/V1/V3 contracts), fxhash GraphQL, and the Victoria & Albert Museum's Computer Arts Society collection (api.vam.ac.uk/v2, IIIF images) — folded into canon by `merge_batches.py` with a single rule-derived curation pass (`derive_curation.py`) for the editorial layer; clean by construction (no MoMA, no Wikidata, no cull). The V&A pass is a deliberate de-bias step adding the 1960s–70s historical spine the two platforms missed. Every artwork carries a mirrored R2 image (`--require-cdn`). Every row carries `signal_id` pointing back to its producer's batch; validator-enforced anti-enrichment rule (no narrative field without sibling source URL). 4 ingest signals + 1 migration contributor (trust tier `reviewed`) recorded as the provenance trail. APIs only — no scraping, no LLM-generated prose (V&A images are not CC0; provenance preserved). The remaining editorial layer (scenes / non-V&A institutions / net-art / INFLUENCES / RESPONDS_TO) is deferred to a post-deploy curation pass via the contributor API or further correctly-configured sources. Commons-licensed under A(DAI) full commons consent scope.
+> A(DAI) Seed Canon (May 2026, curated-platform + V&A rebuild; exact counts in [`STATS.md`](STATS.md)). Practitioners (platform-native generative artists + V&A 1960s–70s computer-art pioneers), collectives, an institution, and artworks across 5 live edge types (CLASSIFIED_BY, CREATED_BY, EXHIBITED_AT, EMBODIES, PRACTICES), against base + fxhash-tag concept nodes and 6 classification regimes. Assembled by three contract-conformant gatherers — Art Blocks Hasura (V0/V1/V3 contracts), fxhash GraphQL (`--curate`: relevance + secondary-market demand gate → the collector-validated 2021 canon), and the Victoria & Albert Museum's Computer Arts Society collection (api.vam.ac.uk/v2, IIIF images) — folded into canon by `merge_batches.py` with a single rule-derived curation pass (`derive_curation.py`) for the editorial layer; clean by construction (no MoMA, no Wikidata, no cull). Two de-bias/de-trash passes: V&A added the historical spine; the fxhash curation replaced a permissionless chronological dump with collector-validated work. Every artwork carries a mirrored R2 image (`--require-cdn`). Every row carries `signal_id` pointing back to its producer's batch; validator-enforced anti-enrichment rule (no narrative field without sibling source URL). 4 ingest signals + 1 migration contributor (trust tier `reviewed`) recorded as the provenance trail. APIs only — no scraping, no LLM-generated prose (V&A images are not CC0; provenance preserved). The remaining editorial layer (scenes / non-V&A institutions / net-art / INFLUENCES / RESPONDS_TO) is deferred to a post-deploy curation pass via the contributor API or further correctly-configured sources. Commons-licensed under A(DAI) full commons consent scope.

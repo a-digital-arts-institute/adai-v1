@@ -1,16 +1,16 @@
 # seed/ coverage — Seed Canon (May 2026)
 
-> **⚠️ Status note (May 2026).** What ships is the **two-platform + V&A
-> pipeline: 5,930 nodes / 30,631 curated edges** (artwork 4,610, practitioner
-> 1,222, concept 83, regime 6, collective 6, platform 2, institution 1; edges
-> CLASSIFIED_BY 9,859 · CREATED_BY 4,610 · EXHIBITED_AT 4,610 · EMBODIES 11,339 ·
-> PRACTICES 213). Assembled from the Art Blocks + fxhash + V&A gatherers — no
-> MoMA, no Wikidata, no cull. The V&A pass (May 2026) is the **de-bias step**:
-> it adds the 1960s–70s computer-art spine the two platforms structurally
-> missed, with IIIF images that clear the every-artwork-imaged invariant. Any
-> v1/sweep/cull column below (1,491 / 16k / 8,653), or the pre-V&A two-platform
-> count (4,558 / 23,984), is superseded. See [`../CLAUDE.md`](../CLAUDE.md)
-> § "The rebuild journey".
+> **⚠️ Status note (May 2026).** What ships is the **curated-platform + V&A
+> pipeline** — Art Blocks (curated Ethereum generative) + a `--curate`d slice of
+> fxhash (the collector-validated 2021 Tezos generative canon) + the V&A Computer
+> Arts Society collection (1960s–70s computer-art spine). No MoMA, no Wikidata,
+> no cull. Two May-2026 passes shaped it: the **V&A de-bias pass** (historical
+> spine, IIIF-imaged) and the **fxhash curation pass** (relevance + secondary-
+> market demand gate — killed the permissionless trash + over-dominance). **Exact
+> counts: [`STATS.md`](STATS.md)** (generated, can't drift) / `GET /api/stats`.
+> Any superseded column below — v1 (1,491), sweep (16k), cull (8,653), two-platform
+> (4,558), V&A-pass-pre-curation (5,930) — is history. See
+> [`../CLAUDE.md`](../CLAUDE.md) § "The rebuild journey".
 
 Two-platform-plus-V&A snapshot. The full v1 enrichment narrative and the
 dropped four-source sweep are preserved in git history. The current canon

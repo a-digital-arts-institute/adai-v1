@@ -124,6 +124,61 @@ TOKENS_BY_IDS_QUERY = """query ByIds($ids: [Int!], $take: Int!) {
 }"""
 
 
+# --- Curation (quality-gated selection) -------------------------------------
+# fxhash is permissionless, so a chronological/arbitrary slice is mostly noise.
+# The platform exposes real demand signals; we pull by `relevance` (fxhash's own
+# ranking — the canonical work floats to the top) AND carry the raw stats so the
+# gate is transparent and the canon is auditable. The killer signal is
+# `marketStats.secVolumeNb` — the count of SECONDARY sales (collectors trading it
+# on, near-impossible to fake) — backstopped by mint count + sell-through.
+CURATE_QUERY = """query Curate($skip: Int!, $take: Int!) {
+  generativeTokens(skip: $skip, take: $take, sort: {relevance: "DESC"}) {
+    id
+    name
+    slug
+    tags
+    displayUri
+    thumbnailUri
+    supply
+    balance
+    objktsCount
+    mintOpensAt
+    flag
+    author { id name }
+    marketStats { secVolumeNb secVolumeTz primVolumeNb floor median }
+  }
+}"""
+
+
+def _token_quality(tk: dict[str, Any]) -> dict[str, Any]:
+    """Extract the source-attested demand stats from a token (curate query only)."""
+    supply = tk.get("supply") or 0
+    balance = tk.get("balance")
+    objkts = tk.get("objktsCount")
+    minted = objkts if isinstance(objkts, int) else (
+        (supply - balance) if (supply and isinstance(balance, int)) else 0)
+    ms = tk.get("marketStats") or {}
+    return {
+        "supply": supply,
+        "minted": minted,
+        "sellthrough": round(minted / supply, 3) if supply else 0.0,
+        "secondary_sales": ms.get("secVolumeNb") or 0,
+        "floor": ms.get("floor"),
+    }
+
+
+def _passes_quality_gate(q: dict[str, Any], *, min_secondary: int,
+                         min_minted: int, min_sellthrough: float) -> bool:
+    """Transparent gate: real collector demand. Pass on EITHER a meaningful
+    secondary market (people traded it on) OR a solid primary (enough collectors
+    minted it AND it largely sold through). Tunable via CLI flags."""
+    if q["secondary_sales"] >= min_secondary:
+        return True
+    if q["minted"] >= min_minted and q["sellthrough"] >= min_sellthrough:
+        return True
+    return False
+
+
 def _emit_token(tk: dict[str, Any], nodes: list[Node], edges: list[Edge],
                 aliases: list[Alias], stats: Counter, user_pid: dict[str, str]) -> bool:
     """Turn one fxhash token into practitioner+artwork nodes, CREATED_BY +
@@ -185,6 +240,13 @@ def _emit_token(tk: dict[str, Any], nodes: list[Node], edges: list[Edge],
     tags = _clean_tags(tk.get("tags"))
     if tags:
         metadata["tags"] = tags
+    # Quality stats — only present when the curate query selected them; numeric,
+    # so anti-enrichment-safe. Carries the demand signal into the canon for audit.
+    if tk.get("objktsCount") is not None or tk.get("marketStats"):
+        q = _token_quality(tk)
+        metadata["fxhash_minted"] = q["minted"]
+        metadata["fxhash_sellthrough"] = q["sellthrough"]
+        metadata["fxhash_secondary_sales"] = q["secondary_sales"]
 
     nodes.append(Node(
         id=artwork_id, type="artwork", name=name,
@@ -234,6 +296,68 @@ def gather_by_ids(token_ids: list[int], *, batch: int = 50) -> tuple[list[Node],
             _emit_token(tk, nodes, edges, aliases, stats, user_pid)
         time.sleep(0.3)
     return nodes, edges, aliases, dict(stats)
+
+
+def gather_curated(
+    *, top: int, min_secondary: int, min_minted: int, min_sellthrough: float,
+    page_size: int, scan_cap: int, preview: bool,
+) -> tuple[list[Node], list[Edge], list[Alias], dict[str, Any]]:
+    """Curate fxhash by relevance + demand stats.
+
+    Pages `sort:{relevance:"DESC"}` (fxhash's own quality ranking), scores each
+    token on source-attested demand, keeps those passing the gate up to `top`,
+    and stops scanning at `scan_cap`. In `preview` mode no batch is built — it
+    returns the kept/dropped distribution so thresholds can be calibrated by eye.
+    """
+    stats: Counter = Counter()
+    nodes: list[Node] = []
+    edges: list[Edge] = []
+    aliases: list[Alias] = []
+    user_pid: dict[str, str] = {}
+    kept_ids: list[int] = []
+    dropped_sample: list[tuple[str, dict]] = []
+
+    if not preview:
+        pn, pa = _platform_node()
+        nodes.append(pn)
+        aliases.append(pa)
+
+    skip = 0
+    while stats["scanned"] < scan_cap and len(kept_ids) < top:
+        try:
+            data = _gql(CURATE_QUERY, {"skip": skip, "take": page_size})
+        except (HttpError, RuntimeError) as e:
+            print(f"WARN: curate page skip={skip} failed: {e}", file=sys.stderr)
+            stats["pages_failed"] += 1
+            break
+        tokens = data.get("generativeTokens") or []
+        if not tokens:
+            break
+        for tk in tokens:
+            if len(kept_ids) >= top or stats["scanned"] >= scan_cap:
+                break
+            stats["scanned"] += 1
+            if tk.get("flag") in ("MALICIOUS", "HIDDEN"):
+                stats["dropped_flag"] += 1
+                continue
+            q = _token_quality(tk)
+            if _passes_quality_gate(q, min_secondary=min_secondary,
+                                    min_minted=min_minted, min_sellthrough=min_sellthrough):
+                kept_ids.append(tk.get("id"))
+                stats["kept"] += 1
+                if not preview:
+                    _emit_token(tk, nodes, edges, aliases, stats, user_pid)
+            else:
+                stats["dropped_low_signal"] += 1
+                if len(dropped_sample) < 12:
+                    dropped_sample.append(((tk.get("name") or "")[:30], q))
+        skip += page_size
+        time.sleep(0.4)
+
+    report: dict[str, Any] = dict(stats)
+    report["kept_token_ids"] = kept_ids
+    report["dropped_sample"] = dropped_sample
+    return nodes, edges, aliases, report
 
 
 def gather(*, limit: int | None, page_size: int) -> tuple[list[Node], list[Edge], list[Alias], dict[str, int]]:
@@ -305,7 +429,60 @@ def main() -> int:
     ap.add_argument("--refresh-from-canon", action="store_true",
                     help="re-pull the EXACT current canon fxhash tokens (with tags), "
                          "preserving the set + node ids (so embeddings stay aligned)")
+    # Curation mode (quality-gated selection by relevance + demand stats)
+    ap.add_argument("--curate", action="store_true",
+                    help="select a quality subset by relevance + collector-demand stats")
+    ap.add_argument("--top", type=int, default=1000, help="[curate] keep at most N passing tokens")
+    ap.add_argument("--min-secondary-sales", type=int, default=5,
+                    help="[curate] pass if >= N secondary-market sales (the strong signal)")
+    ap.add_argument("--min-minted", type=int, default=25,
+                    help="[curate] OR pass if >= N collectors minted it")
+    ap.add_argument("--min-sellthrough", type=float, default=0.6,
+                    help="[curate] ...AND it sold through at least this fraction of supply")
+    ap.add_argument("--scan-cap", type=int, default=4000,
+                    help="[curate] stop scanning after N tokens (relevance-ordered)")
+    ap.add_argument("--preview", action="store_true",
+                    help="[curate] score + report distribution only; write no batch")
     args = ap.parse_args()
+
+    if args.curate:
+        print(f"curate: relevance-ranked, gate = secondary>={args.min_secondary_sales} "
+              f"OR (minted>={args.min_minted} AND sellthrough>={args.min_sellthrough}); "
+              f"top={args.top}, scan_cap={args.scan_cap}{' [PREVIEW]' if args.preview else ''}")
+        nodes, edges, aliases, report = gather_curated(
+            top=args.top, min_secondary=args.min_secondary_sales,
+            min_minted=args.min_minted, min_sellthrough=args.min_sellthrough,
+            page_size=args.page_size, scan_cap=args.scan_cap, preview=args.preview)
+        scanned = report.get("scanned", 0); kept = report.get("kept", 0)
+        print(f"  scanned {scanned}  kept {kept}  "
+              f"dropped_low_signal {report.get('dropped_low_signal',0)}  "
+              f"dropped_flag {report.get('dropped_flag',0)}")
+        if report.get("dropped_sample"):
+            print("  sample DROPPED (name | minted/supply sellthrough sec-sales):")
+            for nm, q in report["dropped_sample"]:
+                print(f"    {nm:<30} {q['minted']}/{q['supply']} st={q['sellthrough']} sec={q['secondary_sales']}")
+        if args.preview:
+            print(f"  → at these thresholds a curated pull keeps ~{kept} of {scanned} scanned. "
+                  f"No batch written (preview).")
+            return 0
+        sig = GathererSignal(producer=PRODUCER, source=FXHASH_GQL,
+                             config={"mode": "curate", "top": args.top,
+                                     "min_secondary_sales": args.min_secondary_sales,
+                                     "min_minted": args.min_minted,
+                                     "min_sellthrough": args.min_sellthrough})
+        node_rows = [sig.stamp(n.as_row()) for n in nodes]
+        edge_rows = [sig.stamp(e.as_row()) for e in edges]
+        alias_rows = [a.as_row() for a in aliases]
+        errs = validate_batch(nodes=node_rows, edges=edge_rows)
+        if errs:
+            print(f"VALIDATION FAILED ({len(errs)}):", file=sys.stderr)
+            for e in errs[:10]:
+                print(f"  {e}", file=sys.stderr)
+            return 1
+        path = write_batch(sig, nodes=node_rows, edges=edge_rows, aliases=alias_rows)
+        print(f"wrote → {path}  ({sum(1 for n in nodes if n.type=='artwork')} artworks, "
+              f"{sum(1 for n in nodes if n.type=='practitioner')} practitioners)")
+        return 0
 
     if args.refresh_from_canon:
         ids = _canon_fxhash_token_ids()

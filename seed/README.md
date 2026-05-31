@@ -2,18 +2,17 @@
 
 One place to look to answer "what is in the canon right now?"
 
-> **⚠️ Status note (May 2026).** The shipped canon is the **two-platform + V&A
-> pipeline — 5,930 nodes / 30,631 curated edges**, assembled from the Art Blocks
-> + fxhash + V&A gatherers plus a rule-derived editorial layer. There is **no
-> MoMA, no Wikidata, no cull**: the four-source sweep and its digital-art cull
-> were dropped after the Wikidata `digital_art_qids` list was found corrupt (it
-> dragged 3,652 non-digital painters in). The V&A pass (May 2026) is the de-bias
-> step — it adds the 1960s–70s computer-art spine with IIIF images. The canon is
-> clean *by construction* — `merge_batches.py` assembles it from only the batches
-> present, so off-domain rows can't enter. If a section below still mentions the
-> pre-V&A two-platform count (4,558), a cull (8,653), an uncut sweep (16k), or a
-> v1 restore (1,491), it's superseded. Full arc: [`../CLAUDE.md`](../CLAUDE.md)
-> § "The rebuild journey".
+> **⚠️ Status note (May 2026).** The shipped canon is the **curated-platform + V&A
+> pipeline** — Art Blocks + a `--curate`d slice of fxhash (relevance + demand gate
+> → the collector-validated 2021 generative canon) + the V&A Computer Arts Society
+> collection (1960s–70s spine) + a rule-derived editorial layer. **No MoMA, no
+> Wikidata, no cull**: the four-source sweep + its digital-art cull were dropped
+> after the Wikidata `digital_art_qids` list was found corrupt (it dragged 3,652
+> non-digital painters in). Clean *by construction* — `merge_batches.py` assembles
+> only the batches present. **Exact counts: [`STATS.md`](STATS.md)** (generated,
+> can't drift) / `GET /api/stats`. If a section below states a superseded count
+> (pre-curation 5,930, two-platform 4,558, cull 8,653, sweep 16k, v1 1,491), trust
+> STATS.md. Full arc: [`../CLAUDE.md`](../CLAUDE.md) § "The rebuild journey".
 
 Post-rebuild (May 2026): assembled from three source-attested gatherers
 ([`_build/fetch_artblocks.py`](_build/fetch_artblocks.py),
