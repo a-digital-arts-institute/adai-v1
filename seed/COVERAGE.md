@@ -1,100 +1,102 @@
 # seed/ coverage — Seed Canon (May 2026)
 
-> **⚠️ Status note.** Tables below describe the uncut sweep (16k) — superseded.
-> What ships is the **digital-art cull: 8,653 nodes / 26,771 edges**
-> (practitioner 4,790, artwork 3,841, concept 13, regime 6, platform 2,
-> institution 1; edges CLASSIFIED_BY 11,665 · CREATED_BY 3,849 ·
-> EXHIBITED_AT 3,841 · EMBODIES 3,758 · PRACTICES 3,658). Produced by
-> `_build/cull_digital_art.py` over the clean sweep. Embeddings regenerate
-> post-deploy via the daily GH Action. See [`../CLAUDE.md`](../CLAUDE.md)
-> § "The rebuild journey".
+> **⚠️ Status note (May 2026).** What ships is the **clean two-platform
+> pipeline: 4,509 nodes / 17,385 curated edges** (artwork 3,477,
+> practitioner 1,016, concept 8, regime 6, platform 2; edges CLASSIFIED_BY
+> 6,954 · CREATED_BY 3,477 · EXHIBITED_AT 3,477 · EMBODIES 3,477 ·
+> PRACTICES 0). Assembled from only the Art Blocks + fxhash gatherers — no
+> MoMA, no Wikidata, no cull. The four-source sweep and its digital-art cull
+> were dropped after the Wikidata QID list was found corrupt. Any v1/sweep/
+> cull column below (1,491 / 16k / 8,653) is superseded. See
+> [`../CLAUDE.md`](../CLAUDE.md) § "The rebuild journey".
 
-Post-rebuild snapshot. The full v1 enrichment narrative (Apr 20–28 task
-reports, heuristic EMBODIES → source-attested swap, etc.) is preserved
-in git history and in `_build/archive/migrations/2026-04/`. v2 starts
-from clean source-attested data; this report describes only what's in
-the current canon.
+Two-platform snapshot. The full v1 enrichment narrative and the dropped
+four-source sweep are preserved in git history. The current canon starts
+from clean platform-attested data — every node is an on-chain generative
+artwork or its artist; this report describes only what's in it.
 
 ## Totals
 
-| Category | v1 (Apr 28) | **v2 (May 29)** | Δ |
+| Category | v1 (Apr 28) | **Shipped (May 2026)** | Note |
 |---|---|---|---|
-| Total nodes | 1,491 | **16,244** | ~11× — broader source-attested sweep, narrower curated layer |
-| Total edges | 4,544 | **50,793** | ~11× — every artwork now has CLASSIFIED_BY + EXHIBITED_AT + CREATED_BY edges; PRACTICES from QID-derived |
-| Edge types live | 9 | 5 | BELONGS_TO / COLLABORATES_WITH / USES_TECHNIQUE / INFLUENCES schema-reserved at zero (curation pass post-deploy); RESPONDS_TO empty by design |
-| Provenance signals | 12 | **5** | one per producer + curation pass (vs. one per enrichment phase + sub-pass in v1) |
-| Contributors | 10 | **1** | `contributor:migration` trust tier `reviewed`; v1's per-pass contributor split deferred to a curation-era refactor |
-| Wikidata aliases | 60 | **3,673** | Wikidata practitioner gatherer pulled QIDs for the full digital-art occupation/movement set |
+| Total nodes | 1,491 | **4,509** | ~3× — broad on platform artworks/artists, narrow on the editorial layer |
+| Total edges | 4,544 | **17,385** | every artwork carries CLASSIFIED_BY (×2) + EXHIBITED_AT + CREATED_BY + EMBODIES |
+| Edge types live | 9 | 4 | CLASSIFIED_BY / CREATED_BY / EXHIBITED_AT / EMBODIES. PRACTICES 0 (QID-derived); BELONGS_TO / COLLABORATES_WITH / USES_TECHNIQUE / INFLUENCES reserved at zero; RESPONDS_TO empty by design |
+| Provenance signals | 12 | **3** | one per producer: artblocks, fxhash, curation |
+| Contributors | 10 | **1** | `contributor:migration` trust tier `reviewed` |
+| Wikidata aliases | 60 | **10** | not a Wikidata ingest — these 10 platform artists simply happen to carry a QID |
 
 ## Nodes by type
 
-| Type | v1 (Apr 28) | **v2 (May 29)** |
+| Type | v1 (Apr 28) | **Shipped (May 2026)** |
 |---|---|---|
-| `artwork` | 728 | **9,972** |
-| `practitioner` | 146 | **6,249** |
-| `concept` | 474 | **14** |
+| `artwork` | 728 | **3,477** |
+| `practitioner` | 146 | **1,016** |
+| `concept` | 474 | **8** |
 | `classification_regime` | 6 | **6** |
-| `platform` | 8 | **2** |
-| `institution` | 121 | **1** |
+| `platform` | 8 | **2** (Art Blocks, fxhash) |
+| `institution` | 121 | 0 |
 | `scene` | 30 | 0 |
 | `collective` | 12 | 0 |
 | `publication` | 3 | 0 |
 | `project` | 2 | 0 |
 
-Why concepts dropped from 474 → 14: v1's concept vocabulary was largely
+Why concepts dropped from 474 → 8: v1's concept vocabulary was largely
 LLM-derived ("AI-related variants preserved as signal, not noise" was the
-v1 framing). v2 keeps only the source-anchored vocabulary — concepts that
-correspond to a Wikidata QID or a MoMA Classification. Future practitioner
-contributions can extend, but the seed is intentionally narrow.
+v1 framing). The shipped canon keeps only the source-anchored generative-art
+vocabulary emitted by `derive_curation.py` (digital / computer / generative
+/ algorithmic / software / interactive / new-media / internet art). Future
+practitioner contributions can extend it, but the seed is intentionally narrow.
 
-Why institutions / scenes / collectives dropped: v1 had curated those by
-hand from practitioner research. v2's gatherers only emit nodes attested
-by their source; MoMA gives us `institution:moma`, Art Blocks +
-fxhash give us `platform:art-blocks` + `platform:fxhash`. The rest is
-editorial work, deferred to post-deploy.
+Why institutions / scenes / collectives are zero: v1 curated those by hand
+from practitioner research, and the dropped MoMA sweep would have added one
+institution. The two-platform gatherers only emit nodes attested by their
+source — Art Blocks + fxhash give `platform:art-blocks` + `platform:fxhash`
+and nothing else. The whole editorial layer is deferred to post-deploy
+contribution or a correctly-configured broader source.
 
 ## Edges by type
 
-| Edge type | v1 (Apr 28) | **v2 (May 29)** |
+| Edge type | v1 (Apr 28) | **Shipped (May 2026)** |
 |---|---|---|
-| **CLASSIFIED_BY** | 295 | **20,798** |
-| **CREATED_BY** | 737 | **11,582** |
-| **EXHIBITED_AT** | 305 | **9,972** (one per artwork → its source institution/platform) |
-| **EMBODIES** | 1,096 | **4,786** (MoMA Classification + Wikidata genre + platform implication) |
-| **PRACTICES** | 461 | **3,655** (Wikidata movement_qids + occupation_qids per practitioner) |
+| **CLASSIFIED_BY** | 295 | **6,954** (every artwork → A(DAI) lens + crypto-market-native sub-regime) |
+| **CREATED_BY** | 737 | **3,477** (one per artwork → its platform artist) |
+| **EXHIBITED_AT** | 305 | **3,477** (one per artwork → its platform: fxhash 3,000, Art Blocks 477) |
+| **EMBODIES** | 1,096 | **3,477** (every artwork → `concept:generative art`) |
+| **PRACTICES** | 461 | **0** (was QID-derived; platform artists carry no QIDs) |
 | **BELONGS_TO** | 188 | 0 |
 | **COLLABORATES_WITH** | 183 | 0 |
 | **USES_TECHNIQUE** | 102 | 0 |
 | **INFLUENCES** | 4 | 0 |
 | RESPONDS_TO | 0 | 0 (empty by design — first-person testimony only) |
 
-The four zero rows are schema-reserved. They return when source data or
+PRACTICES and the four reserved rows return when source data or
 practitioner contribution supports them:
 
+- **PRACTICES** (practitioner → concept): was derived from Wikidata
+  movement/occupation QIDs. Platform artists carry no such QIDs, so it's
+  empty until a QID-bearing source (a correctly-configured Wikidata) returns.
 - **BELONGS_TO** (practitioner → scene): blocked on scene nodes existing.
-- **COLLABORATES_WITH**: blocked on multi-creator artwork detection
-  (MoMA's `ConstituentID` already gives multi-author works; the gatherer
-  currently emits multiple CREATED_BY edges instead — refactor opportunity).
+- **COLLABORATES_WITH**: blocked on multi-creator artwork detection — the
+  gatherers currently emit a single CREATED_BY per token.
 - **USES_TECHNIQUE**: blocked on concept vocabulary expansion to technique
-  level (currently we have "video-art" as a *medium* concept; "video" as a
-  technique would need finer granularity).
-- **INFLUENCES**: high editorial bar; v1 had only 4 (Sol LeWitt → Casey
-  Reas, etc.). Re-add via curation pass against established art-historical
-  citations.
+  level.
+- **INFLUENCES**: high editorial bar; re-add via a curation pass against
+  established art-historical citations or practitioner contribution.
 
 ## Embeddings + auto-derived edges
 
 | Layer | Status |
 |---|---|
-| `seed/embeddings.bin` (Gemini multimodal vectors) | Not committed in the rebuild branch. Regenerated by the daily `embed-derive-daily` GitHub Actions workflow against the live Fly DB. |
-| `seed/embeddings.umap2d.json` (UMAP scatter) | Same — workflow fits UMAP on the GH runner, SFTPs back to `/data/embeddings.umap2d.json`. |
-| `STYLE_KIN` (practitioner ↔ practitioner, derived) | Populated by `npm run embed:derive` after embeddings land — same daily workflow. |
-| `VISUALLY_AFFINE` (artwork ↔ artwork, derived) | Same. |
-| `SUGGESTS_CREATED_BY` (AI attribution proposals) | Same — lands in `intake_queue`, surfaces at `/review?kind=ai_suggestion`. |
+| `seed/embeddings.bin` (Gemini multimodal vectors) | Committed sidecars, baked into `seed.db` at build. The daily `embed-derive-daily` GitHub Actions workflow backfills anything new against the live Fly DB. |
+| `seed/embeddings.umap2d.json` (UMAP scatter) | Committed; workflow re-fits UMAP on the GH runner and SFTPs back to `/data/embeddings.umap2d.json`. |
+| `STYLE_KIN` (practitioner ↔ practitioner, derived) | ~694 rows, baked in; refreshed by `npm run embed:derive` in the daily workflow. |
+| `VISUALLY_AFFINE` (artwork ↔ artwork, derived) | ~9,052 rows, baked in. Same refresh. |
+| `SUGGESTS_CREATED_BY` (AI attribution proposals) | Lands in `intake_queue`, surfaces at `/review?kind=ai_suggestion`. |
 
-After first daily run post-deploy, profile pages render style-kin /
-visually-affine sections and `/embed-space` populates. Pre-first-run,
-those surfaces show empty / loading states.
+Embedding surfaces (profile style-kin / visually-affine sections,
+`/embed-space`) are live from the baked DB; the daily workflow keeps them
+fresh as contributors add nodes.
 
 ## Image coverage
 
@@ -102,30 +104,29 @@ The seed carries `image_url` on:
 
 | Scope | Has `image_url` | Source |
 |---|---|---|
-| Artworks (9,972) | ~Most MoMA + all Art Blocks + most fxhash | MoMA `ImageURL`, Art Blocks `media.artblocks.io/thumb/`, fxhash `displayUri` → gateway.fxhash2.xyz |
-| Practitioners (6,249) | 3,655 from Wikidata P18 (Commons) + MoMA `image_url` where present | Wikidata `P18` portrait, MoMA artist page asset |
-| Institution / platform | All sourced from Wikidata anchor where present | `image_overlay.json` may add more post-deploy |
+| Artworks (3,477) | ~All | Art Blocks `media.artblocks.io/thumb/`, fxhash `displayUri` → gateway.fxhash2.xyz |
+| Practitioners (1,016) | Where the platform exposes a portrait | Art Blocks / fxhash artist asset |
 
-The R2 image mirror (`cdn_image_url`) is **not yet refreshed against v2**
-— `upload_to_r2.py` runs as a post-deploy step. Until then, `image_url`
-(upstream) is the source of truth; live page rendering hits upstream
-directly. ~4 entries from the prior 89-entry overlay carry over (the
-institutions / collectives the rebuild dropped account for the rest).
+The R2 image mirror (`cdn_image_url`) covers ~3,451 artwork images
+(content-addressed, rot-insurance) and is read by the embedder via
+`seed/image_mirror.json`. `image_url` (upstream) remains the provenance
+record. The v1-era `image_overlay.json` mostly no longer matches the
+two-platform canon; a refresh is a post-deploy follow-up.
 
 ## What this does NOT include (yet)
 
-1. **Long-tail institutions / scenes / collectives.** v1 had 121 + 30 + 12;
-   v2 has 1 + 0 + 0. Editorial work, deferred to a post-deploy curation
-   pass. The contributor API + `find_missing_images.py` discovery are the
-   right channels.
-2. **objkt + Met OpenAccess.** objkt's metadata quality was uneven; Met
-   returned empty on the digital-art query last run. Add back when there's
-   a reason — the gatherer skeleton is in `_build/archive/legacy/` for
-   reference.
+1. **Anything outside the two platforms.** No institutions / scenes /
+   collectives / publications / projects, and no non-platform practitioners
+   (theorists, pioneers, sound artists). Editorial work, deferred to
+   post-deploy contribution or a correctly-configured broader source. The
+   contributor API + `find_missing_images.py` discovery are the channels.
+2. **A correctly-configured Wikidata / objkt / Met pass.** `fetch_wikidata.py`
+   is quarantined (corrupt QID list); re-enabling it with curated occupation
+   QIDs is the documented "try more" path.
 3. **Practitioner self-report.** RESPONDS_TO, CONTESTS, TENSION_WITH are
    reserved for first-person contribution. Currently zero — by design.
-4. **Multi-creator collapse to COLLABORATES_WITH.** Multiple CREATED_BY
-   edges are emitted instead. Refactor opportunity.
+4. **Multi-creator collapse to COLLABORATES_WITH.** A single CREATED_BY is
+   emitted per token. Refactor opportunity.
 5. **Asia-Pacific and Latin American institutional sources.** No public
    APIs; requires institutional outreach.
 

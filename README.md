@@ -8,15 +8,15 @@ Field intelligence infrastructure for the digital arts. A knowledge commons and 
 
 ---
 
-## What's in the graph (May 2026 — Seed Canon, digital-art cull)
+## What's in the graph (May 2026 — Seed Canon, two-platform pipeline)
 
 | | count |
 |---|---|
-| Nodes | **8,653**: practitioner (4,790), artwork (3,841), concept (13), classification_regime (6), platform (2), institution (1) |
-| Edges | **26,771**: CLASSIFIED_BY 11,665 · CREATED_BY 3,849 · EXHIBITED_AT 3,841 · EMBODIES 3,758 · PRACTICES 3,658. BELONGS_TO / COLLABORATES_WITH / USES_TECHNIQUE / INFLUENCES reserved at 0; RESPONDS_TO empty by design (artist-intent only). |
-| Multimodal embeddings | Regenerated post-deploy by the daily `embed-derive-daily` GitHub Actions workflow (Gemini Embedding 2, 768-d). STYLE_KIN / VISUALLY_AFFINE / `/embed-space` populate after first run. |
+| Nodes | **4,509**: artwork (3,477), practitioner (1,016), concept (8), classification_regime (6), platform (2 — Art Blocks, fxhash) |
+| Edges | **17,385** curated: CLASSIFIED_BY 6,954 · CREATED_BY 3,477 · EXHIBITED_AT 3,477 · EMBODIES 3,477. PRACTICES 0 (was QID-derived; platform artists carry no QIDs). BELONGS_TO / COLLABORATES_WITH / USES_TECHNIQUE / INFLUENCES reserved at 0; RESPONDS_TO empty by design (artist-intent only). |
+| Multimodal embeddings | Gemini Embedding 2 (768-d), committed sidecars baked into `seed.db`. Auto-derived STYLE_KIN (~694) + VISUALLY_AFFINE (~9,052) refreshed by the daily `embed-derive-daily` GitHub Actions workflow; `/embed-space` projects all vectors. |
 
-**The May 2026 rebuild → cull.** The canon went through an arc (full story in [`CLAUDE.md`](CLAUDE.md) § "The rebuild journey"): the contaminated original was wiped; a source-attested *sweep* was generated from MoMA / Wikidata / Art Blocks / fxhash gatherers (poison-free but noisy — MoMA's broad classification swept in non-digital sculptors/filmmakers); then **culled to digital-art-only by a deterministic source-tag rule** (`seed/_build/cull_digital_art.py`): keep a practitioner iff platform-native or carrying a Wikidata digital-art QID. No LLM, no hand-curation — reproducible. Every surviving row traces to a download. The producer contract is in [`seed/_build/PRODUCER_CONTRACT.md`](seed/_build/PRODUCER_CONTRACT.md).
+**The May 2026 rebuild.** The canon went through a long arc (full story in [`CLAUDE.md`](CLAUDE.md) § "The rebuild journey") and the shipped state reverses the middle of it: the contaminated original was wiped; a four-source *sweep* (MoMA / Wikidata / Art Blocks / fxhash) was generated, then culled — until the Wikidata `digital_art_qids` list was found to be **corrupt** (one QID, "graphic artist", dragged in 3,652 non-digital painters/sculptors — Duchamp, Miró). The cull couldn't catch it because it *trusted the source tag*. So the tainted sources were dropped entirely and the canon was **re-run from the two genuinely-clean platform gatherers — Art Blocks + fxhash — only**, plus a rule-derived editorial layer. It's clean *by construction*: `merge_batches.py` assembles canon from only the batches present, so off-domain rows can't enter — there is no cull/filter step. Every node traces to an on-chain generative artwork or its artist. The producer contract is in [`seed/_build/PRODUCER_CONTRACT.md`](seed/_build/PRODUCER_CONTRACT.md).
 
 See [`docs/EMBEDDINGS.md`](docs/EMBEDDINGS.md) for the embedding pipeline; [`seed/SOURCES.md`](seed/SOURCES.md) for the selection criteria + provenance; [`CLAUDE.md`](CLAUDE.md) for architecture + operator notes.
 
@@ -73,7 +73,7 @@ Full reference: [`docs/EMBEDDINGS.md`](docs/EMBEDDINGS.md).
 - **D3 + Canvas** — graph viz (`/graph`), field viz (`/field`), embedding scatter (`/embed-space`)
 - **Google Gemini Embedding 2** — multimodal vector space (offline batch via Python, online derive in TS)
 - **UMAP** (umap-learn) — offline 2D projection for `/embed-space`
-- **Cloudflare R2** — content-addressable image mirror (393 artwork images)
+- **Cloudflare R2** — content-addressable image mirror (~3,451 artwork images)
 - **Fly.io** — backend hosting, single 512MB machine in `fra`, persistent `/data` volume
 - **Docker** — multi-stage build, runtime image ~74 MB
 
@@ -141,14 +141,14 @@ adai-v1/
 ├── db.sql                       — CR-SQLite schema (CRR + local-only tables)
 ├── seed/
 │   ├── nodes.json, edges.json, signals.json, contributors.json, aliases.json
-│   ├── embeddings.{bin,json}    — regenerated post-deploy by daily GH Action
+│   ├── embeddings.bin           — Gemini multimodal vectors (committed, baked into seed.db)
 │   ├── embeddings.json          — sidecar metadata (offsets, hashes)
 │   ├── embeddings.umap2d.json   — UMAP projection, served at /api/embed-space
 │   ├── SOURCES.md               — canonical edge types + source provenance
 │   ├── COVERAGE.md, README.md
 │   └── _build/                  — offline Python pipeline (gitignored from Docker)
 │       ├── embed_nodes.py, image_fetch.py, project_umap.py, calibrate.py
-│       ├── fetch_*.py           — MoMA, Wikidata, fxhash, Art Blocks, Met data fetchers
+│       ├── fetch_artblocks.py, fetch_fxhash.py — the two live gatherers (fetch_wikidata.py quarantined)
 │       └── upload_to_r2.py      — R2 image mirror uploader
 ├── public/
 │   └── field/                   — /field generative dot-field view

@@ -1,13 +1,16 @@
 # Seed Canon: Sources & Methodology
 
-> **⚠️ Status note (May 2026).** What ships is the **digital-art cull of the
-> source-attested sweep — 8,653 nodes / 26,771 edges**, produced by
-> `_build/cull_digital_art.py` (keep a practitioner iff platform-native or
-> carrying a Wikidata digital-art QID; artworks cascade; deterministic, no
-> LLM). The **six selection criteria below remain the authoritative editorial
-> logic** — the cull rule is their machine-applicable proxy (digital-art QID
-> / platform-native = field-structural digital practice). Counts in the body
-> mentioning a v1 restore (1,491) or the uncut sweep (16k) are superseded.
+> **⚠️ Status note (May 2026).** What ships is the **clean two-platform
+> pipeline — 4,509 nodes / 17,385 curated edges**, assembled from only the
+> Art Blocks + fxhash gatherers plus a rule-derived editorial layer. No
+> MoMA, no Wikidata, no cull: the four-source sweep and its cull were dropped
+> after the Wikidata `digital_art_qids` list was found corrupt (one QID,
+> "graphic artist", dragged in 3,652 non-digital painters). The **six
+> selection criteria below remain the authoritative editorial logic** — but
+> the shipped canon satisfies only one slice of them (platform-native
+> generative practice); the broader field they describe is the post-deploy
+> contribution + "try more" agenda. Counts in the body mentioning a v1
+> restore (1,491), the uncut sweep (16k), or the cull (8,653) are superseded.
 > Full arc: [`../CLAUDE.md`](../CLAUDE.md) § "The rebuild journey".
 
 ## What this document is
@@ -24,8 +27,8 @@ The Relational Intelligence Protocol that governs A(DAI) is built around **two r
 
 This seed contains one of those two readings. Specifically:
 
-- **The 6,249 practitioners** in v2 (May 2026 rebuild) come from a source-attested sweep — MoMA digital classifications, Wikidata's digital-art occupation/movement QIDs, Art Blocks core contracts, fxhash. They are a much broader machine reading than v1's 146-practitioner editorial canon. The selection criteria below still describe what *belongs* in a curated seed; they shape post-deploy curation work rather than gating the rebuild's entry.
-- **The 50,793 edges** describing what those practitioners do, what their works embody, who they exhibited with, what concepts they engage — those are a **machine reading**, gathered from public APIs and linked-open-data. They are source-attested. They are not the practitioners' own words.
+- **The 1,016 practitioners** in the shipped canon are platform-native generative artists — everyone who minted on Art Blocks or fxhash within the gatherers' scope. This is a narrower, sharper reading than v1's 146-practitioner hand-curated canon: it's wide on platform artists but blind to the field's non-platform spine (theorists, pioneers, sound artists). The selection criteria below describe what *belongs* in a fuller curated seed; they shape the post-deploy contribution agenda rather than gating this canon's entry.
+- **The 17,385 curated edges** describing who made each work, where it lives, what concept it embodies, and which lens classifies it — those are a **machine reading**, gathered from the two platform APIs. They are source-attested. They are not the practitioners' own words.
 
 The practitioner reading lives in the empty edge types: **RESPONDS_TO** (artwork → artwork, "this work answers that one"), **CONTESTS** (signal → edge, "this is wrong"), **TENSION_WITH** (concept ↔ concept, "these don't sit easily together"). Those are zero by design. They are reserved for first-person testimony — the kind of knowledge that lives in practitioners' studios, not on platform tag clouds.
 
@@ -144,45 +147,42 @@ Every gatherer:
 4. Uses shared `_http` (retry + per-host throttling + descriptive UA) so
    no producer reinvents fetching.
 
-The four contract-conformant producers:
+The two contract-conformant producers that ship:
 
-- `fetch_moma.py` — MoMA Artworks.csv + Artists.csv filtered to digital
-  classifications (Video / Audio / Installation / Media / Film /
-  Performance / Software) and departments (Media and Performance / Film /
-  Fluxus Collection). 6,495 artworks + 1,618 practitioners. CC0.
-- `fetch_wikidata.py` — query.wikidata.org SPARQL against
-  `Q649652 / Q9418008 / Q170630 / Q4671777 / Q4671798 / Q650711 /
-  Q4904305 / Q19798649 / Q1925963 / Q15265344` (digital-art occupation +
-  movement). 3,655 practitioners with QID + P18 portrait + P569/P570
-  birth/death + P27 country + P135 movement + P106 occupation.
 - `fetch_artblocks.py` — data.artblocks.io/v1/graphql, V0/V1/V3 core
   contracts only. 477 projects + 297 distinct artists with thumbnails.
 - `fetch_fxhash.py` — api.fxhash.xyz/graphql paged sweep skipping
   MALICIOUS / HIDDEN flag tokens. 3,000 tokens + 742 distinct authors,
   IPFS displayUri rewritten to gateway.fxhash2.xyz.
 
+`fetch_wikidata.py` is present but **quarantined** (its genre QID list was
+corrupt — a bee species, moths, and "graphic artist" which alone matched
+3,652 non-digital painters). Re-enabling it with curated occupation QIDs is
+the documented "try more" path; until then it emits nothing. `fetch_moma.py`
+and the other sweep-era gatherers were `git rm`'d (recoverable from history).
+
 **Step 8 — Rule-derived curation.**
 `derive_curation.py` emits the editorial layer mechanically from existing
 metadata:
 
-- 14 concept nodes anchored to Wikidata QIDs with verbatim
-  `schema:description` (source-attested).
+- 8 concept nodes anchored to Wikidata QIDs with verbatim
+  `schema:description` (digital / computer / generative / algorithmic /
+  software / interactive / new-media / internet art — source-attested).
 - 6 classification regimes (A(DAI) canon + 5 sub-regimes — Academic
   Media-Art History, Asia-Pacific Institutional, Crypto Market-Native,
-  Euro-American Institutional, Practitioner Self-Report).
-- 20,798 CLASSIFIED_BY edges (every artwork from the four producers +
-  every practitioner with a digital-art QID).
-- 3,655 PRACTICES edges from `practitioner.metadata.movement_qids` +
-  `.occupation_qids`.
-- 4,786 EMBODIES edges from `artwork.metadata.moma_classification` +
-  `.genre_qids` + platform implication (Art Blocks / fxhash → generative-art).
+  Euro-American Institutional, Practitioner Self-Report). On this canon only
+  the A(DAI) lens and Crypto Market-Native carry edges.
+- 6,954 CLASSIFIED_BY edges (every artwork → A(DAI) lens + crypto-market-native).
+- 3,477 EMBODIES edges (every on-chain generative token → `concept:generative art`).
+- 0 PRACTICES edges — these were derived from Wikidata movement/occupation
+  QIDs, and platform artists carry none.
 
-The merger (`merge_batches.py`) folds the five batches into canon,
+The merger (`merge_batches.py`) folds the three batches into canon,
 resolves `_alias:wikidata:Q...` placeholder edges via the alias table,
 backfills schema-required signal/alias fields, and runs
 `validate_seed.py --canon` as a CI gate.
 
-The two registries — `signals.json` (5 records, one per producer + curation)
+The two registries — `signals.json` (3 records: artblocks, fxhash, curation)
 and `contributors.json` (1 record, `contributor:migration` trust tier
 `reviewed`) — close: every `signal_id` and every `created_by` reference
 resolves to a real record, and every record is referenced. This is the
@@ -202,7 +202,7 @@ Artworks enter through three paths:
 
 **Institutional collection data.** Artworks ingested from Tier 1 licensed sources — MoMA Collection CSV (CC0), Art Blocks Hasura API, fxhash API — enter with institutional provenance and, where available, images. Source origin: `human_secondary`.
 
-Current seed (v2): 9,972 artwork nodes — sources are MoMA digital classifications (6,495), fxhash generative tokens (3,000), and Art Blocks core contracts (477). Most carry image URLs directly from their source (MoMA `ImageURL`, fxhash `displayUri`, Art Blocks `media.artblocks.io/thumb/`). The R2 mirror refresh against v2 is a post-deploy step.
+Current seed (May 2026): 3,477 artwork nodes — fxhash generative tokens (3,000) and Art Blocks core contracts (477). Each carries an image URL directly from its platform (fxhash `displayUri` → gateway.fxhash2.xyz, Art Blocks `media.artblocks.io/thumb/`), mirrored to R2 (~3,451 images) for rot-insurance.
 
 ---
 
@@ -216,18 +216,21 @@ The selection criteria require practice breadth, source convergence, and source 
 
 This means the seed draws first from sources that offer structured, queryable data with clear licensing — what we call Tier 1. Sources that require institutional outreach and explicit permission form Tier 2. No scraping.
 
-### Tier 1 — API and licensed sources (used in this seed pass)
+### Tier 1 — API and licensed sources
 
-These have queryable endpoints. Parsers exist or are trivial to write.
+These have queryable endpoints. Parsers exist or are trivial to write. **Only
+the two platform sources marked ✅ ship in the current canon** — the rest are
+candidate sources for the "try more" agenda (and Wikidata is quarantined until
+its QID list is curated; see the rebuild journey).
 
-| Source | What it provides | Licensing | Categories covered |
-|---|---|---|---|
-| Art Blocks Hasura API | Generative artwork metadata + thumbnails | Platform data | Generative, Crypto |
-| Wikidata SPARQL | Biographical data, artwork images (P18) | CC0 | All (institutional) |
-| MoMA Collection CSV | Artworks + thumbnails for MoMA holdings | CC0 | All (institutional crossover) |
-| Met Open Access API | Public domain artwork images | CC0 / public domain | Pioneers, Institutional |
-| fxhash API | Tezos generative artwork data | Platform data | Generative |
-| Rhizome ArtBase SPARQL | Net art metadata (2,200+ works) | Open access | Net Art, Glitch |
+| Source | Status | What it provides | Licensing | Categories covered |
+|---|---|---|---|---|
+| Art Blocks Hasura API | ✅ shipped | Generative artwork metadata + thumbnails | Platform data | Generative, Crypto |
+| fxhash API | ✅ shipped | Tezos generative artwork data | Platform data | Generative |
+| Wikidata SPARQL | quarantined | Biographical data, artwork images (P18) | CC0 | All (institutional) |
+| MoMA Collection CSV | candidate | Artworks + thumbnails for MoMA holdings | CC0 | All (institutional crossover) |
+| Met Open Access API | candidate | Public domain artwork images | CC0 / public domain | Pioneers, Institutional |
+| Rhizome ArtBase SPARQL | candidate | Net art metadata (2,200+ works) | Open access | Net Art, Glitch |
 
 ### Tier 2 — Institutional partnerships (future work, no scraping)
 
@@ -335,13 +338,13 @@ pipeline:
 
 | Edge type | Count | Direction | What it captures |
 |---|---|---|---|
-| CLASSIFIED_BY | 20,798 | any → classification regime | Which lens claims this node — derived from gatherer + sub-regime rules |
-| CREATED_BY | 11,582 | artwork → practitioner | Who made it — directly from source attribution |
-| EXHIBITED_AT | 9,972 | artwork → institution/platform | Where the work lives — every artwork → its source MoMA / Art Blocks / fxhash |
-| EMBODIES | 4,786 | artwork → concept | What a work is *about* — MoMA Classification + Wikidata genre + platform implication |
-| PRACTICES | 3,655 | practitioner → concept | What someone works *with* — Wikidata movement_qids + occupation_qids |
+| CLASSIFIED_BY | 6,954 | any → classification regime | Which lens claims this node — every artwork → A(DAI) lens + crypto-market-native sub-regime |
+| CREATED_BY | 3,477 | artwork → practitioner | Who made it — directly from platform attribution |
+| EXHIBITED_AT | 3,477 | artwork → platform | Where the work lives — every artwork → its platform (fxhash 3,000 / Art Blocks 477) |
+| EMBODIES | 3,477 | artwork → concept | What a work is *about* — every on-chain generative token → `concept:generative art` |
+| PRACTICES | 0 | practitioner → concept | Was QID-derived; platform artists carry no occupation/movement QIDs |
 | BELONGS_TO | 0 | practitioner → scene | Blocked on scene nodes existing (post-deploy curation) |
-| COLLABORATES_WITH | 0 | practitioner ↔ practitioner | Blocked on multi-creator collapse (currently emits multiple CREATED_BY) |
+| COLLABORATES_WITH | 0 | practitioner ↔ practitioner | Blocked on multi-creator collapse (emits one CREATED_BY per token) |
 | USES_TECHNIQUE | 0 | artwork → concept | Blocked on technique-level concept vocabulary expansion |
 | INFLUENCES | 0 | practitioner → practitioner | High editorial bar — re-add via curation against established citations |
 
@@ -362,13 +365,13 @@ Counts populate when the daily `embed-derive-daily` GitHub Actions workflow runs
 
 **RESPONDS_TO** (artwork → artwork) — zero edges. This edge says "this work directly references or responds to that work." These relationships are real and documented, but they require evidence of artist intent, not thematic similarity. That evidence lives in artist statements, exhibition texts, interviews, and practitioner knowledge — the intimate layer that comes from sensing conversations and practitioner contribution, not from editorial research or API data.
 
-**INFLUENCES** — only 4 edges. Influence is directional and claims something specific: this person's practice was shaped by that person's work. Making that claim from the outside, without the practitioner confirming it, is editorially risky. More will come from practitioner contributions.
+**INFLUENCES** — zero edges. Influence is directional and claims something specific: this person's practice was shaped by that person's work. Making that claim from the outside, without the practitioner confirming it, is editorially risky. It will come from practitioner contributions.
 
 **CONTESTS / TENSION_WITH** — zero edges. Contestation and tension between practitioners or between artworks and concepts are the most editorially sensitive edges in the vocabulary. They require practitioner voice — you don't tell two artists they're in tension with each other, they tell you.
 
 ### The logic
 
-The seed is structured so that everything the founding team can honestly claim is in the graph, and everything that requires practitioner voice is visibly absent. The gaps are not failures — they're invitations. The graph says: here's what we can see from our position. The RESPONDS_TO edges are empty because we're not the ones who should fill them. The INFLUENCES edges are sparse because we're not the ones who should claim them. The CONTESTS edges don't exist because we're not the ones who should name them.
+The seed is structured so that everything the founding team can honestly claim is in the graph, and everything that requires practitioner voice is visibly absent. The gaps are not failures — they're invitations. The graph says: here's what we can see from our position. The RESPONDS_TO edges are empty because we're not the ones who should fill them. The INFLUENCES edges are empty because we're not the ones who should claim them. The CONTESTS edges don't exist because we're not the ones who should name them.
 
 The seed is the provocation. The practitioner's response is the intelligence.
 
@@ -378,19 +381,17 @@ The seed is the provocation. The practitioner's response is the intelligence.
 
 | Metric | Value |
 |---|---|
-| Practitioners | 6,249 |
-| — with Wikidata QID + image (P18) | 3,655 |
-| — with MoMA ConstituentID | 1,618 |
+| Practitioners | 1,016 |
 | — sourced from fxhash | 742 |
 | — sourced from Art Blocks | 297 |
-| Total artworks | 9,972 |
-| — with `image_url` (upstream attestable) | ~Most |
-| Total nodes | 16,244 |
-| Total edges | 50,793 |
-| Edge types live | 5 (CLASSIFIED_BY, CREATED_BY, EXHIBITED_AT, EMBODIES, PRACTICES) |
-| Concepts | 14 (source-anchored vocabulary) |
-| Classification regimes | 6 (A(DAI) canon + 5 sub-regimes) |
-| Signals (provenance batches) | 5 (moma, wikidata, artblocks, fxhash, curation) |
+| Total artworks | 3,477 |
+| — with `image_url` (upstream attestable) | ~All |
+| Total nodes | 4,509 |
+| Total curated edges | 17,385 |
+| Edge types live | 4 (CLASSIFIED_BY, CREATED_BY, EXHIBITED_AT, EMBODIES) |
+| Concepts | 8 (source-anchored generative-art vocabulary) |
+| Classification regimes | 6 (A(DAI) canon + 5 sub-regimes; 2 carry edges) |
+| Signals (provenance batches) | 3 (artblocks, fxhash, curation) |
 | Contributors | 1 (`contributor:migration`, trust tier `reviewed`) |
 | Source origins | `platform_api` only — see `signals.json` |
 
@@ -398,36 +399,24 @@ The seed is the provocation. The practitioner's response is the intelligence.
 
 ## Known gaps
 
-1. **Source-coverage skew.** The seed draws primarily from English-language, Euro-American sources. This is a source-coverage deficiency, not an acceptable baseline. Subsequent ingestion passes will draw from non-Western sources listed in `sources.yaml`. Tier 1 API queries for non-Western practitioners (Wikidata SPARQL filtering by non-Euro-American nationality) have been drafted but not yet run.
+1. **The whole non-platform field.** The canon is Art Blocks + fxhash only. It has no institutions, scenes, collectives, publications, or projects, and no practitioners who lack a platform token — which means the field's intellectual spine (theorists, pre-digital computer-art pioneers, sound artists, curators) is structurally invisible. This is the single largest gap. It closes through practitioner contribution and a correctly-configured broader source, not through the current two gatherers.
 
-2. **fxhash/Tezos generative artists.** Partially addressed — 8 fxhash artworks ingested (Jonas Lund, Kim Asendorf). Iskra Velitchkova, Michaël Zancan, and others significant to the generative art field remain absent. fxhash API queries drafted for next pass.
+2. **A correctly-configured Wikidata pass.** `fetch_wikidata.py` is quarantined — its genre QID list was corrupt (a bee species, moths, and "graphic artist", which alone matched 3,652 non-digital painters). The genre QIDs are now corrected; the occupation list is intentionally empty pending hand-curation of real digital-art occupation QIDs. Re-enabling it (the "try more" path) is how QID-bearing practitioners, PRACTICES edges, and the academic/euro-american sub-regimes return.
 
-3. **Second-wave AI art.** Post-2020 practitioners working with diffusion models and LLMs remain underrepresented. Wikidata queries drafted.
+3. **Platform breadth beyond two.** objkt (Tezos), other Ethereum generative platforms, and a deeper fxhash/Art Blocks pass (tag-set, collection-tier, license) would widen the on-chain reading. The gatherer skeleton + producer contract make adding one mechanical.
 
-4. **Pre-boom conceptual blockchain.** Rhea Myers and Kevin McCoy are now in the graph. Sarah Meyohas ("BitchCoin", 2015) remains absent. Wikidata-sourceable.
+4. **PRACTICES edges.** Zero — they were derived from Wikidata movement/occupation QIDs, and platform artists carry none. They return with a QID-bearing source.
 
-5. **Artwork images.** 335 of 728 artworks have images (46%) after the April 28 real-source pass. Coverage roughly tripled via objkt thumbnails, MoMA digital, Wikidata depicts, and fxhash tag art. Remaining gap requires Met Open Access API pass and Tier 2 institutional sourcing.
+5. **RESPONDS_TO edges.** Zero artwork-to-artwork edges. Intentionally empty — requires practitioner contribution. This is the highest-value edge type practitioners can add at Basel.
 
-6. **RESPONDS_TO edges.** Zero artwork-to-artwork edges. Intentionally empty — requires practitioner contribution. This is the highest-value edge type practitioners can add at Basel.
+6. **INFLUENCES edges.** Zero. Conservative by design — requires practitioner confirmation. Will grow through sensing conversations and the contribution interface.
 
-7. **INFLUENCES edges.** Only 4. Conservative by design — requires practitioner confirmation. Will grow through sensing conversations and contribution interface.
+7. **Concept vocabulary depth.** Only 8 source-anchored concepts (all generative-art family). Technique-level and movement-level vocabulary (for USES_TECHNIQUE, richer EMBODIES) is deferred to a curation pass.
 
-8. **Concept vocabulary overlap.** 318 concepts with significant overlap (18 AI variants, 16 installation variants, 11 generative variants). Diversity preserved intentionally for AI concepts; consolidation deferred for others.
-
-9. **Robotic/physical-computing and bio-digital traditions.** Stelarc and Eduardo Kac now in graph. Moon Ribas, Amy Karle absent. Wikidata-sourceable.
-
-10. **Sound art.** Boosted from 2 to 6 practitioners (Nicolai, Fell, Ablinger, Haswell, Xenakis, Amacher added). Target is 10+. Pan Daijing, AGF absent. Wikidata queries drafted.
-
-11. **EMBODIES edge quality.** Closed in the April 28 real-source pass. The 564 heuristic-keyword EMBODIES (April 22 editorial scaffolding) were superseded by 1,035 source-attested EMBODIES from objkt, fxhash, and Wikidata depicts. 57 hand-assigned EMBODIES (medium confidence) survive. Total EMBODIES: 1,096, all from named ingest signals.
-
-12. **Exhibitions gap for 28 practitioners.** Pass 1+2 practitioners whose exhibition data was in prose format rather than venue lists. Partially recovered through COLLABORATES_WITH reclassification. Remaining gap requires manual research or Tier 2 institutional data.
-
-13. **Christiane Paul's *Digital Art* canon — partially closed.** The April 28 `gatherer-paul-canon-v1` pass added 22 practitioners + 5 missing scenes from Paul's index (Paik, Kac, Stelarc, the Vasulkas, Davies, Rokeby, Shaw, Ascott, Utterback, Sommerer, Mignonneau, Goldberg, Rubin, Hayles, Galloway, Chun, Paul herself, and others). Remaining: full diff against the 2023 4th-edition index for any missed Tier-1-sourceable absences.
-
-14. **fxhash full coverage.** Two passes (`fxhash-api-ingest-2026-04-22`, `fxhash-tags-ingest-2026-04-28`) cover ~45 works. A schema-deeper fxhash pass would close more gaps for artists like Iskra Velitchkova, Michaël Zancan.
+8. **Image gap-fill refresh.** The v1-era `image_overlay.json` mostly no longer matches the two-platform canon; nearly all artworks already carry a platform `image_url` mirrored to R2, so the gap is small, but a refresh against the current node set is a post-deploy follow-up.
 
 ---
 
 ## How to cite this seed
 
-> A(DAI) Seed Canon v2 (May 2026 rebuild). 6,249 practitioners and 9,972 artworks across 5 live edge types (CLASSIFIED_BY, CREATED_BY, EXHIBITED_AT, EMBODIES, PRACTICES), totalling 50,793 edges, against 14 source-anchored concept nodes and 6 classification regimes. Assembled by four contract-conformant gatherers — MoMA digital classifications (CC0), Wikidata SPARQL on digital-art QIDs, Art Blocks Hasura (V0/V1/V3 contracts), and fxhash GraphQL — folded into canon by `merge_batches.py` with a single rule-derived curation pass (`derive_curation.py`) for the editorial layer. Every row carries `signal_id` pointing back to its producer's batch; validator-enforced anti-enrichment rule (no narrative field without sibling source URL). 5 ingest signals + 1 migration contributor (trust tier `reviewed`) recorded as the provenance trail. Tier 1 sources only — no scraping, no LLM-generated prose. The long-tail editorial layer (institutions / scenes / collectives / INFLUENCES / RESPONDS_TO) is deferred to a post-deploy curation pass via the contributor API or `find_missing_images.py` discovery. Commons-licensed under A(DAI) full commons consent scope.
+> A(DAI) Seed Canon (May 2026, two-platform rebuild). 1,016 practitioners and 3,477 artworks across 4 live edge types (CLASSIFIED_BY, CREATED_BY, EXHIBITED_AT, EMBODIES), totalling 17,385 curated edges, against 8 source-anchored concept nodes and 6 classification regimes. Assembled by two contract-conformant platform gatherers — Art Blocks Hasura (V0/V1/V3 contracts) and fxhash GraphQL — folded into canon by `merge_batches.py` with a single rule-derived curation pass (`derive_curation.py`) for the editorial layer; clean by construction (no MoMA, no Wikidata, no cull). Every row carries `signal_id` pointing back to its producer's batch; validator-enforced anti-enrichment rule (no narrative field without sibling source URL). 3 ingest signals + 1 migration contributor (trust tier `reviewed`) recorded as the provenance trail. Platform APIs only — no scraping, no LLM-generated prose. The long-tail editorial layer (institutions / scenes / collectives / non-platform practitioners / PRACTICES / INFLUENCES / RESPONDS_TO) is deferred to a post-deploy curation pass via the contributor API or a correctly-configured broader source. Commons-licensed under A(DAI) full commons consent scope.

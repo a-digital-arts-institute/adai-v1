@@ -2,22 +2,25 @@
 
 One place to look to answer "what is in the canon right now?"
 
-> **⚠️ Status note (May 2026).** The shipped canon is the **digital-art cull
-> of the clean sweep — 8,653 nodes / 26,771 edges**, produced by
-> `_build/cull_digital_art.py` (keep a practitioner iff platform-native or
-> carrying a Wikidata digital-art QID; artworks cascade). Sections below that
-> describe the uncut sweep (16k) or a v1 restore (1,491) are superseded.
-> Authoritative summary + full arc: [`../CLAUDE.md`](../CLAUDE.md) § "The
+> **⚠️ Status note (May 2026).** The shipped canon is the **clean
+> two-platform pipeline — 4,509 nodes / 17,385 curated edges**, assembled
+> from only the Art Blocks + fxhash gatherers plus a rule-derived editorial
+> layer. There is **no MoMA, no Wikidata, no cull**: the four-source sweep
+> and its digital-art cull were dropped after the Wikidata `digital_art_qids`
+> list was found corrupt (it dragged 3,652 non-digital painters in). The
+> canon is now clean *by construction* — `merge_batches.py` assembles it from
+> only the batches present, so off-domain rows can't enter. If a section
+> below still mentions a cull (8,653), an uncut sweep (16k), or a v1 restore
+> (1,491), it's superseded. Full arc: [`../CLAUDE.md`](../CLAUDE.md) § "The
 > rebuild journey".
 
-Post-rebuild (May 2026): assembled from four source-attested gatherers
-([`_build/fetch_moma.py`](_build/fetch_moma.py),
-[`_build/fetch_wikidata.py`](_build/fetch_wikidata.py),
-[`_build/fetch_artblocks.py`](_build/fetch_artblocks.py),
+Post-rebuild (May 2026): assembled from two source-attested platform gatherers
+([`_build/fetch_artblocks.py`](_build/fetch_artblocks.py),
 [`_build/fetch_fxhash.py`](_build/fetch_fxhash.py)) + a single rule-derived
 curation pass ([`_build/derive_curation.py`](_build/derive_curation.py)),
 folded into canon by [`_build/merge_batches.py`](_build/merge_batches.py).
-Every gatherer conforms to
+(`_build/fetch_wikidata.py` is present but **quarantined** — see its banner;
+re-enabling it is the documented "try more" path.) Every gatherer conforms to
 [`_build/PRODUCER_CONTRACT.md`](_build/PRODUCER_CONTRACT.md) — the
 load-bearing doc.
 
@@ -33,12 +36,12 @@ The graph holds both readings in tension, never collapses them. See
 
 | File | Maps to table | Contents |
 |---|---|---|
-| `nodes.json` | `nodes` | Every node: artworks (9,972), practitioners (6,249), concepts (14), classification_regimes (6), platforms (2), institutions (1). 16,244 nodes total. |
-| `edges.json` | `edges` | Typed edges: CLASSIFIED_BY (20,798), CREATED_BY (11,582), EXHIBITED_AT (9,972), EMBODIES (4,786), PRACTICES (3,655). Every edge carries `signal_id`, `valid_from`, optional `valid_until` (bi-temporal). BELONGS_TO / COLLABORATES_WITH / USES_TECHNIQUE / INFLUENCES schema-reserved at zero; RESPONDS_TO empty by design. 50,793 edges total. |
-| `signals.json` | `signals` | 5 records — one per producer (moma, wikidata, artblocks, fxhash, curation). Each carries `source_url`, `processing_trace` (gatherer config, not LLM reasoning), `provenance_chain` (endpoint + fetched_at), consent posture. |
+| `nodes.json` | `nodes` | Every node: artworks (3,477), practitioners (1,016), concepts (8), classification_regimes (6), platforms (2 — Art Blocks, fxhash). 4,509 nodes total. |
+| `edges.json` | `edges` | Typed edges: CLASSIFIED_BY (6,954), CREATED_BY (3,477), EXHIBITED_AT (3,477), EMBODIES (3,477). PRACTICES 0 (was QID-derived; platform artists carry no QIDs). Every edge carries `signal_id`, `valid_from`, optional `valid_until` (bi-temporal). BELONGS_TO / COLLABORATES_WITH / USES_TECHNIQUE / INFLUENCES schema-reserved at zero; RESPONDS_TO empty by design. 17,385 edges total. |
+| `signals.json` | `signals` | 3 records — one per producer (artblocks, fxhash, curation). Each carries `source_url`, `processing_trace` (gatherer config, not LLM reasoning), `provenance_chain` (endpoint + fetched_at), consent posture. |
 | `contributors.json` | `contributors` | 1 record — `contributor:migration` (trust tier `reviewed`). |
-| `aliases.json` | `node_aliases` | 16,685 cross-source identity bindings — Wikidata QID, MoMA ConstituentID + ObjectID, fxhash user_id + token_id, artblocks contract:project_id. |
-| `image_overlay.json` | — | 89 build-time image gap-fills for nodes whose canon record lacks one. Applied by `seed-consolidated.ts`. See CLAUDE.md → "Image coverage tooling". |
+| `aliases.json` | `node_aliases` | 4,526 cross-source identity bindings — fxhash user_id + token_id (3,742), artblocks contract:project_id (477) + artist (297), plus 10 Wikidata QIDs that happen to attach to platform artists. |
+| `image_overlay.json` | — | Build-time image gap-fills for nodes whose canon record lacks one. Applied by `seed-consolidated.ts`. Carries v1-era entries; refresh against the two-platform canon is a post-deploy follow-up. See CLAUDE.md → "Image coverage tooling". |
 | `SOURCES.md` | — | Selection criteria, methodology, source citations, data sourcing rationale, and known gaps. |
 | `COVERAGE.md` | — | Per-category counts, image hit rate, gaps list, notes for follow-up. |
 
@@ -53,16 +56,16 @@ the run log), not by reading 50k JSON lines.
 
 Every node's `id` is `<type>:<human-readable name>` — spaces preserved,
 lowercase. Per CLAUDE.md: `practitioner:casey reas`, `artwork:fidenza`,
-`concept:generative art`, `classification_regime:a(dai) seed canon v1 (april 2026)`.
+`concept:generative art`, `classification_regime:adai seed canon v1 april 2026`.
 The separate `slug` field is kebab-case for URLs.
 
 **Artwork ids are always disambiguated** when the producer knows the
-source's external id: `artwork:untitled--moma-435713`,
+source's external id: `artwork:delineation--fxhash-31648`,
 `artwork:fidenza--artblocks-0xa7d8d9ef8d8ce8992df33d8b8cf4aebabd5bd270:78`.
-The producer-side `_slug.node_id()` helper enforces this — non-generic
-titles collide at scale too (1,307 MoMA "Composition" / "Landscape"
-collisions caught on the first full run). Same logic guards practitioners
-in the generic-name set, though that set is currently empty.
+The producer-side `_slug.node_id()` helper enforces this — generic titles
+collide at scale (the slug-disambiguation pass, PR #25, caught colliding
+`artwork:untitled` / `artwork:black hole` nodes). Same logic guards
+practitioners in the generic-name set, though that set is currently empty.
 
 ## Status field
 
@@ -81,17 +84,16 @@ editorial review workflow that the contract now enforces at emit time.
 
 Six regimes, held in `nodes.json` as `classification_regime` type nodes:
 
-- `classification_regime:a(dai) seed canon v1 (april 2026)` — the
-  canonical lens. 12,208 CLASSIFIED_BY edges (every artwork that came
-  from MoMA / Art Blocks / fxhash / Wikidata digital genre, plus every
-  practitioner with a MoMA ConstituentID or Wikidata digital-art QID).
-- 5 sub-lenses for cross-source positioning:
-  - **Euro-American Institutional** — MoMA-sourced entities (8,113 edges).
-  - **Crypto Market-Native** — Art Blocks / fxhash artworks (3,477 edges).
-  - **Academic Media-Art History** — Wikidata movement-anchored
-    practitioners (~1,000 edges).
-  - **Asia-Pacific Institutional**, **Practitioner Self-Report** —
-    schema-reserved, currently zero (post-rebuild curation work).
+- `classification_regime:adai seed canon v1 april 2026` — the canonical
+  lens. 3,477 CLASSIFIED_BY edges (one per artwork).
+- 5 sub-lenses for cross-source positioning. On the two-platform canon
+  only one carries edges:
+  - **Crypto Market-Native** — Art Blocks / fxhash artworks (3,477 edges,
+    one per artwork — every artwork here is an on-chain generative token).
+  - **Euro-American Institutional**, **Academic Media-Art History**,
+    **Asia-Pacific Institutional**, **Practitioner Self-Report** —
+    schema-reserved, currently zero. They populate when a non-crypto
+    source (a correctly-configured Wikidata, an institutional API) returns.
 
 The genealogy of each entry — which regime classified it, when, by whom —
 is visible directly in the graph via the CLASSIFIED_BY edges.
@@ -158,26 +160,28 @@ write path is `find_missing_images.py --apply --write` against the
   ```
 
 The Docker builder re-applies the overlay on every build (image-only,
-gap-fill, idempotent). The image overlay carries 89 entries currently;
-only 4 match the post-rebuild canon (the v1 institutions / collectives
-the rebuild dropped). Refresh is a follow-up post-deploy.
+gap-fill, idempotent). The image overlay carries v1-era entries; most no
+longer match the two-platform canon (the institutions / collectives the
+rebuild dropped). Refresh is a follow-up post-deploy — most artworks
+already carry an upstream `image_url` from their platform.
 
 ## What this does NOT include (yet)
 
-- **Institutions, collectives, scenes at scale.** v1 had 121 + 12 + 30 of
-  these; v2 has 1 + 0 + 0 (MoMA only, surfaced because every MoMA artwork
-  EXHIBITED_AT it). The long tail is editorial; it returns via the
-  contributor API or a curation pass post-deploy.
-- **Practitioner self-report at scale.** RESPONDS_TO, CONTESTS,
-  TENSION_WITH edges are reserved for practitioner contribution and
-  currently empty by design.
-- **fxhash + Art Blocks deep enrichment.** Current gatherers carry token
-  IDs and thumbnails; tag-set + collection-tier + license analysis is a
-  follow-up.
-- **objkt + Met OpenAccess coverage.** Both had lower-quality / empty data
-  in the rebuild scope. Add back when there's a reason.
-- **Asia-Pacific and Latin American institutional sources.** No public
-  APIs to ingest from — requires institutional outreach.
+- **Anything outside the two platforms.** The canon is Art Blocks + fxhash
+  only — every node is an on-chain generative artwork or its artist. No
+  institutions, scenes, collectives, publications, or projects. Those
+  return when a correctly-configured broader source (a fixed Wikidata, an
+  institutional API) is added, or via the contributor API.
+- **Non-platform practitioners.** Theorists, pre-digital pioneers, sound
+  artists, curators — the field's intellectual spine — carry no platform
+  token, so no gatherer here sees them. They are the highest-value
+  contributor target.
+- **PRACTICES edges.** Zero — they were QID-derived, and platform artists
+  carry no occupation/movement QIDs. They return with a QID-bearing source.
+- **Practitioner self-report.** RESPONDS_TO, CONTESTS, TENSION_WITH are
+  reserved for first-person contribution and currently empty by design.
+- **Deeper platform enrichment.** Current gatherers carry token IDs and
+  thumbnails; tag-set / collection-tier / license analysis is a follow-up.
 
 ## Provenance
 
@@ -187,12 +191,10 @@ git_sha + argv at run time) and `provenance_chain` (source endpoint +
 fetched_at). Every row also carries `created_by` (= `contributor:migration`
 during the rebuild) and `batch_id` (= `<producer>-<YYYYMMDDhhmm>`).
 
-The current 5 signals:
+The current 3 signals:
 
 | signal_id | producer | source |
 |---|---|---|
-| `signal:moma-2026-05` | moma | MoMA Artworks.csv + Artists.csv (digital classifications) |
-| `signal:wikidata-2026-05` | wikidata | query.wikidata.org SPARQL (digital-art QID set) |
 | `signal:artblocks-2026-05` | artblocks | data.artblocks.io/v1/graphql (V0/V1/V3 contracts) |
 | `signal:fxhash-2026-05` | fxhash | api.fxhash.xyz/graphql (paged sweep) |
 | `signal:curation-2026-05` | curation | seed/{nodes,edges}.json post-merge (rule-derived) |
