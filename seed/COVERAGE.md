@@ -1,9 +1,9 @@
 # seed/ coverage — Seed Canon (May 2026)
 
 > **⚠️ Status note (May 2026).** What ships is the **clean two-platform
-> pipeline: 4,509 nodes / 17,385 curated edges** (artwork 3,477,
-> practitioner 1,016, concept 8, regime 6, platform 2; edges CLASSIFIED_BY
-> 6,954 · CREATED_BY 3,477 · EXHIBITED_AT 3,477 · EMBODIES 3,477 ·
+> pipeline: 4,558 nodes / 23,984 curated edges** (artwork 3,451,
+> practitioner 1,016, concept 83, regime 6, platform 2; edges CLASSIFIED_BY
+> 6,902 · CREATED_BY 3,451 · EXHIBITED_AT 3,451 · EMBODIES 10,180 ·
 > PRACTICES 0). Assembled from only the Art Blocks + fxhash gatherers — no
 > MoMA, no Wikidata, no cull. The four-source sweep and its digital-art cull
 > were dropped after the Wikidata QID list was found corrupt. Any v1/sweep/
@@ -19,8 +19,8 @@ artwork or its artist; this report describes only what's in it.
 
 | Category | v1 (Apr 28) | **Shipped (May 2026)** | Note |
 |---|---|---|---|
-| Total nodes | 1,491 | **4,509** | ~3× — broad on platform artworks/artists, narrow on the editorial layer |
-| Total edges | 4,544 | **17,385** | every artwork carries CLASSIFIED_BY (×2) + EXHIBITED_AT + CREATED_BY + EMBODIES |
+| Total nodes | 1,491 | **4,558** | ~3× — broad on platform artworks/artists, narrow on the editorial layer |
+| Total edges | 4,544 | **23,984** | every artwork carries CLASSIFIED_BY (×2) + EXHIBITED_AT + CREATED_BY + EMBODIES |
 | Edge types live | 9 | 4 | CLASSIFIED_BY / CREATED_BY / EXHIBITED_AT / EMBODIES. PRACTICES 0 (QID-derived); BELONGS_TO / COLLABORATES_WITH / USES_TECHNIQUE / INFLUENCES reserved at zero; RESPONDS_TO empty by design |
 | Provenance signals | 12 | **3** | one per producer: artblocks, fxhash, curation |
 | Contributors | 10 | **1** | `contributor:migration` trust tier `reviewed` |
@@ -30,9 +30,9 @@ artwork or its artist; this report describes only what's in it.
 
 | Type | v1 (Apr 28) | **Shipped (May 2026)** |
 |---|---|---|
-| `artwork` | 728 | **3,477** |
+| `artwork` | 728 | **3,451** |
 | `practitioner` | 146 | **1,016** |
-| `concept` | 474 | **8** |
+| `concept` | 474 | **83** (8 base + 75 fxhash tag-concepts) |
 | `classification_regime` | 6 | **6** |
 | `platform` | 8 | **2** (Art Blocks, fxhash) |
 | `institution` | 121 | 0 |
@@ -41,12 +41,12 @@ artwork or its artist; this report describes only what's in it.
 | `publication` | 3 | 0 |
 | `project` | 2 | 0 |
 
-Why concepts dropped from 474 → 8: v1's concept vocabulary was largely
-LLM-derived ("AI-related variants preserved as signal, not noise" was the
-v1 framing). The shipped canon keeps only the source-anchored generative-art
-vocabulary emitted by `derive_curation.py` (digital / computer / generative
-/ algorithmic / software / interactive / new-media / internet art). Future
-practitioner contributions can extend it, but the seed is intentionally narrow.
+Concepts = 83: 8 source-anchored **base** concepts (digital / computer /
+generative / algorithmic / software / interactive / new-media / internet art)
+PLUS **75 tag-concepts** minted from artist-applied fxhash tags
+(`TAG_STOPLIST`-filtered). v1's 474 was largely LLM-derived noise; this
+vocabulary is source-attested — either a Wikidata-anchored base concept or a
+tag the artist actually wrote. Future practitioner contributions extend it.
 
 Why institutions / scenes / collectives are zero: v1 curated those by hand
 from practitioner research, and the dropped MoMA sweep would have added one
@@ -59,10 +59,10 @@ contribution or a correctly-configured broader source.
 
 | Edge type | v1 (Apr 28) | **Shipped (May 2026)** |
 |---|---|---|
-| **CLASSIFIED_BY** | 295 | **6,954** (every artwork → A(DAI) lens + crypto-market-native sub-regime) |
-| **CREATED_BY** | 737 | **3,477** (one per artwork → its platform artist) |
-| **EXHIBITED_AT** | 305 | **3,477** (one per artwork → its platform: fxhash 3,000, Art Blocks 477) |
-| **EMBODIES** | 1,096 | **3,477** (every artwork → `concept:generative art`) |
+| **CLASSIFIED_BY** | 295 | **6,902** (every artwork → A(DAI) lens + crypto-market-native sub-regime) |
+| **CREATED_BY** | 737 | **3,451** (one per artwork → its platform artist) |
+| **EXHIBITED_AT** | 305 | **3,451** (one per artwork → its platform: fxhash 2,974, Art Blocks 477) |
+| **EMBODIES** | 1,096 | **10,180** (two-tier: every artwork → generative-art + artwork → fxhash tag-concept) |
 | **PRACTICES** | 461 | **0** (was QID-derived; platform artists carry no QIDs) |
 | **BELONGS_TO** | 188 | 0 |
 | **COLLABORATES_WITH** | 183 | 0 |
@@ -90,8 +90,8 @@ practitioner contribution supports them:
 |---|---|
 | `seed/embeddings.bin` (Gemini multimodal vectors) | Committed sidecars, baked into `seed.db` at build. The daily `embed-derive-daily` GitHub Actions workflow backfills anything new against the live Fly DB. |
 | `seed/embeddings.umap2d.json` (UMAP scatter) | Committed; workflow re-fits UMAP on the GH runner and SFTPs back to `/data/embeddings.umap2d.json`. |
-| `STYLE_KIN` (practitioner ↔ practitioner, derived) | ~694 rows, baked in; refreshed by `npm run embed:derive` in the daily workflow. |
-| `VISUALLY_AFFINE` (artwork ↔ artwork, derived) | ~9,052 rows, baked in. Same refresh. |
+| `STYLE_KIN` (practitioner ↔ practitioner, derived) | ~702 rows, baked in; refreshed by `npm run embed:derive` in the daily workflow. |
+| `VISUALLY_AFFINE` (artwork ↔ artwork, derived) | ~9,044 rows, baked in. Plus ~516 Tier-2 concept-EMBODIES (inferred tag labels). |
 | `SUGGESTS_CREATED_BY` (AI attribution proposals) | Lands in `intake_queue`, surfaces at `/review?kind=ai_suggestion`. |
 
 Embedding surfaces (profile style-kin / visually-affine sections,
@@ -104,7 +104,7 @@ The seed carries `image_url` on:
 
 | Scope | Has `image_url` | Source |
 |---|---|---|
-| Artworks (3,477) | ~All | Art Blocks `media.artblocks.io/thumb/`, fxhash `displayUri` → gateway.fxhash2.xyz |
+| Artworks (3,451) | ~All | Art Blocks `media.artblocks.io/thumb/`, fxhash `displayUri` → gateway.fxhash2.xyz |
 | Practitioners (1,016) | Where the platform exposes a portrait | Art Blocks / fxhash artist asset |
 
 The R2 image mirror (`cdn_image_url`) covers ~3,451 artwork images

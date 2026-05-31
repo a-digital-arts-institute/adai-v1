@@ -7,7 +7,7 @@
     "metric": "cosine",
     "random_state": 42
   },
-  "n_items": 4501,
+  "n_items": 4475,
   "items": [
     {
       "node_id": "practitioner:snowfro",
@@ -1214,12 +1214,6 @@
       "kind": "identity",
       "x": -0.5413272380828857,
       "y": 0.842158317565918
-    },
-    {
-      "node_id": "artwork:scoundrels--artblocks-0xa7d8d9ef8d8ce8992df33d8b8cf4aebabd5bd270203",
-      "kind": "identity",
-      "x": -0.6814675331115723,
-      "y": 0.8748428821563721
     },
     {
       "node_id": "practitioner:ben kovach",
@@ -7036,12 +7030,6 @@
       "y": -0.9071882367134094
     },
     {
-      "node_id": "artwork:escape--fxhash-24251",
-      "kind": "identity",
-      "x": -0.7490665912628174,
-      "y": 0.8654792308807373
-    },
-    {
       "node_id": "artwork:uncle run fun park bumper car--fxhash-31208",
       "kind": "identity",
       "x": 0.08212077617645264,
@@ -8380,12 +8368,6 @@
       "y": -0.5171468257904053
     },
     {
-      "node_id": "artwork:pixel-fabric reality--fxhash-30901",
-      "kind": "identity",
-      "x": -0.7756490707397461,
-      "y": 0.8315967321395874
-    },
-    {
       "node_id": "practitioner:uinges",
       "kind": "identity",
       "x": -0.6222313642501831,
@@ -9154,12 +9136,6 @@
       "y": 0.7995381355285645
     },
     {
-      "node_id": "artwork:pele-mele--fxhash-30725",
-      "kind": "identity",
-      "x": -0.7141441106796265,
-      "y": 0.864804744720459
-    },
-    {
       "node_id": "artwork:ramblingman 02 ewout punch the sky--fxhash-30524",
       "kind": "identity",
       "x": 0.9961704015731812,
@@ -9376,12 +9352,6 @@
       "y": -0.39176028966903687
     },
     {
-      "node_id": "artwork:uminoza nchain--fxhash-30666",
-      "kind": "identity",
-      "x": -0.5819308757781982,
-      "y": 0.9650521278381348
-    },
-    {
       "node_id": "artwork:neutrality of the rotten root--fxhash-30663",
       "kind": "identity",
       "x": -0.3909618854522705,
@@ -9494,12 +9464,6 @@
       "kind": "identity",
       "x": -0.5102910995483398,
       "y": -0.797024667263031
-    },
-    {
-      "node_id": "artwork:in the end of feedback--fxhash-30640",
-      "kind": "identity",
-      "x": -0.7211594581604004,
-      "y": 0.8880249261856079
     },
     {
       "node_id": "practitioner:blas",
@@ -9638,12 +9602,6 @@
       "kind": "identity",
       "x": -0.6889591217041016,
       "y": -0.4715041518211365
-    },
-    {
-      "node_id": "artwork:this is not a cell--fxhash-30594",
-      "kind": "identity",
-      "x": -0.7284478545188904,
-      "y": 0.8600462675094604
     },
     {
       "node_id": "artwork:capsula--fxhash-30605",
@@ -9950,12 +9908,6 @@
       "kind": "identity",
       "x": -0.5491328239440918,
       "y": -0.7296591401100159
-    },
-    {
-      "node_id": "artwork:bumblebump--fxhash-30511",
-      "kind": "identity",
-      "x": -0.6874847412109375,
-      "y": 0.8960776329040527
     },
     {
       "node_id": "practitioner:kali",
@@ -10624,12 +10576,6 @@
       "y": -0.48298346996307373
     },
     {
-      "node_id": "artwork:thep5files002--fxhash-30331",
-      "kind": "identity",
-      "x": -0.7156272530555725,
-      "y": 0.9810367822647095
-    },
-    {
       "node_id": "artwork:fxaeon icons lightning--fxhash-30294",
       "kind": "identity",
       "x": -0.08370023965835571,
@@ -10646,12 +10592,6 @@
       "kind": "identity",
       "x": -0.19699281454086304,
       "y": -0.5868353247642517
-    },
-    {
-      "node_id": "artwork:sketchwork--fxhash-30328",
-      "kind": "identity",
-      "x": -0.752041757106781,
-      "y": 0.7742910385131836
     },
     {
       "node_id": "artwork:i arc--fxhash-30324",
@@ -12856,12 +12796,6 @@
       "y": -0.9145264029502869
     },
     {
-      "node_id": "artwork:stairway for given--fxhash-29863",
-      "kind": "identity",
-      "x": -0.6374553442001343,
-      "y": 0.870985746383667
-    },
-    {
       "node_id": "artwork:chromatic fluidity christmas gift--fxhash-29878",
       "kind": "identity",
       "x": -0.48330533504486084,
@@ -13088,12 +13022,6 @@
       "kind": "identity",
       "x": -0.47363829612731934,
       "y": -0.597263514995575
-    },
-    {
-      "node_id": "artwork:sacred tapestries--fxhash-29833",
-      "kind": "identity",
-      "x": -0.7396059036254883,
-      "y": 0.8384267091751099
     },
     {
       "node_id": "practitioner:francesco forcellini",
@@ -13678,12 +13606,6 @@
       "y": 0.8799424171447754
     },
     {
-      "node_id": "artwork:ringlets--fxhash-29579",
-      "kind": "identity",
-      "x": -0.7058278918266296,
-      "y": 0.8772938251495361
-    },
-    {
       "node_id": "artwork:geoglass--fxhash-29729",
       "kind": "identity",
       "x": -0.8122602105140686,
@@ -13988,12 +13910,6 @@
       "kind": "identity",
       "x": -0.3869892358779907,
       "y": -0.47066032886505127
-    },
-    {
-      "node_id": "artwork:turmoil--fxhash-29677",
-      "kind": "identity",
-      "x": -0.7384837865829468,
-      "y": 0.8339030742645264
     },
     {
       "node_id": "artwork:dust--fxhash-29674",
@@ -14860,12 +14776,6 @@
       "y": 0.9056277275085449
     },
     {
-      "node_id": "artwork:cargo--fxhash-29461",
-      "kind": "identity",
-      "x": -0.6948440074920654,
-      "y": 0.8772177696228027
-    },
-    {
       "node_id": "artwork:shore of a keyboard sea--fxhash-29460",
       "kind": "identity",
       "x": -0.32793253660202026,
@@ -14948,12 +14858,6 @@
       "kind": "identity",
       "x": -0.39960432052612305,
       "y": -0.5548276305198669
-    },
-    {
-      "node_id": "artwork:rise up--fxhash-29444",
-      "kind": "identity",
-      "x": -0.6943764686584473,
-      "y": 0.8574273586273193
     },
     {
       "node_id": "artwork:fantasy curtain--fxhash-29435",
@@ -16006,12 +15910,6 @@
       "y": -0.5529271364212036
     },
     {
-      "node_id": "artwork:chasing the sunset--fxhash-29263",
-      "kind": "identity",
-      "x": -0.7539206743240356,
-      "y": 0.857932448387146
-    },
-    {
       "node_id": "artwork:kage--fxhash-29261",
       "kind": "identity",
       "x": -0.34902822971343994,
@@ -16876,12 +16774,6 @@
       "y": 0.785887598991394
     },
     {
-      "node_id": "artwork:circus--fxhash-29091",
-      "kind": "identity",
-      "x": -0.718625545501709,
-      "y": 0.8453563451766968
-    },
-    {
       "node_id": "artwork:trazos--fxhash-29037",
       "kind": "identity",
       "x": -0.46623456478118896,
@@ -17354,12 +17246,6 @@
       "kind": "identity",
       "x": -0.6487225890159607,
       "y": -0.609245777130127
-    },
-    {
-      "node_id": "artwork:sail away--fxhash-28987",
-      "kind": "identity",
-      "x": -0.752342939376831,
-      "y": 0.866622805595398
     },
     {
       "node_id": "artwork:ruby drip--fxhash-28986",
@@ -18184,12 +18070,6 @@
       "y": -0.5219553112983704
     },
     {
-      "node_id": "artwork:creepers and wild garden grid--fxhash-28830",
-      "kind": "identity",
-      "x": -0.6537879705429077,
-      "y": 0.8778434991836548
-    },
-    {
       "node_id": "artwork:galaxy--fxhash-28827",
       "kind": "identity",
       "x": -0.7684579491615295,
@@ -18266,12 +18146,6 @@
       "kind": "identity",
       "x": -0.482291579246521,
       "y": -0.8382918238639832
-    },
-    {
-      "node_id": "artwork:swirls--fxhash-28811",
-      "kind": "identity",
-      "x": -0.7422454357147217,
-      "y": 0.8521504402160645
     },
     {
       "node_id": "artwork:arts of chet masterpiece 7--fxhash-28790",
@@ -18392,12 +18266,6 @@
       "kind": "identity",
       "x": -0.9974564909934998,
       "y": -0.8145639896392822
-    },
-    {
-      "node_id": "artwork:digital dna--fxhash-28769",
-      "kind": "identity",
-      "x": -0.7530627250671387,
-      "y": 0.8203864097595215
     },
     {
       "node_id": "artwork:line haven--fxhash-28762",
@@ -23764,12 +23632,6 @@
       "y": -0.618790864944458
     },
     {
-      "node_id": "artwork:thoughts--fxhash-27740",
-      "kind": "identity",
-      "x": -0.7477714419364929,
-      "y": 0.8340063095092773
-    },
-    {
       "node_id": "practitioner:akira ishi",
       "kind": "identity",
       "x": -0.5181536674499512,
@@ -24664,12 +24526,6 @@
       "y": -0.714084267616272
     },
     {
-      "node_id": "artwork:tezzolation--fxhash-27577",
-      "kind": "identity",
-      "x": -0.7530360817909241,
-      "y": 0.9329968690872192
-    },
-    {
       "node_id": "artwork:no return--fxhash-27576",
       "kind": "identity",
       "x": -0.5870022773742676,
@@ -25114,12 +24970,6 @@
       "y": 0.9875333309173584
     },
     {
-      "node_id": "artwork:digital sun--fxhash-27511",
-      "kind": "identity",
-      "x": -0.753128170967102,
-      "y": 0.8240604400634766
-    },
-    {
       "node_id": "practitioner:artislife",
       "kind": "identity",
       "x": -0.7017550468444824,
@@ -25214,12 +25064,6 @@
       "kind": "identity",
       "x": -0.5314212441444397,
       "y": -0.8661830425262451
-    },
-    {
-      "node_id": "artwork:all hail the queens--fxhash-27493",
-      "kind": "identity",
-      "x": -0.6636909246444702,
-      "y": 0.8421087265014648
     },
     {
       "node_id": "artwork:arts of chet minimalism 15--fxhash-26727",

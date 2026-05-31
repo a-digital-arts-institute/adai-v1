@@ -267,6 +267,15 @@ def gather_practitioners(*, limit: int) -> tuple[list[Node], list[Alias], dict[s
         if entry["movements"]:
             metadata["movement_qids"] = sorted(entry["movements"])
 
+        # Drop bare-stub practitioners: a QID + occupation tag and nothing
+        # else (no image, no birth/death, no nationality) is a "just there"
+        # node with no data — exactly the hollow entries to keep out of canon.
+        # Occupation/movement QIDs alone don't count as substance (every row
+        # has them — they're the filter, not data about the person).
+        if not any(k in metadata for k in ("image_url", "birth_year", "death_year", "nationality_qids")):
+            stats["skipped_bare_stub"] += 1
+            continue
+
         nodes.append(Node(
             id=pid,
             type="practitioner",

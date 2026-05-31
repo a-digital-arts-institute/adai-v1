@@ -106,7 +106,28 @@ CONCEPT_VOCAB: list[dict[str, Any]] = [
 # the escape hatch for obvious non-concepts (left empty by default — fill it if
 # platform/blockchain tags like "tezos"/"nft" become a nuisance).
 TAG_MIN_ARTWORKS = 25
-TAG_STOPLIST: set[str] = set()
+# Pure frequency admits a lot of non-concepts: platform / chain / marketplace /
+# tool / format tags, promo hashtags, and artists' own handles. These are
+# attested (artists wrote them) but they're not art concepts — stoplist them so
+# they never become concept nodes. (Genuinely aesthetic tags — abstract,
+# geometric, pixel, glitch, voronoi, landscape, … — pass through.) Tunable.
+TAG_STOPLIST: set[str] = {
+    # platform / chain / marketplace
+    "fxhash", "tezos", "tezosart", "tezosnft", "tezosnfts", "tezosnftart",
+    "nft", "nfts", "nftart", "nftcommunity", "crypto", "cryptoart", "web3",
+    "blockchain", "onchain", "ethereum", "objkt", "opensea", "artblocks",
+    # ai promo variants (noisy near-duplicates)
+    "ai", "aiart", "aiartwork", "ai_tezoart", "generativeai",
+    # tooling / format
+    "p5", "p5js", "p5.js", "javascript", "js", "webgl", "glsl", "three.js",
+    "threejs", "shader", "shaders", "code", "svg", "canvas", "html",
+    # generic promo / non-descriptive
+    "art", "artist", "digital", "digitalart", "generative", "generativeart",
+    "genart", "unique", "collection", "edition", "mint", "drop", "pfp",
+    "nccu", "1of1", "oneofone", "rare", "new", "wip",
+    # artist handles / project names seen in the data (not concepts)
+    "artsofchet",
+}
 
 # QID → concept slug mapping for PRACTICES / EMBODIES derivation.
 # Built from CONCEPT_VOCAB so the mapping stays consistent with the vocabulary.
@@ -120,6 +141,19 @@ MOMA_CLASSIFICATION_TO_CONCEPT = {
     "Film":         "experimental-film",
     "Performance":  "performance-art",
     "Software":     "software-art",
+}
+
+# Wikidata OCCUPATION QID → concept slug. Wikidata practitioners are filtered
+# by P106 occupation (Q7016454 new media artist, etc. — see fetch_wikidata.py),
+# NOT by genre QID, so their occupation_qids don't appear in qid_to_concept_id
+# (which is keyed by the genre QIDs in CONCEPT_VOCAB). This map bridges the two
+# so a Wikidata practitioner gets CLASSIFIED_BY + PRACTICES instead of dangling
+# as an orphan. Each occupation maps to its corresponding genre concept.
+OCCUPATION_QID_TO_CONCEPT_SLUG = {
+    "Q7016454":   "new-media-art",    # new media artist
+    "Q106208189": "computer-art",     # computer artist
+    "Q21764863":  "algorithmic-art",  # algorithm artist
+    "Q106208042": "internet-art",     # internet artist
 }
 
 # A(DAI) canonical regime — the single canonical lens.
@@ -253,6 +287,12 @@ def derive(tag_min_artworks: int = TAG_MIN_ARTWORKS) -> tuple[list[Node], list[E
     now = now_iso()
     artblocks_artworks = {n["id"] for n in nodes_in if n["type"] == "artwork" and "artblocks_token_id" in _parse_md(n)}
     fxhash_artworks = {n["id"] for n in nodes_in if n["type"] == "artwork" and "fxhash_token_id" in _parse_md(n)}
+    # Resolve occupation QIDs → concept node ids (via the base-concept slugs).
+    occ_to_concept_id = {
+        q: slug_to_concept_id[slug]
+        for q, slug in OCCUPATION_QID_TO_CONCEPT_SLUG.items()
+        if slug in slug_to_concept_id
+    }
 
     for n in nodes_in:
         md = _parse_md(n)
@@ -265,7 +305,17 @@ def derive(tag_min_artworks: int = TAG_MIN_ARTWORKS) -> tuple[list[Node], list[E
             occ = md.get("occupation_qids", []) or []
             has_moma = bool(md.get("moma_constituent_id"))
             is_primary = md.get("canon_tier") == "primary"
-            digital_qids = [q for q in (mvmt + occ) if q in qid_to_concept_id]
+            is_wikidata = bool(md.get("wikidata_qid"))
+
+            # Concepts this practitioner PRACTICES — from genre-QID movements
+            # (legacy) AND from Wikidata occupation QIDs (Q7016454 etc.) mapped
+            # to their corresponding concept. A set of concept node ids.
+            practiced: set[str] = set()
+            for q in mvmt + occ:
+                if q in qid_to_concept_id:
+                    practiced.add(qid_to_concept_id[q])
+                elif q in occ_to_concept_id:
+                    practiced.add(occ_to_concept_id[q])
 
             # CLASSIFIED_BY A(DAI) regime if practitioner is in our scope.
             # canon_tier=primary (the v1 editorial whitelist) counts: being
@@ -274,7 +324,7 @@ def derive(tag_min_artworks: int = TAG_MIN_ARTWORKS) -> tuple[list[Node], list[E
             # (Yuk Hui, Lillian Schwartz) the source-tag rules can't reach —
             # they carry no digital-art QID precisely because they're the
             # figures a source-tag sweep structurally misses.
-            if digital_qids or has_moma or is_primary:
+            if practiced or has_moma or is_primary:
                 out_edges.append(Edge(
                     source_id=nid, target_id=adai_regime_id,
                     edge_type="CLASSIFIED_BY", valid_from=now, confidence=1.0,
@@ -300,18 +350,18 @@ def derive(tag_min_artworks: int = TAG_MIN_ARTWORKS) -> tuple[list[Node], list[E
                 ))
                 stats["classified_by_euro_amer"] += 1
 
-            # Academic Media-Art History: practitioner has a Wikidata movement QID
-            # (these are the named anchors recognized by art-history scholarship)
-            if mvmt:
+            # Academic Media-Art History: practitioner from the Wikidata
+            # scholarly record (occupation-anchored) OR with a movement QID —
+            # the named anchors recognised by art-history scholarship.
+            if (is_wikidata and practiced) or mvmt:
                 out_edges.append(Edge(
                     source_id=nid, target_id=sub_regime_ids["Academic Media-Art History"],
                     edge_type="CLASSIFIED_BY", valid_from=now, confidence=1.0,
                 ))
                 stats["classified_by_academic"] += 1
 
-            # PRACTICES edges from digital-art QIDs
-            for qid in set(digital_qids):
-                cid = qid_to_concept_id[qid]
+            # PRACTICES edges → each concept the practitioner works with.
+            for cid in sorted(practiced):
                 out_edges.append(Edge(
                     source_id=nid, target_id=cid,
                     edge_type="PRACTICES", valid_from=now, confidence=1.0,

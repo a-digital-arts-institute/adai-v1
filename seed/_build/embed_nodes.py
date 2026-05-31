@@ -3,6 +3,19 @@
 Embed every embeddable node in seed/nodes.json into a single multimodal
 vector space using Google's Gemini Embedding 2.
 
+╔══════════════════════════════════════════════════════════════════════════╗
+║  ⚠️  ALWAYS RUN `upload_to_r2.py --mirror` BEFORE THIS SCRIPT.  ⚠️          ║
+║                                                                            ║
+║  ARTWORK EMBEDDINGS ARE MULTIMODAL — THE IMAGE IS PART OF THE VECTOR.      ║
+║  THIS SCRIPT READS ARTWORK IMAGES FROM THE R2 MIRROR (image_mirror.json).  ║
+║  IF AN IMAGE HASN'T BEEN MIRRORED YET, THE EMBEDDER SILENTLY FALLS BACK    ║
+║  TO TEXT-ONLY — A WRONG VECTOR THAT LOOKS FINE. ORDER IS ALWAYS:           ║
+║      1. upload_to_r2.py --mirror   (images → R2, cdn → image_mirror.json)  ║
+║      2. embed_nodes.py             (this script)                           ║
+║      3. project_umap.py                                                    ║
+║  THE RUNNER materialize_wikidata_embeddings.sh ENFORCES THIS ORDER.        ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
 Inputs:
   - seed/nodes.json
   - .env: GEMINI_API_KEY (required), optionally EMBED_MODEL (defaults to

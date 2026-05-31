@@ -218,13 +218,61 @@ def merge() -> dict[str, Any]:
     }
 
 
+def _cdn_node_ids() -> set[str]:
+    """node_ids that have a mirrored R2 cdn image, from the committed sidecars
+    (image_mirror.json + image_overlay.json). The mirror writes cdn there, not
+    into the batches, so this is the source of truth for 'has a usable image'."""
+    ids: set[str] = set()
+    for fname in ("image_mirror.json", "image_overlay.json"):
+        p = SEED / fname
+        if not p.exists():
+            continue
+        try:
+            for e in json.loads(p.read_text()):
+                if isinstance(e, dict) and e.get("cdn_image_url") and e.get("node_id"):
+                    ids.add(e["node_id"])
+        except Exception:
+            pass
+    return ids
+
+
+def _cull_artworks_without_cdn(result: dict[str, Any]) -> dict[str, int]:
+    """Drop every artwork node lacking a mirrored cdn image, cascading to its
+    edges and aliases. Practitioners are NOT cascaded — a creator who loses all
+    artworks is still a valid (text-embeddable) node. Enforces the invariant
+    'every canon artwork has an R2-mirrored image'."""
+    cdn = _cdn_node_ids()
+    drop = {
+        n["id"] for n in result["nodes"]
+        if n["type"] == "artwork" and n["id"] not in cdn
+    }
+    if not drop:
+        return {"artworks_culled": 0, "edges_culled": 0, "aliases_culled": 0}
+    n0, e0, a0 = len(result["nodes"]), len(result["edges"]), len(result["aliases"])
+    result["nodes"] = [n for n in result["nodes"] if n["id"] not in drop]
+    result["edges"] = [e for e in result["edges"]
+                       if e.get("source_id") not in drop and e.get("target_id") not in drop]
+    result["aliases"] = [a for a in result["aliases"] if a.get("node_id") not in drop]
+    return {
+        "artworks_culled": len(drop),
+        "edges_culled": e0 - len(result["edges"]),
+        "aliases_culled": a0 - len(result["aliases"]),
+    }
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true", help="don't write seed/*.json")
     ap.add_argument("--no-validate", action="store_true", help="skip validate_seed --canon")
+    ap.add_argument("--require-cdn", action="store_true",
+                    help="drop artworks lacking a mirrored R2 cdn image (run AFTER upload_to_r2.py --mirror)")
     args = ap.parse_args()
 
     result = merge()
+    if args.require_cdn:
+        culled = _cull_artworks_without_cdn(result)
+        print(f"--require-cdn: culled {culled['artworks_culled']} imageless artworks "
+              f"({culled['edges_culled']} edges, {culled['aliases_culled']} aliases dropped)")
     stats = result["stats"]
 
     print()

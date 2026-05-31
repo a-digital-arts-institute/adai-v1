@@ -1,7 +1,7 @@
 # Seed Canon: Sources & Methodology
 
 > **⚠️ Status note (May 2026).** What ships is the **clean two-platform
-> pipeline — 4,509 nodes / 17,385 curated edges**, assembled from only the
+> pipeline — 4,558 nodes / 23,984 curated edges**, assembled from only the
 > Art Blocks + fxhash gatherers plus a rule-derived editorial layer. No
 > MoMA, no Wikidata, no cull: the four-source sweep and its cull were dropped
 > after the Wikidata `digital_art_qids` list was found corrupt (one QID,
@@ -28,7 +28,7 @@ The Relational Intelligence Protocol that governs A(DAI) is built around **two r
 This seed contains one of those two readings. Specifically:
 
 - **The 1,016 practitioners** in the shipped canon are platform-native generative artists — everyone who minted on Art Blocks or fxhash within the gatherers' scope. This is a narrower, sharper reading than v1's 146-practitioner hand-curated canon: it's wide on platform artists but blind to the field's non-platform spine (theorists, pioneers, sound artists). The selection criteria below describe what *belongs* in a fuller curated seed; they shape the post-deploy contribution agenda rather than gating this canon's entry.
-- **The 17,385 curated edges** describing who made each work, where it lives, what concept it embodies, and which lens classifies it — those are a **machine reading**, gathered from the two platform APIs. They are source-attested. They are not the practitioners' own words.
+- **The 23,984 curated edges** describing who made each work, where it lives, what concept it embodies, and which lens classifies it — those are a **machine reading**, gathered from the two platform APIs. They are source-attested. They are not the practitioners' own words.
 
 The practitioner reading lives in the empty edge types: **RESPONDS_TO** (artwork → artwork, "this work answers that one"), **CONTESTS** (signal → edge, "this is wrong"), **TENSION_WITH** (concept ↔ concept, "these don't sit easily together"). Those are zero by design. They are reserved for first-person testimony — the kind of knowledge that lives in practitioners' studios, not on platform tag clouds.
 
@@ -165,15 +165,15 @@ and the other sweep-era gatherers were `git rm`'d (recoverable from history).
 `derive_curation.py` emits the editorial layer mechanically from existing
 metadata:
 
-- 8 concept nodes anchored to Wikidata QIDs with verbatim
+- 8 base concept nodes anchored to Wikidata QIDs with verbatim (+ 75 fxhash tag-concepts, TAG_STOPLIST-filtered, minted from artist-applied tags)
   `schema:description` (digital / computer / generative / algorithmic /
   software / interactive / new-media / internet art — source-attested).
 - 6 classification regimes (A(DAI) canon + 5 sub-regimes — Academic
   Media-Art History, Asia-Pacific Institutional, Crypto Market-Native,
   Euro-American Institutional, Practitioner Self-Report). On this canon only
   the A(DAI) lens and Crypto Market-Native carry edges.
-- 6,954 CLASSIFIED_BY edges (every artwork → A(DAI) lens + crypto-market-native).
-- 3,477 EMBODIES edges (every on-chain generative token → `concept:generative art`).
+- 6,902 CLASSIFIED_BY edges (every artwork → A(DAI) lens + crypto-market-native).
+- 10,180 EMBODIES edges — two-tier: every token → `concept:generative art` PLUS artist-applied fxhash tags → 75 `concept:<tag>` nodes (`TAG_STOPLIST`-filtered).
 - 0 PRACTICES edges — these were derived from Wikidata movement/occupation
   QIDs, and platform artists carry none.
 
@@ -202,7 +202,7 @@ Artworks enter through three paths:
 
 **Institutional collection data.** Artworks ingested from Tier 1 licensed sources — MoMA Collection CSV (CC0), Art Blocks Hasura API, fxhash API — enter with institutional provenance and, where available, images. Source origin: `human_secondary`.
 
-Current seed (May 2026): 3,477 artwork nodes — fxhash generative tokens (3,000) and Art Blocks core contracts (477). Each carries an image URL directly from its platform (fxhash `displayUri` → gateway.fxhash2.xyz, Art Blocks `media.artblocks.io/thumb/`), mirrored to R2 (~3,451 images) for rot-insurance.
+Current seed (May 2026): 3,451 artwork nodes — fxhash generative tokens (3,000) and Art Blocks core contracts (477). Each carries an image URL directly from its platform (fxhash `displayUri` → gateway.fxhash2.xyz, Art Blocks `media.artblocks.io/thumb/`), mirrored to R2 (~3,451 images) for rot-insurance.
 
 ---
 
@@ -338,10 +338,10 @@ pipeline:
 
 | Edge type | Count | Direction | What it captures |
 |---|---|---|---|
-| CLASSIFIED_BY | 6,954 | any → classification regime | Which lens claims this node — every artwork → A(DAI) lens + crypto-market-native sub-regime |
-| CREATED_BY | 3,477 | artwork → practitioner | Who made it — directly from platform attribution |
-| EXHIBITED_AT | 3,477 | artwork → platform | Where the work lives — every artwork → its platform (fxhash 3,000 / Art Blocks 477) |
-| EMBODIES | 3,477 | artwork → concept | What a work is *about* — every on-chain generative token → `concept:generative art` |
+| CLASSIFIED_BY | 6,902 | any → classification regime | Which lens claims this node — every artwork → A(DAI) lens + crypto-market-native sub-regime |
+| CREATED_BY | 3,451 | artwork → practitioner | Who made it — directly from platform attribution |
+| EXHIBITED_AT | 3,451 | artwork → platform | Where the work lives — every artwork → its platform (fxhash 3,000 / Art Blocks 477) |
+| EMBODIES | 10,180 | artwork → concept | What a work is *about* — generative-art + artist-applied fxhash tag-concepts |
 | PRACTICES | 0 | practitioner → concept | Was QID-derived; platform artists carry no occupation/movement QIDs |
 | BELONGS_TO | 0 | practitioner → scene | Blocked on scene nodes existing (post-deploy curation) |
 | COLLABORATES_WITH | 0 | practitioner ↔ practitioner | Blocked on multi-creator collapse (emits one CREATED_BY per token) |
@@ -384,12 +384,12 @@ The seed is the provocation. The practitioner's response is the intelligence.
 | Practitioners | 1,016 |
 | — sourced from fxhash | 742 |
 | — sourced from Art Blocks | 297 |
-| Total artworks | 3,477 |
+| Total artworks | 3,451 |
 | — with `image_url` (upstream attestable) | ~All |
-| Total nodes | 4,509 |
-| Total curated edges | 17,385 |
+| Total nodes | 4,558 |
+| Total curated edges | 23,984 |
 | Edge types live | 4 (CLASSIFIED_BY, CREATED_BY, EXHIBITED_AT, EMBODIES) |
-| Concepts | 8 (source-anchored generative-art vocabulary) |
+| Concepts | 83 (8 base + 75 fxhash tag-concepts, TAG_STOPLIST-filtered) |
 | Classification regimes | 6 (A(DAI) canon + 5 sub-regimes; 2 carry edges) |
 | Signals (provenance batches) | 3 (artblocks, fxhash, curation) |
 | Contributors | 1 (`contributor:migration`, trust tier `reviewed`) |
@@ -419,4 +419,4 @@ The seed is the provocation. The practitioner's response is the intelligence.
 
 ## How to cite this seed
 
-> A(DAI) Seed Canon (May 2026, two-platform rebuild). 1,016 practitioners and 3,477 artworks across 4 live edge types (CLASSIFIED_BY, CREATED_BY, EXHIBITED_AT, EMBODIES), totalling 17,385 curated edges, against 8 source-anchored concept nodes and 6 classification regimes. Assembled by two contract-conformant platform gatherers — Art Blocks Hasura (V0/V1/V3 contracts) and fxhash GraphQL — folded into canon by `merge_batches.py` with a single rule-derived curation pass (`derive_curation.py`) for the editorial layer; clean by construction (no MoMA, no Wikidata, no cull). Every row carries `signal_id` pointing back to its producer's batch; validator-enforced anti-enrichment rule (no narrative field without sibling source URL). 3 ingest signals + 1 migration contributor (trust tier `reviewed`) recorded as the provenance trail. Platform APIs only — no scraping, no LLM-generated prose. The long-tail editorial layer (institutions / scenes / collectives / non-platform practitioners / PRACTICES / INFLUENCES / RESPONDS_TO) is deferred to a post-deploy curation pass via the contributor API or a correctly-configured broader source. Commons-licensed under A(DAI) full commons consent scope.
+> A(DAI) Seed Canon (May 2026, two-platform rebuild). 1,016 practitioners and 3,451 artworks across 4 live edge types (CLASSIFIED_BY, CREATED_BY, EXHIBITED_AT, EMBODIES), totalling 23,984 curated edges, against 83 concept nodes (8 source-anchored base + 75 fxhash tag-concepts) and 6 classification regimes. Assembled by two contract-conformant platform gatherers — Art Blocks Hasura (V0/V1/V3 contracts) and fxhash GraphQL — folded into canon by `merge_batches.py` with a single rule-derived curation pass (`derive_curation.py`) for the editorial layer; clean by construction (no MoMA, no Wikidata, no cull). Every row carries `signal_id` pointing back to its producer's batch; validator-enforced anti-enrichment rule (no narrative field without sibling source URL). 3 ingest signals + 1 migration contributor (trust tier `reviewed`) recorded as the provenance trail. Platform APIs only — no scraping, no LLM-generated prose. The long-tail editorial layer (institutions / scenes / collectives / non-platform practitioners / PRACTICES / INFLUENCES / RESPONDS_TO) is deferred to a post-deploy curation pass via the contributor API or a correctly-configured broader source. Commons-licensed under A(DAI) full commons consent scope.

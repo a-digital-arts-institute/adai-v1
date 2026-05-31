@@ -3,7 +3,7 @@
 One place to look to answer "what is in the canon right now?"
 
 > **⚠️ Status note (May 2026).** The shipped canon is the **clean
-> two-platform pipeline — 4,509 nodes / 17,385 curated edges**, assembled
+> two-platform pipeline — 4,558 nodes / 23,984 curated edges**, assembled
 > from only the Art Blocks + fxhash gatherers plus a rule-derived editorial
 > layer. There is **no MoMA, no Wikidata, no cull**: the four-source sweep
 > and its digital-art cull were dropped after the Wikidata `digital_art_qids`
@@ -36,8 +36,8 @@ The graph holds both readings in tension, never collapses them. See
 
 | File | Maps to table | Contents |
 |---|---|---|
-| `nodes.json` | `nodes` | Every node: artworks (3,477), practitioners (1,016), concepts (8 — base vocab; the next regen adds ~80+ **tag-concepts** from attested fxhash tags, see CLAUDE.md → "Tag-derived concepts"), classification_regimes (6), platforms (2 — Art Blocks, fxhash). 4,509 nodes total. |
-| `edges.json` | `edges` | Typed edges: CLASSIFIED_BY (6,954), CREATED_BY (3,477), EXHIBITED_AT (3,477), EMBODIES (3,477). PRACTICES 0 (was QID-derived; platform artists carry no QIDs). Every edge carries `signal_id`, `valid_from`, optional `valid_until` (bi-temporal). BELONGS_TO / COLLABORATES_WITH / USES_TECHNIQUE / INFLUENCES schema-reserved at zero; RESPONDS_TO empty by design. 17,385 edges total. |
+| `nodes.json` | `nodes` | Every node: artworks (3,451 — every one R2-mirrored), practitioners (1,016), concepts (83 — 8 base + 75 **tag-concepts** from attested fxhash tags), classification_regimes (6), platforms (2 — Art Blocks, fxhash). 4,558 nodes total. |
+| `edges.json` | `edges` | Typed edges: CLASSIFIED_BY (6,902), CREATED_BY (3,451), EXHIBITED_AT (3,451), EMBODIES (10,180 — two-tier: every artwork → generative-art + artwork → tag-concept). PRACTICES 0 (was QID-derived; platform artists carry no QIDs). Every edge carries `signal_id`, `valid_from`, optional `valid_until` (bi-temporal). BELONGS_TO / COLLABORATES_WITH / USES_TECHNIQUE / INFLUENCES schema-reserved at zero; RESPONDS_TO empty by design. 23,984 edges total. |
 | `signals.json` | `signals` | 3 records — one per producer (artblocks, fxhash, curation). Each carries `source_url`, `processing_trace` (gatherer config, not LLM reasoning), `provenance_chain` (endpoint + fetched_at), consent posture. |
 | `contributors.json` | `contributors` | 1 record — `contributor:migration` (trust tier `reviewed`). |
 | `aliases.json` | `node_aliases` | 4,526 cross-source identity bindings — fxhash user_id + token_id (3,742), artblocks contract:project_id (477) + artist (297), plus 10 Wikidata QIDs that happen to attach to platform artists. |
@@ -85,10 +85,10 @@ editorial review workflow that the contract now enforces at emit time.
 Six regimes, held in `nodes.json` as `classification_regime` type nodes:
 
 - `classification_regime:adai seed canon v1 april 2026` — the canonical
-  lens. 3,477 CLASSIFIED_BY edges (one per artwork).
+  lens. 3,451 CLASSIFIED_BY edges (one per artwork).
 - 5 sub-lenses for cross-source positioning. On the two-platform canon
   only one carries edges:
-  - **Crypto Market-Native** — Art Blocks / fxhash artworks (3,477 edges,
+  - **Crypto Market-Native** — Art Blocks / fxhash artworks (3,451 edges,
     one per artwork — every artwork here is an on-chain generative token).
   - **Euro-American Institutional**, **Academic Media-Art History**,
     **Asia-Pacific Institutional**, **Practitioner Self-Report** —
