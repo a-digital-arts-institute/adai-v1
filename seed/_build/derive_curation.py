@@ -127,6 +127,8 @@ TAG_STOPLIST: set[str] = {
     "nccu", "1of1", "oneofone", "rare", "new", "wip",
     # artist handles / project names seen in the data (not concepts)
     "artsofchet",
+    # platform / marketplace names used as tags (esp. SuperRare's own tags)
+    "superrare", "foundation", "makersplace", "knownorigin", "rarible",
 }
 
 # QID → concept slug mapping for PRACTICES / EMBODIES derivation.
@@ -178,6 +180,24 @@ def _parse_md(n: dict[str, Any]) -> dict[str, Any]:
         except json.JSONDecodeError:
             return {}
     return md or {}
+
+
+def _load_rescued_tags() -> dict[str, dict[str, Any]]:
+    """Sub-threshold tags rescued by embedding coherence (rescue_tags.py).
+
+    Returns ``{tag: {coherence, count, creators}}`` or ``{}`` if the sidecar is
+    absent. These tags didn't clear the raw ``TAG_MIN_ARTWORKS`` frequency gate
+    but their tagged works are visually coherent (mean-centred centroid cosine ≥
+    τ) across ≥ N creators — real categories the count alone would have dropped.
+    """
+    p = Path(__file__).parent / "rescued_tags.json"
+    if not p.exists():
+        return {}
+    try:
+        data = json.loads(p.read_text())
+        return {r["tag"]: r for r in data.get("rescued", []) if r.get("tag")}
+    except (json.JSONDecodeError, KeyError, TypeError):
+        return {}
 
 
 def derive(tag_min_artworks: int = TAG_MIN_ARTWORKS) -> tuple[list[Node], list[Edge], list[Alias], dict[str, int]]:
@@ -232,8 +252,11 @@ def derive(tag_min_artworks: int = TAG_MIN_ARTWORKS) -> tuple[list[Node], list[E
             if isinstance(tag, str) and tag.strip():
                 tag_counts[tag.strip().lower()] += 1
 
+    rescued = _load_rescued_tags()
     for tag, cnt in sorted(tag_counts.items(), key=lambda kv: (-kv[1], kv[0])):
-        if cnt < tag_min_artworks or tag in TAG_STOPLIST:
+        is_rescued = tag in rescued
+        # Admit if it cleared the raw frequency gate OR was coherence-rescued.
+        if (cnt < tag_min_artworks and not is_rescued) or tag in TAG_STOPLIST:
             continue
         cid = node_id("concept", tag)
         slug = node_slug("concept", tag)
@@ -244,14 +267,18 @@ def derive(tag_min_artworks: int = TAG_MIN_ARTWORKS) -> tuple[list[Node], list[E
             stats["tag_concepts_folded"] += 1
             continue
         slug_to_concept_id[slug] = cid
-        out_nodes.append(Node(
-            id=cid, type="concept", name=tag, slug=slug,
-            metadata={
-                "tag_origin": "fxhash",
-                "artwork_count": cnt,
-                "source_url": "https://www.fxhash.xyz/",
-            },
-        ))
+        meta: dict[str, Any] = {
+            "tag_origin": "platform-tags",
+            "artwork_count": cnt,
+            "source_url": "https://www.fxhash.xyz/",
+        }
+        if is_rescued:
+            # Attested by the artists who wrote the tag; admitted below the raw
+            # frequency gate because the works are visually coherent (audit trail).
+            meta["coherence_rescued"] = True
+            meta["coherence"] = rescued[tag].get("coherence")
+            stats["tag_concepts_rescued"] += 1
+        out_nodes.append(Node(id=cid, type="concept", name=tag, slug=slug, metadata=meta))
         stats["tag_concepts_emitted"] += 1
 
     # 2. A(DAI) regime + sub-regimes
