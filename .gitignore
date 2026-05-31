@@ -45,10 +45,9 @@ Thumbs.db
 *~
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Claude Code project memory (local config stays ignored; shared skills are tracked)
+# Claude Code project memory (local only)
 # ─────────────────────────────────────────────────────────────────────────────
-.claude/*
-!.claude/skills/
+.claude/
 
 # ─────────────────────────────────────────────────────────────────────────────
 # seed/ — committed canon is the source of truth.
