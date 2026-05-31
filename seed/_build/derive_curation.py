@@ -299,6 +299,38 @@ def derive(tag_min_artworks: int = TAG_MIN_ARTWORKS) -> tuple[list[Node], list[E
         nid = n["id"]
         ntype = n["type"]
 
+        # ---- V&A MAKERS (practitioner or collective) ----
+        # V&A makers carry no Wikidata QID and aren't platform-native, so the
+        # QID/platform rules below would leave them unclassified. They ARE the
+        # historical computer-art canon (Nake, Cohen, Mohr, Molnár, Nees, the
+        # Computer Technique Group …), recognised through an institution and
+        # the field's scholarship — so: CLASSIFIED_BY A(DAI) + the two
+        # non-crypto sub-regimes, and PRACTICES computer-art. A maker merged
+        # with a platform node (e.g. Manfred Mohr on both V&A and Art Blocks)
+        # is handled here; the platform path adds nothing at the maker level.
+        if md.get("va_maker_name") and ntype in ("practitioner", "collective"):
+            out_edges.append(Edge(
+                source_id=nid, target_id=adai_regime_id,
+                edge_type="CLASSIFIED_BY", valid_from=now_iso(), confidence=1.0,
+            ))
+            out_edges.append(Edge(
+                source_id=nid, target_id=sub_regime_ids["Academic Media-Art History"],
+                edge_type="CLASSIFIED_BY", valid_from=now_iso(), confidence=1.0,
+            ))
+            out_edges.append(Edge(
+                source_id=nid, target_id=sub_regime_ids["Euro-American Institutional"],
+                edge_type="CLASSIFIED_BY", valid_from=now_iso(), confidence=1.0,
+            ))
+            stats["classified_by_va_maker"] += 3
+            ca = slug_to_concept_id.get("computer-art")
+            if ca:
+                out_edges.append(Edge(
+                    source_id=nid, target_id=ca,
+                    edge_type="PRACTICES", valid_from=now_iso(), confidence=1.0,
+                ))
+                stats["practices_va"] += 1
+            continue
+
         # ---- PRACTITIONERS ----
         if ntype == "practitioner":
             mvmt = md.get("movement_qids", []) or []
@@ -377,8 +409,9 @@ def derive(tag_min_artworks: int = TAG_MIN_ARTWORKS) -> tuple[list[Node], list[E
         is_moma = bool(md.get("moma_object_id"))
         is_artblocks = nid in artblocks_artworks
         is_fxhash = nid in fxhash_artworks
+        is_va = bool(md.get("va_system_number"))
         genre_qids = md.get("genre_qids", []) or []
-        in_scope = is_moma or is_artblocks or is_fxhash or genre_qids
+        in_scope = is_moma or is_artblocks or is_fxhash or is_va or genre_qids
 
         # CLASSIFIED_BY A(DAI) regime
         if in_scope:
@@ -389,7 +422,7 @@ def derive(tag_min_artworks: int = TAG_MIN_ARTWORKS) -> tuple[list[Node], list[E
             stats["classified_by_adai_artwork"] += 1
 
         # Sub-regimes
-        if is_moma:
+        if is_moma or is_va:
             out_edges.append(Edge(
                 source_id=nid, target_id=sub_regime_ids["Euro-American Institutional"],
                 edge_type="CLASSIFIED_BY", valid_from=now, confidence=1.0,
@@ -413,6 +446,22 @@ def derive(tag_min_artworks: int = TAG_MIN_ARTWORKS) -> tuple[list[Node], list[E
                     edge_type="EMBODIES", valid_from=now, confidence=1.0,
                 ))
                 stats["embodies_moma"] += 1
+
+        # EMBODIES — V&A computer-art collection → computer-art (attested:
+        # the V&A's own classification / the "computer art" search). The
+        # bridge to generative-art and to the fxhash tag-concepts is left to
+        # the embedding Tier-2 propagation: V&A works are untagged, so they're
+        # exactly the candidates that pass get inferred concept edges when
+        # visually close to the platform canon — cross-era links, earned not
+        # asserted.
+        if is_va:
+            ca = slug_to_concept_id.get("computer-art")
+            if ca:
+                out_edges.append(Edge(
+                    source_id=nid, target_id=ca,
+                    edge_type="EMBODIES", valid_from=now, confidence=1.0,
+                ))
+                stats["embodies_va"] += 1
 
         # EMBODIES — Wikidata genre QIDs → concept
         for q in set(genre_qids):

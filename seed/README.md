@@ -2,23 +2,26 @@
 
 One place to look to answer "what is in the canon right now?"
 
-> **⚠️ Status note (May 2026).** The shipped canon is the **clean
-> two-platform pipeline — 4,558 nodes / 23,984 curated edges**, assembled
-> from only the Art Blocks + fxhash gatherers plus a rule-derived editorial
-> layer. There is **no MoMA, no Wikidata, no cull**: the four-source sweep
-> and its digital-art cull were dropped after the Wikidata `digital_art_qids`
-> list was found corrupt (it dragged 3,652 non-digital painters in). The
-> canon is now clean *by construction* — `merge_batches.py` assembles it from
-> only the batches present, so off-domain rows can't enter. If a section
-> below still mentions a cull (8,653), an uncut sweep (16k), or a v1 restore
-> (1,491), it's superseded. Full arc: [`../CLAUDE.md`](../CLAUDE.md) § "The
-> rebuild journey".
+> **⚠️ Status note (May 2026).** The shipped canon is the **two-platform + V&A
+> pipeline — 5,930 nodes / 30,631 curated edges**, assembled from the Art Blocks
+> + fxhash + V&A gatherers plus a rule-derived editorial layer. There is **no
+> MoMA, no Wikidata, no cull**: the four-source sweep and its digital-art cull
+> were dropped after the Wikidata `digital_art_qids` list was found corrupt (it
+> dragged 3,652 non-digital painters in). The V&A pass (May 2026) is the de-bias
+> step — it adds the 1960s–70s computer-art spine with IIIF images. The canon is
+> clean *by construction* — `merge_batches.py` assembles it from only the batches
+> present, so off-domain rows can't enter. If a section below still mentions the
+> pre-V&A two-platform count (4,558), a cull (8,653), an uncut sweep (16k), or a
+> v1 restore (1,491), it's superseded. Full arc: [`../CLAUDE.md`](../CLAUDE.md)
+> § "The rebuild journey".
 
-Post-rebuild (May 2026): assembled from two source-attested platform gatherers
+Post-rebuild (May 2026): assembled from three source-attested gatherers
 ([`_build/fetch_artblocks.py`](_build/fetch_artblocks.py),
-[`_build/fetch_fxhash.py`](_build/fetch_fxhash.py)) + a single rule-derived
-curation pass ([`_build/derive_curation.py`](_build/derive_curation.py)),
-folded into canon by [`_build/merge_batches.py`](_build/merge_batches.py).
+[`_build/fetch_fxhash.py`](_build/fetch_fxhash.py),
+[`_build/fetch_va.py`](_build/fetch_va.py) — the V&A Computer Arts Society
+de-bias pass) + a single rule-derived curation pass
+([`_build/derive_curation.py`](_build/derive_curation.py)), folded into canon
+by [`_build/merge_batches.py`](_build/merge_batches.py).
 (`_build/fetch_wikidata.py` is present but **quarantined** — see its banner;
 re-enabling it is the documented "try more" path.) Every gatherer conforms to
 [`_build/PRODUCER_CONTRACT.md`](_build/PRODUCER_CONTRACT.md) — the
@@ -34,13 +37,15 @@ The graph holds both readings in tension, never collapses them. See
 
 ## Files
 
+**Exact counts: [`STATS.md`](STATS.md)** (generated, can't drift) · live: `GET /api/stats`.
+
 | File | Maps to table | Contents |
 |---|---|---|
-| `nodes.json` | `nodes` | Every node: artworks (3,451 — every one R2-mirrored), practitioners (1,016), concepts (83 — 8 base + 75 **tag-concepts** from attested fxhash tags), classification_regimes (6), platforms (2 — Art Blocks, fxhash). 4,558 nodes total. |
-| `edges.json` | `edges` | Typed edges: CLASSIFIED_BY (6,902), CREATED_BY (3,451), EXHIBITED_AT (3,451), EMBODIES (10,180 — two-tier: every artwork → generative-art + artwork → tag-concept). PRACTICES 0 (was QID-derived; platform artists carry no QIDs). Every edge carries `signal_id`, `valid_from`, optional `valid_until` (bi-temporal). BELONGS_TO / COLLABORATES_WITH / USES_TECHNIQUE / INFLUENCES schema-reserved at zero; RESPONDS_TO empty by design. 23,984 edges total. |
-| `signals.json` | `signals` | 3 records — one per producer (artblocks, fxhash, curation). Each carries `source_url`, `processing_trace` (gatherer config, not LLM reasoning), `provenance_chain` (endpoint + fetched_at), consent posture. |
+| `nodes.json` | `nodes` | Every node — types: `artwork` (platform tokens + V&A holdings, every one R2-mirrored), `practitioner` (platform artists + V&A makers), `concept` (8 base + **tag-concepts** from attested fxhash tags), `classification_regime`, `collective` (V&A groups), `platform`, `institution` (V&A). |
+| `edges.json` | `edges` | Typed edges: CLASSIFIED_BY, CREATED_BY, EXHIBITED_AT, EMBODIES (two-tier: generative-art/computer-art + tag-concepts), PRACTICES (V&A makers → computer-art). Every edge carries `signal_id`, `valid_from`, optional `valid_until` (bi-temporal). BELONGS_TO / COLLABORATES_WITH / USES_TECHNIQUE / INFLUENCES schema-reserved at zero; RESPONDS_TO empty by design. |
+| `signals.json` | `signals` | One record per producer (artblocks, fxhash, va, curation). Each carries `source_url`, `processing_trace` (gatherer config, not LLM reasoning), `provenance_chain` (endpoint + fetched_at), consent posture. |
 | `contributors.json` | `contributors` | 1 record — `contributor:migration` (trust tier `reviewed`). |
-| `aliases.json` | `node_aliases` | 4,526 cross-source identity bindings — fxhash user_id + token_id (3,742), artblocks contract:project_id (477) + artist (297), plus 10 Wikidata QIDs that happen to attach to platform artists. |
+| `aliases.json` | `node_aliases` | Cross-source identity bindings — fxhash user_id + token_id, artblocks contract:project_id + artist, V&A systemNumber + maker, plus the Wikidata QIDs on platform artists + the V&A institution. |
 | `image_overlay.json` | — | Build-time image gap-fills for nodes whose canon record lacks one. Applied by `seed-consolidated.ts`. Carries v1-era entries; refresh against the two-platform canon is a post-deploy follow-up. See CLAUDE.md → "Image coverage tooling". |
 | `SOURCES.md` | — | Selection criteria, methodology, source citations, data sourcing rationale, and known gaps. |
 | `COVERAGE.md` | — | Per-category counts, image hit rate, gaps list, notes for follow-up. |
@@ -85,15 +90,17 @@ editorial review workflow that the contract now enforces at emit time.
 Six regimes, held in `nodes.json` as `classification_regime` type nodes:
 
 - `classification_regime:adai seed canon v1 april 2026` — the canonical
-  lens. 3,451 CLASSIFIED_BY edges (one per artwork).
-- 5 sub-lenses for cross-source positioning. On the two-platform canon
-  only one carries edges:
-  - **Crypto Market-Native** — Art Blocks / fxhash artworks (3,451 edges,
-    one per artwork — every artwork here is an on-chain generative token).
-  - **Euro-American Institutional**, **Academic Media-Art History**,
-    **Asia-Pacific Institutional**, **Practitioner Self-Report** —
-    schema-reserved, currently zero. They populate when a non-crypto
-    source (a correctly-configured Wikidata, an institutional API) returns.
+  lens (one CLASSIFIED_BY edge per artwork).
+- 5 sub-lenses for cross-source positioning. On this canon **three** carry
+  edges:
+  - **Crypto Market-Native** — Art Blocks / fxhash artworks (on-chain
+    generative tokens).
+  - **Euro-American Institutional** — V&A artworks + V&A makers (the
+    holding-museum lens).
+  - **Academic Media-Art History** — V&A makers (the field's computer-art
+    scholarship).
+  - **Asia-Pacific Institutional**, **Practitioner Self-Report** —
+    schema-reserved, currently zero. They populate when those sources return.
 
 The genealogy of each entry — which regime classified it, when, by whom —
 is visible directly in the graph via the CLASSIFIED_BY edges.
@@ -167,17 +174,18 @@ already carry an upstream `image_url` from their platform.
 
 ## What this does NOT include (yet)
 
-- **Anything outside the two platforms.** The canon is Art Blocks + fxhash
-  only — every node is an on-chain generative artwork or its artist. No
-  institutions, scenes, collectives, publications, or projects. Those
-  return when a correctly-configured broader source (a fixed Wikidata, an
-  institutional API) is added, or via the contributor API.
-- **Non-platform practitioners.** Theorists, pre-digital pioneers, sound
-  artists, curators — the field's intellectual spine — carry no platform
-  token, so no gatherer here sees them. They are the highest-value
-  contributor target.
-- **PRACTICES edges.** Zero — they were QID-derived, and platform artists
-  carry no occupation/movement QIDs. They return with a QID-bearing source.
+- **Most of the field beyond the platforms + V&A.** The V&A pass added the
+  historical computer-art spine (1 institution, 6 collectives, 207 pioneer
+  makers), but scenes, publications, projects, non-V&A institutions, net-art,
+  and sound/video/installation (deliberately excluded — see
+  `derive_curation.py`) are still absent. Those return via a correctly-
+  configured broader source or the contributor API.
+- **Most non-platform practitioners.** The V&A brought the 1960s–70s pioneers;
+  contemporary theorists, curators, and non-V&A non-platform artists carry no
+  source token here yet. They remain a high-value contributor target.
+- **PRACTICES beyond the V&A's 213.** V&A makers → computer-art is derived;
+  platform artists carry no occupation/movement QIDs, so their PRACTICES stays
+  empty until a QID-bearing source returns.
 - **Practitioner self-report.** RESPONDS_TO, CONTESTS, TENSION_WITH are
   reserved for first-person contribution and currently empty by design.
 - **Deeper platform enrichment.** Current gatherers carry token IDs and
@@ -191,12 +199,13 @@ git_sha + argv at run time) and `provenance_chain` (source endpoint +
 fetched_at). Every row also carries `created_by` (= `contributor:migration`
 during the rebuild) and `batch_id` (= `<producer>-<YYYYMMDDhhmm>`).
 
-The current 3 signals:
+The current 4 signals:
 
 | signal_id | producer | source |
 |---|---|---|
 | `signal:artblocks-2026-05` | artblocks | data.artblocks.io/v1/graphql (V0/V1/V3 contracts) |
 | `signal:fxhash-2026-05` | fxhash | api.fxhash.xyz/graphql (paged sweep) |
+| `signal:va-2026-05` | va | api.vam.ac.uk/v2 (Computer Arts Society, "computer art") |
 | `signal:curation-2026-05` | curation | seed/{nodes,edges}.json post-merge (rule-derived) |
 
 The producer-model discipline is documented in

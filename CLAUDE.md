@@ -40,7 +40,7 @@ src/
     api.ts                — JSON API route handlers
 db.sql                    — CR-SQLite schema (CRR tables + local tables)
 seed/                     — canonical seed data (nodes/edges/signals/contributors/aliases JSON)
-  _build/                 — offline Python pipeline (fetch_artblocks, fetch_fxhash gatherers + merge_batches + derive_curation + validate_seed + embed/image tooling); produces seed/*.json. fetch_wikidata.py is verified-clean (QIDs corrected, no bees) but SHELVED — its artworks are Wikimedia-Commons-hosted and Commons' 429 throttle starves the image mirror vs. the every-artwork-imaged invariant; practitioner-only is viable but unused
+  _build/                 — offline Python pipeline (fetch_artblocks, fetch_fxhash, fetch_va gatherers + merge_batches + derive_curation + validate_seed + embed/image tooling); produces seed/*.json. fetch_va.py = the V&A Computer Arts Society de-bias pass (IIIF images, the 1960s–70s spine). fetch_wikidata.py is verified-clean (QIDs corrected, no bees) but SHELVED — its artworks are Wikimedia-Commons-hosted and Commons' 429 throttle starves the image mirror vs. the every-artwork-imaged invariant; practitioner-only is viable but unused
 results/                  — 59 legacy per-practitioner research JSONs (kept for reference)
   _drafts/                — bridge practitioners, classification-lens drafts, artwork previews
 pipeline/                 — offline Python scripts (clean_artworks, embed, snapshot)
@@ -82,26 +82,39 @@ Single SQLite file `adai.db` with CR-SQLite CRDT extensions (`@shards-lang/crsql
 - `intake_queue` — contribution review pipeline (pending/approved/rejected)
 - `settings` — key-value config
 
-> **⚠️ What ships right now: the clean two-platform canon (4,558 nodes, May 2026).**
+> **⚠️ What ships right now: two platforms + the V&A historical layer (5,930 nodes, May 2026).**
 >
-> The canon is the genuine output of two source-of-truth gatherers —
-> **Art Blocks + fxhash** — plus the rule-derived editorial layer. Every node
-> traces to an on-chain generative artwork or its artist. There is **no MoMA,
+> The canon is the genuine output of three source-of-truth gatherers —
+> **Art Blocks + fxhash** (on-chain generative platforms) **+ the Victoria &
+> Albert Museum's Computer Arts Society collection** (the 1960s–70s computer-art
+> spine: Nake, Cohen, Mohr, Molnár, Nees, Noll, Verostko, the Computer Technique
+> Group …) — plus the rule-derived editorial layer. There is still **no MoMA,
 > no Wikidata, no named-anchors** layer: those were dropped after the Wikidata
 > `digital_art_qids` list was found to be **corrupt** (a bee species, moths,
 > "combat", and "graphic artist" — the last alone dragged 3,652 non-digital
 > painters/sculptors, Duchamp and Miró among them, into a generative-art canon).
-> See "The rebuild journey" below for the full story. The canon is now clean
-> **by construction**: `merge_batches.py` assembles it from only the two clean
-> batches, so off-domain rows can't enter — no filter/cull step exists.
+> See "The rebuild journey" below for the full story. The canon stays clean
+> **by construction**: `merge_batches.py` assembles it from only the batches
+> present (now three clean ones), so off-domain rows can't enter — no filter/cull
+> step exists. The V&A is the **de-bias pass** (May 2026): it was added precisely
+> because the two-platform canon skewed hard to post-2021 crypto-native work, and
+> the V&A serves IIIF images (no Wikimedia-Commons 429 throttle) so every record
+> survives the `--require-cdn` every-artwork-imaged invariant — the exact wall the
+> Wikidata re-attempt hit.
 >
-> If `git log` or older doc revisions mention 8,653 nodes (digital-art cull),
-> 1,491 (v1 restore), or 16,244/16,351 (uncut sweep), those are all superseded.
-> Trust the counts below.
+> If `git log` or older doc revisions mention 4,558 nodes (clean two-platform,
+> pre-V&A), 8,653 (digital-art cull), 1,491 (v1 restore), or 16,244/16,351 (uncut
+> sweep), those are all superseded.
+>
+> **Exact counts live in one generated place — [`seed/STATS.md`](seed/STATS.md)**
+> (produced from the canon by `seed/_build/gen_stats.py`, so they can't drift) —
+> and live at `GET /api/stats`. The figures woven into the prose below are
+> narrative (they tell the de-bias story); when they and `STATS.md` disagree,
+> `STATS.md` wins — regenerate it and don't hand-reconcile the prose.
 
-**Node types** — live in Seed Canon (4,558 nodes total, May 2026, from the Art Blocks + fxhash pipeline): artwork (3,451 — **every one carries a mirrored R2 image**, see the `--require-cdn` invariant below), practitioner (1,016), concept (83 — 8 base + **75 tag-concepts** minted from attested fxhash tags at the ≥25 frequency gate, `TAG_STOPLIST`-filtered; see "Tag-derived concepts"), classification_regime (6 — A(DAI) canonical lens + 5 sub-regimes), platform (2 — Art Blocks, fxhash). Schema reserves `institution`, `scene`, `collective`, `publication`, `project`, `event`, `related` — empty. Every practitioner is a platform-native generative artist (Art Blocks or fxhash); every artwork is an on-chain generative token. No node carries a Wikidata occupation/movement QID — the contamination is gone at the root. New practitioners/artworks enter via the contributor API or by re-running the gatherers. **Wikidata was re-attempted in May 2026 and dropped again**: the practitioner gatherer is verified-clean (occupation QIDs, no bees), but Wikidata *artworks* are Wikimedia-Commons-hosted and Commons' bot-throttle (429) starves the image mirror — which collides with the "every artwork has a mirrored image" invariant. So Wikidata is shelved (practitioner-only would be viable; the gatherer + occupation→concept map are on the branch, dormant). objkt / a correctly-configured non-Commons source remain the "try more later" path.
+**Node types** — live in Seed Canon (5,930 nodes total, May 2026, from the Art Blocks + fxhash + V&A pipeline): artwork (4,610 — 3,451 platform + 1,159 V&A; **every one carries a mirrored R2 image**, see the `--require-cdn` invariant below), practitioner (1,222 — 1,015 platform + 207 V&A; 1 cross-source identity merge, Licia He on both V&A and Art Blocks), concept (83 — 8 base + **75 tag-concepts** minted from attested fxhash tags at the ≥25 frequency gate, `TAG_STOPLIST`-filtered; see "Tag-derived concepts"), classification_regime (6 — A(DAI) canonical lens + 5 sub-regimes), collective (6 — V&A artistic groups, e.g. the Computer Technique Group), platform (2 — Art Blocks, fxhash), institution (1 — Victoria and Albert Museum). Schema reserves `scene`, `publication`, `project`, `event`, `related` — empty. Most practitioners are platform-native generative artists (Art Blocks or fxhash); the 207 V&A makers are the historical computer-art spine (pre-platform, recognised through the museum + scholarship). Every artwork is either an on-chain generative token or a V&A computer-art holding. No node carries a Wikidata occupation/movement QID — the contamination is gone at the root. New practitioners/artworks enter via the contributor API or by re-running the gatherers. **Wikidata was re-attempted in May 2026 and dropped again**: the practitioner gatherer is verified-clean (occupation QIDs, no bees), but Wikidata *artworks* are Wikimedia-Commons-hosted and Commons' bot-throttle (429) starves the image mirror — which collides with the "every artwork has a mirrored image" invariant. The V&A pass exists because it clears that exact bar (IIIF, no throttle). So Wikidata stays shelved (practitioner-only would be viable; the gatherer + occupation→concept map are on the branch, dormant). objkt / a correctly-configured non-Commons source remain the "try more later" path.
 
-**Edge types** — 9 curated + 2 auto-derived. Curated counts (May 2026, two-platform pipeline): CLASSIFIED_BY (6,902 — every artwork → A(DAI) lens + crypto sub-regime), CREATED_BY (3,451), EXHIBITED_AT (3,451), EMBODIES (10,180 — **two-tier**: every artwork → generative-art *plus* artwork → tag-concept from attested fxhash tags, both Tier-1 confidence 1.0 in canon; see "Tag-derived concepts"), PRACTICES (0 — was QID-derived; platform artists carry no QIDs, so it's empty until a QID-bearing source returns), BELONGS_TO / COLLABORATES_WITH / USES_TECHNIQUE / INFLUENCES (0 — reserved). Auto-derived from `npm run embed:derive`, refreshed by the daily `embed-derive-daily` GitHub Actions workflow: STYLE_KIN (creator ↔ creator, ~702 rows), VISUALLY_AFFINE (artwork ↔ artwork, ~9,044 rows), and **Tier-2 concept-EMBODIES** (~516 rows — inferred artwork→tag-concept for visually-similar untagged works, `created_by='embedding-multimodal-v1'`, dashed) — bounded by the per-node mutual-kNN cap / gates. The canonical edge-type list lives in [seed/SOURCES.md](seed/SOURCES.md), which adds one intentionally empty edge: **RESPONDS_TO** (artwork → artwork) — zero because it requires evidence of artist intent, not thematic similarity. It's the highest-value edge type for Basel-floor practitioner contributions. `db.sql` has no CHECK constraint on `edge_type`. When adding rows, prefer the existing 9 unless the relation is genuinely new, and update these counts rather than letting them drift.
+**Edge types** — 9 curated + 2 auto-derived. Curated counts (May 2026, two-platform + V&A pipeline): CLASSIFIED_BY (9,859 — every artwork → A(DAI) lens + its sub-regime: platform artworks → crypto-market-native, V&A artworks → euro-american-institutional; V&A makers → academic-media-art-history + euro-american-institutional), CREATED_BY (4,610), EXHIBITED_AT (4,610 — platform artworks → their platform, V&A artworks → institution:victoria and albert museum), EMBODIES (11,339 — **two-tier**: every platform artwork → generative-art + artwork → fxhash tag-concept, every V&A artwork → computer-art, all Tier-1 confidence 1.0 in canon; see "Tag-derived concepts"), PRACTICES (213 — V&A makers → computer-art; **revived by the V&A pass** — it was 0 on the platform-only canon because platform artists carry no QIDs), BELONGS_TO / COLLABORATES_WITH / USES_TECHNIQUE / INFLUENCES (0 — reserved). Auto-derived from `npm run embed:derive`, refreshed by the daily `embed-derive-daily` GitHub Actions workflow: STYLE_KIN (creator ↔ creator, ~1,380 rows — note the 1960s V&A pioneers form a tight internally-coherent cluster, Nake↔Nees↔Mohr↔Molnár↔Noll↔Verostko; the embeddings correctly do *not* fabricate cross-era visual rhymes with 2021 platform work), VISUALLY_AFFINE (artwork ↔ artwork, ~10,592 rows), and **Tier-2 concept-EMBODIES** (~751 rows — inferred artwork→tag-concept for visually-similar untagged works, `created_by='embedding-multimodal-v1'`, dashed; 0 land on V&A works — they cluster apart from tagged fxhash work, so the eras connect through shared *curated* concepts, not forced similarity) — bounded by the per-node mutual-kNN cap / gates. The canonical edge-type list lives in [seed/SOURCES.md](seed/SOURCES.md), which adds one intentionally empty edge: **RESPONDS_TO** (artwork → artwork) — zero because it requires evidence of artist intent, not thematic similarity. It's the highest-value edge type for Basel-floor practitioner contributions. `db.sql` has no CHECK constraint on `edge_type`. When adding rows, prefer the existing 9 unless the relation is genuinely new, and update these counts rather than letting them drift.
 
 > **⚠️ ALWAYS MIRROR IMAGES TO R2 *BEFORE* EMBEDDING — WE KEEP GETTING THIS WRONG.**
 > Artwork embeddings are MULTIMODAL: the image is part of the vector. `embed_nodes.py`
@@ -125,11 +138,11 @@ Single SQLite file `adai.db` with CR-SQLite CRDT extensions (`@shards-lang/crsql
 - **Profile pages** (`/practitioner/:slug`, `/artwork/:slug`, `/concept/:slug`, `/scene/:slug`) — append "Style kin" / "Visually affine" / "Style proximity" / "Closest artworks" sections computed on-demand via `src/embed/neighbours.ts`. Practitioner pages also surface pending AI-attribution proposals that name them as the candidate creator.
 - **`/neighbours/:type/:slug`** — similarity browser: top-20 cosine neighbours of any node, with knobs for query/candidate kind and type prefix. Shareable URLs.
 - **`/field`** — press `e` (or click the chip in the chrome) to fade curatorial edges and foreground STYLE_KIN / VISUALLY_AFFINE.
-- **`/embed-space`** — UMAP-projected 2D scatter of all 1,338+ vectors with pan / zoom / hover / type filters / name search. Practitioners cluster by aesthetic, artworks by visual similarity, concepts by semantic field. The projection lives in `seed/embeddings.umap2d.json` (committed alongside the other embedding sidecars — see the "Deploying" section), produced offline by `seed/_build/.venv/bin/python3 seed/_build/project_umap.py` — re-run after any new embed pass. Cosine metric, `n_neighbors=15`, `min_dist=0.1`, `random_state=42` for determinism.
+- **`/embed-space`** — UMAP-projected 2D scatter of all ~5,921 vectors with pan / zoom / hover / type filters / name search. Practitioners cluster by aesthetic, artworks by visual similarity, concepts by semantic field. The projection lives in `seed/embeddings.umap2d.json` (committed alongside the other embedding sidecars — see the "Deploying" section), produced offline by `seed/_build/.venv/bin/python3 seed/_build/project_umap.py` — re-run after any new embed pass. Cosine metric, `n_neighbors=15`, `min_dist=0.1`, `random_state=42` for determinism.
 
 **Trust tiers**: `auto` (founding team + practitioner self-report on own data — auto-merge), `reviewed` (established track record — auto-merge + tagged), `probationary` (default for new contributors — queued for review). The auto-approve check in `POST /api/contribute` treats `auto` and `reviewed` as auto-merge; everyone else goes to the review queue.
 
-**A(DAI) canonical regime**: `classification_regime:adai seed canon v1 april 2026` (slug `adai-seed-canon-v1-april-2026`) is the single canonical lens. Canonical entities declare `CLASSIFIED_BY → classification_regime:adai seed canon v1 april 2026` — these edges are emitted by `derive_curation.py`, not auto-injected at seed time. 3,451 CLASSIFIED_BY edges point to it (one per artwork). The earlier `classification_regime:a(dai)` root (which produced an edge explosion that centred the graph on itself) was retired and its auto-injecting loop in `src/seed-consolidated.ts` was disabled — see the comment block around line 184. Do not reintroduce the auto-injection. Five sub-regimes also exist as nodes (`academic media-art history`, `asia-pacific institutional`, `crypto market-native`, `euro-american institutional`, `practitioner self-report`); on the two-platform canon only **crypto market-native** carries edges (3,451 — every artwork), since every artwork is an on-chain generative token. The other four are reserved for when a non-crypto source returns. Renders gold in `/graph`.
+**A(DAI) canonical regime**: `classification_regime:adai seed canon v1 april 2026` (slug `adai-seed-canon-v1-april-2026`) is the single canonical lens. Canonical entities declare `CLASSIFIED_BY → classification_regime:adai seed canon v1 april 2026` — these edges are emitted by `derive_curation.py`, not auto-injected at seed time. 4,610 CLASSIFIED_BY edges point to it (one per artwork). The earlier `classification_regime:a(dai)` root (which produced an edge explosion that centred the graph on itself) was retired and its auto-injecting loop in `src/seed-consolidated.ts` was disabled — see the comment block around line 184. Do not reintroduce the auto-injection. Five sub-regimes also exist as nodes (`academic media-art history`, `asia-pacific institutional`, `crypto market-native`, `euro-american institutional`, `practitioner self-report`); on this canon **three** carry edges: **crypto market-native** (3,451 — every platform artwork, an on-chain generative token), **euro-american-institutional** (1,159 V&A artworks + 213 V&A makers — the holding-museum lens), and **academic-media-art-history** (213 V&A makers — the field's computer-art scholarship). `asia-pacific institutional` and `practitioner self-report` remain reserved for when those sources return. Renders gold in `/graph`.
 
 ### Querying rules
 
@@ -277,33 +290,63 @@ decisions, and the final one reverses the middle ones. Commit order:
    (Art Blocks + fxhash) only**. The cull, the v1 restore, and every MoMA/
    Wikidata/named-anchors script were `git rm`'d.
 
-So: the **shipped canon is genuine two-platform pipeline output** — Art Blocks +
-fxhash gatherers → merge → rule-derived curation. No sweep, no cull, no Wikidata,
-no MoMA. The lesson: a deterministic rule that *trusts a corrupt source tag* is
-still poison; the fix lives in the producer config, not a downstream filter.
-Don't "fix" the doc counts back to 8,653 (cull), 1,491 (v1 restore), or 16k
-(uncut sweep).
+So: the **shipped canon is genuine platform + V&A pipeline output** — Art Blocks +
+fxhash + V&A gatherers → merge → rule-derived curation. No sweep, no cull, no
+Wikidata, no MoMA. The lesson: a deterministic rule that *trusts a corrupt source
+tag* is still poison; the fix lives in the producer config, not a downstream filter.
+Don't "fix" the doc counts back to 4,558 (clean two-platform, pre-V&A), 8,653
+(cull), 1,491 (v1 restore), or 16k (uncut sweep).
+
+6. **V&A Computer Arts Society de-bias pass (May 2026) — THE CURRENT STATE.**
+   The clean two-platform canon (4,558 nodes) was correct but *skewed*: every
+   artist had minted on Art Blocks or fxhash, so it read as post-2021 crypto-
+   native generative art with no historical depth — the 1960s–70s pioneers who
+   *invented* the form (Nake, Cohen, Mohr, Molnár, Nees, Noll, Verostko, the
+   Computer Technique Group) were structurally absent (no platform token → no
+   gatherer saw them). The Wikidata re-attempt that would have added them died
+   on Wikimedia-Commons' 429 image throttle vs. the every-artwork-imaged
+   invariant. The fix was a source that serves machine-accessible images: the
+   **Victoria & Albert Museum** holds the Computer Arts Society collection and
+   serves **IIIF** (`framemark.vam.ac.uk`, no bot-throttle). `fetch_va.py`
+   (`api.vam.ac.uk/v2` search, `q=computer art&images_exist=1`, individual-maker
+   filter so CREATED_BY always resolves) added **1,159 artworks + 207
+   practitioners + 6 collectives + 1 institution**, all imaged. Cross-source
+   identity is free via NFKD slugs — but in practice only 1 maker overlapped
+   (Licia He, on both V&A and Art Blocks); the pioneers are genuinely net-new,
+   which is the point. `derive_curation.py` classifies the V&A layer under the
+   *non-crypto* lenses (euro-american-institutional + academic-media-art-history)
+   and EMBODIES `computer-art`, **reviving PRACTICES** (0 → 213). The embeddings
+   keep the eras honestly distinct: the pioneers form a tight internal STYLE_KIN
+   cluster and receive **zero** forced cross-era visual edges — the 1968 and 2021
+   regions connect through shared *curated* concepts, not fabricated similarity.
+   Caveat: V&A images are **not CC0** (unlike Met/Smithsonian) — provenance is
+   the V&A; we mirror for graph-renderability with attribution preserved.
 
 ### Canonical path — `seed/*.json` via `seed-consolidated.ts`
 
 The flat JSON files in `seed/` map 1:1 to schema rows (nodes, edges, signals, contributors, node_aliases). `seed/_build/` contains the offline Python pipeline. Every gatherer conforms to [`seed/_build/PRODUCER_CONTRACT.md`](seed/_build/PRODUCER_CONTRACT.md) — read that file before writing any new gatherer. It's the load-bearing one.
 
-**How the shipped canon is produced — the two-platform pipeline.** Clean *by construction*: `merge_batches.py` assembles canon from only the batches present in `seed/_build/runs/<YYYY-MM>/`, so if the only batches are Art Blocks + fxhash, off-domain rows physically cannot enter. There is no cull/filter step.
+**How the shipped canon is produced — the platform + V&A pipeline.** Clean *by construction*: `merge_batches.py` assembles canon from only the batches present in `seed/_build/runs/<YYYY-MM>/`, so if the only batches are Art Blocks + fxhash + V&A, off-domain rows physically cannot enter. There is no cull/filter step (beyond `--require-cdn`, which only drops imageless artworks).
+
+Note the **mirror-before-cull ordering** for any source with net-new images (the V&A pass): `--require-cdn` drops artworks absent from `image_mirror.json`, but the mirror reads `nodes.json`, so the *first* merge must be plain (no cull) or the new artworks vanish before they can be mirrored.
 
 ```bash
 rm -rf seed/_build/runs/*                                   # 1. clean batch dir
 seed/_build/.venv/bin/python3 seed/_build/fetch_artblocks.py            # 2. ~477 artworks, 297 artists (3 core contracts)
-seed/_build/.venv/bin/python3 seed/_build/fetch_fxhash.py --limit 3000  # 3. ~3000 tokens, ~742 artists
-seed/_build/.venv/bin/python3 seed/_build/merge_batches.py             # 4. assemble canon (cross-source dedup)
-seed/_build/.venv/bin/python3 seed/_build/derive_curation.py           # 5. rule-derived editorial batch
-seed/_build/.venv/bin/python3 seed/_build/merge_batches.py             # 6. fold curation in
-seed/_build/.venv/bin/python3 seed/_build/validate_seed.py --canon     # 7. 0 errors / 0 warnings
-# then reuse the cache (next section) → embed → project → seed
+seed/_build/.venv/bin/python3 seed/_build/fetch_fxhash.py --refresh-from-canon  # 3. exact current token set + tags
+seed/_build/.venv/bin/python3 seed/_build/fetch_va.py                   # 4. ~1159 artworks, 207 makers, 6 collectives (V&A "computer art", imaged)
+seed/_build/.venv/bin/python3 seed/_build/merge_batches.py --no-validate           # 5. PLAIN merge — V&A artworks present so the mirror can see them
+seed/_build/.venv/bin/python3 seed/_build/upload_to_r2.py --mirror                 # 6. mirror V&A images → image_mirror.json (MIRROR BEFORE CULL/EMBED)
+seed/_build/.venv/bin/python3 seed/_build/merge_batches.py --require-cdn --no-validate  # 7. cull imageless (the 26 oversized fxhash), re-assemble
+seed/_build/.venv/bin/python3 seed/_build/derive_curation.py           # 8. rule-derived editorial batch (now V&A-aware)
+seed/_build/.venv/bin/python3 seed/_build/merge_batches.py --require-cdn            # 9. fold curation in
+seed/_build/.venv/bin/python3 seed/_build/validate_seed.py --canon     # 10. 0 errors / 0 warnings
+# then embed → project → cull_orphans → seed (next section)
 ```
 
-Both gatherers are **deterministic** (Art Blocks orders `project_id asc`; fxhash pages `skip/take` with `sort:{mintOpensAt:"ASC"}` — chronological from token #0, so a re-run returns the same first N tokens), and node IDs embed the on-chain token id (`artwork:delineation--fxhash-31648`), so a re-run returns the same artworks with the same IDs — only newly-minted tokens append. That's what makes the embedding/image cache reuse work (see below). `derive_curation.py` emits the rule-based editorial layer (8 base concepts + tag-concepts + A(DAI) regime + 5 sub-regimes + CLASSIFIED_BY + EMBODIES `generative-art` + attested tag-EMBODIES); **PRACTICES is empty** on this base (it was QID-derived, and platform artists carry no QIDs). The validator enforces the contract: every row has a signal_id, no narrative metadata without a sibling source URL (anti-enrichment), no orphan edges, no auto-derived edge types in canon.
+All three gatherers are **deterministic** (Art Blocks orders `project_id asc`; fxhash pages `skip/take` with `sort:{mintOpensAt:"ASC"}` — chronological from token #0; the V&A search orders by `systemNumber`), and node IDs embed the source's external id (`artwork:delineation--fxhash-31648`, `artwork:running cola is africa--va-o1034089`), so a re-run returns the same artworks with the same IDs — only newly-minted/accessioned items append. That's what makes the embedding/image cache reuse work (see below). `derive_curation.py` emits the rule-based editorial layer (8 base concepts + tag-concepts + A(DAI) regime + 5 sub-regimes + CLASSIFIED_BY + EMBODIES `generative-art`/`computer-art` + attested tag-EMBODIES + V&A-maker PRACTICES). **PRACTICES is 213** (V&A makers → computer-art); it was 0 on the platform-only base (QID-derived, and platform artists carry no QIDs) — the V&A pass revives it. The validator enforces the contract: every row has a signal_id, no narrative metadata without a sibling source URL (anti-enrichment), no orphan edges, no auto-derived edge types in canon.
 
-**Tag-derived concepts (the EMBODIES enrichment).** fxhash artworks carry artist-applied `tags` (source-attested). `derive_curation.py` frequency-gates them (`--tag-min-artworks`, default 25, `TAG_STOPLIST` for noise) and mints a `concept:<tag>` node per surviving tag, then emits **attested `EMBODIES` artwork→tag-concept at confidence 1.0** (Tier 1 — the artist wrote the tag; tags whose slug matches a base concept fold in rather than duplicate). On top of that, the embedding pipeline's **Tier-2 concept propagation** (see the embedding section) adds *inferred* low-confidence EMBODIES for visually-similar untagged works. So EMBODIES stops being one flat `generative-art` target and is a real vocabulary: **75 tag-concepts, 83 concepts total, 10,180 attested EMBODIES** in canon + ~516 Tier-2 inferred. `TAG_STOPLIST` is populated (drops `nft`/`tezos`/tool/promo tags + the `artsofchet` handle); a few weak ones still slip (`beautiful`, `blue`, `abstractart`) — extend the stoplist or add an allowlist to tighten. Two-tier provenance: Tier-1 EMBODIES are confidence 1.0 in `seed/edges.json`; Tier-2 are confidence `low`, `created_by='embedding-multimodal-v1'`, baked into `seed.db` but never in the committed JSON. **How tags got onto the committed canon without reshaping it:** `fetch_fxhash.py --refresh-from-canon` re-pulls the *exact* current token ids (via `generativeTokens(filters:{id_in},take:50)`) so node ids — and the committed embeddings — stay aligned; no re-embed, no Gemini spend (Tier-2 derives from existing vectors).
+**Tag-derived concepts (the EMBODIES enrichment).** fxhash artworks carry artist-applied `tags` (source-attested). `derive_curation.py` frequency-gates them (`--tag-min-artworks`, default 25, `TAG_STOPLIST` for noise) and mints a `concept:<tag>` node per surviving tag, then emits **attested `EMBODIES` artwork→tag-concept at confidence 1.0** (Tier 1 — the artist wrote the tag; tags whose slug matches a base concept fold in rather than duplicate). On top of that, the embedding pipeline's **Tier-2 concept propagation** (see the embedding section) adds *inferred* low-confidence EMBODIES for visually-similar untagged works. So EMBODIES stops being one flat `generative-art` target and is a real vocabulary: **75 tag-concepts, 83 concepts total, 11,339 attested EMBODIES** in canon (incl. 1,159 V&A artwork → `computer-art`) + ~751 Tier-2 inferred. `TAG_STOPLIST` is populated (drops `nft`/`tezos`/tool/promo tags + the `artsofchet` handle); a few weak ones still slip (`beautiful`, `blue`, `abstractart`) — extend the stoplist or add an allowlist to tighten. Two-tier provenance: Tier-1 EMBODIES are confidence 1.0 in `seed/edges.json`; Tier-2 are confidence `low`, `created_by='embedding-multimodal-v1'`, baked into `seed.db` but never in the committed JSON. **How tags got onto the committed canon without reshaping it:** `fetch_fxhash.py --refresh-from-canon` re-pulls the *exact* current token ids (via `generativeTokens(filters:{id_in},take:50)`) so node ids — and the committed embeddings — stay aligned; no re-embed, no Gemini spend (Tier-2 derives from existing vectors).
 
 **The `--require-cdn` image invariant.** `merge_batches.py --require-cdn` drops every artwork node lacking a mirrored R2 cdn (read from `image_mirror.json` / `image_overlay.json`), cascading its edges + aliases (practitioners are *not* cascaded — a creator who loses all artworks stays). So **every canon artwork has a real, mirrored image** — no blank nodes in `/graph` or `/field`. The 26 imageless artworks (oversized fxhash >25 MB renders + a few dead urls) were culled this way.
 
@@ -318,7 +361,7 @@ seed/_build/.venv/bin/python3 seed/_build/embed_nodes.py             # reuses ve
 seed/_build/.venv/bin/python3 seed/_build/project_umap.py
 rm -f adai.db && npm run seed:consolidated                           # chains the capped embed:derive
 ```
-Keep `seed/embeddings.{bin,json}` + `seed/image_mirror.json` across rebuilds — that's the cache. On the May 2026 rebuild, 4,500/4,501 embeddings and 3,451/3,477 images reused (1 Gemini call, 26 uploads).
+Keep `seed/embeddings.{bin,json}` + `seed/image_mirror.json` across rebuilds — that's the cache. On the V&A de-bias rebuild (May 2026), the ~4,475 platform embeddings + ~3,451 platform images reused unchanged; only the ~1,446 net-new V&A nodes hit Gemini (multimodal for the 1,159 imaged artworks, text for the 213 makers) and the 1,159 V&A images uploaded to R2.
 
 **Expanding the canon ("try more").** Add a *correctly-configured* source: a new gatherer, or re-enable `fetch_wikidata.py` after curating real digital-art **occupation** QIDs (its genre QIDs are already corrected; the occupation list is intentionally empty — see the quarantine banner in that file). New batch in `runs/` → merge → derive → cache-reuse embed → seed. Never hand-edit canon; never re-add the corrupt QID list.
 
@@ -373,7 +416,7 @@ Practitioner metadata after restore: **no narrative prose** (stripped). Each car
 
 ### Image mirror — Cloudflare R2
 
-All node-level image_urls are mirrored into a Cloudflare R2 bucket so the graph stays renderable when upstream URLs rot (MoMA signed URLs, dead IPFS gateways like `gateway.objkt.com`, Wikimedia rate limits, etc.). 393 images live there as of May 2 — covers every artwork (335) and practitioner (57) with a known image plus one collective.
+All node-level image_urls are mirrored into a Cloudflare R2 bucket so the graph stays renderable when upstream URLs rot (dead IPFS gateways like `gateway.objkt.com`, fxhash gateway, Art Blocks, V&A IIIF, Wikimedia rate limits, etc.). ~5,935 images live there (May 2026, post-V&A) — every one of the 4,610 artworks (3,451 platform + 1,159 V&A) is mirrored, content-addressed, enforced by the `--require-cdn` invariant.
 
 - **Bucket**: `adai` on account `b0b8de38bb6568e28bcd3d7c86940ee5`. Public base: `https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev`. CORS allows `GET`/`HEAD` for `*`.
 - **Key scheme**: content-addressable, `images/{sha256[:2]}/{sha256}.{ext}` — same image under two source URLs dedups automatically. Cache-Control is `public, max-age=31536000, immutable`, so browsers can keep them forever.

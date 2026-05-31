@@ -8,15 +8,25 @@ Field intelligence infrastructure for the digital arts. A knowledge commons and 
 
 ---
 
-## What's in the graph (May 2026 — Seed Canon, two-platform pipeline)
+## What's in the graph (May 2026 — Seed Canon, two-platform + V&A pipeline)
 
-| | count |
-|---|---|
-| Nodes | **4,558**: artwork (3,451 — every one carries a mirrored R2 image), practitioner (1,016), concept (83 — 8 base + 75 tag-concepts from attested fxhash tags), classification_regime (6), platform (2 — Art Blocks, fxhash) |
-| Edges | **23,984** curated: CLASSIFIED_BY 6,902 · CREATED_BY 3,451 · EXHIBITED_AT 3,451 · EMBODIES 10,180 (two-tier: every artwork → generative-art + artwork → tag-concept). PRACTICES 0 (was QID-derived; platform artists carry no QIDs). BELONGS_TO / COLLABORATES_WITH / USES_TECHNIQUE / INFLUENCES reserved at 0; RESPONDS_TO empty by design (artist-intent only). |
-| Multimodal embeddings | Gemini Embedding 2 (768-d), committed sidecars baked into `seed.db`. Auto-derived STYLE_KIN (~702) + VISUALLY_AFFINE (~9,044) + Tier-2 concept-EMBODIES (~516, inferred tag labels) refreshed by the daily `embed-derive-daily` GitHub Actions workflow; `/embed-space` projects all vectors. |
+**Exact counts: [`seed/STATS.md`](seed/STATS.md)** (generated from the canon, so
+they never drift) · live: `GET /api/stats`. In shape:
 
-**The May 2026 rebuild.** The canon went through a long arc (full story in [`CLAUDE.md`](CLAUDE.md) § "The rebuild journey") and the shipped state reverses the middle of it: the contaminated original was wiped; a four-source *sweep* (MoMA / Wikidata / Art Blocks / fxhash) was generated, then culled — until the Wikidata `digital_art_qids` list was found to be **corrupt** (one QID, "graphic artist", dragged in 3,652 non-digital painters/sculptors — Duchamp, Miró). The cull couldn't catch it because it *trusted the source tag*. So the tainted sources were dropped entirely and the canon was **re-run from the two genuinely-clean platform gatherers — Art Blocks + fxhash — only**, plus a rule-derived editorial layer. It's clean *by construction*: `merge_batches.py` assembles canon from only the batches present, so off-domain rows can't enter — there is no cull/filter step. Every node traces to an on-chain generative artwork or its artist, and **every artwork carries a mirrored R2 image** (the `merge --require-cdn` invariant — no blank nodes). The EMBODIES layer is enriched from **artist-applied fxhash tags** into 75 source-attested tag-concepts (`abstract`, `pixel`, `geometric`, …), with the embedding pipeline propagating inferred tag-labels to visually-similar untagged works. The producer contract is in [`seed/_build/PRODUCER_CONTRACT.md`](seed/_build/PRODUCER_CONTRACT.md).
+- **Nodes** — `artwork` (platform tokens + V&A holdings, **every one with a
+  mirrored R2 image**), `practitioner` (platform artists + V&A pioneers),
+  `concept` (8 base + fxhash tag-concepts), `classification_regime` (6),
+  `collective` (V&A groups), `platform` (Art Blocks, fxhash), `institution` (V&A).
+- **Curated edges** — CLASSIFIED_BY, CREATED_BY, EXHIBITED_AT, EMBODIES (two-tier:
+  generative-art/computer-art + fxhash tag-concepts), PRACTICES (V&A makers →
+  computer-art). BELONGS_TO / COLLABORATES_WITH / USES_TECHNIQUE / INFLUENCES
+  reserved at 0; RESPONDS_TO empty by design (artist-intent only).
+- **Multimodal embeddings** — Gemini Embedding 2 (768-d), committed sidecars baked
+  into `seed.db`; auto-derived STYLE_KIN + VISUALLY_AFFINE + Tier-2 concept-EMBODIES
+  refreshed by the daily `embed-derive-daily` workflow; `/embed-space` projects all
+  vectors.
+
+**The May 2026 rebuild + V&A de-bias pass.** The canon went through a long arc (full story in [`CLAUDE.md`](CLAUDE.md) § "The rebuild journey"): the contaminated original was wiped; a four-source *sweep* (MoMA / Wikidata / Art Blocks / fxhash) was generated, then culled — until the Wikidata `digital_art_qids` list was found to be **corrupt** (one QID, "graphic artist", dragged in 3,652 non-digital painters/sculptors — Duchamp, Miró). The cull couldn't catch it because it *trusted the source tag*. So the tainted sources were dropped and the canon was **re-run from the two genuinely-clean platform gatherers — Art Blocks + fxhash**, plus a rule-derived editorial layer. That clean two-platform canon (4,558 nodes) was correct but skewed post-2021 crypto-native, so a **de-bias pass** added the **Victoria & Albert Museum's Computer Arts Society collection** — the 1960s–70s computer-art spine (Nake, Cohen, Mohr, Molnár, Nees …), 1,159 artworks all IIIF-imaged (the every-artwork-imaged bar Wikidata's Commons images couldn't clear). The canon stays clean *by construction*: `merge_batches.py` assembles only the batches present, so off-domain rows can't enter; **every artwork carries a mirrored R2 image** (the `merge --require-cdn` invariant). The EMBODIES layer is enriched from **artist-applied fxhash tags** into 75 source-attested tag-concepts (`abstract`, `pixel`, `geometric`, …), with the embedding pipeline propagating inferred tag-labels to visually-similar untagged works. The producer contract is in [`seed/_build/PRODUCER_CONTRACT.md`](seed/_build/PRODUCER_CONTRACT.md).
 
 See [`docs/EMBEDDINGS.md`](docs/EMBEDDINGS.md) for the embedding pipeline; [`seed/SOURCES.md`](seed/SOURCES.md) for the selection criteria + provenance; [`CLAUDE.md`](CLAUDE.md) for architecture + operator notes.
 
@@ -73,7 +83,7 @@ Full reference: [`docs/EMBEDDINGS.md`](docs/EMBEDDINGS.md).
 - **D3 + Canvas** — graph viz (`/graph`), field viz (`/field`), embedding scatter (`/embed-space`)
 - **Google Gemini Embedding 2** — multimodal vector space (offline batch via Python, online derive in TS)
 - **UMAP** (umap-learn) — offline 2D projection for `/embed-space`
-- **Cloudflare R2** — content-addressable image mirror (~3,451 artwork images)
+- **Cloudflare R2** — content-addressable image mirror (every artwork)
 - **Fly.io** — backend hosting, single 512MB machine in `fra`, persistent `/data` volume
 - **Docker** — multi-stage build, runtime image ~74 MB
 

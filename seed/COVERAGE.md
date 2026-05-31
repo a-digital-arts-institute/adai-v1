@@ -1,125 +1,98 @@
 # seed/ coverage — Seed Canon (May 2026)
 
-> **⚠️ Status note (May 2026).** What ships is the **clean two-platform
-> pipeline: 4,558 nodes / 23,984 curated edges** (artwork 3,451,
-> practitioner 1,016, concept 83, regime 6, platform 2; edges CLASSIFIED_BY
-> 6,902 · CREATED_BY 3,451 · EXHIBITED_AT 3,451 · EMBODIES 10,180 ·
-> PRACTICES 0). Assembled from only the Art Blocks + fxhash gatherers — no
-> MoMA, no Wikidata, no cull. The four-source sweep and its digital-art cull
-> were dropped after the Wikidata QID list was found corrupt. Any v1/sweep/
-> cull column below (1,491 / 16k / 8,653) is superseded. See
-> [`../CLAUDE.md`](../CLAUDE.md) § "The rebuild journey".
+> **⚠️ Status note (May 2026).** What ships is the **two-platform + V&A
+> pipeline: 5,930 nodes / 30,631 curated edges** (artwork 4,610, practitioner
+> 1,222, concept 83, regime 6, collective 6, platform 2, institution 1; edges
+> CLASSIFIED_BY 9,859 · CREATED_BY 4,610 · EXHIBITED_AT 4,610 · EMBODIES 11,339 ·
+> PRACTICES 213). Assembled from the Art Blocks + fxhash + V&A gatherers — no
+> MoMA, no Wikidata, no cull. The V&A pass (May 2026) is the **de-bias step**:
+> it adds the 1960s–70s computer-art spine the two platforms structurally
+> missed, with IIIF images that clear the every-artwork-imaged invariant. Any
+> v1/sweep/cull column below (1,491 / 16k / 8,653), or the pre-V&A two-platform
+> count (4,558 / 23,984), is superseded. See [`../CLAUDE.md`](../CLAUDE.md)
+> § "The rebuild journey".
 
-Two-platform snapshot. The full v1 enrichment narrative and the dropped
-four-source sweep are preserved in git history. The current canon starts
-from clean platform-attested data — every node is an on-chain generative
-artwork or its artist; this report describes only what's in it.
+Two-platform-plus-V&A snapshot. The full v1 enrichment narrative and the
+dropped four-source sweep are preserved in git history. The current canon
+starts from clean source-attested data — every node is an on-chain generative
+artwork, a V&A computer-art holding, or its maker/institution; this report
+describes only what's in it.
 
-## Totals
+## Counts
 
-| Category | v1 (Apr 28) | **Shipped (May 2026)** | Note |
-|---|---|---|---|
-| Total nodes | 1,491 | **4,558** | ~3× — broad on platform artworks/artists, narrow on the editorial layer |
-| Total edges | 4,544 | **23,984** | every artwork carries CLASSIFIED_BY (×2) + EXHIBITED_AT + CREATED_BY + EMBODIES |
-| Edge types live | 9 | 4 | CLASSIFIED_BY / CREATED_BY / EXHIBITED_AT / EMBODIES. PRACTICES 0 (QID-derived); BELONGS_TO / COLLABORATES_WITH / USES_TECHNIQUE / INFLUENCES reserved at zero; RESPONDS_TO empty by design |
-| Provenance signals | 12 | **3** | one per producer: artblocks, fxhash, curation |
-| Contributors | 10 | **1** | `contributor:migration` trust tier `reviewed` |
-| Wikidata aliases | 60 | **10** | not a Wikidata ingest — these 10 platform artists simply happen to carry a QID |
+**All exact counts live in [`STATS.md`](STATS.md)** — generated from the canon
+by `seed/_build/gen_stats.py` so they can't drift. Live counts on a running
+server: `GET /api/stats`. This file describes *shape and gaps*; the numbers are
+there. The May 2026 V&A de-bias pass added ~1,372 nodes (the 1960s–70s
+computer-art spine + 1 institution + 6 collectives) on top of the clean
+two-platform base.
 
-## Nodes by type
+Node types present: `artwork`, `practitioner`, `concept`,
+`classification_regime`, `collective`, `platform`, `institution`. Live curated
+edge types: CLASSIFIED_BY, CREATED_BY, EXHIBITED_AT, EMBODIES, and **PRACTICES**
+(revived by the V&A pass — V&A makers → computer-art; it was 0 on the
+platform-only base since platform artists carry no QIDs). BELONGS_TO /
+COLLABORATES_WITH / USES_TECHNIQUE / INFLUENCES are reserved at zero;
+RESPONDS_TO is empty by design (first-person testimony only).
 
-| Type | v1 (Apr 28) | **Shipped (May 2026)** |
-|---|---|---|
-| `artwork` | 728 | **3,451** |
-| `practitioner` | 146 | **1,016** |
-| `concept` | 474 | **83** (8 base + 75 fxhash tag-concepts) |
-| `classification_regime` | 6 | **6** |
-| `platform` | 8 | **2** (Art Blocks, fxhash) |
-| `institution` | 121 | 0 |
-| `scene` | 30 | 0 |
-| `collective` | 12 | 0 |
-| `publication` | 3 | 0 |
-| `project` | 2 | 0 |
-
-Concepts = 83: 8 source-anchored **base** concepts (digital / computer /
+**Concepts** are 8 source-anchored base concepts (digital / computer /
 generative / algorithmic / software / interactive / new-media / internet art)
-PLUS **75 tag-concepts** minted from artist-applied fxhash tags
-(`TAG_STOPLIST`-filtered). v1's 474 was largely LLM-derived noise; this
-vocabulary is source-attested — either a Wikidata-anchored base concept or a
-tag the artist actually wrote. Future practitioner contributions extend it.
+PLUS tag-concepts minted from artist-applied fxhash tags (`TAG_STOPLIST`-
+filtered) — every one source-attested (a Wikidata-anchored base concept or a
+tag the artist actually wrote), not LLM-derived.
 
-Why institutions / scenes / collectives are zero: v1 curated those by hand
-from practitioner research, and the dropped MoMA sweep would have added one
-institution. The two-platform gatherers only emit nodes attested by their
-source — Art Blocks + fxhash give `platform:art-blocks` + `platform:fxhash`
-and nothing else. The whole editorial layer is deferred to post-deploy
-contribution or a correctly-configured broader source.
+**Why scenes / publications / projects are still zero:** the platform gatherers
+only emit nodes attested by their source — Art Blocks + fxhash give
+`platform:art-blocks` + `platform:fxhash` and nothing else. The V&A pass adds
+the first **institution** (Victoria and Albert Museum) and the first
+**collectives** (artistic groups, e.g. the Computer Technique Group), because
+the V&A's records attest a holding institution and group makers. The remaining
+editorial layer (scenes, publications, projects, non-V&A institutions) is
+deferred to post-deploy contribution or a correctly-configured broader source.
 
-## Edges by type
-
-| Edge type | v1 (Apr 28) | **Shipped (May 2026)** |
-|---|---|---|
-| **CLASSIFIED_BY** | 295 | **6,902** (every artwork → A(DAI) lens + crypto-market-native sub-regime) |
-| **CREATED_BY** | 737 | **3,451** (one per artwork → its platform artist) |
-| **EXHIBITED_AT** | 305 | **3,451** (one per artwork → its platform: fxhash 2,974, Art Blocks 477) |
-| **EMBODIES** | 1,096 | **10,180** (two-tier: every artwork → generative-art + artwork → fxhash tag-concept) |
-| **PRACTICES** | 461 | **0** (was QID-derived; platform artists carry no QIDs) |
-| **BELONGS_TO** | 188 | 0 |
-| **COLLABORATES_WITH** | 183 | 0 |
-| **USES_TECHNIQUE** | 102 | 0 |
-| **INFLUENCES** | 4 | 0 |
-| RESPONDS_TO | 0 | 0 (empty by design — first-person testimony only) |
-
-PRACTICES and the four reserved rows return when source data or
-practitioner contribution supports them:
-
-- **PRACTICES** (practitioner → concept): was derived from Wikidata
-  movement/occupation QIDs. Platform artists carry no such QIDs, so it's
-  empty until a QID-bearing source (a correctly-configured Wikidata) returns.
-- **BELONGS_TO** (practitioner → scene): blocked on scene nodes existing.
-- **COLLABORATES_WITH**: blocked on multi-creator artwork detection — the
-  gatherers currently emit a single CREATED_BY per token.
-- **USES_TECHNIQUE**: blocked on concept vocabulary expansion to technique
-  level.
-- **INFLUENCES**: high editorial bar; re-add via a curation pass against
-  established art-historical citations or practitioner contribution.
+**The reserved edge types** return when source data or practitioner
+contribution supports them: BELONGS_TO needs scene nodes; COLLABORATES_WITH
+needs multi-creator artwork detection (the gatherers emit one CREATED_BY per
+token); USES_TECHNIQUE needs technique-level concept vocabulary; INFLUENCES
+carries a high editorial bar (curation against citations or practitioner
+contribution).
 
 ## Embeddings + auto-derived edges
 
-| Layer | Status |
-|---|---|
-| `seed/embeddings.bin` (Gemini multimodal vectors) | Committed sidecars, baked into `seed.db` at build. The daily `embed-derive-daily` GitHub Actions workflow backfills anything new against the live Fly DB. |
-| `seed/embeddings.umap2d.json` (UMAP scatter) | Committed; workflow re-fits UMAP on the GH runner and SFTPs back to `/data/embeddings.umap2d.json`. |
-| `STYLE_KIN` (practitioner ↔ practitioner, derived) | ~702 rows, baked in; refreshed by `npm run embed:derive` in the daily workflow. |
-| `VISUALLY_AFFINE` (artwork ↔ artwork, derived) | ~9,044 rows, baked in. Plus ~516 Tier-2 concept-EMBODIES (inferred tag labels). |
-| `SUGGESTS_CREATED_BY` (AI attribution proposals) | Lands in `intake_queue`, surfaces at `/review?kind=ai_suggestion`. |
+Gemini multimodal vectors (`seed/embeddings.bin`) are committed sidecars baked
+into `seed.db`; the daily `embed-derive-daily` workflow backfills + re-derives
+against the live Fly DB. The derived layers — **STYLE_KIN** (creator ↔ creator),
+**VISUALLY_AFFINE** (artwork ↔ artwork), and Tier-2 concept-EMBODIES (inferred
+tag labels) — are recomputed each run; counts in [`STATS.md`](STATS.md).
+`SUGGESTS_CREATED_BY` proposals land in `intake_queue` (`/review?kind=ai_suggestion`).
 
-Embedding surfaces (profile style-kin / visually-affine sections,
-`/embed-space`) are live from the baked DB; the daily workflow keeps them
-fresh as contributors add nodes.
+The 1960s V&A pioneers form a tight internal STYLE_KIN cluster
+(Nake↔Nees↔Mohr↔Molnár↔Noll↔Verostko) and receive **zero** Tier-2 cross-era
+edges — the embeddings keep 1968 and 2021 honestly distinct, so the eras connect
+through shared *curated* concepts, not fabricated visual similarity. Surfaces
+(profile sections, `/embed-space`) are live from the baked DB.
 
 ## Image coverage
 
-The seed carries `image_url` on:
-
-| Scope | Has `image_url` | Source |
-|---|---|---|
-| Artworks (3,451) | ~All | Art Blocks `media.artblocks.io/thumb/`, fxhash `displayUri` → gateway.fxhash2.xyz |
-| Practitioners (1,016) | Where the platform exposes a portrait | Art Blocks / fxhash artist asset |
-
-The R2 image mirror (`cdn_image_url`) covers ~3,451 artwork images
-(content-addressed, rot-insurance) and is read by the embedder via
-`seed/image_mirror.json`. `image_url` (upstream) remains the provenance
-record. The v1-era `image_overlay.json` mostly no longer matches the
-two-platform canon; a refresh is a post-deploy follow-up.
+**Every artwork carries a mirrored R2 image** — enforced by the `--require-cdn`
+merge flag (Art Blocks `media.artblocks.io/thumb/`, fxhash `displayUri` →
+gateway.fxhash2.xyz, V&A IIIF `framemark.vam.ac.uk`). The V&A's IIIF served all
+its artworks cleanly (no Commons-429 — the wall the Wikidata attempt hit). The R2
+mirror (`cdn_image_url`, content-addressed, rot-insurance) is read by the embedder
+via `seed/image_mirror.json`; `image_url` (upstream) stays the provenance record.
+Practitioner portraits exist only where the platform exposes one; V&A makers carry
+none (a long-tail `find_missing_images.py` gap-fill candidate).
 
 ## What this does NOT include (yet)
 
-1. **Anything outside the two platforms.** No institutions / scenes /
-   collectives / publications / projects, and no non-platform practitioners
-   (theorists, pioneers, sound artists). Editorial work, deferred to
-   post-deploy contribution or a correctly-configured broader source. The
-   contributor API + `find_missing_images.py` discovery are the channels.
+1. **Most of the non-platform field.** The V&A pass added the historical
+   computer-art spine (1960s–70s pioneers + 1 institution + 6 collectives),
+   but scenes / publications / projects, non-V&A institutions, sound artists,
+   net-art, and contemporary theorists are still absent. Editorial work,
+   deferred to post-deploy contribution or further correctly-configured
+   sources. The contributor API + `find_missing_images.py` discovery are the
+   channels. (Sound/video/installation were *deliberately* excluded from this
+   canon — see `derive_curation.py`.)
 2. **A correctly-configured Wikidata / objkt / Met pass.** `fetch_wikidata.py`
    is quarantined (corrupt QID list); re-enabling it with curated occupation
    QIDs is the documented "try more" path.
