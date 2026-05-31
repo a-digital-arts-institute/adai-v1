@@ -147,11 +147,11 @@
   // Backend returns `cdn_image_url` (R2 hot CDN, preferred) and `image_url`
   // on nodes. ~393/1491 carry one. Some `cdn_image_url`s are .html mirrors
   // (Rhizome wiki etc.) — those return 200 with text/html and won't render.
-  // Filter strictly to known image extensions (incl. avif — SuperRare's imgix
-  // serves fm=avif, which R2 keys as .avif; browsers render it natively).
-  const IMG_EXT_RE = /\.(jpe?g|png|gif|webp|avif)(\?|$)/i;
+  // Trust any http(s) URL — the R2 cdn is content-addressed + guaranteed image/*
+  // at upload, and gatherer image_urls are real images. No extension allowlist
+  // (it silently rejected avif/webp/heic and any future format).
   function isRenderableImageUrl(url) {
-    return typeof url === 'string' && IMG_EXT_RE.test(url);
+    return typeof url === 'string' && /^https?:\/\//i.test(url);
   }
   function pickImageUrl(node) {
     if (!node) return null;

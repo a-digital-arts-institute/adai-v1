@@ -38,9 +38,12 @@
   }
 
   // ---------- Image helpers (artworks only — practitioners stay text/hatch) ----------
-  const IMG_EXT_RE = /\.(jpe?g|png|gif|webp|avif)(\?|$)/i;
+  // Trust any http(s) URL. The R2 cdn is content-addressed and guaranteed
+  // image/* at upload (upload_to_r2 refuses non-image content-types), and
+  // gatherer image_urls point at real images. No extension allowlist — it
+  // silently rejected avif/webp/heic and would reject any future format.
   function isRenderableImageUrl(url) {
-    return typeof url === 'string' && IMG_EXT_RE.test(url);
+    return typeof url === 'string' && /^https?:\/\//i.test(url);
   }
   function pickArtworkImage(node) {
     if (!node || node.type !== 'artwork') return null;
