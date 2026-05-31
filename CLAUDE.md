@@ -326,6 +326,45 @@ Deleted in the May-2026 cleanup (recoverable from git history): the cull (`cull_
 
 See `seed/_build/README.md` for the producer map, `seed/SOURCES.md` for the six selection criteria + methodology, `seed/COVERAGE.md` for the gap analysis.
 
+### Roadmap — toward a dynamic, patch-synced canon (NOT now; design intent)
+
+The static-build model (gatherers → `seed/*.json` → bake `seed.db` → redeploy →
+wipe `/data`) is a **prototype convenience for a curated seed under deadline**,
+not the destination. Captured here so the direction isn't lost:
+
+- **Gathering shouldn't stay static.** The end-state is gatherers as *scheduled
+  contributors* that diff the platform against the live DB and write new
+  nodes/edges through the **same governed `/api/v1` path** (idempotent via the
+  deterministic IDs + alias table we already have), instead of emitting JSON +
+  redeploy. `embed-on-write` + the nightly derive already pick up live writes.
+  Later still: the archivist calls gathering *on demand* ("I don't have this
+  artist — fetch them now") — gathering becomes a tool, not a cron job.
+- **`seed/*.json` should graduate to a snapshot format, not the transport.**
+  CR-SQLite already speaks deltas (`crsql_changes`): ship a compressed CRDT
+  changeset and `apply` it to the live volume — **idempotent by construction**
+  (CRDT merge handles ordering/dedup/conflict-with-provenance). That replaces
+  the whole reseed-bake-wipe-redeploy dance and **deletes the volume-wipe
+  gotcha** (you apply, you don't wipe). It's also how forks/instances sync —
+  the Matryoshka story. Keep periodic committed JSON snapshots as the *legible,
+  git-diffable, auditable checkpoint* (the binary patch isn't reviewable; the
+  whole "audit targets contracts" discipline leans on a readable canon).
+- **The trap — dynamic RAISES governance stakes, never lowers them.** The bee
+  bug was a static error a human caught by eyeballing a file. At ingestion
+  velocity with no committed file to diff, a corrupt-source-tag rule poisons
+  the live graph faster than anyone notices. So **before** going dynamic, the
+  validator + anti-enrichment + the `--require-cdn` invariant + provenance must
+  move onto the **live write boundary** (they're currently build-time gates).
+  Dynamic ingestion on top of build-time-only governance = the contamination
+  back, but live.
+- **Embeddings are a separate channel.** `node_embeddings` / UMAP are *local*
+  tables, not CRRs (vectors must not sync as CRDT). A CRDT patch covers the
+  graph; the vectors still ride `embed-on-write` + nightly derive. Two
+  coordinated channels, not one.
+- **Sequencing instinct:** (1) make the practitioner contribution loop solid —
+  that's the Basel value AND it forces the live-write governance to be real;
+  (2) retarget the gatherers to write through it incrementally; (3) on-demand
+  agent gathering last. Each step hardens the governance the next one leans on.
+
 ID convention: `<type>:<name>` with spaces preserved and lowercase (e.g. `practitioner:casey reas`, `artwork:fidenza`, `classification_regime:a(dai) seed canon v1 (april 2026)`). The `slug` field is the kebab-case URL-safe form (produced by `seed/_build/_slug.py`'s `node_slug`).
 
 Seed signals (15 in `seed/signals.json`): the 12 original v1 provenance batches (seed-taxonomy, enrichment, the April-28 real-source + named-anchors gatherers) kept as history, plus the v2-era producer signals where they survived, plus `signal:restore-canon-*` stamping the restore. Some are orphaned (their Step-6 rows were stripped) — orphan signals are history, not errors. The migration contributor (`contributor:migration`) is trust tier `reviewed` — contributions attributed to it auto-approve.

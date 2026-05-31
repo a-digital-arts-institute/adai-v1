@@ -14,12 +14,13 @@ Gemini Embedding 2 (GA April 2026) is Google's first natively multimodal embeddi
 
 ### What we use it for
 
-Three derived signals, all marked `confidence='low'` and tagged `created_by='embedding-multimodal-v1'` for trivial roll-back:
+Four derived signals, all marked `confidence='low'` and tagged `created_by='embedding-multimodal-v1'` for trivial roll-back:
 
 | Output | Direction | Where it lands |
 |---|---|---|
 | **`STYLE_KIN`** edges | practitioner ↔ practitioner (bidirectional rows) | Live `edges` table |
 | **`VISUALLY_AFFINE`** edges | artwork ↔ artwork (bidirectional rows) | Live `edges` table |
+| **`EMBODIES`** edges (Tier-2 concept propagation) | artwork → tag-concept (inferred "generated labels") | Live `edges` table — see §5 |
 | **`SUGGESTS_CREATED_BY`** proposals | artwork → practitioner attribution candidates | `intake_queue` with `kind='ai_suggestion'` for curator review at `/review?kind=ai_suggestion` |
 
 The pipeline **refuses** to auto-emit `INFLUENCES` or `RESPONDS_TO` even when similarity is high. Both edge types require evidence of artist intent (statements, interviews, practitioner contribution) — semantic similarity is a *necessary-but-not-sufficient* condition for either. Diluting them with auto-derived rows would erode their meaning.
@@ -178,6 +179,12 @@ Single full embed pass at ~1,350 nodes: ~$0.03 interactive / $0.014 batch.
 
 ### Image fetching
 
+> **⚠️ ALWAYS RUN `upload_to_r2.py --mirror` BEFORE THIS PASS.** Artwork
+> embeddings are multimodal — the image is part of the vector. The embedder
+> prefers the R2 cdn (below); if an artwork's image isn't mirrored yet it
+> **silently falls back to text-only** — a wrong vector that looks fine. Order
+> is always: **(1) mirror → (2) embed → (3) project.**
+
 - Prefers `metadata.cdn_image_url` (R2-mirrored, stable) over `metadata.image_url` (rotting source).
 - 4 MB cap on download; Pillow downsamples > 1024px to JPEG quality 85.
 - MIME whitelist: JPEG / PNG / WebP / BMP. SVG/GIF/HEIC fall back to text-only.
@@ -275,6 +282,19 @@ For each unattributed artwork A (no live `CREATED_BY` edge), score against every
 - `id = 'intake-ai-{12-hex-hash-of-pair}'` — URL-safe so `/api/review/:id/{approve,reject}` works without encoding gymnastics
 
 On approve, the existing review handler materialises a real `CREATED_BY` edge tagged `created_by='curator-from-ai-suggestion'`. On reject, the pair's sha256 hash lands in `rejected_ai_suggestions` and the next derive pass skips it.
+
+### `EMBODIES` (Tier-2 concept propagation) — `src/embed/concept-edges.ts`
+
+Enriches EMBODIES beyond the attested `derive_curation.py` tag-EMBODIES: propagates a **tag-concept** to visually-similar *untagged* artworks. Runs inside `embed:derive` after `VISUALLY_AFFINE`, emitting `EMBODIES` (artwork → concept) at `confidence='low'`, dashed in `/field`, wiped+recomputed each run (so it's not in the committed canon JSON).
+
+Why it's not naive centroid-cosine: generative-art vectors are **anisotropic** — they all point roughly the same way, so raw cosine sits in a compressed high band and a handful of central artworks match *every* concept. The fix is **mean-centring** the artwork vectors first, then a **kNN-vote**: for each non-member artwork, what fraction of its `knnK` (30) nearest centred neighbours carry the concept? Emit only if ≥ `voteThreshold` (0.30).
+
+Two gates keep junk concepts from propagating (env-tunable, `CONCEPT_*`):
+- **coherence** `tauCoherence` (0.15) — mean centred member→centroid cosine; drops umbrella tags (`art`, `generative`, `p5js`) whose members aren't visually coherent.
+- **creators** `minCreators` (8) — members must span ≥8 distinct creators; kills single-artist tag-series that look coherent but aren't a shared concept.
+- plus `minMembers` (15) and `maxPerConcept` (200).
+
+It is **platform-crossing**: the tag *vocabulary* is seeded from fxhash tags, but propagation runs over all artwork vectors, so Art Blocks works get labelled too where they're visually close. Tune `TAU_CONCEPT_COH` up (→ ~0.22) to drop semantically-broad concepts (`city`, `space`) before the vote; leave `CONCEPT_VOTE` alone (it's already precision-biased). Validated on real fxhash tags before merge: naive centroid matched everything; centred kNN-vote gives tight propagation (`pixel`→untagged pixel-art, `grid`/`glitch`→nothing).
 
 ---
 
