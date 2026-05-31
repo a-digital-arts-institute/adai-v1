@@ -1,1333 +1,661 @@
 {
-  "generated": 98,
+  "generated": 128,
   "by_confidence": {
-    "high": 0,
-    "medium": 65,
-    "low": 33
+    "high": 1,
+    "medium": 82,
+    "low": 45
   },
   "candidates": [
     {
-      "node_id": "collective:forensic architecture",
-      "type": "collective",
-      "name": "Forensic Architecture",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Forensic_Architecture_Logo.png",
-      "confidence": "low",
+      "node_id": "practitioner:casey reas",
+      "type": "practitioner",
+      "name": "Casey REAS",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Casey_Reas.jpg",
+      "confidence": "medium",
       "approved": true,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q51850916",
-        "property": "P154",
-        "commons_file": "Forensic Architecture Logo.png",
-        "match": "search_unverified",
-        "instance_of": [
-          "Q1664720"
-        ]
-      }
-    },
-    {
-      "node_id": "collective:etoy",
-      "type": "collective",
-      "name": "etoy",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/EtoyVD.jpeg",
-      "confidence": "low",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q70216",
+        "qid": "Q5006090",
         "property": "P18",
-        "commons_file": "EtoyVD.jpeg",
-        "match": "search_unverified",
+        "commons_file": "Casey Reas.jpg",
+        "match": "search_verified",
         "instance_of": [
-          "Q70208"
+          "Q5"
         ]
       }
     },
     {
-      "node_id": "collective:teamlab",
-      "type": "collective",
-      "name": "teamLab",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/ONLYOFFICE_logo_%28default%29.svg",
+      "node_id": "practitioner:radix",
+      "type": "practitioner",
+      "name": "Radix",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Lymnea_auricularia1pl.jpg",
       "confidence": "low",
       "approved": false,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q1582500",
-        "property": "P154",
-        "commons_file": "ONLYOFFICE logo (default).svg",
-        "match": "search_unverified",
-        "instance_of": [
-          "Q341",
-          "Q207170",
-          "Q7247856"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:ars electronica",
-      "type": "institution",
-      "name": "Ars Electronica",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/ARS_Electronica_Linz_Austria_%283822117769%29.jpg",
-      "confidence": "low",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q678361",
+        "qid": "Q287565",
         "property": "P18",
-        "commons_file": "ARS Electronica Linz Austria (3822117769).jpg",
+        "commons_file": "Lymnea auricularia1pl.jpg",
         "match": "search_unverified",
         "instance_of": [
-          "Q868557",
-          "Q1664720",
-          "Q126682939",
-          "Q131451965"
+          "Q16521"
         ]
       }
     },
     {
-      "node_id": "institution:asia society",
-      "type": "institution",
-      "name": "Asia Society",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Asia_Society_building%2C_Manhattan%2C_NY.jpg",
+      "node_id": "practitioner:hjalmar astrom",
+      "type": "practitioner",
+      "name": "Hjalmar Åström",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Jakob_Hjalmar_%C3%85str%C3%B6m.jpg",
       "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q842828",
-        "property": "P18",
-        "commons_file": "Asia Society building, Manhattan, NY.jpg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q163740",
-          "Q33506"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:babycastles",
-      "type": "institution",
-      "name": "Babycastles",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Wikimedia_NYC_presentation_-_WikiPhotography_at_WikiWednesday_July_2015_3_crop.jpg",
-      "confidence": "low",
       "approved": false,
       "provenance": {
-        "source": "agentic-websearch",
-        "source_page": "https://commons.wikimedia.org/wiki/Category:Babycastles"
-      }
-    },
-    {
-      "node_id": "institution:barbican",
-      "type": "institution",
-      "name": "Barbican",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Barbican_towers.jpg",
-      "confidence": "low",
-      "approved": true,
-      "provenance": {
         "source": "wikidata",
-        "qid": "Q2319878",
+        "qid": "Q15992190",
         "property": "P18",
-        "commons_file": "Barbican towers.jpg",
-        "match": "search_unverified",
-        "instance_of": [
-          "Q1406988",
-          "Q2755753",
-          "Q11303",
-          "Q47012103"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:bienal de so paulo",
-      "type": "institution",
-      "name": "Bienal de São Paulo",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Biennale-Sao-Paulo-Pavilhao-Ciccillo-Matarazzo.jpg",
-      "confidence": "low",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q653360",
-        "property": "P18",
-        "commons_file": "Biennale-Sao-Paulo-Pavilhao-Ciccillo-Matarazzo.jpg",
-        "match": "search_unverified",
-        "instance_of": [
-          "Q182683"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:boiler room",
-      "type": "institution",
-      "name": "Boiler Room",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Boiler_Room_logo.svg",
-      "confidence": "low",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q15298445",
-        "property": "P154",
-        "commons_file": "Boiler Room logo.svg",
-        "match": "search_unverified",
-        "instance_of": [
-          "Q4830453"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:brooklyn academy of music",
-      "type": "institution",
-      "name": "Brooklyn Academy of Music",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/2013_BAM_Peter_Jay_Sharp_Building_from_west.jpg",
-      "confidence": "low",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q72912",
-        "property": "P18",
-        "commons_file": "2013 BAM Peter Jay Sharp Building from west.jpg",
-        "match": "search_unverified",
-        "instance_of": [
-          "Q11812394",
-          "Q57660343",
-          "Q163740"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:carnegie hall",
-      "type": "institution",
-      "name": "Carnegie Hall",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Carnegie_Hall_-_Full_%2848155558466%29.jpg",
-      "confidence": "low",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q200959",
-        "property": "P18",
-        "commons_file": "Carnegie Hall - Full (48155558466).jpg",
-        "match": "search_unverified",
-        "instance_of": [
-          "Q57660343"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:castello di rivoli",
-      "type": "institution",
-      "name": "Castello di Rivoli",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/CastelloRivoli.JPG",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q19844",
-        "property": "P18",
-        "commons_file": "CastelloRivoli.JPG",
+        "commons_file": "Jakob Hjalmar Åström.jpg",
         "match": "search_verified",
         "instance_of": [
-          "Q207694",
-          "Q23413"
+          "Q5"
         ]
       }
     },
     {
-      "node_id": "institution:centre pompidou",
-      "type": "institution",
-      "name": "Centre Pompidou",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Centre_Georges_Pompidou_from_the_Tour_Montparnasse_2007.jpg",
-      "confidence": "low",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q1895953",
-        "property": "P18",
-        "commons_file": "Centre Georges Pompidou from the Tour Montparnasse 2007.jpg",
-        "match": "search_unverified",
-        "instance_of": [
-          "Q3196771",
-          "Q17431399"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:centre pompidou-metz",
-      "type": "institution",
-      "name": "Centre Pompidou-Metz",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Centre-Pompidou-metz-esplanade.png",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q1054169",
-        "property": "P18",
-        "commons_file": "Centre-Pompidou-metz-esplanade.png",
-        "match": "search_verified",
-        "instance_of": [
-          "Q207694"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:christie's",
-      "type": "institution",
-      "name": "Christie's",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Christie%27s_Logo.svg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q503176",
-        "property": "P154",
-        "commons_file": "Christie's Logo.svg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q43229",
-          "Q9209474",
-          "Q2385804"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:cooper hewitt",
-      "type": "institution",
-      "name": "Cooper Hewitt",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cooper_Hewitt%2C_Smithsonian_Design_Museum_logo.svg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q1129820",
-        "property": "P154",
-        "commons_file": "Cooper Hewitt, Smithsonian Design Museum logo.svg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q811979",
-          "Q33506"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:dia art foundation",
-      "type": "institution",
-      "name": "DIA Art Foundation",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Diabeacon_2006.jpg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q1207930",
-        "property": "P18",
-        "commons_file": "Diabeacon 2006.jpg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q157031",
-          "Q2190251",
-          "Q163740"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:darmstadt",
-      "type": "institution",
-      "name": "Darmstadt",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Luisenplatz%2C_Darmstadt.jpg",
+      "node_id": "practitioner:wawaa",
+      "type": "practitioner",
+      "name": "WAWAA",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Bambi_1942_trailer-_00_min_29_s.png",
       "confidence": "low",
       "approved": false,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q2973",
+        "qid": "Q43051",
         "property": "P18",
-        "commons_file": "Luisenplatz, Darmstadt.jpg",
+        "commons_file": "Bambi 1942 trailer- 00 min 29 s.png",
         "match": "search_unverified",
         "instance_of": [
+          "Q202866"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:alexis andre",
+      "type": "practitioner",
+      "name": "Alexis André",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/AlexisAndr%C3%A9.jpg",
+      "confidence": "medium",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q949584",
+        "property": "P18",
+        "commons_file": "AlexisAndré.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:william tan",
+      "type": "practitioner",
+      "name": "William Tan",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/William_T._Vollmann_2006.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q29344",
+        "property": "P18",
+        "commons_file": "William T. Vollmann 2006.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:jeff davis",
+      "type": "practitioner",
+      "name": "Jeff Davis",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Jeff_davis.jpg",
+      "confidence": "medium",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q365015",
+        "property": "P18",
+        "commons_file": "Jeff davis.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:wuwa",
+      "type": "practitioner",
+      "name": "wuwa",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/PL-Breslau-WUWA-1.jpg",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q875310",
+        "property": "P18",
+        "commons_file": "PL-Breslau-WUWA-1.jpg",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q12104567",
+          "Q811165"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:vamoss",
+      "type": "practitioner",
+      "name": "Vamoss",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/V%C3%A1mosszabadi%2C_v%C3%A1mosi_r%C3%B3mai_katolikus_templom_2024_02.jpg",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q303485",
+        "property": "P18",
+        "commons_file": "Vámosszabadi, vámosi római katolikus templom 2024 02.jpg",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q2590631"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:simon de mai",
+      "type": "practitioner",
+      "name": "Simon De Mai",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Simon_de_Maill%C3%A9-Br%C3%A9z%C3%A9_%281515-1597%29%2C_archev%C3%AAque_de_Tours_en_1554.jpg",
+      "confidence": "medium",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q3484494",
+        "property": "P18",
+        "commons_file": "Simon de Maillé-Brézé (1515-1597), archevêque de Tours en 1554.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:owen moore",
+      "type": "practitioner",
+      "name": "Owen Moore",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Owen_Moore_in_High_Voltage.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q966972",
+        "property": "P18",
+        "commons_file": "Owen Moore in High Voltage.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:eboy",
+      "type": "practitioner",
+      "name": "eBoy",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/E-girl.png",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q85758112",
+        "property": "P18",
+        "commons_file": "E-girl.png",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q19116554",
+          "Q2198855",
+          "Q113561882"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:matt kane",
+      "type": "practitioner",
+      "name": "Matt Kane",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Matt_Kane_Headshot.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q6790766",
+        "property": "P18",
+        "commons_file": "Matt Kane Headshot.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:jen stark",
+      "type": "practitioner",
+      "name": "Jen Stark",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Jen_Stark.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q6177329",
+        "property": "P18",
+        "commons_file": "Jen Stark.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:pzs",
+      "type": "practitioner",
+      "name": "PZS",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Proceedings_of_the_Zoological_Society_of_London_%281833%29.jpg",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q19622568",
+        "property": "P18",
+        "commons_file": "Proceedings of the Zoological Society of London (1833).jpg",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q5633421"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:by ma",
+      "type": "practitioner",
+      "name": "BY MA",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Leslie_Avenue_Maltby.jpg",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q2734841",
+        "property": "P18",
+        "commons_file": "Leslie Avenue Maltby.jpg",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q3957",
+          "Q1115575"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:ento",
+      "type": "practitioner",
+      "name": "Ento",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Entoloma_sinuatum_group.JPG",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q2099",
+        "property": "P18",
+        "commons_file": "Entoloma sinuatum group.JPG",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q16521"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:jan robert leegte",
+      "type": "practitioner",
+      "name": "Jan Robert Leegte",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Tussen_Kunst_%26_Glitch_2017_%2837326678101%29.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q27649624",
+        "property": "P18",
+        "commons_file": "Tussen Kunst & Glitch 2017 (37326678101).jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:kalis",
+      "type": "practitioner",
+      "name": "Kalis",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Kalisz_aerial_view_2019_P07.jpg",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q52842",
+        "property": "P18",
+        "commons_file": "Kalisz aerial view 2019 P07.jpg",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q925381",
+          "Q515",
           "Q1549591",
-          "Q1180262",
-          "Q1375749",
-          "Q253030",
-          "Q1187811",
-          "Q61980648",
-          "Q134626",
-          "Q42744322"
+          "Q13416557"
         ]
       }
     },
     {
-      "node_id": "institution:donaueschinger musiktage",
-      "type": "institution",
-      "name": "Donaueschinger Musiktage",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Boulez2008.jpg",
+      "node_id": "practitioner:tabor robak",
+      "type": "practitioner",
+      "name": "Tabor Robak",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Tabor_Robak_food_eating.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q30501966",
+        "property": "P18",
+        "commons_file": "Tabor Robak food eating.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:cole sternberg",
+      "type": "practitioner",
+      "name": "Cole Sternberg",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cole_Sternerberg_Portrait.jpeg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q17088988",
+        "property": "P18",
+        "commons_file": "Cole Sternerberg Portrait.jpeg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:amon tobin",
+      "type": "practitioner",
+      "name": "amon tobin",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Amon_Tobin_2007_Budapest.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q316508",
+        "property": "P18",
+        "commons_file": "Amon Tobin 2007 Budapest.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:maya man",
+      "type": "practitioner",
+      "name": "Maya Man",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Maya_Erskine.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q19662801",
+        "property": "P18",
+        "commons_file": "Maya Erskine.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:james merrill",
+      "type": "practitioner",
+      "name": "James Merrill",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/James_Merrill_%281973%29_%28cropped%29.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q1368437",
+        "property": "P18",
+        "commons_file": "James Merrill (1973) (cropped).jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:jonas lund",
+      "type": "practitioner",
+      "name": "Jonas Lund",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/PortraitJonasLundHat.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q26704214",
+        "property": "P18",
+        "commons_file": "PortraitJonasLundHat.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:usnea",
+      "type": "practitioner",
+      "name": "usnea",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Usnea_australis.jpg",
       "confidence": "low",
       "approved": false,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q690934",
+        "qid": "Q121799",
         "property": "P18",
-        "commons_file": "Boulez2008.jpg",
+        "commons_file": "Usnea australis.jpg",
         "match": "search_unverified",
         "instance_of": [
-          "Q868557"
+          "Q16521"
         ]
       }
     },
     {
-      "node_id": "institution:eyebeam",
-      "type": "institution",
-      "name": "Eyebeam",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Eyebeam_logo.svg",
+      "node_id": "practitioner:mathias isaksen",
+      "type": "practitioner",
+      "name": "Mathias Isaksen",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Portrett_av_Matti_Aikio.jpg",
       "confidence": "medium",
       "approved": true,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q5422747",
-        "property": "P154",
-        "commons_file": "Eyebeam logo.svg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q163740",
-          "Q207694",
-          "Q20897549"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:fondation louis vuitton",
-      "type": "institution",
-      "name": "Fondation Louis Vuitton",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Fondation_Louis_Vuitton_5.jpg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q3075489",
+        "qid": "Q1467641",
         "property": "P18",
-        "commons_file": "Fondation Louis Vuitton 5.jpg",
+        "commons_file": "Portrett av Matti Aikio.jpg",
         "match": "search_verified",
         "instance_of": [
-          "Q207694"
+          "Q5"
         ]
       }
     },
     {
-      "node_id": "institution:fondazione prada",
-      "type": "institution",
-      "name": "Fondazione Prada",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Prada-Logo.svg",
+      "node_id": "practitioner:sputniko",
+      "type": "practitioner",
+      "name": "Sputniko!",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Hiromi_Ozaki_by_Joi_Ito.jpg",
       "confidence": "medium",
       "approved": true,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q3747208",
-        "property": "P154",
-        "commons_file": "Prada-Logo.svg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q207694",
-          "Q1251750"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:goodman gallery",
-      "type": "institution",
-      "name": "Goodman Gallery",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Goodman_Gallery%2C_Johannesburg.jpg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q30672513",
+        "qid": "Q15893839",
         "property": "P18",
-        "commons_file": "Goodman Gallery, Johannesburg.jpg",
+        "commons_file": "Hiromi Ozaki by Joi Ito.jpg",
         "match": "search_verified",
         "instance_of": [
-          "Q1007870"
+          "Q5"
         ]
       }
     },
     {
-      "node_id": "institution:hamburger bahnhof",
-      "type": "institution",
-      "name": "Hamburger Bahnhof",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Hamburger_Bahnhof%2C_Berlin%2C_Eingangsbereich-49290.jpg",
+      "node_id": "practitioner:golan levin",
+      "type": "practitioner",
+      "name": "Golan Levin",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Golan_Levin_in_2019.jpg",
       "confidence": "medium",
       "approved": true,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q584756",
+        "qid": "Q5578394",
         "property": "P18",
-        "commons_file": "Hamburger Bahnhof, Berlin, Eingangsbereich-49290.jpg",
+        "commons_file": "Golan Levin in 2019.jpg",
         "match": "search_verified",
         "instance_of": [
-          "Q207694",
-          "Q24699794"
+          "Q5"
         ]
       }
     },
     {
-      "node_id": "institution:haus der kulturen der welt",
-      "type": "institution",
-      "name": "Haus der Kulturen der Welt",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Berlin_Kongresshalle_BW_3.jpg",
+      "node_id": "practitioner:emi kusano",
+      "type": "practitioner",
+      "name": "Emi Kusano",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Emi_Kusano%E3%81%AE%E3%83%9D%E3%83%BC%E3%83%88%E3%83%AC%E3%83%BC%E3%83%88%EF%BC%882022%E5%B9%B4%EF%BC%89.jpg",
       "confidence": "medium",
       "approved": true,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q704933",
+        "qid": "Q11618271",
         "property": "P18",
-        "commons_file": "Berlin Kongresshalle BW 3.jpg",
+        "commons_file": "Emi Kusanoのポートレート（2022年）.jpg",
         "match": "search_verified",
         "instance_of": [
-          "Q1763828",
-          "Q2190251",
-          "Q24354",
-          "Q41253",
-          "Q1378975",
-          "Q33506"
+          "Q5"
         ]
       }
     },
     {
-      "node_id": "institution:hayward gallery",
-      "type": "institution",
-      "name": "Hayward Gallery",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Hayward-gallery-london_I.jpg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q779736",
-        "property": "P18",
-        "commons_file": "Hayward-gallery-london I.jpg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q20897549",
-          "Q207694"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:high museum",
-      "type": "institution",
-      "name": "High Museum",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/High_Museum_of_Art_logo.svg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q953345",
-        "property": "P154",
-        "commons_file": "High Museum of Art logo.svg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q207694"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:ircam",
-      "type": "institution",
-      "name": "IRCAM",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/IRCAM_machine_room_in_1989.jpg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q579314",
-        "property": "P18",
-        "commons_file": "IRCAM machine room in 1989.jpg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q31855",
-          "Q32178211",
-          "Q2385804",
-          "Q65931568"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:kiasma",
-      "type": "institution",
-      "name": "Kiasma",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Kiasmamodernartmuseum.JPG",
-      "confidence": "low",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q1633361",
-        "property": "P18",
-        "commons_file": "Kiasmamodernartmuseum.JPG",
-        "match": "search_unverified",
-        "instance_of": [
-          "Q108860927"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:kunsthalle basel",
-      "type": "institution",
-      "name": "Kunsthalle Basel",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Kunsthalle_Basel_2008-03-30.jpg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q614652",
-        "property": "P18",
-        "commons_file": "Kunsthalle Basel 2008-03-30.jpg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q1007870",
-          "Q3196771",
-          "Q1497649"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:kunsthalle bremen",
-      "type": "institution",
-      "name": "Kunsthalle Bremen",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Kunsthalle_Bremen_Logo.svg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q693591",
-        "property": "P154",
-        "commons_file": "Kunsthalle Bremen Logo.svg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q207694"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:lacma",
-      "type": "institution",
-      "name": "LACMA",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/LACMA_logo.svg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q1641836",
-        "property": "P154",
-        "commons_file": "LACMA logo.svg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q207694",
-          "Q163740",
-          "Q33506"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:libre graphics meeting",
-      "type": "institution",
-      "name": "Libre Graphics Meeting",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Myriam_Cea_at_LGM_2014_02.jpg",
-      "confidence": "low",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q3028738",
-        "property": "P18",
-        "commons_file": "Myriam Cea at LGM 2014 02.jpg",
-        "match": "search_unverified",
-        "instance_of": [
-          "Q625994",
-          "Q15275719"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:lincoln center",
-      "type": "institution",
-      "name": "Lincoln Center",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Lincoln_Center_Overview_%2848047495362%29.jpg",
-      "confidence": "low",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q581044",
-        "property": "P18",
-        "commons_file": "Lincoln Center Overview (48047495362).jpg",
-        "match": "search_unverified",
-        "instance_of": [
-          "Q3469910",
-          "Q1329623"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:long now foundation",
-      "type": "institution",
-      "name": "Long Now Foundation",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/2006-08-15_-_United_States_-_California_-_San_Francisco_-_Sign_-_Long_Now.jpg",
+      "node_id": "practitioner:lomz",
+      "type": "practitioner",
+      "name": "lomz",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/%C5%81om%C5%BCa_%E2%80%93_Stary_Rynek.jpg",
       "confidence": "low",
       "approved": false,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q568907",
+        "qid": "Q215633",
         "property": "P18",
-        "commons_file": "2006-08-15 - United States - California - San Francisco - Sign - Long Now.jpg",
+        "commons_file": "Łomża – Stary Rynek.jpg",
         "match": "search_unverified",
         "instance_of": [
-          "Q163740"
+          "Q925381",
+          "Q515"
         ]
       }
     },
     {
-      "node_id": "institution:ludwig museum budapest",
-      "type": "institution",
-      "name": "Ludwig Museum Budapest",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Ludwig_Museum_Budapest_logo.svg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q958750",
-        "property": "P154",
-        "commons_file": "Ludwig Museum Budapest logo.svg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q33506"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:moca los angeles",
-      "type": "institution",
-      "name": "MOCA Los Angeles",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/MOCA_LA_04.jpg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q1134646",
-        "property": "P18",
-        "commons_file": "MOCA LA 04.jpg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q207694",
-          "Q24699794",
-          "Q163740"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:metro pictures",
-      "type": "institution",
-      "name": "Metro Pictures",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Motion_Picture_Studio_Directory_and_Trade_Annual_%281916%29_%281916%29_%2814576783310%29.jpg",
+      "node_id": "practitioner:psw",
+      "type": "practitioner",
+      "name": "PSW",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Serbian_troops%2C_now_prisoners-of-war_in_Belgrade_of_Austro-Hungarian_forces%2C_1915_%2821780846970%29.jpg",
       "confidence": "low",
       "approved": false,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q650331",
-        "property": "P154",
-        "commons_file": "Motion Picture Studio Directory and Trade Annual (1916) (1916) (14576783310).jpg",
+        "qid": "Q179637",
+        "property": "P18",
+        "commons_file": "Serbian troops, now prisoners-of-war in Belgrade of Austro-Hungarian forces, 1915 (21780846970).jpg",
         "match": "search_unverified",
         "instance_of": [
-          "Q4830453",
-          "Q1762059"
+          "Q16861376",
+          "Q214339"
         ]
       }
     },
     {
-      "node_id": "institution:moma",
-      "type": "institution",
-      "name": "MoMA",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Museum_of_Modern_Art_logo.svg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q188740",
-        "property": "P154",
-        "commons_file": "Museum of Modern Art logo.svg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q33506",
-          "Q108860593",
-          "Q207694",
-          "Q11396960",
-          "Q163740",
-          "Q24699794"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:moma ps1",
-      "type": "institution",
-      "name": "MoMA PS1",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/First_Ward_School_jeh.jpg",
-      "confidence": "low",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q1139848",
-        "property": "P18",
-        "commons_file": "First Ward School jeh.jpg",
-        "match": "search_unverified",
-        "instance_of": [
-          "Q20897549",
-          "Q163740",
-          "Q15090615"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:new museum",
-      "type": "institution",
-      "name": "New Museum",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/New_Museum%2C_New_York.jpg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q1156823",
-        "property": "P18",
-        "commons_file": "New Museum, New York.jpg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q207694",
-          "Q15090615",
-          "Q163740"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:onassis stegi",
-      "type": "institution",
-      "name": "Onassis Stegi",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/%CE%9Fnassis_Stegi_Logo_%282019%29.svg",
-      "confidence": "low",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q43064509",
-        "property": "P154",
-        "commons_file": "Οnassis Stegi Logo (2019).svg",
-        "match": "search_unverified",
-        "instance_of": [
-          "Q1329623",
-          "Q24354",
-          "Q10547643"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:palais de tokyo",
-      "type": "institution",
-      "name": "Palais de Tokyo",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Amos_Gitai_au_Palais_de_Tokyo_%285477710814%29.jpg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q1535247",
-        "property": "P18",
-        "commons_file": "Amos Gitai au Palais de Tokyo (5477710814).jpg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q24699794",
-          "Q3152824",
-          "Q33506"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:park avenue armory",
-      "type": "institution",
-      "name": "Park Avenue Armory",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Park_Avenue_Armory_2024_jeh.jpg",
-      "confidence": "low",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q7137618",
-        "property": "P18",
-        "commons_file": "Park Avenue Armory 2024 jeh.jpg",
-        "match": "search_unverified",
-        "instance_of": [
-          "Q17350442",
-          "Q163740"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:philips pavilion",
-      "type": "institution",
-      "name": "Philips Pavilion",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Expo58_building_Philips.jpg",
-      "confidence": "low",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q2915963",
-        "property": "P18",
-        "commons_file": "Expo58 building Philips.jpg",
-        "match": "search_unverified",
-        "instance_of": [
-          "Q41176"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:queens museum",
-      "type": "institution",
-      "name": "Queens Museum",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Queens_Museum_of_Art_jeh.JPG",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q1320229",
-        "property": "P18",
-        "commons_file": "Queens Museum of Art jeh.JPG",
-        "match": "search_verified",
-        "instance_of": [
-          "Q207694"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:sfmoma",
-      "type": "institution",
-      "name": "SFMOMA",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Sfmoma_logo.png",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q913672",
-        "property": "P154",
-        "commons_file": "Sfmoma logo.png",
-        "match": "search_verified",
-        "instance_of": [
-          "Q108860593",
-          "Q2085381",
-          "Q163740",
-          "Q33506",
-          "Q207694"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:saatchi gallery",
-      "type": "institution",
-      "name": "Saatchi Gallery",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/SaatchiGallery.jpg",
-      "confidence": "low",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q1311497",
-        "property": "P18",
-        "commons_file": "SaatchiGallery.jpg",
-        "match": "search_unverified",
-        "instance_of": [
-          "Q16038801",
-          "Q614316"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:serpentine north",
-      "type": "institution",
-      "name": "Serpentine North",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/London_-_Serpentine_Sackler_Gallery.jpg",
-      "confidence": "low",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q17550503",
-        "property": "P18",
-        "commons_file": "London - Serpentine Sackler Gallery.jpg",
-        "match": "search_unverified",
-        "instance_of": [
-          "Q811979"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:smithsonian american art museum",
-      "type": "institution",
-      "name": "Smithsonian American Art Museum",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/2008-0601-DC-NatlPortGall.jpg",
+      "node_id": "practitioner:aranya",
+      "type": "practitioner",
+      "name": "Aranya",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/1863_CE_palm_leaf_manuscript%2C_Jaiminiya_Aranyaka_Gana%2C_Samaveda_%28unidentified_layer_of_texts%29%2C_Sanskrit%2C_Southern_Grantha_script%2C_sample_i.jpg",
       "confidence": "low",
       "approved": false,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q1192305",
+        "qid": "Q265461",
         "property": "P18",
-        "commons_file": "2008-0601-DC-NatlPortGall.jpg",
+        "commons_file": "1863 CE palm leaf manuscript, Jaiminiya Aranyaka Gana, Samaveda (unidentified layer of texts), Sanskrit, Southern Grantha script, sample i.jpg",
         "match": "search_unverified",
-        "instance_of": [
-          "Q3196771",
-          "Q8513"
-        ]
+        "instance_of": []
       }
     },
     {
-      "node_id": "institution:sotheby's",
-      "type": "institution",
-      "name": "Sotheby's",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Sothebys_Logo.svg",
-      "confidence": "low",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q654762",
-        "property": "P154",
-        "commons_file": "Sothebys Logo.svg",
-        "match": "search_unverified",
-        "instance_of": [
-          "Q9209474",
-          "Q11396960"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:stedelijk",
-      "type": "institution",
-      "name": "Stedelijk",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Stedelijk_Museum_Amsterdam.svg",
-      "confidence": "low",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q924335",
-        "property": "P154",
-        "commons_file": "Stedelijk Museum Amsterdam.svg",
-        "match": "search_unverified",
-        "instance_of": [
-          "Q3196771"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:studio museum in harlem",
-      "type": "institution",
-      "name": "Studio Museum in Harlem",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/StudioMuseumHarlem.png",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q903403",
-        "property": "P154",
-        "commons_file": "StudioMuseumHarlem.png",
-        "match": "search_verified",
-        "instance_of": [
-          "Q207694",
-          "Q54934129",
-          "Q163740"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:sundance film festival",
-      "type": "institution",
-      "name": "Sundance Film Festival",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Sundance-Film-Festival.jpg",
-      "confidence": "low",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q189887",
-        "property": "P18",
-        "commons_file": "Sundance-Film-Festival.jpg",
-        "match": "search_unverified",
-        "instance_of": [
-          "Q220505"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:snar",
-      "type": "institution",
-      "name": "Sónar",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Sonarqube-48x200.png",
+      "node_id": "practitioner:twistie",
+      "type": "practitioner",
+      "name": "twistie",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Food_snacks_Smith%27s_Twisties_packet_and_snacks.jpg",
       "confidence": "low",
       "approved": false,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q541691",
-        "property": "P154",
-        "commons_file": "Sonarqube-48x200.png",
+        "qid": "Q3747526",
+        "property": "P18",
+        "commons_file": "Food snacks Smith's Twisties packet and snacks.jpg",
         "match": "search_unverified",
         "instance_of": [
-          "Q341",
-          "Q28061130"
+          "Q749316",
+          "Q431289"
         ]
       }
     },
     {
-      "node_id": "institution:team gallery",
-      "type": "institution",
-      "name": "Team Gallery",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Team_Gallery%2C_SoHo_NY.jpg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q7691494",
-        "property": "P18",
-        "commons_file": "Team Gallery, SoHo NY.jpg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q1007870"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:teatro coln",
-      "type": "institution",
-      "name": "Teatro Colón",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Teatro_colon_bsas_logo.svg",
-      "confidence": "low",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q827401",
-        "property": "P154",
-        "commons_file": "Teatro colon bsas logo.svg",
-        "match": "search_unverified",
-        "instance_of": [
-          "Q153562"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:v&a",
-      "type": "institution",
-      "name": "V&A",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Victoria_and_Albert_Museum_Logo.svg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q213322",
-        "property": "P154",
-        "commons_file": "Victoria and Albert Museum Logo.svg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q1200701",
-          "Q207694",
-          "Q17000320",
-          "Q17431399"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:van gogh museum",
-      "type": "institution",
-      "name": "Van Gogh Museum",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Logo_-_Van_Gogh_Museum.png",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q224124",
-        "property": "P154",
-        "commons_file": "Logo - Van Gogh Museum.png",
-        "match": "search_verified",
-        "instance_of": [
-          "Q207694",
-          "Q33506",
-          "Q3152824"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:venice biennale",
-      "type": "institution",
-      "name": "Venice Biennale",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Logo_Biennale.svg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q205751",
-        "property": "P154",
-        "commons_file": "Logo Biennale.svg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q182683",
-          "Q220505",
-          "Q464980",
-          "Q667276",
-          "Q157031",
-          "Q166118",
-          "Q2668072"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:walker art center",
-      "type": "institution",
-      "name": "Walker Art Center",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Walker_Art_Center_03.jpg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q1851516",
-        "property": "P18",
-        "commons_file": "Walker Art Center 03.jpg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q207694",
-          "Q1007870",
-          "Q41253",
-          "Q163740"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:whitney museum",
-      "type": "institution",
-      "name": "Whitney Museum",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Whitney_Museum_of_American_Art_%2849051573133%29.jpg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q639791",
-        "property": "P18",
-        "commons_file": "Whitney Museum of American Art (49051573133).jpg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q207694",
-          "Q15090615",
-          "Q163740"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:zkm",
-      "type": "institution",
-      "name": "ZKM",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/ZKM-Logo.svg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q191228",
-        "property": "P154",
-        "commons_file": "ZKM-Logo.svg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q31855",
-          "Q3196771",
-          "Q7075",
-          "Q27030941"
-        ]
-      }
-    },
-    {
-      "node_id": "institution:zabludowicz collection",
-      "type": "institution",
-      "name": "Zabludowicz Collection",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/The_Zabludowicz_Collection%2C_Prince_of_Wales_Road_-_panoramio.jpg",
-      "confidence": "low",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q26432028",
-        "property": "P18",
-        "commons_file": "The Zabludowicz Collection, Prince of Wales Road - panoramio.jpg",
-        "match": "search_unverified",
-        "instance_of": [
-          "Q811979"
-        ]
-      }
-    },
-    {
-      "node_id": "platform:arena",
-      "type": "platform",
-      "name": "Are.na",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Arena_Logo_360x.webp",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q48803839",
-        "property": "P154",
-        "commons_file": "Arena Logo 360x.webp",
-        "match": "search_verified",
-        "instance_of": [
-          "Q35127",
-          "Q3220391"
-        ]
-      }
-    },
-    {
-      "node_id": "practitioner:alexei shulgin",
+      "node_id": "practitioner:megachel",
       "type": "practitioner",
-      "name": "Alexei Shulgin",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Alexei_Shulgin_%281987%29.jpg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q228415",
-        "property": "P18",
-        "commons_file": "Alexei Shulgin (1987).jpg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q5"
-        ]
-      }
-    },
-    {
-      "node_id": "practitioner:augusto de campos",
-      "type": "practitioner",
-      "name": "Augusto de Campos",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Ordem_do_M%C3%A9rito_Cultural_%28OMC%29_2015_%2822736143030%29.jpg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q2871712",
-        "property": "P18",
-        "commons_file": "Ordem do Mérito Cultural (OMC) 2015 (22736143030).jpg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q5"
-        ]
-      }
-    },
-    {
-      "node_id": "practitioner:auriea harvey",
-      "type": "practitioner",
-      "name": "Auriea Harvey",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/GDC_Europe_2014_Session-_1ReasonToBe_%28Tuesday%2C_8-12%29_%2814927542606%29.jpg",
+      "name": "Megachel",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/20260404_Megachelicerax_cousteaui.png",
       "confidence": "low",
       "approved": false,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q16204880",
+        "qid": "Q138972129",
         "property": "P18",
-        "commons_file": "GDC Europe 2014 Session- 1ReasonToBe (Tuesday, 8-12) (14927542606).jpg",
+        "commons_file": "20260404 Megachelicerax cousteaui.png",
         "match": "search_unverified",
         "instance_of": [
-          "Q3046146",
-          "Q1400264"
+          "Q23038290"
         ]
       }
     },
     {
-      "node_id": "practitioner:beeple",
+      "node_id": "practitioner:matsys",
       "type": "practitioner",
-      "name": "Beeple",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Mike_Winkelmann.png",
+      "name": "Matsys",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Johannes_Wierix_%28attr.%29_-_Portrait_of_Quinten_Massijs_%28I%29_%2C_1572_%28cropped%29.jpg",
       "confidence": "medium",
       "approved": true,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q82953425",
+        "qid": "Q314275",
         "property": "P18",
-        "commons_file": "Mike Winkelmann.png",
+        "commons_file": "Johannes Wierix (attr.) - Portrait of Quinten Massijs (I) , 1572 (cropped).jpg",
         "match": "search_verified",
         "instance_of": [
           "Q5"
@@ -1335,17 +663,17 @@
       }
     },
     {
-      "node_id": "practitioner:bernard stiegler",
+      "node_id": "practitioner:cephas",
       "type": "practitioner",
-      "name": "Bernard Stiegler",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/2016_HTNM_Bernard_Stiegler_%2830301265471%29_%28cropped%29.jpg",
+      "name": "cephas",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Pope-peter_pprubens.jpg",
       "confidence": "medium",
-      "approved": true,
+      "approved": false,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q822727",
+        "qid": "Q33923",
         "property": "P18",
-        "commons_file": "2016 HTNM Bernard Stiegler (30301265471) (cropped).jpg",
+        "commons_file": "Pope-peter pprubens.jpg",
         "match": "search_verified",
         "instance_of": [
           "Q5"
@@ -1353,17 +681,71 @@
       }
     },
     {
-      "node_id": "practitioner:christiane paul",
+      "node_id": "practitioner:high quality",
       "type": "practitioner",
-      "name": "Christiane Paul",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Unterm_Radar_Christiane_Paul.jpg",
-      "confidence": "medium",
-      "approved": true,
+      "name": "High Quality",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/2019Radschnellweg.jpg",
+      "confidence": "low",
+      "approved": false,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q69108",
+        "qid": "Q2126722",
         "property": "P18",
-        "commons_file": "Unterm Radar Christiane Paul.jpg",
+        "commons_file": "2019Radschnellweg.jpg",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q7860962"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:spacefiller",
+      "type": "practitioner",
+      "name": "SPACEFILLER",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/CIH.png",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q1023724",
+        "property": "P18",
+        "commons_file": "CIH.png",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q485"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:noctambul",
+      "type": "practitioner",
+      "name": "Noctambul",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Johann_Heinrich_F%C3%BCssli_-_Lady_Macbeth.jpg",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q388626",
+        "property": "P18",
+        "commons_file": "Johann Heinrich Füssli - Lady Macbeth.jpg",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q12136"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:damien seguin",
+      "type": "practitioner",
+      "name": "Damien Seguin",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Damien_Seguin2012.jpg",
+      "confidence": "medium",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q3012837",
+        "property": "P18",
+        "commons_file": "Damien Seguin2012.jpg",
         "match": "search_verified",
         "instance_of": [
           "Q5"
@@ -1371,17 +753,147 @@
       }
     },
     {
-      "node_id": "practitioner:cornelia sollfrank",
+      "node_id": "practitioner:tater",
       "type": "practitioner",
-      "name": "Cornelia Sollfrank",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/C-sollfrank.jpg",
+      "name": "Tater",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Potato_sprout%2C_January_23%2C_2006.jpg",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q10998",
+        "property": "P18",
+        "commons_file": "Potato sprout, January 23, 2006.jpg",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q16521"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:brutal",
+      "type": "practitioner",
+      "name": "brutal",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Buffalo_City_Court_Building%2C_1971-74%2C_Pfohl%2C_Roberts_and_Biggie_%288448022295%29.jpg",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q994776",
+        "property": "P18",
+        "commons_file": "Buffalo City Court Building, 1971-74, Pfohl, Roberts and Biggie (8448022295).jpg",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q32880"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:toxi",
+      "type": "practitioner",
+      "name": "toxi",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Toxicology_Research_at_FDA_%28NCTR_1193%29_%286009043040%29.jpg",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q7218",
+        "property": "P18",
+        "commons_file": "Toxicology Research at FDA (NCTR 1193) (6009043040).jpg",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q930752",
+          "Q2465832",
+          "Q1665984"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:arva",
+      "type": "practitioner",
+      "name": "arva",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Arvada_Olde_Town_Arvada_CO.jpg",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q590849",
+        "property": "P18",
+        "commons_file": "Arvada Olde Town Arvada CO.jpg",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q1093829",
+          "Q1549591"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:kukuti",
+      "type": "practitioner",
+      "name": "Kukuti",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Head_lateral_sagittal_brain.jpg",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q23640",
+        "property": "P18",
+        "commons_file": "Head lateral sagittal brain.jpg",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q112826905"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:ygriega",
+      "type": "practitioner",
+      "name": "Y_GRIEGA",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Y_Griega_Station.jpg",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q8046142",
+        "property": "P18",
+        "commons_file": "Y Griega Station.jpg",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q11670533",
+          "Q2175765"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:artefact",
+      "type": "practitioner",
+      "name": "ARTEFACT",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Stainless_Steel_Laboratory_Pneumatic_Chair_with_wheels.jpg",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q8205328",
+        "property": "P18",
+        "commons_file": "Stainless Steel Laboratory Pneumatic Chair with wheels.jpg",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q96251598"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:harald sohlberg",
+      "type": "practitioner",
+      "name": "Harald Sohlberg",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Sohlberg-selvportrett.jpg",
       "confidence": "medium",
       "approved": true,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q96173",
+        "qid": "Q1367020",
         "property": "P18",
-        "commons_file": "C-sollfrank.jpg",
+        "commons_file": "Sohlberg-selvportrett.jpg",
         "match": "search_verified",
         "instance_of": [
           "Q5"
@@ -1389,17 +901,51 @@
       }
     },
     {
-      "node_id": "practitioner:dragan espenschied",
+      "node_id": "practitioner:punk",
       "type": "practitioner",
-      "name": "Dragan Espenschied",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Drax_loves_his_new_ADLiB-MATE2000_Synthesizer.jpg",
-      "confidence": "medium",
-      "approved": true,
+      "name": "punk",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/SexPistolsNorway1977.jpg",
+      "confidence": "low",
+      "approved": false,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q111053",
+        "qid": "Q3071",
         "property": "P18",
-        "commons_file": "Drax loves his new ADLiB-MATE2000 Synthesizer.jpg",
+        "commons_file": "SexPistolsNorway1977.jpg",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q188451"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:database",
+      "type": "practitioner",
+      "name": "database",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/17._Stammtisch_WP-Unterfranken_004.jpg",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q8513",
+        "property": "P18",
+        "commons_file": "17. Stammtisch WP-Unterfranken 004.jpg",
+        "match": "search_unverified",
+        "instance_of": []
+      }
+    },
+    {
+      "node_id": "practitioner:matthew hughes",
+      "type": "practitioner",
+      "name": "Matthew Hughes",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/MatthewHughes.jpg",
+      "confidence": "medium",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q1909528",
+        "property": "P18",
+        "commons_file": "MatthewHughes.jpg",
         "match": "search_verified",
         "instance_of": [
           "Q5"
@@ -1407,17 +953,17 @@
       }
     },
     {
-      "node_id": "practitioner:georg nees",
+      "node_id": "practitioner:javier tomeo",
       "type": "practitioner",
-      "name": "Georg Nees",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Georg_Nees-1-_BID_1986.jpg",
+      "name": "Javier Tomeo",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Javier_Tomeo_firmando.jpg",
       "confidence": "medium",
       "approved": true,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q5535768",
+        "qid": "Q1570571",
         "property": "P18",
-        "commons_file": "Georg Nees-1- BID 1986.jpg",
+        "commons_file": "Javier Tomeo firmando.jpg",
         "match": "search_verified",
         "instance_of": [
           "Q5"
@@ -1425,17 +971,149 @@
       }
     },
     {
-      "node_id": "practitioner:iannis xenakis",
+      "node_id": "practitioner:choch",
       "type": "practitioner",
-      "name": "Iannis Xenakis",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/XenakisMDaniel_crop.jpg",
+      "name": "Choch",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Aerial_view_of_Tashkent%2C_Uzbekistan.JPG",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q269",
+        "property": "P18",
+        "commons_file": "Aerial view of Tashkent, Uzbekistan.JPG",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q515",
+          "Q7631083",
+          "Q10864048",
+          "Q5119"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:compute",
+      "type": "practitioner",
+      "name": "compute",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/ArcadeGames.jpg",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q7889",
+        "property": "P18",
+        "commons_file": "ArcadeGames.jpg",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q56055944",
+          "Q17155032"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:artik",
+      "type": "practitioner",
+      "name": "artik",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Artik01.jpg",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q1155098",
+        "property": "P18",
+        "commons_file": "Artik01.jpg",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q20724701",
+          "Q2989457"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:kali",
+      "type": "practitioner",
+      "name": "Kali",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Salsola_kali_detalle_ramas.jpg",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q292351",
+        "property": "P18",
+        "commons_file": "Salsola kali detalle ramas.jpg",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q16521",
+          "Q1040689"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:illusion",
+      "type": "practitioner",
+      "name": "illusion",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Czech-2013-Prague-Street_performers_%28crop%29.jpg",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q148442",
+        "property": "P18",
+        "commons_file": "Czech-2013-Prague-Street performers (crop).jpg",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q483394"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:crabapple",
+      "type": "practitioner",
+      "name": "Crabapple",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Malus_sargentii.jpg",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q104819",
+        "property": "P18",
+        "commons_file": "Malus sargentii.jpg",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q16521"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:mark",
+      "type": "practitioner",
+      "name": "mark",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Mark_%28given_name%29_in_script.png",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q13610143",
+        "property": "P18",
+        "commons_file": "Mark (given name) in script.png",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q12308941"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:pindar van arman",
+      "type": "practitioner",
+      "name": "Pindar Van Arman",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Pindar_Van_Arman.jpg",
       "confidence": "medium",
       "approved": true,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q152880",
+        "qid": "Q46996192",
         "property": "P18",
-        "commons_file": "XenakisMDaniel crop.jpg",
+        "commons_file": "Pindar Van Arman.jpg",
         "match": "search_verified",
         "instance_of": [
           "Q5"
@@ -1443,17 +1121,37 @@
       }
     },
     {
-      "node_id": "practitioner:james bridle",
+      "node_id": "practitioner:chicago",
       "type": "practitioner",
-      "name": "James Bridle",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Re_publica_2015_-_Tag_1_%2817379378221%29.jpg",
+      "name": "Chicago",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Campus_Spring.jpg",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q131252",
+        "property": "P18",
+        "commons_file": "Campus Spring.jpg",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q902104",
+          "Q23002054",
+          "Q15936437"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:david young",
+      "type": "practitioner",
+      "name": "David Young",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/MK39548_Element_of_Crime-David_Young.jpg",
       "confidence": "medium",
       "approved": true,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q20683898",
+        "qid": "Q11774421",
         "property": "P18",
-        "commons_file": "Re publica 2015 - Tag 1 (17379378221).jpg",
+        "commons_file": "MK39548 Element of Crime-David Young.jpg",
         "match": "search_verified",
         "instance_of": [
           "Q5"
@@ -1461,17 +1159,35 @@
       }
     },
     {
-      "node_id": "practitioner:john gerrard",
+      "node_id": "practitioner:vvvv",
       "type": "practitioner",
-      "name": "John Gerrard",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/John_GERRARD.jpg",
-      "confidence": "medium",
-      "approved": true,
+      "name": "vvvv",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/VVVVVV_-_The_Tomb_of_Mad_Carew.png",
+      "confidence": "low",
+      "approved": false,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q112666184",
+        "qid": "Q5766",
         "property": "P18",
-        "commons_file": "John GERRARD.jpg",
+        "commons_file": "VVVVVV - The Tomb of Mad Carew.png",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q7889"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:alex shell",
+      "type": "practitioner",
+      "name": "Alex Shell",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/AlexShelley1.JPG",
+      "confidence": "medium",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q715073",
+        "property": "P18",
+        "commons_file": "AlexShelley1.JPG",
         "match": "search_verified",
         "instance_of": [
           "Q5"
@@ -1479,17 +1195,37 @@
       }
     },
     {
-      "node_id": "practitioner:kate crawford",
+      "node_id": "practitioner:bingo",
       "type": "practitioner",
-      "name": "Kate Crawford",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Kate_Crawford_in_2025_01.jpg",
-      "confidence": "medium",
-      "approved": true,
+      "name": "bingo",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Bingo_entertained_children.jpg",
+      "confidence": "low",
+      "approved": false,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q6375450",
+        "qid": "Q113647637",
         "property": "P18",
-        "commons_file": "Kate Crawford in 2025 01.jpg",
+        "commons_file": "Bingo entertained children.jpg",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q88552181",
+          "Q15711870",
+          "Q15773317"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:kaysha",
+      "type": "practitioner",
+      "name": "kaysha",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Kaysha.jpg",
+      "confidence": "medium",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q740711",
+        "property": "P18",
+        "commons_file": "Kaysha.jpg",
         "match": "search_verified",
         "instance_of": [
           "Q5"
@@ -1497,17 +1233,130 @@
       }
     },
     {
-      "node_id": "practitioner:ken perlin",
+      "node_id": "practitioner:mel duarte",
       "type": "practitioner",
-      "name": "Ken Perlin",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Ken_Perlin.jpg",
+      "name": "mel duARTE",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Mel_Duarte_arquivo_pessoal.jpg",
       "confidence": "medium",
       "approved": true,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q6388302",
+        "qid": "Q59104105",
         "property": "P18",
-        "commons_file": "Ken Perlin.jpg",
+        "commons_file": "Mel Duarte arquivo pessoal.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:satoshi nakamoto",
+      "type": "practitioner",
+      "name": "Satoshi Nakamoto",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Satoshi_Nakamoto.jpg",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q13382352",
+        "property": "P18",
+        "commons_file": "Satoshi Nakamoto.jpg",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q61002",
+          "Q21070568",
+          "Q16334295"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:sarah zucker",
+      "type": "practitioner",
+      "name": "Sarah Zucker",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Sarah_Zucker_-_The_Portrait.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q23770314",
+        "property": "P18",
+        "commons_file": "Sarah Zucker - The Portrait.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:arctic",
+      "type": "practitioner",
+      "name": "Arctic",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Arctic_Ocean.png",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q788",
+        "property": "P18",
+        "commons_file": "Arctic Ocean.png",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q9430",
+          "Q1973404"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:0000",
+      "type": "practitioner",
+      "name": "0000",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Zeitstrahlastronomie.svg",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q23104",
+        "property": "P18",
+        "commons_file": "Zeitstrahlastronomie.svg",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q577",
+          "Q18706315"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:symi",
+      "type": "practitioner",
+      "name": "symi",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Colorful_houses_symi.jpg",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q429430",
+        "property": "P18",
+        "commons_file": "Colorful houses symi.jpg",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q23442",
+          "Q148837"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:frederick hammersley",
+      "type": "practitioner",
+      "name": "Frederick Hammersley",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Frederick_Hammersley_%281858-1824%29.jpg",
+      "confidence": "medium",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q15712971",
+        "property": "P18",
+        "commons_file": "Frederick Hammersley (1858-1824).jpg",
         "match": "search_verified",
         "instance_of": [
           "Q5"
@@ -1533,319 +1382,963 @@
       }
     },
     {
-      "node_id": "practitioner:laturbo avedon",
+      "node_id": "practitioner:general motors",
       "type": "practitioner",
-      "name": "LaTurbo Avedon",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/LaTurbo_Avedon_Self_Portrait%2C_2013.jpg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q55616394",
-        "property": "P18",
-        "commons_file": "LaTurbo Avedon Self Portrait, 2013.jpg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q5"
-        ]
-      }
-    },
-    {
-      "node_id": "practitioner:lev manovich",
-      "type": "practitioner",
-      "name": "Lev Manovich",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Lev_Manovich_%E2%80%94_How_to_analyze_culture_using_social_networks.jpg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q716367",
-        "property": "P18",
-        "commons_file": "Lev Manovich — How to analyze culture using social networks.jpg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q5"
-        ]
-      }
-    },
-    {
-      "node_id": "practitioner:mario klingemann",
-      "type": "practitioner",
-      "name": "Mario Klingemann",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/MarioKlingemann.jpg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q55767529",
-        "property": "P18",
-        "commons_file": "MarioKlingemann.jpg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q5"
-        ]
-      }
-    },
-    {
-      "node_id": "practitioner:matt kane",
-      "type": "practitioner",
-      "name": "Matt Kane",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Matt_Kane_Headshot.jpg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q6790766",
-        "property": "P18",
-        "commons_file": "Matt Kane Headshot.jpg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q5"
-        ]
-      }
-    },
-    {
-      "node_id": "practitioner:matteo pasquinelli",
-      "type": "practitioner",
-      "name": "Matteo Pasquinelli",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Skopje_Matteo_Pasquinelli_%284696335068%29_%28cropped%29.jpg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q105492265",
-        "property": "P18",
-        "commons_file": "Skopje Matteo Pasquinelli (4696335068) (cropped).jpg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q5"
-        ]
-      }
-    },
-    {
-      "node_id": "practitioner:mckenzie wark",
-      "type": "practitioner",
-      "name": "McKenzie Wark",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/MackenzieWark1.jpg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q3195197",
-        "property": "P18",
-        "commons_file": "MackenzieWark1.jpg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q5"
-        ]
-      }
-    },
-    {
-      "node_id": "practitioner:mitchell chan",
-      "type": "practitioner",
-      "name": "Mitchell Chan",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/MJC_head_shot.jpg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q66751616",
-        "property": "P18",
-        "commons_file": "MJC head shot.jpg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q5"
-        ]
-      }
-    },
-    {
-      "node_id": "practitioner:refik anadol",
-      "type": "practitioner",
-      "name": "Refik Anadol",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Refik_Anadol_in_2017.png",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q63718992",
-        "property": "P18",
-        "commons_file": "Refik Anadol in 2017.png",
-        "match": "search_verified",
-        "instance_of": [
-          "Q5"
-        ]
-      }
-    },
-    {
-      "node_id": "practitioner:sam lavigne",
-      "type": "practitioner",
-      "name": "Sam Lavigne",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Re-publica_23_-_Tag_2_%2852955241802%29_%28cropped%29.jpg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q93317679",
-        "property": "P18",
-        "commons_file": "Re-publica 23 - Tag 2 (52955241802) (cropped).jpg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q5"
-        ]
-      }
-    },
-    {
-      "node_id": "practitioner:yuk hui",
-      "type": "practitioner",
-      "name": "Yuk Hui",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Yuk_Hui.jpg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q106863978",
-        "property": "P18",
-        "commons_file": "Yuk Hui.jpg",
-        "match": "search_verified",
-        "instance_of": [
-          "Q5"
-        ]
-      }
-    },
-    {
-      "node_id": "practitioner:zach lieberman",
-      "type": "practitioner",
-      "name": "Zach Lieberman",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Zachary_Lieberman.jpg",
+      "name": "General Motors",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/GM_Renaissance_Center_-_H%C3%B4tel_le_plus_haut_en_Am%C3%A9rique_du_Nord_-_panoramio.jpg",
       "confidence": "low",
-      "approved": true,
-      "provenance": {
-        "source": "agentic-websearch",
-        "source_page": "https://commons.wikimedia.org/wiki/Category:Zachary_Lieberman"
-      }
-    },
-    {
-      "node_id": "scene:AI art",
-      "type": "scene",
-      "name": "AI art",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/1960%27s_art_of_cow_getting_abducted_by_UFO_in_midwest.jpg",
-      "confidence": "medium",
-      "approved": true,
+      "approved": false,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q65066631",
+        "qid": "Q81965",
         "property": "P18",
-        "commons_file": "1960's art of cow getting abducted by UFO in midwest.jpg",
-        "match": "search_verified",
+        "commons_file": "GM Renaissance Center - Hôtel le plus haut en Amérique du Nord - panoramio.jpg",
+        "match": "search_unverified",
         "instance_of": [
-          "Q1792379"
+          "Q786820",
+          "Q891723",
+          "Q4830453"
         ]
       }
     },
     {
-      "node_id": "scene:creative coding",
-      "type": "scene",
-      "name": "creative coding",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Automatisches_Zeichengeraet_ZUSE_Z64_ubt.JPG",
+      "node_id": "practitioner:herbert w franke",
+      "type": "practitioner",
+      "name": "Herbert W. Franke",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Transmediale-2010-Opening-Frakne-detail.jpg",
       "confidence": "medium",
       "approved": true,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q17087654",
+        "qid": "Q78620",
         "property": "P18",
-        "commons_file": "Automatisches Zeichengeraet ZUSE Z64 ubt.JPG",
-        "match": "search_verified",
-        "instance_of": []
-      }
-    },
-    {
-      "node_id": "scene:generative art",
-      "type": "scene",
-      "name": "generative art",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Dombis_1687.jpg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q1502032",
-        "property": "P18",
-        "commons_file": "Dombis 1687.jpg",
+        "commons_file": "Transmediale-2010-Opening-Frakne-detail.jpg",
         "match": "search_verified",
         "instance_of": [
-          "Q1792379"
+          "Q5"
         ]
       }
     },
     {
-      "node_id": "scene:glitch art",
-      "type": "scene",
-      "name": "glitch art",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Kodak_Moment_%282013%29_sample_animation.gif",
+      "node_id": "practitioner:manfred mohr",
+      "type": "practitioner",
+      "name": "Manfred Mohr",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Manfred_Mohr_Portrait_2019.jpg",
       "confidence": "medium",
       "approved": true,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q5569949",
+        "qid": "Q872832",
         "property": "P18",
-        "commons_file": "Kodak Moment (2013) sample animation.gif",
-        "match": "search_verified",
-        "instance_of": []
-      }
-    },
-    {
-      "node_id": "scene:net art",
-      "type": "scene",
-      "name": "net art",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Teo_Spiller_net.art.trade_%28net.art%29_2.jpg",
-      "confidence": "medium",
-      "approved": true,
-      "provenance": {
-        "source": "wikidata",
-        "qid": "Q1569950",
-        "property": "P18",
-        "commons_file": "Teo Spiller net.art.trade (net.art) 2.jpg",
+        "commons_file": "Manfred Mohr Portrait 2019.jpg",
         "match": "search_verified",
         "instance_of": [
-          "Q968159",
-          "Q1792379"
+          "Q5"
         ]
       }
     },
     {
-      "node_id": "scene:new media art",
-      "type": "scene",
-      "name": "new media art",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/A-Soapopera-for-iMacs.jpg",
+      "node_id": "practitioner:peter struycken",
+      "type": "practitioner",
+      "name": "Peter Struycken",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Peter_Struycken%2C_1992.jpg",
       "confidence": "medium",
       "approved": true,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q378604",
+        "qid": "Q2706817",
         "property": "P18",
-        "commons_file": "A-Soapopera-for-iMacs.jpg",
+        "commons_file": "Peter Struycken, 1992.jpg",
         "match": "search_verified",
         "instance_of": [
-          "Q968159",
-          "Q56055944",
-          "Q1792379"
+          "Q5"
         ]
       }
     },
     {
-      "node_id": "scene:performance art",
-      "type": "scene",
-      "name": "performance art",
-      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Marina_Abramovi%C4%87%2C_The_Artist_is_Present%2C_2010.jpg",
+      "node_id": "practitioner:jacques palumbo",
+      "type": "practitioner",
+      "name": "Jacques Palumbo",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Jacques_Palumbo_France.jpg",
       "confidence": "medium",
       "approved": true,
       "provenance": {
         "source": "wikidata",
-        "qid": "Q213156",
+        "qid": "Q16266654",
         "property": "P18",
-        "commons_file": "Marina Abramović, The Artist is Present, 2010.jpg",
+        "commons_file": "Jacques Palumbo France.jpg",
         "match": "search_verified",
         "instance_of": [
-          "Q1792379"
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:georg nees",
+      "type": "practitioner",
+      "name": "Georg Nees",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Georg_Nees-1-_BID_1986.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q5535768",
+        "property": "P18",
+        "commons_file": "Georg Nees-1- BID 1986.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:herbert brun",
+      "type": "practitioner",
+      "name": "Herbert Brün",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Photo_of_Herbert_Brun_Reading.png",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q105715",
+        "property": "P18",
+        "commons_file": "Photo of Herbert Brun Reading.png",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:jean-pierre hebert",
+      "type": "practitioner",
+      "name": "Jean-Pierre Hébert",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Alain_de_Benoist_dans_le_documentaire_Alain_de_Benoist._R%C3%A9ponses_de_Simone_Olla.png",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q516375",
+        "property": "P18",
+        "commons_file": "Alain de Benoist dans le documentaire Alain de Benoist. Réponses de Simone Olla.png",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:blek le rat",
+      "type": "practitioner",
+      "name": "Blek le Rat",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Xavier_Prou_%28Blek_le_Rat%29.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q613236",
+        "property": "P18",
+        "commons_file": "Xavier Prou (Blek le Rat).jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:miguel angel vidal",
+      "type": "practitioner",
+      "name": "Miguel Angel Vidal",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Miguel_Angel_Vidal_en_su_taller.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q6015892",
+        "property": "P18",
+        "commons_file": "Miguel Angel Vidal en su taller.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:aaron koblin",
+      "type": "practitioner",
+      "name": "Aaron Koblin",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Aaron_Koblin.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q4662151",
+        "property": "P18",
+        "commons_file": "Aaron Koblin.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:david em",
+      "type": "practitioner",
+      "name": "David Em",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Dave_Cockrum.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q902536",
+        "property": "P18",
+        "commons_file": "Dave Cockrum.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:yoichiro kawaguchi",
+      "type": "practitioner",
+      "name": "Yoichiro Kawaguchi",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Yoichiro_Kawaguchi.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q2600577",
+        "property": "P18",
+        "commons_file": "Yoichiro Kawaguchi.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:jeremy gardiner",
+      "type": "practitioner",
+      "name": "Jeremy Gardiner",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Jeremy_Gardiner_Painter.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q6181368",
+        "property": "P18",
+        "commons_file": "Jeremy Gardiner Painter.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:aaron marcus",
+      "type": "practitioner",
+      "name": "Aaron Marcus",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/MARCUS_Aaron_23Jan05.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q4662235",
+        "property": "P18",
+        "commons_file": "MARCUS Aaron 23Jan05.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:frieder nake",
+      "type": "practitioner",
+      "name": "Frieder Nake",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Frieder_Nake_2012.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q92703",
+        "property": "P18",
+        "commons_file": "Frieder Nake 2012.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:victor acevedo",
+      "type": "practitioner",
+      "name": "Victor Acevedo",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/VICTOR_ACEVEDO_May_19%2C_2023_HiRes_v02.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q107639411",
+        "property": "P18",
+        "commons_file": "VICTOR ACEVEDO May 19, 2023 HiRes v02.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:eduardo paolozzi",
+      "type": "practitioner",
+      "name": "Eduardo Paolozzi",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/NewtonBlakePaolozzi1.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q165397",
+        "property": "P18",
+        "commons_file": "NewtonBlakePaolozzi1.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:eduardo mac entyre",
+      "type": "practitioner",
+      "name": "Eduardo Mac Entyre",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/EduardoMacEntyre.JPG",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q5340671",
+        "property": "P18",
+        "commons_file": "EduardoMacEntyre.JPG",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:pedro meyer",
+      "type": "practitioner",
+      "name": "Pedro Meyer",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Pedromeyerygato.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q9057571",
+        "property": "P18",
+        "commons_file": "Pedromeyerygato.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:yves behar",
+      "type": "practitioner",
+      "name": "Yves Béhar",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Yves_Behar.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q123419",
+        "property": "P18",
+        "commons_file": "Yves Behar.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:osvaldo romberg",
+      "type": "practitioner",
+      "name": "Osvaldo Romberg",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Osvaldo_Romberg.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q7108075",
+        "property": "P18",
+        "commons_file": "Osvaldo Romberg.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:ernest edmonds",
+      "type": "practitioner",
+      "name": "Ernest Edmonds",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Ernest_Edmonds_2008.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q18921694",
+        "property": "P18",
+        "commons_file": "Ernest Edmonds 2008.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:george boole",
+      "type": "practitioner",
+      "name": "George Boole",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/George_Boole_color.jpg",
+      "confidence": "medium",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q134661",
+        "property": "P18",
+        "commons_file": "George Boole color.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:norman zammit",
+      "type": "practitioner",
+      "name": "Norman Zammit",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Self_Portrait_with_Blue_Burning.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q22093638",
+        "property": "P18",
+        "commons_file": "Self Portrait with Blue Burning.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:sonya rapoport",
+      "type": "practitioner",
+      "name": "Sonya Rapoport",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Sonya_Rapoport_%26_Malcolm_Margolin_%286963364629%29.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q7562582",
+        "property": "P18",
+        "commons_file": "Sonya Rapoport & Malcolm Margolin (6963364629).jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:christopher le brun",
+      "type": "practitioner",
+      "name": "Christopher Le Brun",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Christopher_Le_Brun_PRA_in_his_Studio_by_Aliona_Adrianova.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q5112716",
+        "property": "P18",
+        "commons_file": "Christopher Le Brun PRA in his Studio by Aliona Adrianova.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:jasper conran",
+      "type": "practitioner",
+      "name": "Jasper Conran",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Jasper_Conran.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q6163915",
+        "property": "P18",
+        "commons_file": "Jasper Conran.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:palmer luckey",
+      "type": "practitioner",
+      "name": "Palmer Luckey",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Palmer_Luckey_at_SVVR_2014.jpg",
+      "confidence": "medium",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q16269109",
+        "property": "P18",
+        "commons_file": "Palmer Luckey at SVVR 2014.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:gareth hoskins",
+      "type": "practitioner",
+      "name": "Gareth Hoskins",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Gareth_Hoskins_OBE_-_PRO_001_%28C%29_GILLIAN_HAYES_600x450.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q22056742",
+        "property": "P18",
+        "commons_file": "Gareth Hoskins OBE - PRO 001 (C) GILLIAN HAYES 600x450.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:barbara nessim",
+      "type": "practitioner",
+      "name": "Barbara Nessim",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Photo_Of_Barbara_Nessim.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q4859183",
+        "property": "P18",
+        "commons_file": "Photo Of Barbara Nessim.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:william gibson",
+      "type": "practitioner",
+      "name": "William Gibson",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/William_Gibson_60th_birthday_portrait.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q188987",
+        "property": "P18",
+        "commons_file": "William Gibson 60th birthday portrait.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:susan bee",
+      "type": "practitioner",
+      "name": "Susan Bee",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Susan_Bee_in_2006%2C_photo_by_Charles_Bernstein_for_PennSound.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q7647562",
+        "property": "P18",
+        "commons_file": "Susan Bee in 2006, photo by Charles Bernstein for PennSound.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:frank kraayeveld",
+      "type": "practitioner",
+      "name": "Frank Kraayeveld",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Frank_Kraayeveld_leider_van_de_Bintangs_Beverwijk%2C_1976_-_33.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q114646523",
+        "property": "P18",
+        "commons_file": "Frank Kraayeveld leider van de Bintangs Beverwijk, 1976 - 33.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:anish kapoor",
+      "type": "practitioner",
+      "name": "Anish Kapoor",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Anish_Kapoor_01.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q327293",
+        "property": "P18",
+        "commons_file": "Anish Kapoor 01.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:boontje",
+      "type": "practitioner",
+      "name": "Boontje",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Boontjesmolen_1712.jpg",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q13441933",
+        "property": "P18",
+        "commons_file": "Boontjesmolen 1712.jpg",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q38720"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:sue gollifer",
+      "type": "practitioner",
+      "name": "Sue Gollifer",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Sue_Gollifer_at_BCS_London_20241210_181011.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q131566367",
+        "property": "P18",
+        "commons_file": "Sue Gollifer at BCS London 20241210 181011.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:olga tobreluts",
+      "type": "practitioner",
+      "name": "Olga Tobreluts",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Olga_Tobreluts.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q4459161",
+        "property": "P18",
+        "commons_file": "Olga Tobreluts.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:david difrancesco",
+      "type": "practitioner",
+      "name": "David DiFrancesco",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/DavidDiFrancesco2014.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q16135898",
+        "property": "P18",
+        "commons_file": "DavidDiFrancesco2014.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:philip zimmermann",
+      "type": "practitioner",
+      "name": "Philip Zimmermann",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/PRZ_closeup_cropped.jpg",
+      "confidence": "medium",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q455938",
+        "property": "P18",
+        "commons_file": "PRZ closeup cropped.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:nancy burson",
+      "type": "practitioner",
+      "name": "Nancy Burson",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Nancy_Burson.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q3335558",
+        "property": "P18",
+        "commons_file": "Nancy Burson.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:zineb sedira",
+      "type": "practitioner",
+      "name": "Zineb Sedira",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Zineb_Sedira.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q19630851",
+        "property": "P18",
+        "commons_file": "Zineb Sedira.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:margaret lanzetta",
+      "type": "practitioner",
+      "name": "Margaret Lanzetta",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Margaret-Lanzetta.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q55219197",
+        "property": "P18",
+        "commons_file": "Margaret-Lanzetta.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:ron davis",
+      "type": "practitioner",
+      "name": "Ron Davis",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Ron_Davis_portret.jpg",
+      "confidence": "medium",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q111979220",
+        "property": "P18",
+        "commons_file": "Ron Davis portret.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:eduardo kac",
+      "type": "practitioner",
+      "name": "Eduardo Kac",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Eduardo_Kac_-_Genesis_-_Ars_Electronica_99.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q331376",
+        "property": "P18",
+        "commons_file": "Eduardo Kac - Genesis - Ars Electronica 99.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:john pemberton",
+      "type": "practitioner",
+      "name": "John Pemberton",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/John_Pemberton.jpg",
+      "confidence": "medium",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q215959",
+        "property": "P18",
+        "commons_file": "John Pemberton.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:konstantin grcic",
+      "type": "practitioner",
+      "name": "Konstantin Grcic",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Konstantin_Grcic.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q96612",
+        "property": "P18",
+        "commons_file": "Konstantin Grcic.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:keith khan",
+      "type": "practitioner",
+      "name": "Keith Khan",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/The_Gifting_designer_Keith_Khan._LEEDS_2023_%28cropped%29.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q6384597",
+        "property": "P18",
+        "commons_file": "The Gifting designer Keith Khan. LEEDS 2023 (cropped).jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:andy lomas",
+      "type": "practitioner",
+      "name": "Andy Lomas",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Andy_Lomas_presenting_at_the_EVA_London_2016_conference.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q27734624",
+        "property": "P18",
+        "commons_file": "Andy Lomas presenting at the EVA London 2016 conference.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:naoto fukasawa",
+      "type": "practitioner",
+      "name": "Naoto Fukasawa",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Naoto_Fukasawa.jpg",
+      "confidence": "medium",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q636724",
+        "property": "P18",
+        "commons_file": "Naoto Fukasawa.jpg",
+        "match": "search_verified",
+        "instance_of": [
+          "Q5"
+        ]
+      }
+    },
+    {
+      "node_id": "practitioner:materialise",
+      "type": "practitioner",
+      "name": "Materialise",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Materialise_logo.png",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q6786571",
+        "property": "P18",
+        "commons_file": "Materialise logo.png",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q4830453",
+          "Q891723"
+        ]
+      }
+    },
+    {
+      "node_id": "institution:victoria and albert museum",
+      "type": "institution",
+      "name": "Victoria and Albert Museum",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Victoria_and_Albert_Museum_Logo.svg",
+      "confidence": "high",
+      "approved": true,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q213322",
+        "property": "P154",
+        "commons_file": "Victoria and Albert Museum Logo.svg",
+        "match": "alias",
+        "instance_of": [
+          "Q1200701",
+          "Q207694",
+          "Q17000320",
+          "Q17431399"
+        ]
+      }
+    },
+    {
+      "node_id": "collective:josiah wedgwood and sons",
+      "type": "collective",
+      "name": "Josiah Wedgwood and Sons",
+      "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/BLW_Teapot_with_%27White_Chinese_Flowers%27_pattern.jpg",
+      "confidence": "low",
+      "approved": false,
+      "provenance": {
+        "source": "wikidata",
+        "qid": "Q595544",
+        "property": "P18",
+        "commons_file": "BLW Teapot with 'White Chinese Flowers' pattern.jpg",
+        "match": "search_unverified",
+        "instance_of": [
+          "Q4830453",
+          "Q3067776"
         ]
       }
     }
