@@ -18,6 +18,7 @@
 
   const SESSION_HISTORY_KEY = 'adai_archivist_history';
   const DOCK_KEY = 'adai_archivist_dock';
+  const PANEL_OPEN_KEY = 'adai_archivist_panel_open';
   const DOCKS = ['center', 'right', 'left'];
   const MAX_HISTORY = 20;
 
@@ -58,6 +59,17 @@
         turns: STATE.turns.slice(-MAX_HISTORY),
       }));
     } catch {}
+  }
+  function loadPanelOpen() {
+    try {
+      const saved = sessionStorage.getItem(PANEL_OPEN_KEY);
+      return saved == null ? true : saved !== '0';
+    } catch {
+      return true;
+    }
+  }
+  function savePanelOpen(open) {
+    try { sessionStorage.setItem(PANEL_OPEN_KEY, open ? '1' : '0'); } catch {}
   }
 
   // ---------- helpers ----------
@@ -178,7 +190,7 @@
         <div class="arch-help-h">controls</div>
         <ul>
           <li><kbd>⇧?</kbd> focus / toggle &nbsp;·&nbsp; <kbd>esc</kbd> close &nbsp;·&nbsp; <kbd>enter</kbd> send &nbsp;·&nbsp; <kbd>shift+enter</kbd> newline</li>
-          <li><span class="arch-help-btn">×</span> reset chat &nbsp;·&nbsp; <span class="arch-help-btn">−</span> hide log &nbsp;·&nbsp; <span class="arch-help-btn">⇄</span> move (center / right / left) &nbsp;·&nbsp; <span class="arch-help-btn">?</span> this panel</li>
+          <li><span class="arch-help-btn">×</span> reset chat &nbsp;·&nbsp; <span class="arch-help-btn">−</span> minimize panel &nbsp;·&nbsp; <span class="arch-help-btn">⇄</span> move (center / right / left) &nbsp;·&nbsp; <span class="arch-help-btn">?</span> this panel</li>
         </ul>
       </div>
       <div class="arch-help-foot">read-only by design — it can't add nodes, edges, or signals. To contribute, head to <a href="/contribute">/contribute</a>.</div>
@@ -188,17 +200,18 @@
     const root = ensureRoot();
     const log = root.querySelector('#arch-log');
     if (!log) return;
+    const panelMinimize = '<button type="button" class="arch-panel-minimize" data-arch-panel-minimize title="minimize panel" aria-label="minimize archivist panel">−</button>';
     // Help panel takes precedence over both the empty state and the
     // ongoing log — it's modal-ish within the surface.
     if (STATE.helpOpen) {
-      log.innerHTML = HELP_HTML;
+      log.innerHTML = panelMinimize + HELP_HTML;
       return;
     }
     if (STATE.turns.length === 0) {
-      log.innerHTML = HELP_HTML;
+      log.innerHTML = panelMinimize + HELP_HTML;
       return;
     }
-    log.innerHTML = STATE.turns.map((t, i) => renderTurn(t, i)).join('');
+    log.innerHTML = panelMinimize + STATE.turns.map((t, i) => renderTurn(t, i)).join('');
     log.scrollTop = log.scrollHeight;
   }
   function renderTurn(turn /*, idx */) {
@@ -228,20 +241,33 @@
     const send = root.querySelector('#arch-send');
     if (send) send.disabled = !!busy;
   }
-  function open() {
+  function syncPanelButtons() {
+    const root = ensureRoot();
+    const isOpen = root.classList.contains('is-open');
+    const minBtn = root.querySelector('#arch-minimize');
+    if (!minBtn) return;
+    minBtn.textContent = isOpen ? '−' : '+';
+    minBtn.title = isOpen ? 'minimize panel' : 'show panel';
+    minBtn.setAttribute('aria-label', isOpen ? 'minimize panel' : 'show panel');
+  }
+  function open(options = {}) {
     STATE.open = true;
     const root = ensureRoot();
     root.classList.add('is-open');
+    savePanelOpen(true);
+    syncPanelButtons();
     renderLog();
     const input = root.querySelector('#arch-input');
-    if (input) input.focus();
+    if (input && options.focus !== false) input.focus();
   }
-  function close() {
+  function close(options = {}) {
     STATE.open = false;
     const root = ensureRoot();
     root.classList.remove('is-open');
+    savePanelOpen(false);
+    syncPanelButtons();
     const input = root.querySelector('#arch-input');
-    if (input) input.blur();
+    if (input && options.blur !== false) input.blur();
   }
   function toggle() { STATE.open ? close() : open(); }
   function clear() {
@@ -605,9 +631,10 @@
     ensureRoot();
     renderLog();
     const root = ensureRoot();
-    root.classList.add('is-open'); // bar itself is always visible; log shows when there are turns
 
     applyDock(loadDock());
+    if (loadPanelOpen()) open({ focus: false });
+    else close({ blur: false });
 
     const sendBtn = root.querySelector('#arch-send');
     const input = root.querySelector('#arch-input');
@@ -618,10 +645,10 @@
     sendBtn?.addEventListener('click', onSendClick);
     helpBtn?.addEventListener('click', () => {
       STATE.helpOpen = !STATE.helpOpen;
-      const r2 = ensureRoot();
       // The help panel only renders if the log is visible — pop the bar
       // open so first-time visitors don't click "?" into a no-op.
-      if (STATE.helpOpen) r2.classList.add('is-open');
+      if (STATE.helpOpen) open({ focus: false });
+      const r2 = ensureRoot();
       r2.querySelector('#arch-help')?.classList.toggle('is-active', STATE.helpOpen);
       renderLog();
     });
@@ -637,6 +664,11 @@
       if (root2.classList.contains('is-open')) close();
       else open();
     });
+    root.addEventListener('click', (e) => {
+      if (!e.target?.closest?.('[data-arch-panel-minimize]')) return;
+      e.preventDefault();
+      close();
+    });
     dockBtn?.addEventListener('click', cycleDock);
     input?.addEventListener('input', autoresize);
     input?.addEventListener('keydown', (e) => {
@@ -651,7 +683,9 @@
         close();
       }
     });
-    input?.addEventListener('focus', () => { STATE.open = true; });
+    input?.addEventListener('focus', () => {
+      if (!STATE.open) open({ focus: false });
+    });
 
     // Intercept clicks on profile-page links the archivist emits inside its
     // replies (e.g. [Casey Reas](/practitioner/casey-reas)). Instead of

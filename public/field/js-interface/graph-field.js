@@ -94,6 +94,19 @@
     ZOOM_RING_THRESHOLD: 18,         // > this neighbors → split into two rings
     ZOOM_OFFSCREEN_ALPHA: 0.28,      // 30k practitioners stay as a faint constellation when zoomed
     EDGE_THREAD_ALPHA: 0.45,
+    FIELD_FOCUS_BACKGROUND_ALPHA: 0.08,
+    FIELD_REVEAL_MS: 900,
+    FIELD_REVEAL_TO_FOCUS_MS: 620,
+    FIELD_REVEAL_STAGGER_MS: 0,
+    FIELD_REVEAL_MAX_NODES: 42,
+    FIELD_FOCUS_GLOW_ALPHA: 0.42,
+    FIELD_FOCUS_GLOW_RADIUS: 7.2,
+    IN_PLACE_ANCHOR_MARGIN: 48,
+    IN_PLACE_FOCUS_CLEARANCE: 28,
+    IN_PLACE_LAYOUT_SCALE: 0.82,
+    IN_PLACE_CURVE_NEAR_RADIUS: 76,
+    IN_PLACE_CURVE_CONTROL_SCALE: 0.34,
+    IN_PLACE_CURVE_MIN_BEND: 18,
     EDGE_THREAD_WIDTH_BY_CONFIDENCE: {
       high:       2.2,
       medium:     1.4,
@@ -101,8 +114,32 @@
       unverified: 0.5,
     },
     EDGE_THREAD_WIDTH_DEFAULT: 1.2,
+    EDGE_THREAD_STYLE_BY_TYPE: {
+      CREATED_BY:        { dash: [], width: 1.16, alpha: 1.16 },
+      COLLABORATES_WITH: { dash: [10, 5], width: 1.05, alpha: 1.0 },
+      BELONGS_TO:        { dash: [14, 7], width: 0.94, alpha: 0.92 },
+      EXHIBITED_AT:      { dash: [2, 5], width: 0.9, alpha: 0.82 },
+      EMBODIES:          { dash: [7, 4], width: 0.98, alpha: 0.94 },
+      PRACTICES:         { dash: [9, 4, 2, 4], width: 0.96, alpha: 0.9 },
+      STYLE_KIN:         { dash: [3, 7], width: 0.82, alpha: 0.72 },
+      VISUALLY_AFFINE:   { dash: [1, 5], width: 0.78, alpha: 0.68 },
+      STYLE_PROXIMITY:   { dash: [8, 5, 1, 5], width: 0.84, alpha: 0.74 },
+      SUGGESTS_CREATED_BY: { dash: [12, 4, 2, 4], width: 1.0, alpha: 0.9 },
+      CLOSEST_ARTWORK:   { dash: [5, 5], width: 0.8, alpha: 0.7 },
+      EMBEDDING_NEAR:    { dash: [4, 6], width: 0.8, alpha: 0.68 },
+    },
     NAME_TEXT_ALPHA: 1.0,            // text needs to read clearly over the brand
     NAME_TEXT_SIZE: 11,
+    LABEL_MAX_WIDTH: 178,
+    LABEL_MARGIN: 8,
+    LABEL_PAD_X: 4,
+    LABEL_PAD_Y: 3,
+    LABEL_GAP: 4,
+    LABEL_DOT_CLEARANCE: 8,
+    LABEL_BG_ALPHA: 0.86,
+    LABEL_STROKE_ALPHA: 0.3,
+    LABEL_MAX_VISIBLE: 24,
+    LABEL_DENSE_MAX_VISIBLE: 16,
 
     // Editorial: practitioners stay as halos/dots (the constellation); only
     // artworks render with their image. Some practitioners carry portrait
@@ -116,6 +153,8 @@
     THUMB_HERO_RADIUS: 58,           // px — hero thumbnail radius when an artwork is the focus
     THUMB_RING_WIDTH: 1,             // subtle white ring around thumbnails for legibility
   };
+
+  let fieldRevealTimer = null;
 
   // Density-aware thumbnail radius. Practitioners like Robert Hodgin have 29
   // artworks on a single CREATED_BY petal — at fixed 16px they overlap badly.
@@ -200,8 +239,9 @@
       inset: '0',
       width: '100%',
       height: '100%',
-      pointerEvents: 'auto',     // hover + click on practitioner dots
-      zIndex: '2',
+      display: 'none',
+      pointerEvents: 'none',
+      zIndex: '4',
       mixBlendMode: CFG.BG_BLEND,
     });
     document.body.appendChild(canvas);
@@ -291,6 +331,10 @@
   // give the 30k constellation a readable type structure.
   function colorForType(type) {
     return CFG.TYPE_COLORS[type] || CFG.TYPE_COLOR_FALLBACK;
+  }
+
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
   }
 
   // ---- semantic snapping -----------------------------------------------
@@ -585,6 +629,60 @@
     return (lib.colorFor(type) || lib.NEUTRAL).hex;
   }
 
+  function edgeTypeForEmbeddingSection(key) {
+    switch (key) {
+      case 'style_kin': return 'STYLE_KIN';
+      case 'visually_affine': return 'VISUALLY_AFFINE';
+      case 'style_proximity': return 'STYLE_PROXIMITY';
+      case 'closest_artworks': return 'CLOSEST_ARTWORK';
+      case 'ai_attributions': return 'SUGGESTS_CREATED_BY';
+      default: return 'EMBEDDING_NEAR';
+    }
+  }
+
+  function confidenceForSimilarity(similarity) {
+    if (typeof similarity !== 'number') return 'medium';
+    if (similarity >= 0.9) return 'high';
+    if (similarity >= 0.82) return 'medium';
+    if (similarity >= 0.74) return 'low';
+    return 'unverified';
+  }
+
+  function hashString(value) {
+    let h = 2166136261;
+    const text = String(value || '');
+    for (let i = 0; i < text.length; i++) {
+      h ^= text.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+
+  function edgeThreadStyle(item) {
+    return CFG.EDGE_THREAD_STYLE_BY_TYPE[item?.edgeType] ||
+      (item?.source === 'embedding'
+        ? CFG.EDGE_THREAD_STYLE_BY_TYPE.EMBEDDING_NEAR
+        : { dash: [], width: 1, alpha: 1 });
+  }
+
+  function applyEdgeThreadStyle(ctx, item, baseAlpha, baseWidth) {
+    const style = edgeThreadStyle(item);
+    const alpha = clamp(baseAlpha * (style.alpha || 1), 0, 1);
+    const width = Math.max(0.45, baseWidth * (style.width || 1));
+    const dash = style.dash || [];
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = item.edgeColor || '#888';
+    ctx.lineWidth = width;
+    ctx.setLineDash(dash);
+    ctx.lineDashOffset = dash.length ? -(hashString(item.id + item.edgeType) % 18) : 0;
+    return { alpha, width, dash };
+  }
+
+  function resetEdgeThreadStyle(ctx) {
+    ctx.setLineDash([]);
+    ctx.lineDashOffset = 0;
+  }
+
   // ---- Layouts (case 17 rose + case 20 bucketed wedges) ----
   // Both produce the same shape: { cx, cy, neighbors: [...] }
   // where each neighbor has { id, name, type, edgeType, edgeConfidence,
@@ -831,6 +929,10 @@
 
   function renderBreadcrumb(bundle, graph) {
     const el = createBreadcrumb();
+    if (bundle.viewLevel === 'field-reveal') {
+      el.innerHTML = '';
+      return;
+    }
     const history = bundle.history || [];
     // Build path: field, then each historical focus, then current focus.
     const path = [{ id: null, label: 'field' }];
@@ -938,6 +1040,7 @@
     const h = window.innerHeight;
     if (targetIdx === 0) {
       // Click "field" -> back to 30k. Wipe history, run 30k restore.
+      window.ADAI_FIELD_STUDY?.reset?.({ syncGraph: false });
       bundle.history = [];
       // Re-use zoomBack's 30k logic by faking it: directly call internal path
       // by pushing a dummy and popping. Simpler: just call zoomBack repeatedly
@@ -1212,7 +1315,7 @@
   function renderEdgeFilter(bundle, graph) {
     const el = createEdgeFilter();
     const ns = bundle.zoomNeighbors || [];
-    if (!bundle.viewLevel || bundle.viewLevel === '30k' || ns.length === 0) {
+    if (!bundle.viewLevel || bundle.viewLevel === '30k' || bundle.viewLevel === 'field-reveal' || ns.length === 0) {
       el.innerHTML = '';
       return;
     }
@@ -1238,6 +1341,8 @@
         renderEdgeFilter(bundle, graph);
       }, { once: true });
     });
+    const embed = document.getElementById('adai-embed-strip');
+    if (embed) requestAnimationFrame(() => positionEmbedStrip(embed));
   }
 
   // ---- Embedding-neighbours strip (Step 3 zoom companion) ----
@@ -1279,8 +1384,72 @@
     return el;
   }
 
+  function positionEmbedStrip(el) {
+    const filterEl = document.getElementById('adai-edge-filter');
+    if (filterEl && filterEl.innerHTML.trim()) {
+      const bottom = filterEl.getBoundingClientRect().bottom;
+      const top = clamp(bottom + 12, 120, Math.max(120, window.innerHeight - 220));
+      el.style.top = `${top}px`;
+      el.style.maxHeight = `calc(100vh - ${top + 120}px)`;
+    } else {
+      el.style.top = '120px';
+      el.style.maxHeight = 'calc(100vh - 240px)';
+    }
+  }
+
+  function syncEmbeddingNeighborsIntoField(payload, bundle, graph) {
+    if (bundle.viewLevel !== 'field-focus' || !bundle.focusedId) return;
+    const sections = payload?.sections || [];
+    if (!sections.length) return;
+
+    const byId = new Map((bundle.inPlaceNeighbors || []).map(item => [item.id, item]));
+    let changed = false;
+
+    for (const section of sections) {
+      const edgeType = edgeTypeForEmbeddingSection(section.key);
+      const edgeColor = colorForEdge(edgeType);
+      for (const n of section.neighbours || []) {
+        const id = n.node_id;
+        if (!id || id === bundle.focusedId || byId.has(id)) continue;
+
+        const node = graph.byId.get(id);
+        const sim = bundle.simById?.get(id);
+        if (!node || !sim) continue;
+
+        byId.set(id, {
+          id,
+          name: n.name || node.name,
+          type: n.type || node.type,
+          edgeType,
+          edgeConfidence: confidenceForSimilarity(n.similarity),
+          edgeColor,
+          edge: null,
+          similarity: n.similarity,
+          sim,
+          alpha: 1,
+          r: CFG.ZOOM_NEIGHBOR_RADIUS,
+          groupArtworkCount: 1,
+          source: 'embedding',
+          embedSectionKey: section.key,
+          embedSectionTitle: section.title,
+        });
+        changed = true;
+      }
+    }
+
+    if (!changed) return;
+    bundle.inPlaceNeighbors = Array.from(byId.values());
+    bundle.zoomNeighbors = bundle.inPlaceNeighbors;
+    bundle.inPlaceAnchorKey = null;
+    bundle.inPlaceVisibleNeighbors = [];
+    renderEdgeFilter(bundle, graph);
+    const embed = document.getElementById('adai-embed-strip');
+    if (embed) requestAnimationFrame(() => positionEmbedStrip(embed));
+  }
+
   function renderEmbedStripPayload(el, payload, bundle, graph) {
     const sections = payload?.sections || [];
+    syncEmbeddingNeighborsIntoField(payload, bundle, graph);
     if (!sections.length) {
       el.innerHTML = '<div style="color:#555;font-size:9px;letter-spacing:0.06em">no embedding neighbours</div>';
       return;
@@ -1314,8 +1483,9 @@
 
   function renderEmbedStrip(bundle, graph) {
     const el = createEmbedStrip();
+    positionEmbedStrip(el);
     const focusedId = bundle.focusedId;
-    if (!bundle.viewLevel || bundle.viewLevel === '30k' || !focusedId) {
+    if (!bundle.viewLevel || bundle.viewLevel === '30k' || bundle.viewLevel === 'field-reveal' || !focusedId) {
       el.innerHTML = '';
       return;
     }
@@ -1382,6 +1552,7 @@
     bundle.focusedId = focusedId;
     bundle.zoomFocus = null;
     applyDefaultFiltersForMode(bundle);  // reset + reapply current mode's defaults
+    setGraphFocusActive(true);
 
     const layout = compute10kLayout(graph, focusedId, canvasW, canvasH);
     bundle.zoomCenter = { x: layout.cx, y: layout.cy };
@@ -1503,6 +1674,7 @@
     bundle.viewLevel = level;
     bundle.focusedId = focusedId;
     applyDefaultFiltersForMode(bundle);  // reset + reapply current mode's defaults
+    setGraphFocusActive(true);
     setBrandOpacityForZoom(true);
 
     runTween(CFG.ZOOM_TRANSITION_MS, (e) => {
@@ -1549,24 +1721,24 @@
   function zoomToNode(graph, bundle, nodeId, canvasW, canvasH, opts = {}) {
     const node = graph.byId.get(nodeId);
     if (!node) return;
+    if (!opts.fromFieldStudy && window.ADAI_FIELD_STUDY?.zoomToNode) {
+      window.ADAI_FIELD_STUDY.zoomToNode(nodeId, { syncGraph: false });
+    }
     // Focus change clears archivist highlights — the rings were context
     // for "what we just talked about", not a sticky overlay. The
     // highlight_nodes tool description documents this contract. Optional
     // chain in case the public API hasn't been wired up yet (zoomToNode
     // is module-scoped; bundle.clearHighlights is attached inside start()).
-    bundle.clearHighlights?.();
-    if (node.type === 'practitioner') {
-      zoomToPractitioner(graph, bundle, nodeId, canvasW, canvasH, opts);
-    } else {
-      // 'node' is a generic non-30k zoom-level marker. The exact tag doesn't
-      // matter for navigation — the history stack tracks focusedId, not level.
-      zoomToVirtualFocus(graph, bundle, nodeId, canvasW, canvasH, 'node', opts);
-    }
+    focusNodeInPlace(graph, bundle, nodeId, opts);
   }
 
   function zoomBack(graph, bundle, canvasW, canvasH) {
     if (bundle.transitioning) return;
     if (!bundle.viewLevel || bundle.viewLevel === '30k') return;
+    if (bundle.viewLevel === 'field-focus' || bundle.viewLevel === 'field-reveal') {
+      clearInPlaceFocus(bundle, graph);
+      return;
+    }
     // Same contract as zoomToNode: focus change drops archivist highlights.
     bundle.clearHighlights?.();
     bundle.history = bundle.history || [];
@@ -1595,6 +1767,7 @@
       const cx = bundle.zoomCenter ? bundle.zoomCenter.x : canvasW / 2;
       const cy = bundle.zoomCenter ? bundle.zoomCenter.y : canvasH / 2;
 
+      hideGraphOverlay();
       setBrandOpacityForZoom(false);
 
       runTween(CFG.ZOOM_TRANSITION_MS, (e) => {
@@ -1647,6 +1820,833 @@
     }
   }
 
+  function setGraphFocusActive(active) {
+    document.body.classList.toggle('field-graph-focused', !!active);
+    syncGraphCanvasVisibility();
+  }
+
+  function setGraphRevealActive(active) {
+    document.body.classList.toggle('field-graph-revealing', !!active);
+    syncGraphCanvasVisibility();
+  }
+
+  function graphOverlayActive() {
+    return document.body.classList.contains('field-graph-focused') ||
+      document.body.classList.contains('field-graph-revealing');
+  }
+
+  function syncGraphCanvasVisibility() {
+    const canvas = document.getElementById('graph-canvas');
+    if (!canvas) return;
+    const visible = graphOverlayActive();
+    canvas.style.display = visible ? 'block' : 'none';
+    canvas.style.opacity = visible ? '' : '0';
+    if (!visible) {
+      const ctx = canvas.getContext('2d');
+      ctx?.clearRect(0, 0, canvas.width || 0, canvas.height || 0);
+    }
+  }
+
+  function hideGraphOverlay() {
+    setGraphFocusActive(false);
+    setGraphRevealActive(false);
+    syncGraphCanvasVisibility();
+  }
+
+  function clearFieldReveal(bundle) {
+    if (fieldRevealTimer) {
+      clearTimeout(fieldRevealTimer);
+      fieldRevealTimer = null;
+    }
+    if (bundle) bundle.fieldReveal = null;
+    setGraphRevealActive(false);
+  }
+
+  function projectFieldDot(sim) {
+    if (!sim) return null;
+    const api = window.ADAI_FIELD_STUDY;
+    if (api?.projectBrandPoint) {
+      return api.projectBrandPoint(sim.bx, sim.by, sim.bRad);
+    }
+    return { x: sim.x, y: sim.y, radius: sim.r || sim.baseR || 2, scale: 1 };
+  }
+
+  function projectFieldAnchor(anchor) {
+    if (!anchor) return null;
+    const api = window.ADAI_FIELD_STUDY;
+    if (api?.projectBrandPoint) {
+      return api.projectBrandPoint(anchor.x, anchor.y, anchor.radius);
+    }
+    return { x: anchor.x, y: anchor.y, radius: anchor.radius || 2, scale: 1 };
+  }
+
+  function projectInPlaceItem(item) {
+    return projectFieldAnchor(item.fieldAnchor) || projectFieldDot(item.sim);
+  }
+
+  function visiblePoint(p, width, height, margin = 72) {
+    return !!p && p.x >= -margin && p.x <= width + margin && p.y >= -margin && p.y <= height + margin;
+  }
+
+  function fieldRegistryDots() {
+    return Array.isArray(window.__adaiDotRegistry) ? window.__adaiDotRegistry : [];
+  }
+
+  function buildInPlaceNeighbors(graph, bundle, focusedId) {
+    const groups = gatherNeighborsByType(graph, focusedId);
+    const out = [];
+    for (const group of groups) {
+      for (const item of group.items) {
+        const sim = bundle.simById?.get(item.id);
+        if (!sim) continue;
+        out.push({
+          ...item,
+          sim,
+          alpha: 1,
+          r: CFG.ZOOM_NEIGHBOR_RADIUS
+        });
+      }
+    }
+    return out;
+  }
+
+  function orderedInPlaceNeighbors(graph, bundle, width, height) {
+    const neighbors = bundle.inPlaceNeighbors || [];
+    if (neighbors.length <= 1) return { neighbors, layout: null, desiredById: new Map() };
+
+    const layout = computeLayoutFor(graph, bundle.focusedId, width, height);
+    const itemById = new Map(neighbors.map(item => [item.id, item]));
+    const desiredById = new Map();
+    const ordered = [];
+
+    for (const desired of layout.neighbors || []) {
+      desiredById.set(desired.id, desired);
+      const item = itemById.get(desired.id);
+      if (item) ordered.push(item);
+    }
+    for (const item of neighbors) {
+      if (!desiredById.has(item.id)) ordered.push(item);
+    }
+
+    return { neighbors: ordered, layout, desiredById };
+  }
+
+  function visibleAnchoredNeighbors(bundle, width, height) {
+    const visible = [];
+    for (const item of bundle.inPlaceNeighbors || []) {
+      const point = projectInPlaceItem(item);
+      if (visiblePoint(point, width, height, CFG.IN_PLACE_ANCHOR_MARGIN)) {
+        visible.push({ item, point });
+      } else {
+        item.labelBBox = null;
+      }
+    }
+    bundle.inPlaceVisibleNeighbors = visible;
+    return visible;
+  }
+
+  function tangentFromField(point, candidates) {
+    const maxR = CFG.IN_PLACE_CURVE_NEAR_RADIUS;
+    const maxD2 = maxR * maxR;
+    let xx = 0;
+    let xy = 0;
+    let yy = 0;
+    let count = 0;
+
+    for (const c of candidates) {
+      const p = c.point;
+      const dx = p.x - point.x;
+      const dy = p.y - point.y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 < 1 || d2 > maxD2) continue;
+
+      const w = 1 - d2 / maxD2;
+      xx += dx * dx * w;
+      xy += dx * dy * w;
+      yy += dy * dy * w;
+      count++;
+    }
+
+    if (count < 4) return null;
+    const angle = 0.5 * Math.atan2(2 * xy, xx - yy);
+    return { x: Math.cos(angle), y: Math.sin(angle) };
+  }
+
+  function orientTangent(tangent, from, to) {
+    if (!tangent) return null;
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const dot = tangent.x * dx + tangent.y * dy;
+    return dot < 0 ? { x: -tangent.x, y: -tangent.y } : tangent;
+  }
+
+  function buildFieldCurve(focusPoint, point, candidates, width, height) {
+    const dx = point.x - focusPoint.x;
+    const dy = point.y - focusPoint.y;
+    const distance = Math.hypot(dx, dy);
+    if (distance < 3) return null;
+
+    let t1 = orientTangent(tangentFromField(focusPoint, candidates), focusPoint, point);
+    let t2 = orientTangent(tangentFromField(point, candidates), focusPoint, point);
+    if (!t1 && !t2) {
+      const normal = { x: -dy / distance, y: dx / distance };
+      const centerX = width / 2;
+      const centerY = height / 2;
+      const sign = Math.sign((focusPoint.x - centerX) * dy - (focusPoint.y - centerY) * dx) || 1;
+      t1 = { x: dx / distance + normal.x * 0.85 * sign, y: dy / distance + normal.y * 0.85 * sign };
+      t2 = t1;
+    } else if (!t1) {
+      t1 = t2;
+    } else if (!t2) {
+      t2 = t1;
+    }
+
+    const l1 = Math.hypot(t1.x, t1.y) || 1;
+    const l2 = Math.hypot(t2.x, t2.y) || 1;
+    t1 = { x: t1.x / l1, y: t1.y / l1 };
+    t2 = { x: t2.x / l2, y: t2.y / l2 };
+
+    const control = clamp(distance * CFG.IN_PLACE_CURVE_CONTROL_SCALE, 28, 180);
+    let c1x = focusPoint.x + t1.x * control;
+    let c1y = focusPoint.y + t1.y * control;
+    let c2x = point.x - t2.x * control;
+    let c2y = point.y - t2.y * control;
+
+    const midX = (focusPoint.x + point.x) / 2;
+    const midY = (focusPoint.y + point.y) / 2;
+    const curveMidX = (focusPoint.x + 3 * c1x + 3 * c2x + point.x) / 8;
+    const curveMidY = (focusPoint.y + 3 * c1y + 3 * c2y + point.y) / 8;
+    const bend = Math.hypot(curveMidX - midX, curveMidY - midY);
+    if (bend < CFG.IN_PLACE_CURVE_MIN_BEND) {
+      const normal = { x: -dy / distance, y: dx / distance };
+      const sign = Math.sign((point.x - width / 2) * dy - (point.y - height / 2) * dx) || 1;
+      const extra = CFG.IN_PLACE_CURVE_MIN_BEND - bend;
+      c1x += normal.x * extra * sign;
+      c1y += normal.y * extra * sign;
+      c2x += normal.x * extra * sign;
+      c2y += normal.y * extra * sign;
+    }
+
+    return { c1x, c1y, c2x, c2y };
+  }
+
+  function strokeFieldCurve(ctx, focusPoint, point, curve) {
+    ctx.beginPath();
+    ctx.moveTo(focusPoint.x, focusPoint.y);
+    if (curve) {
+      ctx.bezierCurveTo(curve.c1x, curve.c1y, curve.c2x, curve.c2y, point.x, point.y);
+    } else {
+      ctx.lineTo(point.x, point.y);
+    }
+    ctx.stroke();
+  }
+
+  function labelHeight() {
+    return CFG.NAME_TEXT_SIZE + CFG.LABEL_PAD_Y * 2;
+  }
+
+  function rectsOverlap(a, b, gap = CFG.LABEL_GAP) {
+    return !(
+      a.x1 + gap <= b.x0 ||
+      a.x0 - gap >= b.x1 ||
+      a.y1 + gap <= b.y0 ||
+      a.y0 - gap >= b.y1
+    );
+  }
+
+  function rectInBounds(rect, width, height) {
+    return rect.x0 >= CFG.LABEL_MARGIN &&
+      rect.y0 >= CFG.LABEL_MARGIN &&
+      rect.x1 <= width - CFG.LABEL_MARGIN &&
+      rect.y1 <= height - CFG.LABEL_MARGIN;
+  }
+
+  function rectHitsAny(rect, occupied) {
+    return occupied.some(other => rectsOverlap(rect, other));
+  }
+
+  function clipLabelText(ctx, text, maxWidth = CFG.LABEL_MAX_WIDTH) {
+    const value = String(text || '');
+    if (ctx.measureText(value).width <= maxWidth) return value;
+    const ellipsis = '...';
+    let lo = 0;
+    let hi = value.length;
+    while (lo < hi) {
+      const mid = Math.ceil((lo + hi) / 2);
+      if (ctx.measureText(value.slice(0, mid) + ellipsis).width <= maxWidth) lo = mid;
+      else hi = mid - 1;
+    }
+    return value.slice(0, Math.max(1, lo)).trimEnd() + ellipsis;
+  }
+
+  function makeLabelRect(x, y, textWidth, align) {
+    const paddedWidth = textWidth + CFG.LABEL_PAD_X * 2;
+    const h = labelHeight();
+    let x0 = x - CFG.LABEL_PAD_X;
+    if (align === 'right') x0 = x - textWidth - CFG.LABEL_PAD_X;
+    if (align === 'center') x0 = x - textWidth / 2 - CFG.LABEL_PAD_X;
+    return {
+      x0,
+      y0: y - h / 2,
+      x1: x0 + paddedWidth,
+      y1: y + h / 2,
+      textX: align === 'right' ? x : align === 'center' ? x : x,
+      textY: y,
+      align,
+    };
+  }
+
+  function reserveLabel(occupied, rect) {
+    occupied.push({ x0: rect.x0, y0: rect.y0, x1: rect.x1, y1: rect.y1 });
+  }
+
+  function labelBudget(width, height, candidateCount) {
+    const areaBudget = Math.floor((width * height) / 52000);
+    const max = candidateCount > 36 ? CFG.LABEL_DENSE_MAX_VISIBLE : CFG.LABEL_MAX_VISIBLE;
+    return clamp(areaBudget, 10, max);
+  }
+
+  function labelPriority(item, point, focusPoint) {
+    const directBonus = item.source === 'embedding' ? 0 : 120;
+    const confidence = { high: 30, medium: 18, low: 8, unverified: 0 }[item.edgeConfidence] || 0;
+    const typeBonus = {
+      CREATED_BY: 36,
+      COLLABORATES_WITH: 28,
+      BELONGS_TO: 22,
+      EXHIBITED_AT: 18,
+      STYLE_KIN: 14,
+      SUGGESTS_CREATED_BY: 14,
+      VISUALLY_AFFINE: 8,
+      STYLE_PROXIMITY: 6,
+    }[item.edgeType] || 4;
+    const similarity = typeof item.similarity === 'number' ? item.similarity * 20 : 0;
+    const distancePenalty = focusPoint && point ? Math.hypot(point.x - focusPoint.x, point.y - focusPoint.y) / 120 : 0;
+    return directBonus + confidence + typeBonus + similarity - distancePenalty;
+  }
+
+  function roundedRectPath(ctx, rect, radius = 3) {
+    const r = Math.min(radius, (rect.x1 - rect.x0) / 2, (rect.y1 - rect.y0) / 2);
+    ctx.beginPath();
+    ctx.moveTo(rect.x0 + r, rect.y0);
+    ctx.lineTo(rect.x1 - r, rect.y0);
+    ctx.quadraticCurveTo(rect.x1, rect.y0, rect.x1, rect.y0 + r);
+    ctx.lineTo(rect.x1, rect.y1 - r);
+    ctx.quadraticCurveTo(rect.x1, rect.y1, rect.x1 - r, rect.y1);
+    ctx.lineTo(rect.x0 + r, rect.y1);
+    ctx.quadraticCurveTo(rect.x0, rect.y1, rect.x0, rect.y1 - r);
+    ctx.lineTo(rect.x0, rect.y0 + r);
+    ctx.quadraticCurveTo(rect.x0, rect.y0, rect.x0 + r, rect.y0);
+  }
+
+  function drawReadableLabel(ctx, placed, alpha = 0.78, backingAlpha = 1) {
+    ctx.save();
+    roundedRectPath(ctx, placed, 3);
+    ctx.fillStyle = '#050506';
+    ctx.globalAlpha = CFG.LABEL_BG_ALPHA * backingAlpha;
+    ctx.fill();
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.globalAlpha = CFG.LABEL_STROKE_ALPHA * backingAlpha;
+    ctx.lineWidth = 0.75;
+    ctx.stroke();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.textAlign = placed.align;
+    ctx.textBaseline = 'middle';
+    ctx.fillText(placed.label, placed.textX, placed.textY);
+    ctx.restore();
+  }
+
+  function placeLabel(ctx, text, point, preferredVector, width, height, occupied, options = {}) {
+    const label = clipLabelText(ctx, text);
+    const textWidth = ctx.measureText(label).width;
+    const baseOffset = (options.radius || 0) + CFG.LABEL_DOT_CLEARANCE;
+    const vx = preferredVector?.x || 1;
+    const vy = preferredVector?.y || 0;
+    const len = Math.hypot(vx, vy) || 1;
+    const ux = vx / len;
+    const uy = vy / len;
+    const nx = -uy;
+    const ny = ux;
+    const directions = [
+      { x: ux, y: uy },
+      { x: ux * 0.78 + nx * 0.62, y: uy * 0.78 + ny * 0.62 },
+      { x: ux * 0.78 - nx * 0.62, y: uy * 0.78 - ny * 0.62 },
+      { x: nx, y: ny },
+      { x: -nx, y: -ny },
+      { x: -ux * 0.45 + nx * 0.9, y: -uy * 0.45 + ny * 0.9 },
+      { x: -ux * 0.45 - nx * 0.9, y: -uy * 0.45 - ny * 0.9 },
+      { x: -ux, y: -uy },
+    ];
+    const distances = [baseOffset, baseOffset + 12, baseOffset + 28, baseOffset + 46];
+
+    let best = null;
+    let bestScore = Infinity;
+    for (const dir of directions) {
+      const dLen = Math.hypot(dir.x, dir.y) || 1;
+      const dx = dir.x / dLen;
+      const dy = dir.y / dLen;
+      const align = Math.abs(dx) < 0.22 ? 'center' : dx >= 0 ? 'left' : 'right';
+      for (const distance of distances) {
+        const lx = point.x + dx * distance;
+        const ly = point.y + dy * distance;
+        const rect = makeLabelRect(lx, ly, textWidth, align);
+        if (!rectInBounds(rect, width, height)) continue;
+        if (rectHitsAny(rect, occupied)) continue;
+        const score = distance + Math.abs(dy) * 3;
+        if (score < bestScore) {
+          bestScore = score;
+          best = { ...rect, label };
+        }
+      }
+    }
+
+    if (!best) return null;
+    reserveLabel(occupied, best);
+    return best;
+  }
+
+  function refreshInPlaceAnchors(graph, bundle, width, height, focusPoint) {
+    const focusedSim = bundle.simById?.get(bundle.focusedId);
+    if (!focusedSim || !focusPoint) return [];
+
+    const key = [
+      bundle.focusedId,
+      width,
+      height,
+      Math.round(focusPoint.x / 10),
+      Math.round(focusPoint.y / 10),
+      Math.round((focusPoint.scale || 1) * 10)
+    ].join(':');
+    if (bundle.inPlaceAnchorKey === key && Array.isArray(bundle.inPlaceVisibleNeighbors)) {
+      return visibleAnchoredNeighbors(bundle, width, height);
+    }
+
+    const { neighbors, layout, desiredById } = orderedInPlaceNeighbors(graph, bundle, width, height);
+    const registry = fieldRegistryDots();
+    const candidates = [];
+    const clearance = Math.max(CFG.IN_PLACE_FOCUS_CLEARANCE, clamp(focusPoint.radius, 4, 18) * 3);
+
+    for (let i = 0; i < registry.length; i++) {
+      const dot = registry[i];
+      const x = Number(dot.x);
+      const y = Number(dot.y);
+      const radius = Number(dot.radius);
+      if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(radius) || radius <= 0) continue;
+
+      const point = projectFieldAnchor({ x, y, radius });
+      if (!visiblePoint(point, width, height, CFG.IN_PLACE_ANCHOR_MARGIN)) continue;
+
+      const dx = point.x - focusPoint.x;
+      const dy = point.y - focusPoint.y;
+      const screenDistance = Math.hypot(dx, dy);
+      if (screenDistance < clearance) continue;
+
+      candidates.push({
+        x,
+        y,
+        radius,
+        point,
+        screenDistance,
+        angle: Math.atan2(dy, dx),
+      });
+    }
+
+    candidates.sort((a, b) => a.screenDistance - b.screenDistance);
+
+    const used = new Set();
+    const visible = [];
+    const layoutCx = layout?.cx ?? width / 2;
+    const layoutCy = layout?.cy ?? height / 2;
+
+    for (const item of neighbors) {
+      const desired = desiredById.get(item.id);
+      const dx = desired ? (desired.x - layoutCx) * CFG.IN_PLACE_LAYOUT_SCALE : 0;
+      const dy = desired ? (desired.y - layoutCy) * CFG.IN_PLACE_LAYOUT_SCALE : 0;
+      const targetX = focusPoint.x + dx;
+      const targetY = focusPoint.y + dy;
+      const targetDistance = Math.hypot(dx, dy);
+
+      let bestIdx = -1;
+      let bestScore = Infinity;
+      for (let i = 0; i < candidates.length; i++) {
+        if (used.has(i)) continue;
+        const c = candidates[i];
+        const distanceScore = Math.hypot(c.point.x - targetX, c.point.y - targetY);
+        const radialScore = Math.abs(c.screenDistance - targetDistance) * 0.2;
+        const score = distanceScore + radialScore;
+        if (score < bestScore) {
+          bestScore = score;
+          bestIdx = i;
+        }
+      }
+
+      if (bestIdx >= 0) {
+        used.add(bestIdx);
+        item.fieldAnchor = candidates[bestIdx];
+      } else {
+        item.fieldAnchor = null;
+      }
+
+      const point = projectInPlaceItem(item);
+      if (visiblePoint(point, width, height, CFG.IN_PLACE_ANCHOR_MARGIN)) {
+        item.fieldCurve = buildFieldCurve(focusPoint, point, candidates, width, height);
+        visible.push({ item, point });
+      } else {
+        item.labelBBox = null;
+        item.fieldCurve = null;
+      }
+    }
+
+    bundle.inPlaceAnchorKey = key;
+    bundle.inPlaceVisibleNeighbors = visible;
+    return visible;
+  }
+
+  function drawRevealPick(ctx, point, color, radius, alpha, pulse) {
+    const glowRadius = radius * (3 + pulse * 0.7);
+    ctx.fillStyle = color;
+    ctx.globalAlpha = alpha * 0.15;
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, glowRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = color;
+    ctx.globalAlpha = alpha;
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, radius * (1.72 + pulse * 0.18), 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.globalAlpha = alpha * 0.58;
+    ctx.lineWidth = 0.95;
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, radius * 1.12, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.globalAlpha = alpha * 0.92;
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, Math.max(1.4, radius * 0.24), 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function rgbForHex(hex) {
+    const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || ''));
+    if (!m) return { r: 255, g: 255, b: 255 };
+    const n = parseInt(m[1], 16);
+    return {
+      r: (n >> 16) & 255,
+      g: (n >> 8) & 255,
+      b: n & 255,
+    };
+  }
+
+  function rgbaForHex(hex, alpha) {
+    const { r, g, b } = rgbForHex(hex);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+
+  function drawCentralFocusGlow(ctx, point, radius, accent = '#FFFFFF', pulse = 0.5, alphaScale = 1) {
+    const r = Math.max(radius, 5);
+    const outer = r * CFG.FIELD_FOCUS_GLOW_RADIUS * (1 + pulse * 0.04);
+
+    ctx.save();
+    ctx.globalCompositeOperation = 'screen';
+    const gradient = ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, outer);
+    gradient.addColorStop(0, `rgba(255, 255, 255, ${CFG.FIELD_FOCUS_GLOW_ALPHA * alphaScale})`);
+    gradient.addColorStop(0.22, rgbaForHex(accent, 0.2 * alphaScale));
+    gradient.addColorStop(0.58, rgbaForHex(accent, 0.06 * alphaScale));
+    gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = gradient;
+    ctx.globalAlpha = 1;
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, outer, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.globalAlpha = 0.26 * alphaScale;
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, r * 3.05, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = accent;
+    ctx.globalAlpha = 0.92 * alphaScale;
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, r * (2.18 + pulse * 0.16), 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.strokeStyle = '#FFFFFF';
+    ctx.globalAlpha = alphaScale;
+    ctx.lineWidth = 1.45;
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, r * 1.42, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.globalAlpha = 0.96 * alphaScale;
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, Math.max(2.2, r * 0.32), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawInPlaceReveal(ctx, bundle, graph, width, height, filterMatch, revealAlpha = 1, revealState = bundle.fieldReveal) {
+    const focusedSim = bundle.simById?.get(bundle.focusedId);
+    const focusPoint = projectFieldDot(focusedSim);
+    if (!visiblePoint(focusPoint, width, height, 140)) return;
+
+    const startedAt = revealState?.startedAt || performance.now();
+    const elapsed = performance.now() - startedAt;
+    const visibleNeighbors = refreshInPlaceAnchors(graph, bundle, width, height, focusPoint);
+    const focusRadius = clamp(focusPoint.radius, 4, 18);
+    const pulse = 0.5 + 0.5 * Math.sin(elapsed / 120);
+
+    const picked = visibleNeighbors
+      .filter(({ item }) => filterMatch(item))
+      .sort((a, b) => labelPriority(b.item, b.point, focusPoint) - labelPriority(a.item, a.point, focusPoint))
+      .slice(0, CFG.FIELD_REVEAL_MAX_NODES);
+
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    drawCentralFocusGlow(ctx, focusPoint, focusRadius * 1.15, colorForType(focusedSim?.type), pulse, revealAlpha);
+
+    picked.forEach(({ item, point }, index) => {
+      const reveal = clamp((elapsed - index * CFG.FIELD_REVEAL_STAGGER_MS) / 360, 0, 1);
+      if (reveal <= 0) return;
+      const eased = 1 - Math.pow(1 - reveal, 3);
+      const radius = clamp(point.radius, 3, 13);
+      drawRevealPick(ctx, point, item.edgeColor || '#E8E6E1', radius, eased * revealAlpha, pulse);
+    });
+
+    ctx.restore();
+  }
+
+  function focusNodeInPlace(graph, bundle, nodeId, opts = {}) {
+    const node = graph.byId.get(nodeId);
+    if (!node) return;
+    const revealBlend = opts.fromReveal
+      ? {
+          ...(bundle.fieldReveal || {}),
+          focusedId: nodeId,
+          startedAt: bundle.fieldReveal?.startedAt || (performance.now() - CFG.FIELD_REVEAL_MS),
+          focusStartedAt: performance.now(),
+        }
+      : null;
+    clearFieldReveal(bundle);
+    if (!opts.noPush && bundle.focusedId && bundle.focusedId !== nodeId) pushHistory(bundle);
+    bundle.clearHighlights?.();
+    bundle.viewLevel = 'field-focus';
+    bundle.focusedId = nodeId;
+    bundle.zoomFocus = null;
+    bundle.zoomCenter = null;
+    bundle.outgoingNeighbors = [];
+    bundle.transitioning = false;
+    applyDefaultFiltersForMode(bundle);
+    bundle.inPlaceNeighbors = buildInPlaceNeighbors(graph, bundle, nodeId);
+    bundle.zoomNeighbors = bundle.inPlaceNeighbors;
+    bundle.inPlaceAnchorKey = null;
+    bundle.inPlaceVisibleNeighbors = [];
+    bundle.fieldFocusBlend = revealBlend;
+    setGraphFocusActive(true);
+    renderBreadcrumb(bundle, graph);
+    renderEdgeFilter(bundle, graph);
+    renderEmbedStrip(bundle, graph);
+    renderBookmarksStrip(bundle, graph);
+  }
+
+  function revealNodeInPlace(graph, bundle, nodeId, opts = {}) {
+    const node = graph.byId.get(nodeId);
+    if (!node) return;
+    clearFieldReveal(bundle);
+    if (!opts.noPush && bundle.focusedId && bundle.focusedId !== nodeId) pushHistory(bundle);
+    bundle.clearHighlights?.();
+    bundle.viewLevel = 'field-reveal';
+    bundle.focusedId = nodeId;
+    bundle.zoomFocus = null;
+    bundle.zoomCenter = null;
+    bundle.outgoingNeighbors = [];
+    bundle.transitioning = false;
+    applyDefaultFiltersForMode(bundle);
+    bundle.inPlaceNeighbors = buildInPlaceNeighbors(graph, bundle, nodeId);
+    bundle.zoomNeighbors = bundle.inPlaceNeighbors;
+    bundle.inPlaceAnchorKey = null;
+    bundle.inPlaceVisibleNeighbors = [];
+    bundle.fieldReveal = {
+      focusedId: nodeId,
+      startedAt: performance.now(),
+    };
+    setGraphFocusActive(false);
+    setGraphRevealActive(true);
+    renderBreadcrumb(bundle, graph);
+    renderEdgeFilter(bundle, graph);
+    renderEmbedStrip(bundle, graph);
+    renderBookmarksStrip(bundle, graph);
+
+    fieldRevealTimer = setTimeout(() => {
+      fieldRevealTimer = null;
+      if (bundle.fieldReveal?.focusedId !== nodeId) return;
+      focusNodeInPlace(graph, bundle, nodeId, { ...opts, noPush: true, fromReveal: true });
+    }, CFG.FIELD_REVEAL_MS);
+  }
+
+  function clearInPlaceFocus(bundle, graph) {
+    clearFieldReveal(bundle);
+    bundle.fieldFocusBlend = null;
+    bundle.viewLevel = '30k';
+    bundle.focusedId = null;
+    bundle.zoomNeighbors = [];
+    bundle.inPlaceNeighbors = [];
+    bundle.inPlaceAnchorKey = null;
+    bundle.inPlaceVisibleNeighbors = [];
+    bundle.zoomFocus = null;
+    bundle.zoomCenter = null;
+    bundle.transitioning = false;
+    hideGraphOverlay();
+    renderBreadcrumb(bundle, graph);
+    renderEdgeFilter(bundle, graph);
+    renderEmbedStrip(bundle, graph);
+    renderBookmarksStrip(bundle, graph);
+  }
+
+  function drawInPlaceFocus(ctx, bundle, graph, width, height, filterMatch, dimmedAlpha, focusAlpha = 1) {
+    const focusedSim = bundle.simById?.get(bundle.focusedId);
+    const focusPoint = projectFieldDot(focusedSim);
+    if (!visiblePoint(focusPoint, width, height, 140)) return;
+
+    const focusRadius = clamp(focusPoint.radius, 4, 18);
+    const visibleNeighbors = refreshInPlaceAnchors(graph, bundle, width, height, focusPoint);
+
+    ctx.save();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
+    for (const { item, point } of visibleNeighbors) {
+      const baseA = CFG.EDGE_THREAD_ALPHA;
+      const a = (filterMatch(item) ? baseA : baseA * dimmedAlpha) * focusAlpha;
+      if (a < 0.01) continue;
+      const baseWidth = CFG.EDGE_THREAD_WIDTH_BY_CONFIDENCE[item.edgeConfidence] || CFG.EDGE_THREAD_WIDTH_DEFAULT;
+      applyEdgeThreadStyle(ctx, item, a, baseWidth);
+      strokeFieldCurve(ctx, focusPoint, point, item.fieldCurve);
+    }
+    resetEdgeThreadStyle(ctx);
+
+    for (const { item, point } of visibleNeighbors) {
+      const a = (filterMatch(item) ? 1 : 0.16) * focusAlpha;
+      const r = clamp(point.radius, 3, 13);
+      ctx.globalAlpha = a;
+      ctx.strokeStyle = item.edgeColor || '#E8E6E1';
+      ctx.lineWidth = filterMatch(item) ? 1.65 : 0.85;
+      ctx.beginPath();
+      ctx.arc(point.x, point.y, r * 1.55, 0, Math.PI * 2);
+      ctx.stroke();
+
+      if (!filterMatch(item)) continue;
+      ctx.globalAlpha = 0.32 * focusAlpha;
+      ctx.fillStyle = item.edgeColor || '#E8E6E1';
+      ctx.beginPath();
+      ctx.arc(point.x, point.y, r * 0.72, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.globalAlpha = 0.95 * focusAlpha;
+      ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath();
+      ctx.arc(point.x, point.y, Math.max(1.4, r * 0.28), 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    const focusPulse = 0.5 + 0.5 * Math.sin(performance.now() / 520);
+    drawCentralFocusGlow(ctx, focusPoint, focusRadius, colorForType(focusedSim?.type), focusPulse, focusAlpha);
+
+    if (!bundle.transitioning) {
+      const occupiedLabels = [];
+      const focusNode = graph.byId.get(bundle.focusedId);
+      ctx.font = `13px 'SF Mono', monospace`;
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#FFFFFF';
+      ctx.globalAlpha = focusAlpha;
+      const focusLabel = placeLabel(
+        ctx,
+        focusNode?.name || focusedSim?.name || bundle.focusedId,
+        focusPoint,
+        { x: 0, y: 1 },
+        width,
+        height,
+        occupiedLabels,
+        { radius: focusRadius * 2.55 + 4 }
+      );
+      if (focusLabel) {
+        drawReadableLabel(ctx, focusLabel, focusAlpha, focusAlpha);
+      }
+
+      ctx.font = `${CFG.NAME_TEXT_SIZE}px 'SF Mono', monospace`;
+      ctx.textBaseline = 'middle';
+      const labelItems = visibleNeighbors
+        .filter(({ item }) => filterMatch(item))
+        .sort((a, b) => {
+          return labelPriority(b.item, b.point, focusPoint) - labelPriority(a.item, a.point, focusPoint);
+        })
+        .slice(0, labelBudget(width, height, visibleNeighbors.length));
+      for (const { item, point } of visibleNeighbors) item.labelBBox = null;
+      for (const { item, point } of labelItems) {
+        if (!filterMatch(item)) { item.labelBBox = null; continue; }
+        const dx = point.x - focusPoint.x;
+        const dy = point.y - focusPoint.y;
+        const d = Math.hypot(dx, dy) || 1;
+        const name = item.name || (item.id || '').split(':')[1] || item.id;
+        const placed = placeLabel(
+          ctx,
+          name,
+          point,
+          { x: dx / d, y: dy / d },
+          width,
+          height,
+          occupiedLabels,
+          { radius: clamp(point.radius, 3, 13) }
+        );
+        if (!placed) {
+          item.labelBBox = null;
+          continue;
+        }
+        drawReadableLabel(ctx, placed, 0.98 * focusAlpha, focusAlpha);
+        item.labelBBox = placed;
+      }
+    }
+
+    ctx.restore();
+  }
+
+  function hitInPlaceNode(bundle, x, y, width, height) {
+    const focusSim = bundle.simById?.get(bundle.focusedId);
+    const focusPoint = projectFieldDot(focusSim);
+    if (visiblePoint(focusPoint, width, height, 96)) {
+      const fr = Math.max(clamp(focusPoint.radius, 4, 18) * 2.6, CFG.CLICK_TOLERANCE);
+      const dx = focusPoint.x - x;
+      const dy = focusPoint.y - y;
+      if (dx * dx + dy * dy <= fr * fr) return { id: bundle.focusedId, role: 'focus' };
+    }
+
+    let best = null;
+    let bestD2 = CFG.CLICK_TOLERANCE * CFG.CLICK_TOLERANCE;
+    for (const n of bundle.inPlaceNeighbors || []) {
+      const p = projectInPlaceItem(n);
+      if (!visiblePoint(p, width, height, 80)) continue;
+      const r = Math.max(clamp(p.radius, 3, 13) * 1.8, CFG.CLICK_TOLERANCE);
+      const dx = p.x - x;
+      const dy = p.y - y;
+      const d2 = dx * dx + dy * dy;
+      if (d2 <= r * r && d2 < bestD2) {
+        bestD2 = d2;
+        best = { id: n.id, role: 'neighbor', item: n };
+      }
+    }
+    return best;
+  }
+
   // ---- render loop ----
   async function start(graph) {
     const canvas = ensureCanvas();
@@ -1674,6 +2674,50 @@
     restoreBrandOpacity();
 
     window.ADAI_GRAPH_FIELD = bundle;
+    bundle.simById = new Map(bundle.sim.map(s => [s.id, s]));
+    bundle.brandPointForNode = (id) => {
+      const s = bundle.simById.get(id);
+      if (!s) return null;
+      return { id: s.id, name: s.name, type: s.type, x: s.bx, y: s.by, radius: s.bRad };
+    };
+    bundle.findNearestBrandPoint = (brandX, brandY, opts = {}) => {
+      const maxDistance = Number.isFinite(opts.maxDistance) ? opts.maxDistance : Infinity;
+      let best = null;
+      let bestD2 = maxDistance * maxDistance;
+      for (const s of bundle.sim) {
+        const dx = s.bx - brandX;
+        const dy = s.by - brandY;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < bestD2) {
+          bestD2 = d2;
+          best = s;
+        }
+      }
+      if (!best) return null;
+      return {
+        id: best.id,
+        name: best.name,
+        type: best.type,
+        x: best.bx,
+        y: best.by,
+        radius: best.bRad,
+        distance: Math.sqrt(bestD2)
+      };
+    };
+    bundle.focusNearestBrandPoint = (brandX, brandY, opts = {}) => {
+      const hit = bundle.findNearestBrandPoint(brandX, brandY, opts);
+      if (!hit) return null;
+      revealNodeInPlace(graph, bundle, hit.id, { ...opts, fromFieldStudy: true });
+      return hit;
+    };
+    bundle.focusInPlace = (id, opts = {}) => {
+      if (!id || !graph.byId.has(id)) return;
+      focusNodeInPlace(graph, bundle, id, opts);
+    };
+    bundle.revealInPlace = (id, opts = {}) => {
+      if (!id || !graph.byId.has(id)) return;
+      revealNodeInPlace(graph, bundle, id, opts);
+    };
     // Public navigation API — used by the search palette and other surfaces
     // to zoom into a specific node without synthesising a canvas click.
     bundle.zoomTo = (id, opts = {}) => {
@@ -1700,8 +2744,23 @@
       if (highlightTimer) { clearTimeout(highlightTimer); highlightTimer = null; }
       bundle.highlightedIds = new Set();
     };
-    bundle.zoomToHome = () => {
-      if (!bundle.viewLevel || bundle.viewLevel === '30k') return;
+    bundle.hideOverlay = () => {
+      clearFieldReveal(bundle);
+      hideGraphOverlay();
+    };
+    bundle.zoomToHome = (opts = {}) => {
+      if (!bundle.viewLevel || bundle.viewLevel === '30k') {
+        hideGraphOverlay();
+        clearFieldReveal(bundle);
+        return;
+      }
+      if (opts.syncField !== false) {
+        window.ADAI_FIELD_STUDY?.reset?.({ syncGraph: false });
+      }
+      if (bundle.viewLevel === 'field-focus' || bundle.viewLevel === 'field-reveal') {
+        clearInPlaceFocus(bundle, graph);
+        return;
+      }
       // Same trick the empty-space click uses: collapse history so a single
       // zoomBack walks all the way out.
       bundle.history = [{ level: '30k', focusedId: null }];
@@ -1761,6 +2820,8 @@
       let hit = null;
       if (!bundle.viewLevel || bundle.viewLevel === '30k') {
         hit = nearestSim(bundle, x, y, CFG.CLICK_TOLERANCE);
+      } else if (bundle.viewLevel === 'field-focus') {
+        hit = hitInPlaceNode(bundle, x, y, w, h);
       } else {
         // Only dot proximity counts — labels are not clickable.
         const ns = bundle.zoomNeighbors || [];
@@ -1787,6 +2848,7 @@
     });
 
     canvas.addEventListener('click', (e) => {
+      e.stopPropagation();
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
@@ -1795,6 +2857,26 @@
       if (!bundle.viewLevel || bundle.viewLevel === '30k') {
         const hit = nearestSim(bundle, x, y, CFG.CLICK_TOLERANCE);
         if (hit) zoomToNode(graph, bundle, hit.id, w, h);
+        return;
+      }
+
+      if (bundle.viewLevel === 'field-focus') {
+        const hit = hitInPlaceNode(bundle, x, y, w, h);
+        if (hit?.role === 'focus') {
+          if (window.ADAI_ENTITY_VIEW) window.ADAI_ENTITY_VIEW.open(bundle.focusedId);
+          return;
+        }
+        if (hit?.role === 'neighbor') {
+          if (window.ADAI_FIELD_STUDY?.zoomToNode?.(hit.id) !== false) return;
+          revealNodeInPlace(graph, bundle, hit.id);
+          return;
+        }
+        for (const n of bundle.inPlaceNeighbors || []) {
+          const b = n.labelBBox;
+          if (b && x >= b.x0 && x <= b.x1 && y >= b.y0 && y <= b.y1) return;
+        }
+        window.ADAI_FIELD_STUDY?.reset?.({ syncGraph: false });
+        clearInPlaceFocus(bundle, graph);
         return;
       }
 
@@ -1843,6 +2925,7 @@
         if (b && x >= b.x0 && x <= b.x1 && y >= b.y0 && y <= b.y1) return;
       }
       // True empty space: home to 30k.
+      window.ADAI_FIELD_STUDY?.reset?.({ syncGraph: false });
       bundle.history = [{ level: '30k', focusedId: null }];
       zoomBack(graph, bundle, w, h);
     });
@@ -1859,102 +2942,133 @@
 
     function frame() {
       ctx.clearRect(0, 0, w, h);
+      if (!graphOverlayActive()) {
+        requestAnimationFrame(frame);
+        return;
+      }
       const driftAt30k = (!bundle.viewLevel || bundle.viewLevel === '30k')
         && !bundle.transitioning;
       const drift = driftAt30k ? CFG.DRIFT : 0;
       const hovId = bundle.getHoveredId();
       const selId = bundle.getSelectedId();
       const zoomed = (bundle.viewLevel && bundle.viewLevel !== '30k');
+      const inPlaceFocus = bundle.viewLevel === 'field-focus';
+      const inPlaceReveal = bundle.viewLevel === 'field-reveal';
       const focusedId = bundle.focusedId;
+      const fieldStudy = document.body.classList.contains('field-study-zoomed');
 
       // ---- 30k snapshot layer (always draws, alpha modulated by zoom) ----
       // Two passes: halos first (so cores draw over them), each per-type so
       // the constellation reads as semantic clusters against the spiral.
       // Halos
-      for (let i = 0; i < bundle.sim.length; i++) {
-        const s = bundle.sim[i];
-        if (drift) {
-          s.x += (Math.random() - 0.5) * drift;
-          s.y += (Math.random() - 0.5) * drift;
-        }
-        const alpha = (s.alpha != null ? s.alpha : 1) * CFG.HALO_ALPHA;
-        if (alpha < 0.005) continue;
-        ctx.fillStyle = colorForType(s.type);
-        ctx.globalAlpha = alpha;
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r * CFG.HALO_RADIUS_MULT, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      // Cores
-      for (let i = 0; i < bundle.sim.length; i++) {
-        const s = bundle.sim[i];
-        const alpha = (s.alpha != null ? s.alpha : 1) * CFG.BASE_ALPHA;
-        if (alpha < 0.005) continue;
-        ctx.fillStyle = colorForType(s.type);
-        ctx.globalAlpha = alpha;
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      // Reset fillStyle for any non-snapshot draw paths below that still
-      // assume DOT_HEX is current.
-      ctx.fillStyle = CFG.DOT_HEX;
-
-      // Hover halo (only meaningful at 30k).
-      if (hovId && !zoomed) {
-        const s = bundle.sim.find(x => x.id === hovId);
-        if (s) {
+      if (!fieldStudy) {
+        for (let i = 0; i < bundle.sim.length; i++) {
+          const s = bundle.sim[i];
+          if (drift) {
+            s.x += (Math.random() - 0.5) * drift;
+            s.y += (Math.random() - 0.5) * drift;
+          }
+          const focusDim = inPlaceFocus ? CFG.FIELD_FOCUS_BACKGROUND_ALPHA : 1;
+          const alpha = (s.alpha != null ? s.alpha : 1) * CFG.HALO_ALPHA * focusDim;
+          if (alpha < 0.005) continue;
           ctx.fillStyle = colorForType(s.type);
-          ctx.globalAlpha = CFG.HOVER_HALO_ALPHA;
+          ctx.globalAlpha = alpha;
           ctx.beginPath();
-          ctx.arc(s.x, s.y, s.r * CFG.HALO_RADIUS_MULT * 1.1, 0, Math.PI * 2);
+          ctx.arc(s.x, s.y, s.r * CFG.HALO_RADIUS_MULT, 0, Math.PI * 2);
           ctx.fill();
         }
-      }
-      // Selected halo (also only at 30k — at 10k the focused IS the centre).
-      if (selId && !zoomed) {
-        const s = bundle.sim.find(x => x.id === selId);
-        if (s) {
-          const col = colorForType(s.type);
-          ctx.fillStyle = col;
-          ctx.globalAlpha = CFG.SELECTED_HALO_ALPHA;
+        // Cores
+        for (let i = 0; i < bundle.sim.length; i++) {
+          const s = bundle.sim[i];
+          const focusDim = inPlaceFocus ? CFG.FIELD_FOCUS_BACKGROUND_ALPHA : 1;
+          const alpha = (s.alpha != null ? s.alpha : 1) * CFG.BASE_ALPHA * focusDim;
+          if (alpha < 0.005) continue;
+          ctx.fillStyle = colorForType(s.type);
+          ctx.globalAlpha = alpha;
           ctx.beginPath();
-          ctx.arc(s.x, s.y, s.r * CFG.HALO_RADIUS_MULT * 1.25, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = '#FFFFFF';
-          ctx.globalAlpha = 1;
-          ctx.beginPath();
-          ctx.arc(s.x, s.y, s.r * 1.15, 0, Math.PI * 2);
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
           ctx.fill();
         }
-      }
-      // Archivist-driven highlights — a soft pulsing ring on each highlighted
-      // sim dot. Auto-cleared after the TTL set when the set was installed.
-      // Drawn only at 30k where the field actually has sim dots; at zoomed
-      // levels the focused/neighbour rendering already foregrounds the relevant
-      // nodes, so the ring would just be visual noise.
-      if (bundle.highlightedIds && bundle.highlightedIds.size > 0 && !zoomed) {
-        const pulse = 0.55 + 0.35 * Math.sin(Date.now() / 380);
-        for (const s of bundle.sim) {
-          if (!bundle.highlightedIds.has(s.id)) continue;
-          ctx.strokeStyle = '#E8E6E1';
-          ctx.globalAlpha = pulse;
-          ctx.lineWidth = 1.4;
-          ctx.beginPath();
-          ctx.arc(s.x, s.y, s.r * 3.5, 0, Math.PI * 2);
-          ctx.stroke();
+        // Reset fillStyle for any non-snapshot draw paths below that still
+        // assume DOT_HEX is current.
+        ctx.fillStyle = CFG.DOT_HEX;
+
+        // Hover halo (only meaningful at 30k).
+        if (hovId && !zoomed) {
+          const s = bundle.sim.find(x => x.id === hovId);
+          if (s) {
+            ctx.fillStyle = colorForType(s.type);
+            ctx.globalAlpha = CFG.HOVER_HALO_ALPHA;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.r * CFG.HALO_RADIUS_MULT * 1.1, 0, Math.PI * 2);
+            ctx.fill();
+          }
         }
-        ctx.lineWidth = 1;
+        // Selected halo (also only at 30k — at 10k the focused IS the centre).
+        if (selId && !zoomed) {
+          const s = bundle.sim.find(x => x.id === selId);
+          if (s) {
+            const col = colorForType(s.type);
+            ctx.fillStyle = col;
+            ctx.globalAlpha = CFG.SELECTED_HALO_ALPHA;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.r * CFG.HALO_RADIUS_MULT * 1.25, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#FFFFFF';
+            ctx.globalAlpha = 1;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.r * 1.15, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+        // Archivist-driven highlights — a soft pulsing ring on each highlighted
+        // sim dot. Auto-cleared after the TTL set when the set was installed.
+        // Drawn only at 30k where the field actually has sim dots; at zoomed
+        // levels the focused/neighbour rendering already foregrounds the relevant
+        // nodes, so the ring would just be visual noise.
+        if (bundle.highlightedIds && bundle.highlightedIds.size > 0 && !zoomed) {
+          const pulse = 0.55 + 0.35 * Math.sin(Date.now() / 380);
+          for (const s of bundle.sim) {
+            if (!bundle.highlightedIds.has(s.id)) continue;
+            ctx.strokeStyle = '#E8E6E1';
+            ctx.globalAlpha = pulse;
+            ctx.lineWidth = 1.4;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.r * 3.5, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+          ctx.lineWidth = 1;
+        }
+        ctx.fillStyle = CFG.DOT_HEX;
       }
-      ctx.fillStyle = CFG.DOT_HEX;
 
       // ---- 10k / 5k zoom layer ----
       const inTransition = bundle.transitioning;
-      const showZoom = zoomed || (inTransition && bundle.zoomNeighbors && bundle.zoomNeighbors.length);
+      const showZoom = !inPlaceFocus && !inPlaceReveal && (zoomed || (inTransition && bundle.zoomNeighbors && bundle.zoomNeighbors.length));
       const filters = bundle.activeFilters;
       const filtersActive = filters && filters.size > 0;
       const filterMatch = (n) => !filtersActive || filters.has(n.edgeType);
       const dimmedAlpha = 0.12;  // for filtered-out neighbours
+      const focusBlend = inPlaceFocus && bundle.fieldFocusBlend?.focusedId === focusedId
+        ? bundle.fieldFocusBlend
+        : null;
+      let focusAlpha = 1;
+      let revealAlpha = 0;
+      if (focusBlend) {
+        const blendT = clamp((performance.now() - focusBlend.focusStartedAt) / CFG.FIELD_REVEAL_TO_FOCUS_MS, 0, 1);
+        focusAlpha = easeInOutCubic(blendT);
+        revealAlpha = 1 - focusAlpha;
+        if (blendT >= 1) bundle.fieldFocusBlend = null;
+      }
+      if (inPlaceReveal) {
+        drawInPlaceReveal(ctx, bundle, graph, w, h, filterMatch);
+      }
+      if (focusBlend && revealAlpha > 0.01) {
+        drawInPlaceReveal(ctx, bundle, graph, w, h, filterMatch, revealAlpha, focusBlend);
+      }
+      if (inPlaceFocus) {
+        drawInPlaceFocus(ctx, bundle, graph, w, h, filterMatch, dimmedAlpha, focusAlpha);
+      }
       if (showZoom && bundle.zoomCenter) {
         // Focus position: if practitioner (in sim) use that; else use zoomFocus
         const simFocus = bundle.sim.find(x => x.id === focusedId);
@@ -1991,14 +3105,14 @@
           const baseA = (n.alpha != null ? n.alpha : 1) * CFG.EDGE_THREAD_ALPHA;
           const a = filterMatch(n) ? baseA : baseA * dimmedAlpha;
           if (a < 0.01) continue;
-          ctx.lineWidth = CFG.EDGE_THREAD_WIDTH_BY_CONFIDENCE[n.edgeConfidence] || CFG.EDGE_THREAD_WIDTH_DEFAULT;
-          ctx.strokeStyle = n.edgeColor;
-          ctx.globalAlpha = a;
+          const baseWidth = CFG.EDGE_THREAD_WIDTH_BY_CONFIDENCE[n.edgeConfidence] || CFG.EDGE_THREAD_WIDTH_DEFAULT;
+          applyEdgeThreadStyle(ctx, n, a, baseWidth);
           ctx.beginPath();
           ctx.moveTo(cx, cy);
           ctx.lineTo(n.tx ?? n.x, n.ty ?? n.y);
           ctx.stroke();
         }
+        resetEdgeThreadStyle(ctx);
 
         // Neighbour halos
         ctx.fillStyle = CFG.DOT_HEX;
@@ -2039,7 +3153,36 @@
           ctx.font = `${CFG.NAME_TEXT_SIZE}px 'SF Mono', monospace`;
           ctx.textBaseline = 'middle';
           ctx.fillStyle = '#FFFFFF';
-          for (const n of bundle.zoomNeighbors) {
+          const occupiedLabels = [];
+          if (focus) {
+            const focusNode = graph.byId.get(focusedId);
+            const focusImg = getImageFor(focusNode);
+            const heroR = focusImg ? CFG.THUMB_HERO_RADIUS : (focus.r || 0);
+            ctx.font = `13px 'SF Mono', monospace`;
+            const focusName = focusNode?.name || focus.name || focusedId;
+            const focusLabel = clipLabelText(ctx, focusName);
+            const focusWidth = ctx.measureText(focusLabel).width;
+            const focusRect = makeLabelRect(focus.x, focus.y + heroR + (focusImg ? 22 : 12), focusWidth, 'center');
+            if (rectInBounds(focusRect, w, h)) reserveLabel(occupiedLabels, focusRect);
+            ctx.font = `${CFG.NAME_TEXT_SIZE}px 'SF Mono', monospace`;
+          }
+          for (const n of bundle.zoomNeighbors) n.labelBBox = null;
+          const legacyLabelItems = bundle.zoomNeighbors
+            .filter(n => {
+              const baseA = (n.alpha != null ? n.alpha : 1) * CFG.NAME_TEXT_ALPHA;
+              const a = filterMatch(n) ? baseA : baseA * dimmedAlpha;
+              return a >= 0.05;
+            })
+            .sort((a, b) => {
+              const ax = a.tx ?? a.x;
+              const ay = a.ty ?? a.y;
+              const bx = b.tx ?? b.x;
+              const by = b.ty ?? b.y;
+              return labelPriority(b, { x: bx, y: by }, { x: cx, y: cy }) -
+                labelPriority(a, { x: ax, y: ay }, { x: cx, y: cy });
+            })
+            .slice(0, labelBudget(w, h, bundle.zoomNeighbors.length));
+          for (const n of legacyLabelItems) {
             const baseA = (n.alpha != null ? n.alpha : 1) * CFG.NAME_TEXT_ALPHA;
             const a = filterMatch(n) ? baseA : baseA * dimmedAlpha;
             if (a < 0.05) { n.labelBBox = null; continue; }
@@ -2053,18 +3196,20 @@
             const labelOff = (nNode && getImageFor(nNode))
               ? thumbPetalRadiusFor(n.groupArtworkCount || 1) + 6
               : 10;
-            const lx = nx + (dx / d) * labelOff;
-            const ly = ny + (dy / d) * labelOff;
-            const align = dx >= 0 ? 'left' : 'right';
-            ctx.textAlign = align;
             const name = n.name || (n.id || '').split(':')[1] || n.id;
-            ctx.fillText(name, lx, ly);
-            // Cache label bounding rect for click hit-testing
-            const m = ctx.measureText(name);
-            const half = CFG.NAME_TEXT_SIZE * 0.7;
-            const x0 = align === 'left' ? lx : lx - m.width;
-            const x1 = align === 'left' ? lx + m.width : lx;
-            n.labelBBox = { x0, y0: ly - half, x1, y1: ly + half };
+            const placed = placeLabel(
+              ctx,
+              name,
+              { x: nx, y: ny },
+              { x: dx / d, y: dy / d },
+              w,
+              h,
+              occupiedLabels,
+              { radius: labelOff }
+            );
+            if (!placed) continue;
+            drawReadableLabel(ctx, placed, a);
+            n.labelBBox = placed;
           }
         } else {
           for (const n of bundle.zoomNeighbors) n.labelBBox = null;

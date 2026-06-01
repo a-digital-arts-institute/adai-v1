@@ -21,6 +21,12 @@ window.ADAI_EDGE_COLORS = (() => {
     USES_TECHNIQUE:     { hex: '#2A7672', name: 'Jade' },
     INFLUENCES:         { hex: '#8F2D2D', name: 'Oxblood' },
     RELATED_TO:         { hex: '#3A3A3C', name: 'Muted' },  // reserved / 0 rows
+    STYLE_KIN:          { hex: '#7EB8DA', name: 'Pale cobalt' },
+    VISUALLY_AFFINE:    { hex: '#C9A227', name: 'Signal gold' },
+    STYLE_PROXIMITY:    { hex: '#9BA67A', name: 'Muted olive' },
+    SUGGESTS_CREATED_BY:{ hex: '#C77A4A', name: 'Signal rust' },
+    CLOSEST_ARTWORK:    { hex: '#8F8A78', name: 'Warm grey' },
+    EMBEDDING_NEAR:     { hex: '#6E7B8D', name: 'Blue grey' },
   };
   const NEUTRAL = { hex: '#E8E6E1', name: 'Text' };  // dots with no edges
 

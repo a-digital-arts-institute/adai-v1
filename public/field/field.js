@@ -290,15 +290,14 @@
       document.getElementById('myCanvas'),
       document.getElementById('myCanvasOverlay'),
     ].filter(Boolean);
-    const graphCanvas = () => document.getElementById('graph-canvas');
-    const cameraTargets = () => [...fieldCanvases(), graphCanvas()].filter(Boolean);
+    const cameraTargets = () => fieldCanvases();
     let detailCanvas = null;
     let detailCtx = null;
     let detailDpr = 1;
 
     function isUiClick(e) {
       return !!e.target.closest?.(
-        '#chrome, #search-palette, #entity-view, #chat-narrator, #coming-soon, #philosophy, a, button, input, textarea, select, label'
+        '#chrome, #graph-canvas, #search-palette, #entity-view, #chat-narrator, #archivist-bar, #coming-soon, #philosophy, a, button, input, textarea, select, label'
       );
     }
 
@@ -323,6 +322,30 @@
 
     function getVisibleDots() {
       return Array.isArray(window.__adaiDotRegistry) ? window.__adaiDotRegistry : [];
+    }
+
+    function getGraphField() {
+      return window.ADAI_GRAPH_FIELD || null;
+    }
+
+    function findNearestGraphDot(fieldX, fieldY, stageScreenScale) {
+      const graphField = getGraphField();
+      if (!graphField?.findNearestBrandPoint) return null;
+      return graphField.findNearestBrandPoint(fieldX, fieldY, {
+        maxDistance: PICK_SCREEN_RADIUS / Math.max(stageScreenScale, 0.001)
+      });
+    }
+
+    function engageGraphNode(nodeId) {
+      if (!nodeId) return;
+      const graphField = getGraphField();
+      if (graphField?.revealInPlace) {
+        graphField.revealInPlace(nodeId, { fromFieldStudy: true });
+        return;
+      }
+      if (graphField?.focusInPlace) {
+        graphField.focusInPlace(nodeId, { fromFieldStudy: true });
+      }
     }
 
     function constrainCamera(nextCamera) {
@@ -598,6 +621,44 @@
       animationFrame = requestAnimationFrame(tick);
     }
 
+    function zoomToBrandPoint(focusX, focusY, radius, options = {}) {
+      const stage = findStage();
+      if (!stage) return;
+      const rect = stage.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      const stageScreenScale = getStageScreenScale(stage, rect);
+      const dot = Number.isFinite(radius) && radius > 0
+        ? { x: focusX, y: focusY, radius }
+        : findNearestDot(focusX, focusY, stageScreenScale);
+      const zoom = zoomForDot(dot, stageScreenScale);
+
+      document.body.classList.add('field-study-zoomed');
+      document.body.dataset.fieldZoomScale = zoom.scale.toFixed(4);
+      document.body.dataset.fieldZoomRawScale = zoom.rawScale.toFixed(4);
+      document.body.dataset.fieldZoomRadius = dot ? dot.radius.toFixed(4) : '';
+      document.body.dataset.fieldZoomTargetRadius = zoom.targetScreenRadius.toFixed(2);
+      document.body.dataset.fieldGraphNode = options.graphNodeId || '';
+      zoomed = true;
+      animateCamera({
+        scale: zoom.scale,
+        x: stage.offsetWidth / 2 - focusX * zoom.scale,
+        y: stage.offsetHeight / 2 - focusY * zoom.scale
+      }, () => {
+        if (options.syncGraph !== false) engageGraphNode(options.graphNodeId);
+      });
+    }
+
+    function zoomToNode(nodeId, options = {}) {
+      const graphField = getGraphField();
+      const point = graphField?.brandPointForNode?.(nodeId);
+      if (!point) return false;
+      zoomToBrandPoint(point.x, point.y, point.radius, {
+        graphNodeId: nodeId,
+        syncGraph: options.syncGraph
+      });
+      return true;
+    }
+
     function zoomTo(clientX, clientY) {
       const stage = findStage();
       if (!stage) return;
@@ -609,28 +670,26 @@
       const fieldX = (stageX - camera.x) / camera.scale;
       const fieldY = (stageY - camera.y) / camera.scale;
       const stageScreenScale = getStageScreenScale(stage, rect);
-      const dot = findNearestDot(fieldX, fieldY, stageScreenScale);
+      const graphDot = findNearestGraphDot(fieldX, fieldY, stageScreenScale);
+      const dot = graphDot
+        ? { x: graphDot.x, y: graphDot.y, radius: graphDot.radius }
+        : findNearestDot(fieldX, fieldY, stageScreenScale);
       const focusX = dot ? dot.x : fieldX;
       const focusY = dot ? dot.y : fieldY;
-      const zoom = zoomForDot(dot, stageScreenScale);
 
-      document.body.classList.add('field-study-zoomed');
-      document.body.dataset.fieldZoomScale = zoom.scale.toFixed(4);
-      document.body.dataset.fieldZoomRawScale = zoom.rawScale.toFixed(4);
-      document.body.dataset.fieldZoomRadius = dot ? dot.radius.toFixed(4) : '';
-      document.body.dataset.fieldZoomTargetRadius = zoom.targetScreenRadius.toFixed(2);
-      zoomed = true;
-      animateCamera({
-        scale: zoom.scale,
-        x: stage.offsetWidth / 2 - focusX * zoom.scale,
-        y: stage.offsetHeight / 2 - focusY * zoom.scale
+      zoomToBrandPoint(focusX, focusY, dot?.radius, {
+        graphNodeId: graphDot?.id || null
       });
     }
 
-    function reset() {
+    function reset(options = {}) {
       clearDetailCanvas();
+      getGraphField()?.hideOverlay?.();
       if (camera.scale > BITMAP_SCALE_CAP) {
         camera = cameraWithScale(camera, BITMAP_SCALE_CAP);
+      }
+      if (options.syncGraph !== false) {
+        getGraphField()?.zoomToHome?.({ syncField: false });
       }
       animateCamera({ scale: 1, x: 0, y: 0 }, () => {
         cameraTargets().forEach((canvas) => {
@@ -646,8 +705,31 @@
       delete document.body.dataset.fieldZoomRawScale;
       delete document.body.dataset.fieldZoomRadius;
       delete document.body.dataset.fieldZoomTargetRadius;
+      delete document.body.dataset.fieldGraphNode;
       zoomed = false;
     }
+
+    function projectBrandPoint(x, y, radius = 0) {
+      const stage = findStage();
+      if (!stage) return null;
+      const rect = stage.getBoundingClientRect();
+      if (!rect.width || !rect.height) return null;
+      const stageScreenScale = getStageScreenScale(stage, rect);
+      return {
+        x: rect.left + (x * camera.scale + camera.x) * stageScreenScale,
+        y: rect.top + (y * camera.scale + camera.y) * stageScreenScale,
+        radius: radius * camera.scale * stageScreenScale,
+        scale: camera.scale * stageScreenScale
+      };
+    }
+
+    window.ADAI_FIELD_STUDY = {
+      reset,
+      zoomToNode,
+      zoomToBrandPoint,
+      projectBrandPoint,
+      get isZoomed() { return zoomed; }
+    };
 
     document.addEventListener('click', (e) => {
       if (isUiClick(e)) return;

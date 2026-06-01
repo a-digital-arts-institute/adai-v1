@@ -358,13 +358,61 @@ html, body {
   text-shadow: 0 0 10px rgba(var(--signal-rgb), 0.22);
 }
 
-/* Temporary study mode: hide the graph overlay so the generative field can be read alone. */
 #graph-canvas {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#adai-breadcrumb,
+#adai-edge-filter,
+#adai-embed-strip {
+  transition: opacity 520ms ease;
+}
+
+body.field-graph-focused #graph-canvas {
+  opacity: 1;
+  pointer-events: auto !important;
+}
+
+body.field-graph-revealing #graph-canvas {
+  opacity: 1;
+  pointer-events: none !important;
+}
+
+body.field-graph-revealing #mopey,
+body.field-graph-focused #mopey,
+body.field-graph-revealing #field-detail-canvas,
+body.field-graph-focused #field-detail-canvas {
+  transition: opacity 620ms ease !important;
+}
+
+body.field-graph-revealing #adai-breadcrumb,
+body.field-graph-revealing #adai-edge-filter,
+body.field-graph-revealing #adai-embed-strip {
   opacity: 0 !important;
   pointer-events: none !important;
 }
-body.field-study-zoomed #graph-canvas {
-  opacity: 0 !important;
+
+body.field-graph-focused #adai-breadcrumb,
+body.field-graph-focused #adai-edge-filter,
+body.field-graph-focused #adai-embed-strip {
+  opacity: 1;
+}
+
+body.field-graph-revealing #mopey {
+  opacity: 0.32 !important;
+}
+
+body.field-graph-revealing #field-detail-canvas {
+  opacity: 0.24 !important;
+}
+
+body.field-graph-focused #mopey {
+  opacity: 0.14 !important;
+}
+
+body.field-graph-focused #field-detail-canvas {
+  opacity: 0.055 !important;
 }
 
 /* ---- Responsive ---- */
