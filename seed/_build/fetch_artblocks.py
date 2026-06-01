@@ -1,245 +1,223 @@
 #!/usr/bin/env python3
+"""fetch_artblocks.py — Gather generative artworks + creators from Art Blocks.
+
+Source: ``https://data.artblocks.io/v1/graphql`` (public Hasura, no auth).
+
+Scope: the three CORE Art Blocks contracts (V0/V1/V3). Engine / PBAB
+deployments are excluded — they're individually curated and outside the
+Art Blocks editorial line that the platform represents.
+
+What it emits, source-attested only:
+  - ``artwork`` nodes — one per project. Title = ``projects_metadata.name``.
+  - ``practitioner`` nodes — one per distinct ``artist_name``.
+  - ``platform:art-blocks`` — the platform node.
+  - ``CREATED_BY`` edges — artwork → practitioner.
+  - ``EXHIBITED_AT`` edges — artwork → platform:art-blocks (genesis platform).
+  - Aliases:
+      ``(artblocks, contract:project_id)`` → artwork
+      ``(artblocks_artist, normalized_name)`` → practitioner (weak; no stable id)
+
+Thumbnail URL: ``https://media.artblocks.io/thumb/{token_id}.png`` where
+``token_id = project_id * 1_000_000`` (first mint of the project).
+
+Run:
+    python3 seed/_build/fetch_artblocks.py [--limit N]
 """
-Fetch Art Blocks thumbnail images for artworks already in seed/nodes.json.
+from __future__ import annotations
 
-Strategy
---------
-For each practitioner that has at least one artwork (via CREATED_BY edges),
-query the public Art Blocks Hasura GraphQL endpoint for projects where that
-artist matches. Restrict to the three core Art Blocks contracts (V0/V1/V3).
-Fuzzy-match returned project names against the practitioner's artwork nodes
-and emit an image patch only for artworks that already exist AND whose
-CREATED_BY edge confirms the right creator.
-
-Thumbnail URL
--------------
-Art Blocks' per-token media bucket serves a PNG at
-  https://media.artblocks.io/thumb/{TOKEN_ID}.png
-TOKEN_ID for the first mint of a project is project_id * 1_000_000.
-Example: project 78 (Fidenza, V1) → 78_000_000 → thumb/78000000.png.
-Project 0 (Chromie Squiggle) → 0 → thumb/0.png (no zero-padding).
-
-Output: seed/_build/image_patches/artblocks.json
-Shape:
-  [{"node_id": "artwork:...", "image_url": "...",
-    "image_license": "Art Blocks (verify per project license)",
-    "image_source": "artblocks",
-    "artblocks_contract": "0x...", "artblocks_project_id": "78",
-    "artblocks_token_id": "78000000", "match_method": "exact|fuzzy",
-    "matched_title_ab": "...", "artist_name_ab": "..."}]
-
-Dry-run by default: prints what it would write, only writes when run with --write.
-"""
-import json
-import re
+import argparse
 import sys
-import time
-import unicodedata
-import urllib.request
+from collections import Counter
 from pathlib import Path
+from typing import Any
 
-HERE = Path(__file__).parent
-SEED = HERE.parent
-OUT = HERE / "image_patches" / "artblocks.json"
-OUT.parent.mkdir(exist_ok=True)
+sys.path.insert(0, str(Path(__file__).parent))
+from _http import HttpError, post_json  # noqa: E402
+from _node_schema import Alias, Edge, Node, validate_batch  # noqa: E402
+from _provenance import GathererSignal, now_iso, write_batch  # noqa: E402
+from _slug import node_id, node_slug, slugify  # noqa: E402
 
+PRODUCER = "artblocks"
 HASURA = "https://data.artblocks.io/v1/graphql"
-UA = "A(DAI)-seed-consolidation/1.0 (https://github.com/a-digital-arts-institute/adai-v1)"
 
-# Only the three core Art Blocks contracts — exclude Engine / PBAB deployments.
 CORE_CONTRACTS = [
-    "0x059edd72cd353df5106d2b9cc5ab83a52287ac3a",  # V0, projects 0–3
-    "0xa7d8d9ef8d8ce8992df33d8b8cf4aebabd5bd270",  # V1, projects 4–373
-    "0x99a9b7c1116f9ceeb1652de04d5969cce509b069",  # V3, projects 374+
+    "0x059edd72cd353df5106d2b9cc5ab83a52287ac3a",  # V0
+    "0xa7d8d9ef8d8ce8992df33d8b8cf4aebabd5bd270",  # V1
+    "0x99a9b7c1116f9ceeb1652de04d5969cce509b069",  # V3
 ]
 
-PROJECTS_QUERY = """query Projects($contracts: [String!]!, $artist: String!) {
+PLATFORM_ID = "platform:art-blocks"
+PLATFORM_NAME = "Art Blocks"
+
+ALL_PROJECTS_QUERY = """query AllProjects($contracts: [String!]!) {
   projects_metadata(
-    where: {
-      contract_address: {_in: $contracts},
-      artist_name: {_ilike: $artist}
-    }
-    order_by: {project_id: asc}
+    where: { contract_address: {_in: $contracts} }
+    order_by: { project_id: asc }
   ) {
     id
     name
     artist_name
+    description
     project_id
     contract_address
+    invocations
+    website
   }
 }"""
 
 
-def name_key(s: str) -> str:
-    """Lowercase, NFKD-fold accents, strip punctuation, collapse whitespace."""
-    s = unicodedata.normalize("NFKD", s.lower()).encode("ascii", "ignore").decode()
-    s = re.sub(r"[^\w\s]", " ", s)
-    return " ".join(s.split())
-
-
-def clean_artist_for_search(name: str) -> str:
-    """Strip parenthetical aliases like 'Mario Klingemann (Quasimondo)' → 'Mario Klingemann'."""
-    return re.sub(r"\s*\([^)]*\)\s*", " ", name).strip()
-
-
-def query_projects(artist_name: str):
-    payload = {
-        "query": PROJECTS_QUERY,
-        "variables": {"contracts": CORE_CONTRACTS, "artist": f"%{artist_name}%"},
-    }
-    req = urllib.request.Request(
+def gather(*, limit: int | None) -> tuple[list[Node], list[Edge], list[Alias], dict[str, int]]:
+    body = post_json(
         HASURA,
-        data=json.dumps(payload).encode(),
-        headers={"Content-Type": "application/json", "User-Agent": UA},
+        {"query": ALL_PROJECTS_QUERY, "variables": {"contracts": CORE_CONTRACTS}},
+        timeout=60,
     )
-    with urllib.request.urlopen(req, timeout=30) as resp:
-        body = json.loads(resp.read())
-    if "errors" in body:
-        raise RuntimeError(body["errors"])
-    return body.get("data", {}).get("projects_metadata", []) or []
+    if body.get("errors"):
+        raise RuntimeError(f"Hasura: {body['errors']}")
+    projects = body.get("data", {}).get("projects_metadata", []) or []
+    stats = Counter({"projects_returned": len(projects)})
+
+    nodes: list[Node] = []
+    edges: list[Edge] = []
+    aliases: list[Alias] = []
+
+    # Platform node (one)
+    nodes.append(Node(
+        id=PLATFORM_ID,
+        type="platform",
+        name=PLATFORM_NAME,
+        slug=node_slug("platform", PLATFORM_NAME),
+        metadata={
+            "kind": "on-chain generative art platform",
+            "blockchain": "ethereum",
+            "source_url": "https://www.artblocks.io/",
+            "wikidata_qid": "Q105966095",
+        },
+    ))
+    aliases.append(Alias(source="wikidata", external_id="Q105966095", node_id=PLATFORM_ID))
+
+    # Practitioners: deduped by normalised artist_name.
+    artist_pid_by_norm: dict[str, str] = {}
+
+    for proj in projects:
+        if limit and stats["artworks_emitted"] >= limit:
+            break
+        name = (proj.get("name") or "").strip()
+        artist = (proj.get("artist_name") or "").strip()
+        if not name or not artist:
+            stats["skipped_missing_name_or_artist"] += 1
+            continue
+        if not slugify(name) or not slugify(artist):
+            stats["skipped_unslugifiable"] += 1
+            continue
+
+        # Practitioner — dedupe across multiple projects by same artist
+        norm = slugify(artist)
+        pid = artist_pid_by_norm.get(norm)
+        if not pid:
+            pid = node_id("practitioner", artist)
+            artist_pid_by_norm[norm] = pid
+            nodes.append(Node(
+                id=pid,
+                type="practitioner",
+                name=artist,
+                slug=node_slug("practitioner", artist),
+                metadata={
+                    "source_url": "https://www.artblocks.io/curated",
+                    "artblocks_artist_name": artist,
+                },
+            ))
+            aliases.append(Alias(source="artblocks_artist", external_id=norm, node_id=pid))
+
+        # Artwork
+        contract = proj.get("contract_address", "")
+        pid_num = proj.get("project_id")
+        external_id = f"{contract}:{pid_num}"
+        artwork_id = node_id("artwork", name, source="artblocks", external_id=external_id)
+        token_id = str(int(pid_num) * 1_000_000) if pid_num is not None else ""
+        thumb = f"https://media.artblocks.io/thumb/{token_id}.png" if token_id else None
+
+        metadata: dict[str, Any] = {
+            "artblocks_contract": contract,
+            "artblocks_project_id": str(pid_num),
+            "artblocks_token_id": token_id,
+            "source_url": f"https://www.artblocks.io/project/{pid_num}",
+        }
+        if thumb:
+            metadata["image_url"] = thumb
+        inv = proj.get("invocations")
+        if inv is not None:
+            metadata["invocations"] = inv
+        website = proj.get("website")
+        if website:
+            metadata["artist_website"] = website
+
+        nodes.append(Node(
+            id=artwork_id,
+            type="artwork",
+            name=name,
+            slug=node_slug("artwork", name, source="artblocks", external_id=external_id),
+            metadata=metadata,
+        ))
+        aliases.append(Alias(source="artblocks", external_id=external_id, node_id=artwork_id))
+
+        edges.append(Edge(
+            source_id=artwork_id,
+            target_id=pid,
+            edge_type="CREATED_BY",
+            valid_from=now_iso(),
+            confidence=1.0,
+        ))
+        edges.append(Edge(
+            source_id=artwork_id,
+            target_id=PLATFORM_ID,
+            edge_type="EXHIBITED_AT",
+            valid_from=now_iso(),
+            confidence=1.0,
+        ))
+        stats["artworks_emitted"] += 1
+
+    return nodes, edges, aliases, dict(stats)
 
 
-def head_ok(url: str) -> bool:
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--limit", type=int, default=None)
+    args = ap.parse_args()
+
+    sig = GathererSignal(
+        producer=PRODUCER,
+        source=HASURA,
+        config={"contracts": CORE_CONTRACTS, "limit": args.limit},
+    )
+
     try:
-        req = urllib.request.Request(url, method="HEAD", headers={"User-Agent": UA})
-        with urllib.request.urlopen(req, timeout=10) as r:
-            return 200 <= r.status < 400
-    except Exception:
-        return False
+        nodes, edges, aliases, stats = gather(limit=args.limit)
+    except (HttpError, RuntimeError) as e:
+        print(f"FAIL: {e}", file=sys.stderr)
+        return 1
 
+    node_rows = [sig.stamp(n.as_row()) for n in nodes]
+    edge_rows = [sig.stamp(e.as_row()) for e in edges]
+    alias_rows = [a.as_row() for a in aliases]
 
-def fuzzy_match(proj_key: str, art_keys: list):
-    """Exact match wins; otherwise smallest containing key (both directions)."""
-    if not proj_key:
-        return None, None
-    if proj_key in art_keys:
-        return proj_key, "exact"
-    # Containment either way — require the shorter key to be at least 4 chars
-    # to avoid absurd partial matches.
-    best = None
-    for k in art_keys:
-        if not k or min(len(k), len(proj_key)) < 4:
-            continue
-        if proj_key in k or k in proj_key:
-            if best is None or len(k) < len(best):
-                best = k
-    return (best, "fuzzy") if best else (None, None)
+    errors = validate_batch(nodes=node_rows, edges=edge_rows)
+    if errors:
+        print(f"VALIDATION FAILED ({len(errors)} errors):", file=sys.stderr)
+        for err in errors[:10]:
+            print(f"  {err}", file=sys.stderr)
+        return 1
 
-
-def main():
-    write_mode = "--write" in sys.argv
-
-    nodes = json.load(open(SEED / "nodes.json"))
-    edges = json.load(open(SEED / "edges.json"))
-
-    node_by_id = {n["id"]: n for n in nodes}
-    creator_of = {
-        e["source_id"]: e["target_id"]
-        for e in edges
-        if e["edge_type"] == "CREATED_BY"
-    }
-
-    # Group artworks by their creator practitioner.
-    artworks_by_creator: dict = {}
-    for n in nodes:
-        if n["type"] != "artwork":
-            continue
-        cid = creator_of.get(n["id"])
-        if not cid or not cid.startswith("practitioner:"):
-            continue
-        artworks_by_creator.setdefault(cid, []).append(n)
-
-    patches = []
-    queried = 0
-    no_project_count = 0
-    errors = []
-
-    for pract_id in sorted(artworks_by_creator):
-        arts = artworks_by_creator[pract_id]
-        pract_name = node_by_id[pract_id]["name"]
-        search_name = clean_artist_for_search(pract_name)
-        queried += 1
-
-        try:
-            projects = query_projects(search_name)
-        except Exception as ex:
-            errors.append((pract_id, str(ex)))
-            time.sleep(3)
-            continue
-
-        if not projects:
-            no_project_count += 1
-            time.sleep(1)
-            continue
-
-        arts_by_key = {name_key(a["name"]): a for a in arts}
-        art_keys = list(arts_by_key.keys())
-
-        for proj in projects:
-            pkey = name_key(proj["name"])
-            match_key, method = fuzzy_match(pkey, art_keys)
-            if not match_key:
-                continue
-            art = arts_by_key[match_key]
-            # Confirm the CREATED_BY edge still points at this practitioner.
-            if creator_of.get(art["id"]) != pract_id:
-                continue
-            token_id = str(int(proj["project_id"]) * 1_000_000)
-            patches.append({
-                "node_id": art["id"],
-                "image_url": f"https://media.artblocks.io/thumb/{token_id}.png",
-                "image_license": "Art Blocks (verify per project license)",
-                "image_source": "artblocks",
-                "artblocks_contract": proj["contract_address"],
-                "artblocks_project_id": str(proj["project_id"]),
-                "artblocks_token_id": token_id,
-                "match_method": method,
-                "matched_title_ab": proj["name"],
-                "artist_name_ab": proj["artist_name"],
-            })
-
-        # Be polite to Hasura
-        time.sleep(1)
-
-    # Dedupe: keep the first patch per artwork.
-    seen = set()
-    deduped = []
-    for p in patches:
-        if p["node_id"] in seen:
-            continue
-        seen.add(p["node_id"])
-        deduped.append(p)
-    patches = deduped
-
-    # Spot-check a sample of thumbnail URLs.
-    sample = patches[: min(5, len(patches))]
-    verified = 0
-    for p in sample:
-        ok = head_ok(p["image_url"])
-        print(f"  verify {'OK  ' if ok else 'FAIL'}: {p['image_url']}")
-        if ok:
-            verified += 1
-
-    print(f"\nQueried:           {queried} practitioners")
-    print(f"No AB projects:    {no_project_count}")
-    print(f"Errors:            {len(errors)}")
-    for pid, why in errors[:5]:
-        print(f"  ! {pid}: {why}")
-    print(f"Patches:           {len(patches)}")
-    if sample:
-        print(f"Verified sample:   {verified}/{len(sample)} thumbnail URLs resolved")
-
-    if write_mode:
-        OUT.write_text(json.dumps(patches, indent=2, ensure_ascii=False))
-        print(f"\nWrote: {OUT}")
-    else:
-        print(f"\n(dry-run) Would write {len(patches)} patches to {OUT}")
-        print("Run with --write to persist.")
-        if patches:
-            print("\nFirst 3 patches:")
-            for p in patches[:3]:
-                print(json.dumps(p, indent=2, ensure_ascii=False))
+    path = write_batch(sig, nodes=node_rows, edges=edge_rows, aliases=alias_rows)
+    print(f"wrote → {path}")
+    print(f"  practitioners: {sum(1 for n in nodes if n.type == 'practitioner')}")
+    print(f"  artworks:      {sum(1 for n in nodes if n.type == 'artwork')}")
+    print(f"  edges:         {len(edges)}")
+    print(f"  aliases:       {len(aliases)}")
+    for k, v in stats.items():
+        print(f"  stat[{k}]: {v}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

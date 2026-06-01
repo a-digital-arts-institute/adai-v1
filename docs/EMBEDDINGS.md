@@ -14,12 +14,13 @@ Gemini Embedding 2 (GA April 2026) is Google's first natively multimodal embeddi
 
 ### What we use it for
 
-Three derived signals, all marked `confidence='low'` and tagged `created_by='embedding-multimodal-v1'` for trivial roll-back:
+Four derived signals, all marked `confidence='low'` and tagged `created_by='embedding-multimodal-v1'` for trivial roll-back:
 
 | Output | Direction | Where it lands |
 |---|---|---|
 | **`STYLE_KIN`** edges | practitioner ↔ practitioner (bidirectional rows) | Live `edges` table |
 | **`VISUALLY_AFFINE`** edges | artwork ↔ artwork (bidirectional rows) | Live `edges` table |
+| **`EMBODIES`** edges (Tier-2 concept propagation) | artwork → tag-concept (inferred "generated labels") | Live `edges` table — see §5 |
 | **`SUGGESTS_CREATED_BY`** proposals | artwork → practitioner attribution candidates | `intake_queue` with `kind='ai_suggestion'` for curator review at `/review?kind=ai_suggestion` |
 
 The pipeline **refuses** to auto-emit `INFLUENCES` or `RESPONDS_TO` even when similarity is high. Both edge types require evidence of artist intent (statements, interviews, practitioner contribution) — semantic similarity is a *necessary-but-not-sufficient* condition for either. Diluting them with auto-derived rows would erode their meaning.
@@ -97,7 +98,7 @@ A split between offline batch (heavy, occasional, API-bound) and online derive (
 | The batch embed is API-bound, costs money, runs rarely | Python — matches existing `seed/_build/` pipeline (`fetch_moma_csv.py`, `upload_to_r2.py`, etc) |
 | Runtime container should stay lean | Python and the Gemini SDK never ship to runtime |
 | Derive (cosine pairwise) is fast and self-contained | TypeScript — runs inside the Node server, no Python boundary |
-| Re-derive after a curator approval should be cheap | `npm run embed:derive` in-process; 0.3 s pass over 1338 vectors |
+| Re-derive after a curator approval should be cheap | `npm run embed:derive` in-process; sub-second pass over the current vector set (~16k post-rebuild) |
 
 Sidecars (`embeddings.bin`, `embeddings.json`, `embeddings.umap2d.json`) are **committed to git** so the Docker build picks them up at build time. The `.gitignore` carries a warning against re-ignoring them — accidentally stripping them would silently produce an empty embedding space in production.
 
@@ -177,6 +178,12 @@ Re-running `embed_nodes.py` only calls the API for rows whose `(text_hash, image
 Single full embed pass at ~1,350 nodes: ~$0.03 interactive / $0.014 batch.
 
 ### Image fetching
+
+> **⚠️ ALWAYS RUN `upload_to_r2.py --mirror` BEFORE THIS PASS.** Artwork
+> embeddings are multimodal — the image is part of the vector. The embedder
+> prefers the R2 cdn (below); if an artwork's image isn't mirrored yet it
+> **silently falls back to text-only** — a wrong vector that looks fine. Order
+> is always: **(1) mirror → (2) embed → (3) project.**
 
 - Prefers `metadata.cdn_image_url` (R2-mirrored, stable) over `metadata.image_url` (rotting source).
 - 4 MB cap on download; Pillow downsamples > 1024px to JPEG quality 85.
@@ -276,6 +283,19 @@ For each unattributed artwork A (no live `CREATED_BY` edge), score against every
 
 On approve, the existing review handler materialises a real `CREATED_BY` edge tagged `created_by='curator-from-ai-suggestion'`. On reject, the pair's sha256 hash lands in `rejected_ai_suggestions` and the next derive pass skips it.
 
+### `EMBODIES` (Tier-2 concept propagation) — `src/embed/concept-edges.ts`
+
+Enriches EMBODIES beyond the attested `derive_curation.py` tag-EMBODIES: propagates a **tag-concept** to visually-similar *untagged* artworks. Runs inside `embed:derive` after `VISUALLY_AFFINE`, emitting `EMBODIES` (artwork → concept) at `confidence='low'`, dashed in `/field`, wiped+recomputed each run (so it's not in the committed canon JSON).
+
+Why it's not naive centroid-cosine: generative-art vectors are **anisotropic** — they all point roughly the same way, so raw cosine sits in a compressed high band and a handful of central artworks match *every* concept. The fix is **mean-centring** the artwork vectors first, then a **kNN-vote**: for each non-member artwork, what fraction of its `knnK` (30) nearest centred neighbours carry the concept? Emit only if ≥ `voteThreshold` (0.30).
+
+Two gates keep junk concepts from propagating (env-tunable, `CONCEPT_*`):
+- **coherence** `tauCoherence` (0.15) — mean centred member→centroid cosine; drops umbrella tags (`art`, `generative`, `p5js`) whose members aren't visually coherent.
+- **creators** `minCreators` (8) — members must span ≥8 distinct creators; kills single-artist tag-series that look coherent but aren't a shared concept.
+- plus `minMembers` (15) and `maxPerConcept` (200).
+
+It is **platform-crossing**: the tag *vocabulary* is seeded from fxhash tags, but propagation runs over all artwork vectors, so Art Blocks works get labelled too where they're visually close. Tune `TAU_CONCEPT_COH` up (→ ~0.22) to drop semantically-broad concepts (`city`, `space`) before the vote; leave `CONCEPT_VOTE` alone (it's already precision-biased). Validated on real fxhash tags before merge: naive centroid matched everything; centred kNN-vote gives tight propagation (`pixel`→untagged pixel-art, `grid`/`glitch`→nothing).
+
 ---
 
 ## 6. Visualisation surfaces
@@ -285,7 +305,7 @@ On approve, the existing review handler materialises a real `CREATED_BY` edge ta
 | **Profile pages** (`/practitioner/:slug`, `/artwork/:slug`, `/concept/:slug`, `/scene/:slug`) | Style kin / Visually affine / Style proximity / pending AI proposals — computed on-demand from in-memory vectors (~1 ms per request) | `src/routes/pages.ts::renderEmbeddingSections` |
 | **`/neighbours/:type/:slug`** | Top-K cosine neighbours of any node; shareable URL with knobs for query/candidate kind, type prefix, k | `src/routes/pages.ts` (handler) + `src/embed/neighbours.ts` |
 | **`/field`** | Derived edges render dashed by default. Press **`e`** (or click the chrome chip) to flip into "embeddings mode": curatorial edges fade to ~3 % alpha, STYLE_KIN + VISUALLY_AFFINE rise to ~60 % | `public/field/sketch-graph.js::edgeDimming` |
-| **`/embed-space`** | UMAP 2D scatter of all 1,338 vectors; pan / zoom / hover / search / click-to-profile. Practitioners cluster by aesthetic, artworks by visual similarity, concepts by semantic field | `src/routes/pages.ts` (handler) + `src/routes/api.ts::/api/embed-space` |
+| **`/embed-space`** | UMAP 2D scatter of all embedding vectors; pan / zoom / hover / search / click-to-profile. Practitioners cluster by aesthetic, artworks by visual similarity, concepts by semantic field | `src/routes/pages.ts` (handler) + `src/routes/api.ts::/api/embed-space` |
 | **`/review?kind=ai_suggestion`** | Curatorial queue for AI attribution proposals with cosine scores visible | `src/routes/pages.ts::/review` + `src/routes/api.ts` approve/reject handlers |
 
 ### Edge colors
@@ -314,7 +334,7 @@ The recurring failure mode: **sidecar drift**. If `seed/nodes.json` changes but 
 
 ## 8. Empirical results (first pass, May 2026)
 
-Against 1,338 multimodal embeddings (out of 1,351 candidates — 13 stubborn API failures, see CLAUDE.md):
+Against the v1 canon's 1,338 multimodal embeddings (May 2026 first-pass results below). v2 rebuild numbers re-populate after the daily `embed-derive-daily` GitHub Actions workflow runs against the new canon (~16k nodes):
 
 ```
 {

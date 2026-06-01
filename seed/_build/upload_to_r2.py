@@ -43,6 +43,13 @@ except ImportError:
 ROOT = Path(__file__).resolve().parents[2]
 NODES_PATH = ROOT / "seed" / "nodes.json"
 OVERLAY_PATH = ROOT / "seed" / "image_overlay.json"
+# Mirror sidecar: cdn_image_url for nodes that ALREADY carry image_url in
+# nodes.json. Kept out of nodes.json (which is pristine cull output —
+# cull_digital_art.py would clobber any cdn written there on the next re-run).
+# Keyed by node_id; survives canon rebuilds. Read by embed_nodes.py (so the
+# multimodal embedder pulls stable R2 bytes, not rotting upstream) and applied
+# by seed-consolidated.ts at seed time. See CLAUDE.md "Image mirror — sidecar".
+MIRROR_PATH = ROOT / "seed" / "image_mirror.json"
 ENV_PATH = ROOT / ".env"
 
 UA = "adai-seed-uploader/1.0 (+https://adai-basel.fly.dev)"
@@ -363,12 +370,96 @@ def main_overlay(args, env: dict, s3) -> int:
     return 0
 
 
+def main_mirror(args, env: dict, s3) -> int:
+    """Mirror every nodes.json `metadata.image_url` to R2 and record the cdn in
+    seed/image_mirror.json — WITHOUT touching nodes.json. nodes.json is pristine
+    cull output; writing cdn there would be lost on the next cull_digital_art.py
+    re-run. The mirror sidecar is keyed by node_id and survives rebuilds.
+
+    Idempotent: skips a node whose mirror entry already records the same
+    image_url with a cdn_image_url. Re-mirrors when the node's upstream
+    image_url changed (source data moved) or no mirror entry exists yet."""
+    nodes = json.loads(NODES_PATH.read_text())
+
+    mirror: list[dict] = []
+    if MIRROR_PATH.exists():
+        try:
+            mirror = json.loads(MIRROR_PATH.read_text())
+        except (json.JSONDecodeError, OSError):
+            mirror = []
+    by_id = {e["node_id"]: e for e in mirror if isinstance(e, dict) and e.get("node_id")}
+
+    work = []
+    for n in nodes:
+        md = n.get("metadata")
+        if isinstance(md, str):
+            try:
+                md = json.loads(md)
+            except json.JSONDecodeError:
+                continue
+        if not isinstance(md, dict):
+            continue
+        src = md.get("image_url")
+        if not src:
+            continue
+        prev = by_id.get(n["id"])
+        # Already mirrored, same source, has a cdn → nothing to do.
+        if prev and prev.get("cdn_image_url") and prev.get("image_url") == src:
+            continue
+        # Synthesize a node dict process_node can consume (image_url only, so it
+        # always fetches+uploads rather than short-circuiting on a stale cdn).
+        work.append({"id": n["id"], "metadata": {"image_url": src}})
+    if args.limit:
+        work = work[: args.limit]
+
+    print(f"nodes total: {len(nodes)}, to mirror (new or changed upstream): {len(work)}")
+    if not work:
+        print("nothing to do")
+        return 0
+
+    results, errors, _ = run_uploads(work, s3, env, args.dry_run, args.workers)
+
+    if args.dry_run:
+        print("dry-run: image_mirror.json untouched")
+        return 0
+    if not results:
+        print("no successful uploads — image_mirror.json untouched")
+        return 0 if not errors else 1
+
+    # Merge results into the mirror, preserving the upstream image_url alongside
+    # the cdn so a future re-mirror can detect upstream drift.
+    src_by_id = {w["id"]: w["metadata"]["image_url"] for w in work}
+    for nid, cdn in results.items():
+        by_id[nid] = {
+            "node_id": nid,
+            "image_url": src_by_id.get(nid) or by_id.get(nid, {}).get("image_url"),
+            "cdn_image_url": cdn,
+        }
+    merged = sorted(by_id.values(), key=lambda e: e["node_id"])
+    tmp = MIRROR_PATH.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(merged, indent=2, ensure_ascii=False) + "\n")
+    tmp.replace(MIRROR_PATH)
+    print(f"wrote {len(results)} cdn_image_url entries → {MIRROR_PATH} ({len(merged)} total)")
+
+    if errors:
+        print(f"\n{len(errors)} errors:")
+        for nid, err in errors[:20]:
+            print(f"  {nid}: {err}")
+        if len(errors) > 20:
+            print(f"  ... +{len(errors) - 20} more")
+        return 1
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry-run", action="store_true",
                     help="fetch + hash + plan keys, but neither upload nor write back")
     ap.add_argument("--overlay", action="store_true",
                     help="mirror seed/image_overlay.json (writes cdn_image_url there, NOT nodes.json)")
+    ap.add_argument("--mirror", action="store_true",
+                    help="mirror nodes.json image_urls to seed/image_mirror.json (NOT nodes.json) — "
+                         "the cull-safe carrier for cdn_image_url on already-imaged nodes")
     ap.add_argument("--limit", type=int, default=0, help="process at most N nodes (0 = all)")
     ap.add_argument("--workers", type=int, default=8)
     args = ap.parse_args()
@@ -376,6 +467,11 @@ def main() -> int:
     env = load_env()
     s3 = make_s3(env) if not args.dry_run else None
 
+    if args.overlay and args.mirror:
+        print("--overlay and --mirror are mutually exclusive", file=sys.stderr)
+        return 2
+    if args.mirror:
+        return main_mirror(args, env, s3)
     if args.overlay:
         return main_overlay(args, env, s3)
 

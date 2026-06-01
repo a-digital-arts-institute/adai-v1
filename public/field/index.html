@@ -4,14 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>A(DAI) — a digital arts institute</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/simplex-noise/2.4.0/simplex-noise.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/p5@2.0.5/lib/p5.js"></script>
-  <script src="https://unpkg.com/p5.js-svg@1.3.1"></script>
-  <script src="https://cdn.jsdelivr.net/gh/josephg/noisejs/perlin.js"></script>
-  <script src="https://unpkg.com/d3-path@3.0.0/dist/d3-path.min.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Cutive+Mono&family=Anonymous+Pro:wght@400;700&family=Xanh+Mono:ital@0;1&family=Space+Mono:wght@400;700&family=IBM+Plex+Mono:wght@300;400;500;700&family=Roboto+Mono:wght@300;400;500;700&family=Inconsolata:wght@300;400;500;700&family=Source+Code+Pro:wght@300;400;500;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <!-- Vendor libs are self-hosted under /field-static/vendor and deferred so
+       they no longer block HTML parsing — the "loading field" indicator paints
+       immediately and these download in parallel. p5 is the minified build
+       (260 KB br vs 780 KB). defer preserves document order, so p5 et al. are
+       ready before the deferred field scripts below run. -->
+  <script defer src="/field-static/vendor/simplex-noise.min.js?v=20260530a"></script>
+  <script defer src="/field-static/vendor/p5.min.js?v=20260530a"></script>
+  <script defer src="/field-static/vendor/p5.svg.js?v=20260530a"></script>
+  <script defer src="/field-static/vendor/perlin.js?v=20260530a"></script>
+  <script defer src="/field-static/vendor/d3-path.min.js?v=20260530a"></script>
+  <!-- Self-hosted Google Fonts (latin + latin-ext, font-display:swap) — no
+       third-party round-trip to fonts.googleapis.com / fonts.gstatic.com. -->
+  <link rel="stylesheet" href="/field-static/css/fonts.css?v=20260530a">
   <link rel="stylesheet" href="/field-static/style.css?v=20260528a">
   <link rel="stylesheet" href="/field-static/style-archivist.css?v=20260523b">
 </head>
@@ -54,17 +59,20 @@
 
   </div>
 
-  <script src="/field-static/adai-system.js?v=20260513a"></script>
-  <script src="/field-static/brand-state.js?v=20260513a"></script>
-  <script src="/field-static/js-interface/graph-loader.js?v=20260528a"></script>
-  <script src="/field-static/js-interface/edge-type-colors.js?v=20260513a"></script>
-  <script src="/field-static/sketch-brand.js?v=20260513a"></script>
-  <script src="/field-static/js-interface/graph-field.js?v=20260524a"></script>
-  <script src="/field-static/js-interface/entity-data/showcase-vera-molnar.js?v=20260513a"></script>
-  <script src="/field-static/js-interface/entity-view.js?v=20260523a"></script>
-  <script src="/field-static/js-interface/chat-narrator.js?v=20260513a"></script>
-  <script src="/field-static/js-interface/search-palette.js?v=20260513a"></script>
-  <script src="/field-static/js-interface/archivist-chat.js?v=20260524a" defer></script>
-  <script src="/field-static/field.js?v=20260513a"></script>
+  <!-- All deferred: they execute in document order after the vendor libs above
+       (which they depend on for p5/d3), once the DOM is parsed. graph-loader is
+       self-contained and kicks off the streaming graph fetch as soon as it runs. -->
+  <script defer src="/field-static/adai-system.js?v=20260513a"></script>
+  <script defer src="/field-static/brand-state.js?v=20260513a"></script>
+  <script defer src="/field-static/js-interface/graph-loader.js?v=20260530a"></script>
+  <script defer src="/field-static/js-interface/edge-type-colors.js?v=20260513a"></script>
+  <script defer src="/field-static/sketch-brand.js?v=20260513a"></script>
+  <script defer src="/field-static/js-interface/graph-field.js?v=20260601b"></script>
+  <script defer src="/field-static/js-interface/entity-data/showcase-vera-molnar.js?v=20260513a"></script>
+  <script defer src="/field-static/js-interface/entity-view.js?v=20260601b"></script>
+  <script defer src="/field-static/js-interface/chat-narrator.js?v=20260601b"></script>
+  <script defer src="/field-static/js-interface/search-palette.js?v=20260513a"></script>
+  <script defer src="/field-static/js-interface/archivist-chat.js?v=20260524a"></script>
+  <script defer src="/field-static/field.js?v=20260513a"></script>
 </body>
 </html>

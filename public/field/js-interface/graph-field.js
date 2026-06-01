@@ -104,6 +104,21 @@
     NAME_TEXT_ALPHA: 1.0,            // text needs to read clearly over the brand
     NAME_TEXT_SIZE: 11,
 
+    // Label legibility model. The dots are always all drawn (density is
+    // signal); only NAMES are managed, since per-frame text is what floods
+    // the GPU and the eye.
+    //   - LABEL_MAX_SHOWN doubles as the few-vs-many switch AND the per-frame
+    //     cap. If a focused node has <= this many neighbours, every name shows
+    //     always (sparse nodes read like a plain labelled graph). Above it,
+    //     names reveal only near the cursor (the "reading lens") so you sweep
+    //     to read a dense node without a thousand-label flood.
+    //   - LABEL_LENS_RADIUS: reveal radius around the cursor in many-mode.
+    //   - Collision avoidance + a dark backing pill keep names readable even
+    //     where the layout packs dots tightly (the real legibility problem).
+    LABEL_MAX_SHOWN: 60,
+    LABEL_LENS_RADIUS: 170,
+    LABEL_BACKING_ALPHA: 0.55,       // dark pill behind each name for contrast
+
     // Editorial: practitioners stay as halos/dots (the constellation); only
     // artworks render with their image. Some practitioners carry portrait
     // URLs in the API — we ignore them on purpose. See memory:
@@ -132,10 +147,11 @@
   // Backend returns `cdn_image_url` (R2 hot CDN, preferred) and `image_url`
   // on nodes. ~393/1491 carry one. Some `cdn_image_url`s are .html mirrors
   // (Rhizome wiki etc.) — those return 200 with text/html and won't render.
-  // Filter strictly to known image extensions.
-  const IMG_EXT_RE = /\.(jpe?g|png|gif|webp)(\?|$)/i;
+  // Trust any http(s) URL — the R2 cdn is content-addressed + guaranteed image/*
+  // at upload, and gatherer image_urls are real images. No extension allowlist
+  // (it silently rejected avif/webp/heic and any future format).
   function isRenderableImageUrl(url) {
-    return typeof url === 'string' && IMG_EXT_RE.test(url);
+    return typeof url === 'string' && /^https?:\/\//i.test(url);
   }
   function pickImageUrl(node) {
     if (!node) return null;
@@ -162,31 +178,108 @@
     }
     return entry.status === 'ready' ? entry.img : null;
   }
-  // Draw an image clipped to a circle, with a hairline white ring.
-  // ctx.globalAlpha is honoured (caller sets it).
+  // Batched dot draw. Drawing N dots as N separate beginPath/arc/fill calls
+  // (with a fillStyle + globalAlpha change each) is the dominant per-frame
+  // cost at 8k+ nodes — it saturates the main thread and makes mousemove lag.
+  // Here we bucket dots by (colour, quantised alpha) and emit ONE path + ONE
+  // fill per bucket, so ~17k fill() calls collapse to a few dozen. The
+  // moveTo before each arc prevents the subpaths joining with stray lines.
+  // `dots` is an array of {x, y, r, color, alpha}; alpha < 0.005 is skipped.
+  function drawDotsBatched(ctx, dots) {
+    const TWO_PI = Math.PI * 2;
+    const buckets = new Map();
+    for (let i = 0; i < dots.length; i++) {
+      const d = dots[i];
+      if (d.alpha < 0.005) continue;
+      const aQ = Math.round(d.alpha * 40) / 40; // 0.025 alpha buckets
+      const key = d.color + '|' + aQ;
+      let b = buckets.get(key);
+      if (!b) { b = { color: d.color, alpha: aQ, pts: [] }; buckets.set(key, b); }
+      b.pts.push(d.x, d.y, d.r);
+    }
+    for (const b of buckets.values()) {
+      ctx.fillStyle = b.color;
+      ctx.globalAlpha = b.alpha;
+      ctx.beginPath();
+      const p = b.pts;
+      for (let i = 0; i < p.length; i += 3) {
+        const x = p[i], y = p[i + 1], r = p[i + 2];
+        ctx.moveTo(x + r, y);
+        ctx.arc(x, y, r, 0, TWO_PI);
+      }
+      ctx.fill();
+    }
+  }
+
+  // Pre-rendered circular thumbnail sprites. The clip + cover-fit + ring is
+  // expensive (ctx.clip() especially) and was being paid PER thumbnail PER
+  // frame — the dominant cost once artworks render as images. We do it ONCE
+  // per (image, radius) into an offscreen canvas and then just blit that
+  // sprite each frame (a single drawImage, no clip/save/restore). Built at
+  // devicePixelRatio resolution so it stays crisp on retina.
+  const _thumbSpriteCache = new Map();
+  const _THUMB_CACHE_MAX = 600;
+  function getThumbSprite(img, r) {
+    const iw = img.naturalWidth || img.width;
+    const ih = img.naturalHeight || img.height;
+    if (!iw || !ih) return null;
+    const rr = Math.round(r);
+    const key = (img.currentSrc || img.src || '') + '|' + rr;
+    let sprite = _thumbSpriteCache.get(key);
+    if (sprite) return sprite;
+
+    const dpr = window.devicePixelRatio || 1;
+    const sizePx = Math.max(2, Math.ceil(2 * rr * dpr));
+    const off = document.createElement('canvas');
+    off.width = sizePx;
+    off.height = sizePx;
+    const octx = off.getContext('2d');
+    octx.scale(dpr, dpr);
+    const c = rr; // logical centre
+    // cover-fit
+    const scale = (2 * rr) / Math.min(iw, ih);
+    const dw = iw * scale, dh = ih * scale;
+    octx.beginPath();
+    octx.arc(c, c, rr, 0, Math.PI * 2);
+    octx.closePath();
+    octx.clip();
+    octx.drawImage(img, c - dw / 2, c - dh / 2, dw, dh);
+    // ring (drawn inside the clip so it never bleeds past the circle edge)
+    octx.lineWidth = CFG.THUMB_RING_WIDTH * 2; // half is clipped away → hairline
+    octx.strokeStyle = 'rgba(255,255,255,0.85)';
+    octx.beginPath();
+    octx.arc(c, c, rr, 0, Math.PI * 2);
+    octx.stroke();
+
+    if (_thumbSpriteCache.size >= _THUMB_CACHE_MAX) {
+      // simple FIFO evict — keeps memory bounded under lots of radii/images
+      _thumbSpriteCache.delete(_thumbSpriteCache.keys().next().value);
+    }
+    sprite = { canvas: off, r: rr };
+    _thumbSpriteCache.set(key, sprite);
+    return sprite;
+  }
+
+  // Blit a circular thumbnail sprite. ctx.globalAlpha is honoured (caller sets
+  // it). Falls back to a direct clipped draw only if the sprite can't build.
   function drawCircleImage(ctx, img, cx, cy, r) {
-    // Fit cover: scale so the shorter side fills 2r, then crop centred.
+    const sprite = getThumbSprite(img, r);
+    if (sprite) {
+      const rr = sprite.r;
+      ctx.drawImage(sprite.canvas, cx - rr, cy - rr, 2 * rr, 2 * rr);
+      return;
+    }
     const iw = img.naturalWidth || img.width;
     const ih = img.naturalHeight || img.height;
     if (!iw || !ih) return;
     const scale = (2 * r) / Math.min(iw, ih);
-    const dw = iw * scale;
-    const dh = ih * scale;
-    const dx = cx - dw / 2;
-    const dy = cy - dh / 2;
+    const dw = iw * scale, dh = ih * scale;
     ctx.save();
     ctx.beginPath();
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.closePath();
     ctx.clip();
-    ctx.drawImage(img, dx, dy, dw, dh);
+    ctx.drawImage(img, cx - dw / 2, cy - dh / 2, dw, dh);
     ctx.restore();
-    // Hairline ring for legibility against the brand field.
-    ctx.lineWidth = CFG.THUMB_RING_WIDTH;
-    ctx.strokeStyle = 'rgba(255,255,255,0.85)';
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.stroke();
   }
 
   // ---- DOM setup ----
@@ -1720,6 +1813,19 @@
     bundle.setMode = (mode) => {
       if (mode !== 'curatorial' && mode !== 'embeddings') return;
       bundle.fieldMode = mode;
+      // STYLE_KIN / VISUALLY_AFFINE are excluded from the initial streamed
+      // payload (they're ~10k edges only ever shown here) and lazy-loaded the
+      // first time we enter embeddings mode. Once the loader merges them into
+      // the live index, re-apply filters so the chips + edge rendering pick
+      // them up. The frame loop reads edgesFor() live, so no explicit redraw.
+      if (mode === 'embeddings' && !bundle.derivedRequested
+          && typeof window.ADAI_LOAD_DERIVED === 'function') {
+        bundle.derivedRequested = true;
+        window.ADAI_LOAD_DERIVED().then(() => {
+          applyDefaultFiltersForMode(bundle);
+          renderEdgeFilter(bundle, graph);
+        }).catch(() => {});
+      }
       applyDefaultFiltersForMode(bundle);
       renderEdgeFilter(bundle, graph);
     };
@@ -1730,6 +1836,16 @@
     renderEdgeFilter(bundle, graph);
     renderEmbedStrip(bundle, graph);
     renderBookmarksStrip(bundle, graph);
+
+    // Curated edges stream in just after the constellation paints (the loader
+    // posts nodes first). Re-render the edge-dependent chrome once they land so
+    // the filter chip counts reflect the real graph. The frame loop reads
+    // edgesFor() live, so the field itself needs no nudge. once:true — a fresh
+    // page load only streams once (repeat visits arrive complete from cache).
+    window.addEventListener('adai:graph-edges', () => {
+      renderEdgeFilter(bundle, graph);
+      renderBreadcrumb(bundle, graph);
+    }, { once: true });
 
     // If the URL has ?reading=..., auto-replay it on load.
     const urlPath = readingFromUrl();
@@ -1746,6 +1862,11 @@
     const panel = createEntityPanel();
     let hoveredId = null;
     let selectedId = null;
+    // Live cursor position (canvas space) for the label "reading lens" —
+    // labels reveal only near the cursor so the full constellation can stay
+    // dense without flooding the GPU with thousands of text draws. null when
+    // the pointer is off-canvas.
+    let cursorX = null, cursorY = null;
 
     function onResize() {
       const next = sizeCanvas(canvas);
@@ -1758,6 +1879,7 @@
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
+      cursorX = x; cursorY = y;
       let hit = null;
       if (!bundle.viewLevel || bundle.viewLevel === '30k') {
         hit = nearestSim(bundle, x, y, CFG.CLICK_TOLERANCE);
@@ -1780,6 +1902,7 @@
     }, { passive: true });
 
     canvas.addEventListener('mouseleave', () => {
+      cursorX = null; cursorY = null;
       if (hoveredId) {
         hoveredId = null;
         canvas.style.cursor = 'default';
@@ -1870,32 +1993,23 @@
       // ---- 30k snapshot layer (always draws, alpha modulated by zoom) ----
       // Two passes: halos first (so cores draw over them), each per-type so
       // the constellation reads as semantic clusters against the spiral.
-      // Halos
+      // Apply drift once, then batch both passes by colour+alpha (see
+      // drawDotsBatched). Halos first (larger, fainter), cores over them.
+      const halos = [];
+      const cores = [];
       for (let i = 0; i < bundle.sim.length; i++) {
         const s = bundle.sim[i];
         if (drift) {
           s.x += (Math.random() - 0.5) * drift;
           s.y += (Math.random() - 0.5) * drift;
         }
-        const alpha = (s.alpha != null ? s.alpha : 1) * CFG.HALO_ALPHA;
-        if (alpha < 0.005) continue;
-        ctx.fillStyle = colorForType(s.type);
-        ctx.globalAlpha = alpha;
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r * CFG.HALO_RADIUS_MULT, 0, Math.PI * 2);
-        ctx.fill();
+        const base = (s.alpha != null ? s.alpha : 1);
+        const color = colorForType(s.type);
+        halos.push({ x: s.x, y: s.y, r: s.r * CFG.HALO_RADIUS_MULT, color, alpha: base * CFG.HALO_ALPHA });
+        cores.push({ x: s.x, y: s.y, r: s.r, color, alpha: base * CFG.BASE_ALPHA });
       }
-      // Cores
-      for (let i = 0; i < bundle.sim.length; i++) {
-        const s = bundle.sim[i];
-        const alpha = (s.alpha != null ? s.alpha : 1) * CFG.BASE_ALPHA;
-        if (alpha < 0.005) continue;
-        ctx.fillStyle = colorForType(s.type);
-        ctx.globalAlpha = alpha;
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fill();
-      }
+      drawDotsBatched(ctx, halos);
+      drawDotsBatched(ctx, cores);
       // Reset fillStyle for any non-snapshot draw paths below that still
       // assume DOT_HEX is current.
       ctx.fillStyle = CFG.DOT_HEX;
@@ -2000,55 +2114,92 @@
           ctx.stroke();
         }
 
-        // Neighbour halos
-        ctx.fillStyle = CFG.DOT_HEX;
+        // Neighbour halos — batched (one fill per alpha bucket instead of one
+        // per neighbour; matters when a high-degree node has thousands).
+        const nHalos = [];
         for (const n of bundle.zoomNeighbors) {
           const baseA = (n.alpha != null ? n.alpha : 1) * CFG.HALO_ALPHA * 1.4;
           const a = filterMatch(n) ? baseA : baseA * dimmedAlpha;
           if (a < 0.005) continue;
-          ctx.globalAlpha = a;
-          ctx.beginPath();
-          ctx.arc(n.tx ?? n.x, n.ty ?? n.y, (n.tr ?? n.r) * CFG.HALO_RADIUS_MULT, 0, Math.PI * 2);
-          ctx.fill();
+          nHalos.push({ x: n.tx ?? n.x, y: n.ty ?? n.y, r: (n.tr ?? n.r) * CFG.HALO_RADIUS_MULT, color: CFG.DOT_HEX, alpha: a });
         }
-        // Neighbour cores. Artwork neighbours with a ready CDN image render
-        // as a thumbnail (circle clip) instead of a white dot — practitioners
-        // and other types stay as the constellation. Loading or invalid URLs
-        // fall back to the dot so the layout never has empty slots.
+        drawDotsBatched(ctx, nHalos);
+        // Neighbour cores. Artwork neighbours with a ready CDN image render as
+        // a thumbnail (drawImage — can't batch); non-image neighbours batch as
+        // dots. Two passes: collect dot-cores, then blit thumbnails over them.
+        const nCores = [];
+        const thumbs = [];
         for (const n of bundle.zoomNeighbors) {
           const baseA = (n.alpha != null ? n.alpha : 1) * CFG.BASE_ALPHA;
           const a = filterMatch(n) ? baseA : baseA * dimmedAlpha;
           if (a < 0.005) continue;
-          ctx.globalAlpha = a;
           const node = graph.byId.get(n.id);
           const img = getImageFor(node);
           if (img) {
-            const tr = thumbPetalRadiusFor(n.groupArtworkCount || 1);
-            drawCircleImage(ctx, img, n.tx ?? n.x, n.ty ?? n.y, tr);
-            ctx.fillStyle = CFG.DOT_HEX; // restore for any subsequent dot draws
+            thumbs.push({ img, x: n.tx ?? n.x, y: n.ty ?? n.y, tr: thumbPetalRadiusFor(n.groupArtworkCount || 1), a });
           } else {
-            ctx.beginPath();
-            ctx.arc(n.tx ?? n.x, n.ty ?? n.y, n.tr ?? n.r, 0, Math.PI * 2);
-            ctx.fill();
+            nCores.push({ x: n.tx ?? n.x, y: n.ty ?? n.y, r: n.tr ?? n.r, color: CFG.DOT_HEX, alpha: a });
           }
         }
+        drawDotsBatched(ctx, nCores);
+        for (const t of thumbs) {
+          ctx.globalAlpha = t.a;
+          drawCircleImage(ctx, t.img, t.x, t.y, t.tr);
+        }
+        ctx.fillStyle = CFG.DOT_HEX;
         // Neighbour labels (only after transition done, to keep motion clean).
         // Cache each label's hit-rect on the neighbour so the click handler
         // can treat the label as part of the click target.
         if (!bundle.transitioning) {
-          ctx.font = `${CFG.NAME_TEXT_SIZE}px 'SF Mono', monospace`;
-          ctx.textBaseline = 'middle';
-          ctx.fillStyle = '#FFFFFF';
-          for (const n of bundle.zoomNeighbors) {
+          const all = bundle.zoomNeighbors;
+          const many = all.length > CFG.LABEL_MAX_SHOWN;
+          const lensR = CFG.LABEL_LENS_RADIUS;
+          const lensR2 = lensR * lensR;
+          const haveCursor = cursorX != null && cursorY != null;
+
+          // Build candidate labels with a priority score.
+          //   sparse node (<= LABEL_MAX_SHOWN): EVERY name is a candidate at
+          //     full strength — reads like a normal labelled graph.
+          //   dense node: only the hovered name + names within the cursor lens
+          //     are candidates (priority by proximity) — sweep to read.
+          const candidates = [];
+          for (const n of all) {
             const baseA = (n.alpha != null ? n.alpha : 1) * CFG.NAME_TEXT_ALPHA;
             const a = filterMatch(n) ? baseA : baseA * dimmedAlpha;
             if (a < 0.05) { n.labelBBox = null; continue; }
-            ctx.globalAlpha = a;
-            const nx = n.tx ?? n.x;
-            const ny = n.ty ?? n.y;
+            const nx = n.tx ?? n.x, ny = n.ty ?? n.y;
+            const isHovered = n.id === hoveredId;
+            let prio;
+            if (isHovered) {
+              prio = 2;                       // hovered always wins
+            } else if (!many) {
+              prio = 1;                       // sparse → always show
+            } else if (haveCursor) {
+              const cdx = nx - cursorX, cdy = ny - cursorY;
+              const cd2 = cdx * cdx + cdy * cdy;
+              if (cd2 > lensR2) { n.labelBBox = null; continue; }
+              prio = 1 - Math.sqrt(cd2) / lensR;   // nearer cursor = higher
+            } else {
+              n.labelBBox = null; continue;   // dense + no cursor → no labels
+            }
+            candidates.push({ n, nx, ny, a, prio, isHovered });
+          }
+          candidates.sort((p, q) => q.prio - p.prio);
+
+          // Draw highest-priority first, skipping any name whose box collides
+          // with one already drawn. This thins clutter where dots pack tight
+          // (the "can't read it" problem) — the most relevant names win the
+          // space. A dark backing pill lifts each name off the busy field.
+          ctx.font = `${CFG.NAME_TEXT_SIZE}px 'SF Mono', monospace`;
+          ctx.textBaseline = 'middle';
+          const half = CFG.NAME_TEXT_SIZE * 0.7;
+          const drawn = [];
+          let count = 0;
+          for (const c of candidates) {
+            const { n, nx, ny } = c;
+            if (count >= CFG.LABEL_MAX_SHOWN) { n.labelBBox = null; continue; }
             const dx = nx - cx, dy = ny - cy;
             const d = Math.hypot(dx, dy) || 1;
-            // Push labels past the thumbnail radius for artwork tiles.
             const nNode = graph.byId.get(n.id);
             const labelOff = (nNode && getImageFor(nNode))
               ? thumbPetalRadiusFor(n.groupArtworkCount || 1) + 6
@@ -2056,15 +2207,30 @@
             const lx = nx + (dx / d) * labelOff;
             const ly = ny + (dy / d) * labelOff;
             const align = dx >= 0 ? 'left' : 'right';
-            ctx.textAlign = align;
             const name = n.name || (n.id || '').split(':')[1] || n.id;
+            ctx.textAlign = align;
+            const wText = ctx.measureText(name).width;
+            const x0 = align === 'left' ? lx : lx - wText;
+            const x1 = align === 'left' ? lx + wText : lx;
+            const box = { x0, y0: ly - half, x1, y1: ly + half };
+            // collision check (3px padding) against already-drawn labels
+            let collides = false;
+            for (const b of drawn) {
+              if (box.x0 < b.x1 + 3 && box.x1 + 3 > b.x0 &&
+                  box.y0 < b.y1 + 3 && box.y1 + 3 > b.y0) { collides = true; break; }
+            }
+            if (collides) { n.labelBBox = null; continue; }
+            // backing pill
+            ctx.globalAlpha = c.a * CFG.LABEL_BACKING_ALPHA;
+            ctx.fillStyle = '#0a0a0c';
+            ctx.fillRect(x0 - 3, box.y0 - 1, (x1 - x0) + 6, (box.y1 - box.y0) + 2);
+            // name
+            ctx.globalAlpha = c.a;
+            ctx.fillStyle = '#FFFFFF';
             ctx.fillText(name, lx, ly);
-            // Cache label bounding rect for click hit-testing
-            const m = ctx.measureText(name);
-            const half = CFG.NAME_TEXT_SIZE * 0.7;
-            const x0 = align === 'left' ? lx : lx - m.width;
-            const x1 = align === 'left' ? lx + m.width : lx;
-            n.labelBBox = { x0, y0: ly - half, x1, y1: ly + half };
+            n.labelBBox = box;
+            drawn.push(box);
+            count++;
           }
         } else {
           for (const n of bundle.zoomNeighbors) n.labelBBox = null;

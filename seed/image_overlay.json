@@ -954,6 +954,26 @@
     "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/33/33c3fbaa1971ebed78f68238acf08bf9f4c6a960806c82dfdd95cc015f75f30b.svg"
   },
   {
+    "node_id": "institution:victoria and albert museum",
+    "type": "institution",
+    "name": "Victoria and Albert Museum",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Victoria_and_Albert_Museum_Logo.svg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q213322",
+      "property": "P154",
+      "commons_file": "Victoria and Albert Museum Logo.svg",
+      "match": "alias",
+      "instance_of": [
+        "Q1200701",
+        "Q207694",
+        "Q17000320",
+        "Q17431399"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/37/3703cb85beff4e1f50457141da33a6d510dc94d4795207879aeb074d7ea299b7.svg"
+  },
+  {
     "node_id": "institution:walker art center",
     "type": "institution",
     "name": "Walker Art Center",
@@ -1048,6 +1068,40 @@
     "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/76/76d63f3ca7cf3aede51901fc59c7f667ad393212371e3a026cef37348a44fda5.webp"
   },
   {
+    "node_id": "practitioner:aaron koblin",
+    "type": "practitioner",
+    "name": "Aaron Koblin",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Aaron_Koblin.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q4662151",
+      "property": "P18",
+      "commons_file": "Aaron Koblin.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/92/92b0e0d8d410c6dbf9d407dfd77ea683c612b65e0a33863e9fd02a693f63ed02.jpg"
+  },
+  {
+    "node_id": "practitioner:aaron marcus",
+    "type": "practitioner",
+    "name": "Aaron Marcus",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/MARCUS_Aaron_23Jan05.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q4662235",
+      "property": "P18",
+      "commons_file": "MARCUS Aaron 23Jan05.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/6e/6e1e052034df231c8d97a94102baff108f3879b5f6fe34dddc88a227ebdbe855.jpg"
+  },
+  {
     "node_id": "practitioner:alexei shulgin",
     "type": "practitioner",
     "name": "Alexei Shulgin",
@@ -1065,6 +1119,57 @@
     "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/dc/dc8b2001b0180f5c088ed24dff597fe7543c993d36f7a61f1fb9fb7718c6ff77.jpg"
   },
   {
+    "node_id": "practitioner:amon tobin",
+    "type": "practitioner",
+    "name": "amon tobin",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Amon_Tobin_2007_Budapest.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q316508",
+      "property": "P18",
+      "commons_file": "Amon Tobin 2007 Budapest.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/ee/eece5c0c6f4cd7b293fe04fe3f8bcfdb28c86c660d459d4d942eb7ffa62a10cf.jpg"
+  },
+  {
+    "node_id": "practitioner:andy lomas",
+    "type": "practitioner",
+    "name": "Andy Lomas",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Andy_Lomas_presenting_at_the_EVA_London_2016_conference.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q27734624",
+      "property": "P18",
+      "commons_file": "Andy Lomas presenting at the EVA London 2016 conference.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/64/644a766ca71ab68d16ad7c6b87d79e76c1b2e84c5efcbe6ce42fed2daf96753e.jpg"
+  },
+  {
+    "node_id": "practitioner:anish kapoor",
+    "type": "practitioner",
+    "name": "Anish Kapoor",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Anish_Kapoor_01.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q327293",
+      "property": "P18",
+      "commons_file": "Anish Kapoor 01.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/e6/e627dc78fed2d2b01b4bc44bc55785168d16975acc12f6ac64aba8e532310258.jpg"
+  },
+  {
     "node_id": "practitioner:augusto de campos",
     "type": "practitioner",
     "name": "Augusto de Campos",
@@ -1080,6 +1185,23 @@
       ]
     },
     "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/a8/a833e77dbc5b9a529332515ca287a1fca35a91479d45185cac2d382857c90d68.jpg"
+  },
+  {
+    "node_id": "practitioner:barbara nessim",
+    "type": "practitioner",
+    "name": "Barbara Nessim",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Photo_Of_Barbara_Nessim.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q4859183",
+      "property": "P18",
+      "commons_file": "Photo Of Barbara Nessim.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/66/66c53de1b5a176f56b8161434e10a623dfcc692485dddc31653582e24c5fd511.jpg"
   },
   {
     "node_id": "practitioner:beeple",
@@ -1116,6 +1238,40 @@
     "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/52/52bdad01378301cc14d03fbb3a2c927193cafc35678fc49868c5076861c7a70e.jpg"
   },
   {
+    "node_id": "practitioner:blek le rat",
+    "type": "practitioner",
+    "name": "Blek le Rat",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Xavier_Prou_%28Blek_le_Rat%29.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q613236",
+      "property": "P18",
+      "commons_file": "Xavier Prou (Blek le Rat).jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/11/1152ded6c9847942cfc7ebd150c99cb0e317ecb5d6978e69a530bff6881b41bb.jpg"
+  },
+  {
+    "node_id": "practitioner:casey reas",
+    "type": "practitioner",
+    "name": "Casey REAS",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Casey_Reas.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q5006090",
+      "property": "P18",
+      "commons_file": "Casey Reas.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/f7/f71c0ce4bc6962828ca09b23d15b4de1cffa0fb8907ed77ed1dfda3b66f9ad18.jpg"
+  },
+  {
     "node_id": "practitioner:christiane paul",
     "type": "practitioner",
     "name": "Christiane Paul",
@@ -1131,6 +1287,40 @@
       ]
     },
     "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/2e/2e07a76d0d81a3a56c945883ef9130e3b07b40b3ecb40a6c711cb731065c5b8c.jpg"
+  },
+  {
+    "node_id": "practitioner:christopher le brun",
+    "type": "practitioner",
+    "name": "Christopher Le Brun",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Christopher_Le_Brun_PRA_in_his_Studio_by_Aliona_Adrianova.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q5112716",
+      "property": "P18",
+      "commons_file": "Christopher Le Brun PRA in his Studio by Aliona Adrianova.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/2e/2ecd498bf6b4b841b8a4e7e0f79935309b292ecc59574f940d3cba0ddac19b01.jpg"
+  },
+  {
+    "node_id": "practitioner:cole sternberg",
+    "type": "practitioner",
+    "name": "Cole Sternberg",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Cole_Sternerberg_Portrait.jpeg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q17088988",
+      "property": "P18",
+      "commons_file": "Cole Sternerberg Portrait.jpeg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/0a/0a7d39a3d61e47d6e57ff2dd1a6d8ea7c6d86028f93172266391fd1fbcb7d649.jpg"
   },
   {
     "node_id": "practitioner:cornelia sollfrank",
@@ -1150,6 +1340,57 @@
     "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/2a/2adfb15c7004bd7c23c75d1b053ff487bc09c585a813847e685fac8cf9154843.jpg"
   },
   {
+    "node_id": "practitioner:david difrancesco",
+    "type": "practitioner",
+    "name": "David DiFrancesco",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/DavidDiFrancesco2014.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q16135898",
+      "property": "P18",
+      "commons_file": "DavidDiFrancesco2014.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/ba/baedbfef7197b52d8e9167a1f85eb5377c55f35b658098515c606c29a6e93d1e.jpg"
+  },
+  {
+    "node_id": "practitioner:david em",
+    "type": "practitioner",
+    "name": "David Em",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Dave_Cockrum.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q902536",
+      "property": "P18",
+      "commons_file": "Dave Cockrum.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/7d/7d3f48afc9bc5d8bc831d4f72ed4b71c2e430fd71499b8c940c8737038ac6f03.jpg"
+  },
+  {
+    "node_id": "practitioner:david young",
+    "type": "practitioner",
+    "name": "David Young",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/MK39548_Element_of_Crime-David_Young.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q11774421",
+      "property": "P18",
+      "commons_file": "MK39548 Element of Crime-David Young.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/c6/c61f88d2b21a40580ded32950bab023d208aabab05504c09917872fc2c5fc1c2.jpg"
+  },
+  {
     "node_id": "practitioner:dragan espenschied",
     "type": "practitioner",
     "name": "Dragan Espenschied",
@@ -1165,6 +1406,140 @@
       ]
     },
     "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/72/7203c7891417c022d9c30e293b800bb99958ae1e92e31cad9a756816d96dc9b5.jpg"
+  },
+  {
+    "node_id": "practitioner:eduardo kac",
+    "type": "practitioner",
+    "name": "Eduardo Kac",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Eduardo_Kac_-_Genesis_-_Ars_Electronica_99.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q331376",
+      "property": "P18",
+      "commons_file": "Eduardo Kac - Genesis - Ars Electronica 99.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/b6/b6d968f12cb4927128784e713c5065e46444692ecf38de695fa07a76fcda841d.jpg"
+  },
+  {
+    "node_id": "practitioner:eduardo mac entyre",
+    "type": "practitioner",
+    "name": "Eduardo Mac Entyre",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/EduardoMacEntyre.JPG",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q5340671",
+      "property": "P18",
+      "commons_file": "EduardoMacEntyre.JPG",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/80/802faf6a30aa9a4115645ccd5fd61d4f4ba20567c4af1eb38de6fe748621e8a1.jpg"
+  },
+  {
+    "node_id": "practitioner:eduardo paolozzi",
+    "type": "practitioner",
+    "name": "Eduardo Paolozzi",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/NewtonBlakePaolozzi1.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q165397",
+      "property": "P18",
+      "commons_file": "NewtonBlakePaolozzi1.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/06/06bb55326c3bb36a1d9c050b69d83acf397e8fd60eb0acf64c12b4034ac27fbd.jpg"
+  },
+  {
+    "node_id": "practitioner:emi kusano",
+    "type": "practitioner",
+    "name": "Emi Kusano",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Emi_Kusano%E3%81%AE%E3%83%9D%E3%83%BC%E3%83%88%E3%83%AC%E3%83%BC%E3%83%88%EF%BC%882022%E5%B9%B4%EF%BC%89.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q11618271",
+      "property": "P18",
+      "commons_file": "Emi Kusanoのポートレート（2022年）.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/bc/bc0cfd9826cbac91e5b02cf0a9465a07dbc4930cc2ee889aeec43d4d46d5fc6c.jpg"
+  },
+  {
+    "node_id": "practitioner:ernest edmonds",
+    "type": "practitioner",
+    "name": "Ernest Edmonds",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Ernest_Edmonds_2008.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q18921694",
+      "property": "P18",
+      "commons_file": "Ernest Edmonds 2008.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    }
+  },
+  {
+    "node_id": "practitioner:frank kraayeveld",
+    "type": "practitioner",
+    "name": "Frank Kraayeveld",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Frank_Kraayeveld_leider_van_de_Bintangs_Beverwijk%2C_1976_-_33.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q114646523",
+      "property": "P18",
+      "commons_file": "Frank Kraayeveld leider van de Bintangs Beverwijk, 1976 - 33.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/cf/cf9401029a6a07e79065fe64508c89656b06e665e3d555cc6970abd060a1bc13.jpg"
+  },
+  {
+    "node_id": "practitioner:frieder nake",
+    "type": "practitioner",
+    "name": "Frieder Nake",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Frieder_Nake_2012.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q92703",
+      "property": "P18",
+      "commons_file": "Frieder Nake 2012.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    }
+  },
+  {
+    "node_id": "practitioner:gareth hoskins",
+    "type": "practitioner",
+    "name": "Gareth Hoskins",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Gareth_Hoskins_OBE_-_PRO_001_%28C%29_GILLIAN_HAYES_600x450.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q22056742",
+      "property": "P18",
+      "commons_file": "Gareth Hoskins OBE - PRO 001 (C) GILLIAN HAYES 600x450.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/8c/8c2e7c06aa16e99ba6353795c5ebb5b9abf583787e92b35f9f9b368b6079b310.jpg"
   },
   {
     "node_id": "practitioner:georg nees",
@@ -1184,6 +1559,73 @@
     "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/c4/c486213b2c29c7113f9c5a267281a382a0fa24aefee7f328d09c4f9b75e82f3d.jpg"
   },
   {
+    "node_id": "practitioner:golan levin",
+    "type": "practitioner",
+    "name": "Golan Levin",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Golan_Levin_in_2019.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q5578394",
+      "property": "P18",
+      "commons_file": "Golan Levin in 2019.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/24/24f85db5d46fdfa5b9e1b867a3bffe7ef88af8b8a68bae5555d8c7db3016884f.jpg"
+  },
+  {
+    "node_id": "practitioner:harald sohlberg",
+    "type": "practitioner",
+    "name": "Harald Sohlberg",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Sohlberg-selvportrett.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q1367020",
+      "property": "P18",
+      "commons_file": "Sohlberg-selvportrett.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/72/729dd39ffde4d40a41cfe2b2bbd05c8201c2453fe367ac8c6541658d0e6f0863.jpg"
+  },
+  {
+    "node_id": "practitioner:herbert brun",
+    "type": "practitioner",
+    "name": "Herbert Brün",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Photo_of_Herbert_Brun_Reading.png",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q105715",
+      "property": "P18",
+      "commons_file": "Photo of Herbert Brun Reading.png",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/98/98689a26152c6b4e65d6b28170a411619e95f7294fefeac923dc5ed850abbe62.png"
+  },
+  {
+    "node_id": "practitioner:herbert w franke",
+    "type": "practitioner",
+    "name": "Herbert W. Franke",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Transmediale-2010-Opening-Frakne-detail.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q78620",
+      "property": "P18",
+      "commons_file": "Transmediale-2010-Opening-Frakne-detail.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    }
+  },
+  {
     "node_id": "practitioner:iannis xenakis",
     "type": "practitioner",
     "name": "Iannis Xenakis",
@@ -1199,6 +1641,22 @@
       ]
     },
     "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/07/07d2f7b25754a4aa742d615cb86ac8e7bfc97e00ae29a4dd57ffda238ca6bcad.jpg"
+  },
+  {
+    "node_id": "practitioner:jacques palumbo",
+    "type": "practitioner",
+    "name": "Jacques Palumbo",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Jacques_Palumbo_France.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q16266654",
+      "property": "P18",
+      "commons_file": "Jacques Palumbo France.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    }
   },
   {
     "node_id": "practitioner:james bridle",
@@ -1218,6 +1676,122 @@
     "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/a7/a7c1d1eadb7b2d6a781a4721aa5802328133830757b7b37a2be7bfde4f407640.jpg"
   },
   {
+    "node_id": "practitioner:james merrill",
+    "type": "practitioner",
+    "name": "James Merrill",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/James_Merrill_%281973%29_%28cropped%29.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q1368437",
+      "property": "P18",
+      "commons_file": "James Merrill (1973) (cropped).jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/1b/1b4a7b830288dc8157b0e8983babb4e61aa09c02b474af579eef1fc630c0064a.jpg"
+  },
+  {
+    "node_id": "practitioner:jan robert leegte",
+    "type": "practitioner",
+    "name": "Jan Robert Leegte",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Tussen_Kunst_%26_Glitch_2017_%2837326678101%29.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q27649624",
+      "property": "P18",
+      "commons_file": "Tussen Kunst & Glitch 2017 (37326678101).jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    }
+  },
+  {
+    "node_id": "practitioner:jasper conran",
+    "type": "practitioner",
+    "name": "Jasper Conran",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Jasper_Conran.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q6163915",
+      "property": "P18",
+      "commons_file": "Jasper Conran.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/23/2380b1268c629d86b1febe5343f65c619f56c6b32f310c25e60f4993ce5453db.jpg"
+  },
+  {
+    "node_id": "practitioner:javier tomeo",
+    "type": "practitioner",
+    "name": "Javier Tomeo",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Javier_Tomeo_firmando.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q1570571",
+      "property": "P18",
+      "commons_file": "Javier Tomeo firmando.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    }
+  },
+  {
+    "node_id": "practitioner:jean-pierre hebert",
+    "type": "practitioner",
+    "name": "Jean-Pierre Hébert",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Alain_de_Benoist_dans_le_documentaire_Alain_de_Benoist._R%C3%A9ponses_de_Simone_Olla.png",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q516375",
+      "property": "P18",
+      "commons_file": "Alain de Benoist dans le documentaire Alain de Benoist. Réponses de Simone Olla.png",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/13/13e26a7bcf8c068aee0f260996d3c241feb72117e88a275ca573aa77a12ffd1c.png"
+  },
+  {
+    "node_id": "practitioner:jen stark",
+    "type": "practitioner",
+    "name": "Jen Stark",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Jen_Stark.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q6177329",
+      "property": "P18",
+      "commons_file": "Jen Stark.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/4f/4f368c65bd86a58b55bb7ed313d0c06a2089c634689859df5d42caa67460aeda.jpg"
+  },
+  {
+    "node_id": "practitioner:jeremy gardiner",
+    "type": "practitioner",
+    "name": "Jeremy Gardiner",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Jeremy_Gardiner_Painter.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q6181368",
+      "property": "P18",
+      "commons_file": "Jeremy Gardiner Painter.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    }
+  },
+  {
     "node_id": "practitioner:john gerrard",
     "type": "practitioner",
     "name": "John Gerrard",
@@ -1235,6 +1809,23 @@
     "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/ea/eadd850f5f07f7cee50c35c6377b0f2a336c533a15fd7117caf3eb331fb92fe8.jpg"
   },
   {
+    "node_id": "practitioner:jonas lund",
+    "type": "practitioner",
+    "name": "Jonas Lund",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/PortraitJonasLundHat.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q26704214",
+      "property": "P18",
+      "commons_file": "PortraitJonasLundHat.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/64/64972bd6eed03df328449ed12e9b1afafd954e5a80d57d51c1219cee24bfb787.jpg"
+  },
+  {
     "node_id": "practitioner:kate crawford",
     "type": "practitioner",
     "name": "Kate Crawford",
@@ -1250,6 +1841,23 @@
       ]
     },
     "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/f5/f5032e58f5267178668e811c0690f457713aeb61035b49ed1ea7f08d31c92650.jpg"
+  },
+  {
+    "node_id": "practitioner:keith khan",
+    "type": "practitioner",
+    "name": "Keith Khan",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/The_Gifting_designer_Keith_Khan._LEEDS_2023_%28cropped%29.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q6384597",
+      "property": "P18",
+      "commons_file": "The Gifting designer Keith Khan. LEEDS 2023 (cropped).jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/d0/d04d1c0e951bc5eaf97d928c8ba9b8473df3ff3a03fe3ceca03176a6c2f3d7c1.jpg"
   },
   {
     "node_id": "practitioner:ken perlin",
@@ -1286,6 +1894,23 @@
     "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/50/505405b8a8da15b095da817f5fe91e41b20a0b73fed5308f44e3313c5e3872cc.jpg"
   },
   {
+    "node_id": "practitioner:konstantin grcic",
+    "type": "practitioner",
+    "name": "Konstantin Grcic",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Konstantin_Grcic.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q96612",
+      "property": "P18",
+      "commons_file": "Konstantin Grcic.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/df/dfce753afe903a639523b0c2b755a2641de2275e212772d7698290524814be72.jpg"
+  },
+  {
     "node_id": "practitioner:laturbo avedon",
     "type": "practitioner",
     "name": "LaTurbo Avedon",
@@ -1320,6 +1945,39 @@
     "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/e5/e5ab0d753ecddef0039083fb5450ee59f96d0f385532703cfac5f85af9c78525.jpg"
   },
   {
+    "node_id": "practitioner:manfred mohr",
+    "type": "practitioner",
+    "name": "Manfred Mohr",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Manfred_Mohr_Portrait_2019.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q872832",
+      "property": "P18",
+      "commons_file": "Manfred Mohr Portrait 2019.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/4b/4b45e1cd5e13a03fd37344f87a5d9218acc9214cd4de2f0280803cec88cc5eb5.jpg"
+  },
+  {
+    "node_id": "practitioner:margaret lanzetta",
+    "type": "practitioner",
+    "name": "Margaret Lanzetta",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Margaret-Lanzetta.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q55219197",
+      "property": "P18",
+      "commons_file": "Margaret-Lanzetta.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    }
+  },
+  {
     "node_id": "practitioner:mario klingemann",
     "type": "practitioner",
     "name": "Mario Klingemann",
@@ -1335,6 +1993,39 @@
       ]
     },
     "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/73/733ab47c048b8983080460eccaaaac8d377e179e26fb6dbac30b6e05e6e3da9e.jpg"
+  },
+  {
+    "node_id": "practitioner:mathias isaksen",
+    "type": "practitioner",
+    "name": "Mathias Isaksen",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Portrett_av_Matti_Aikio.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q1467641",
+      "property": "P18",
+      "commons_file": "Portrett av Matti Aikio.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/3a/3a60200713f6e44bd54755419ca2184e31f7bb2a72a591138ecc4dc2e8c72079.jpg"
+  },
+  {
+    "node_id": "practitioner:matsys",
+    "type": "practitioner",
+    "name": "Matsys",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Johannes_Wierix_%28attr.%29_-_Portrait_of_Quinten_Massijs_%28I%29_%2C_1572_%28cropped%29.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q314275",
+      "property": "P18",
+      "commons_file": "Johannes Wierix (attr.) - Portrait of Quinten Massijs (I) , 1572 (cropped).jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    }
   },
   {
     "node_id": "practitioner:matt kane",
@@ -1371,6 +2062,23 @@
     "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/2c/2cc778477df144b8c4bb9c7ad3e602bf79c7b80191c423908f8f1ce91f53b398.jpg"
   },
   {
+    "node_id": "practitioner:maya man",
+    "type": "practitioner",
+    "name": "Maya Man",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Maya_Erskine.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q19662801",
+      "property": "P18",
+      "commons_file": "Maya Erskine.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/85/8568a0124540237222e6f2fb481aaee830a0901f6b33e0d26b665e281ed16f73.jpg"
+  },
+  {
     "node_id": "practitioner:mckenzie wark",
     "type": "practitioner",
     "name": "McKenzie Wark",
@@ -1388,6 +2096,39 @@
     "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/d2/d20acec03a02be5a44902ce2361ec8ba150a220a0950b21c75f5b895f7af6d03.jpg"
   },
   {
+    "node_id": "practitioner:mel duarte",
+    "type": "practitioner",
+    "name": "mel duARTE",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Mel_Duarte_arquivo_pessoal.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q59104105",
+      "property": "P18",
+      "commons_file": "Mel Duarte arquivo pessoal.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/f1/f1efdf4aa8cea3314a477d07cc62d80d1e49fa86332e4dd5ae10c76cde3cfdc4.jpg"
+  },
+  {
+    "node_id": "practitioner:miguel angel vidal",
+    "type": "practitioner",
+    "name": "Miguel Angel Vidal",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Miguel_Angel_Vidal_en_su_taller.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q6015892",
+      "property": "P18",
+      "commons_file": "Miguel Angel Vidal en su taller.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    }
+  },
+  {
     "node_id": "practitioner:mitchell chan",
     "type": "practitioner",
     "name": "Mitchell Chan",
@@ -1403,6 +2144,155 @@
       ]
     },
     "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/12/12b91653b086c72637aac8e1bb79b116480f0bf7c22d0412eb243e117f86b031.jpg"
+  },
+  {
+    "node_id": "practitioner:nancy burson",
+    "type": "practitioner",
+    "name": "Nancy Burson",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Nancy_Burson.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q3335558",
+      "property": "P18",
+      "commons_file": "Nancy Burson.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/0f/0f64d9885d7c24918a4f4efcdd8183d11a1ed81b7d7ee74281d9b6b2effbd7a7.jpg"
+  },
+  {
+    "node_id": "practitioner:naoto fukasawa",
+    "type": "practitioner",
+    "name": "Naoto Fukasawa",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Naoto_Fukasawa.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q636724",
+      "property": "P18",
+      "commons_file": "Naoto Fukasawa.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    }
+  },
+  {
+    "node_id": "practitioner:norman zammit",
+    "type": "practitioner",
+    "name": "Norman Zammit",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Self_Portrait_with_Blue_Burning.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q22093638",
+      "property": "P18",
+      "commons_file": "Self Portrait with Blue Burning.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/81/8162342fa8768404187c95abe247129c39b3043ee3f0e3b9a69fe425f1086765.jpg"
+  },
+  {
+    "node_id": "practitioner:olga tobreluts",
+    "type": "practitioner",
+    "name": "Olga Tobreluts",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Olga_Tobreluts.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q4459161",
+      "property": "P18",
+      "commons_file": "Olga Tobreluts.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/41/417d6abd7f0d51d5d622e41e9e66cf300935d0cc44a2ac530ec66f235a9c8b53.jpg"
+  },
+  {
+    "node_id": "practitioner:osvaldo romberg",
+    "type": "practitioner",
+    "name": "Osvaldo Romberg",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Osvaldo_Romberg.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q7108075",
+      "property": "P18",
+      "commons_file": "Osvaldo Romberg.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/47/47908fedcb2a9b1d504ab0d5fdb996927ceea088e39b6ec4373b3e6c716618f7.jpg"
+  },
+  {
+    "node_id": "practitioner:owen moore",
+    "type": "practitioner",
+    "name": "Owen Moore",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Owen_Moore_in_High_Voltage.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q966972",
+      "property": "P18",
+      "commons_file": "Owen Moore in High Voltage.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/be/be177fc6ad39ba91c1a25cd28884e2b1b6b4f566fb2f5a90b9e513f561417665.jpg"
+  },
+  {
+    "node_id": "practitioner:pedro meyer",
+    "type": "practitioner",
+    "name": "Pedro Meyer",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Pedromeyerygato.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q9057571",
+      "property": "P18",
+      "commons_file": "Pedromeyerygato.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    }
+  },
+  {
+    "node_id": "practitioner:peter struycken",
+    "type": "practitioner",
+    "name": "Peter Struycken",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Peter_Struycken%2C_1992.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q2706817",
+      "property": "P18",
+      "commons_file": "Peter Struycken, 1992.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    }
+  },
+  {
+    "node_id": "practitioner:pindar van arman",
+    "type": "practitioner",
+    "name": "Pindar Van Arman",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Pindar_Van_Arman.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q46996192",
+      "property": "P18",
+      "commons_file": "Pindar Van Arman.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    }
   },
   {
     "node_id": "practitioner:refik anadol",
@@ -1439,6 +2329,173 @@
     "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/70/7017e775d98b2e88519ce1acbb30352077fc3451e5badf01c840a79167112173.jpg"
   },
   {
+    "node_id": "practitioner:sarah zucker",
+    "type": "practitioner",
+    "name": "Sarah Zucker",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Sarah_Zucker_-_The_Portrait.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q23770314",
+      "property": "P18",
+      "commons_file": "Sarah Zucker - The Portrait.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    }
+  },
+  {
+    "node_id": "practitioner:sonya rapoport",
+    "type": "practitioner",
+    "name": "Sonya Rapoport",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Sonya_Rapoport_%26_Malcolm_Margolin_%286963364629%29.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q7562582",
+      "property": "P18",
+      "commons_file": "Sonya Rapoport & Malcolm Margolin (6963364629).jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/a5/a51413fa4a1de9a86a21bbfe21f450e0f7a13031c4fe810dc60ef43494a30888.jpg"
+  },
+  {
+    "node_id": "practitioner:sputniko",
+    "type": "practitioner",
+    "name": "Sputniko!",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Hiromi_Ozaki_by_Joi_Ito.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q15893839",
+      "property": "P18",
+      "commons_file": "Hiromi Ozaki by Joi Ito.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/8f/8f7d0483c2c933fe83da473266a05d91522e75a42067cbf27046ac0206d72b32.jpg"
+  },
+  {
+    "node_id": "practitioner:sue gollifer",
+    "type": "practitioner",
+    "name": "Sue Gollifer",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Sue_Gollifer_at_BCS_London_20241210_181011.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q131566367",
+      "property": "P18",
+      "commons_file": "Sue Gollifer at BCS London 20241210 181011.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/90/905e76bd6957cac30d0a1701cc3bbffa69af1e922818594507c61f8c0ff0961d.jpg"
+  },
+  {
+    "node_id": "practitioner:susan bee",
+    "type": "practitioner",
+    "name": "Susan Bee",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Susan_Bee_in_2006%2C_photo_by_Charles_Bernstein_for_PennSound.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q7647562",
+      "property": "P18",
+      "commons_file": "Susan Bee in 2006, photo by Charles Bernstein for PennSound.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    }
+  },
+  {
+    "node_id": "practitioner:tabor robak",
+    "type": "practitioner",
+    "name": "Tabor Robak",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Tabor_Robak_food_eating.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q30501966",
+      "property": "P18",
+      "commons_file": "Tabor Robak food eating.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/02/020b181243db94b42a729e585c9025c83e7ed784e05b421e25523f6976c9cb2b.jpg"
+  },
+  {
+    "node_id": "practitioner:victor acevedo",
+    "type": "practitioner",
+    "name": "Victor Acevedo",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/VICTOR_ACEVEDO_May_19%2C_2023_HiRes_v02.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q107639411",
+      "property": "P18",
+      "commons_file": "VICTOR ACEVEDO May 19, 2023 HiRes v02.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    }
+  },
+  {
+    "node_id": "practitioner:william gibson",
+    "type": "practitioner",
+    "name": "William Gibson",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/William_Gibson_60th_birthday_portrait.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q188987",
+      "property": "P18",
+      "commons_file": "William Gibson 60th birthday portrait.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/6a/6ac7562d48192625e56d13bc43a250be0069d0297f620d7b593766619c0c5018.jpg"
+  },
+  {
+    "node_id": "practitioner:william tan",
+    "type": "practitioner",
+    "name": "William Tan",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/William_T._Vollmann_2006.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q29344",
+      "property": "P18",
+      "commons_file": "William T. Vollmann 2006.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/29/2949167a485ef0c946bedeeaf33b4af9a43811d876c28566aa6d64418da3b7be.jpg"
+  },
+  {
+    "node_id": "practitioner:yoichiro kawaguchi",
+    "type": "practitioner",
+    "name": "Yoichiro Kawaguchi",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Yoichiro_Kawaguchi.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q2600577",
+      "property": "P18",
+      "commons_file": "Yoichiro Kawaguchi.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/dd/dd01769dfec1054cbdacb25d6a2ae06ad5b21e1adfef66208cd8f614156f63ce.jpg"
+  },
+  {
     "node_id": "practitioner:yuk hui",
     "type": "practitioner",
     "name": "Yuk Hui",
@@ -1456,6 +2513,23 @@
     "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/42/42b151b23cbb157e8af6b08b8b0126976b5d0d72b7b2998f6899a4b8d01fe699.jpg"
   },
   {
+    "node_id": "practitioner:yves behar",
+    "type": "practitioner",
+    "name": "Yves Béhar",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Yves_Behar.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q123419",
+      "property": "P18",
+      "commons_file": "Yves Behar.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/0c/0c5a43da42775185f0b029f74a55ee73dfce05885d966103ce960c883a7d298c.jpg"
+  },
+  {
     "node_id": "practitioner:zach lieberman",
     "type": "practitioner",
     "name": "Zach Lieberman",
@@ -1465,6 +2539,23 @@
       "source_page": "https://commons.wikimedia.org/wiki/Category:Zachary_Lieberman"
     },
     "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/01/01d9ce13700e3f0c38a6f88a7fd3a14647b57a1eb281ac48ac30dcfdb3aff5e4.jpg"
+  },
+  {
+    "node_id": "practitioner:zineb sedira",
+    "type": "practitioner",
+    "name": "Zineb Sedira",
+    "image_url": "https://commons.wikimedia.org/wiki/Special:FilePath/Zineb_Sedira.jpg",
+    "image_provenance": {
+      "source": "wikidata",
+      "qid": "Q19630851",
+      "property": "P18",
+      "commons_file": "Zineb Sedira.jpg",
+      "match": "search_verified",
+      "instance_of": [
+        "Q5"
+      ]
+    },
+    "cdn_image_url": "https://pub-ebd869876a824a5e83dbb2fe42d03211.r2.dev/images/c7/c78786b39299691629a86e26d0518ae07fcb0fb5d01fa73080b0fa29e712c03c.jpg"
   },
   {
     "node_id": "scene:AI art",

@@ -213,6 +213,72 @@ if (imageOverlay) {
   console.log(`Image overlay applied: ${overlayApplied} nodes (${overlaySkipped} skipped) from seed/image_overlay.json`);
 }
 
+// --- Image mirror (build-time DB patch) -------------------------------
+// The R2 cdn_image_url for nodes that ALREADY carry an upstream image_url in
+// nodes.json. Kept out of nodes.json (pristine cull output — cull_digital_art.py
+// would clobber any cdn written there on its next re-run) and out of the image
+// overlay (which is gap-fill for IMAGELESS nodes and refuses to touch a node
+// that already has an image). This block is the inverse: it sets cdn_image_url
+// ADDITIVELY on nodes that have image_url but no cdn yet. image_url is never
+// overwritten (provenance stays). Produced by upload_to_r2.py --mirror; keyed
+// by node_id; survives canon rebuilds. Same WAL trap as above — must run before
+// the PRAGMA wal_checkpoint(TRUNCATE) at the end of this file.
+type ImageMirrorEntry = {
+  node_id: string;
+  image_url?: string | null;
+  cdn_image_url?: string | null;
+};
+let imageMirror: ImageMirrorEntry[] | null = null;
+try {
+  imageMirror = JSON.parse(readFileSync(join(seedDir, "image_mirror.json"), "utf-8")) as ImageMirrorEntry[];
+} catch (err) {
+  if ((err as NodeJS.ErrnoException)?.code !== "ENOENT") throw err;
+  console.log("Image mirror: seed/image_mirror.json absent — skipped.");
+}
+if (imageMirror) {
+  const selectMeta = db.prepare("SELECT metadata FROM nodes WHERE id = ?");
+  const updateMeta = db.prepare("UPDATE nodes SET metadata = ? WHERE id = ?");
+  let mirrorApplied = 0;
+  let mirrorSkipped = 0;
+  db.exec("BEGIN");
+  for (const e of imageMirror) {
+    if (!e.cdn_image_url) {
+      mirrorSkipped++;
+      continue;
+    }
+    const row = selectMeta.get(e.node_id) as { metadata: string | null } | undefined;
+    if (!row) {
+      mirrorSkipped++; // mirror references a node not in the seed (e.g. culled out)
+      continue;
+    }
+    let md: Record<string, unknown> = {};
+    if (row.metadata) {
+      try {
+        md = JSON.parse(row.metadata) as Record<string, unknown>;
+      } catch {
+        md = {};
+      }
+    }
+    // Idempotent — don't re-stamp an existing cdn.
+    if (md.cdn_image_url) {
+      mirrorSkipped++;
+      continue;
+    }
+    // Correctness guard: the cdn is content-addressed to the image_url that was
+    // mirrored. If the node's current image_url drifted from what the mirror
+    // recorded, the cdn is stale — skip and let upload_to_r2.py --mirror re-run.
+    if (e.image_url && md.image_url && md.image_url !== e.image_url) {
+      mirrorSkipped++;
+      continue;
+    }
+    md.cdn_image_url = e.cdn_image_url;
+    updateMeta.run(JSON.stringify(md), e.node_id);
+    mirrorApplied++;
+  }
+  db.exec("COMMIT");
+  console.log(`Image mirror applied: ${mirrorApplied} nodes (${mirrorSkipped} skipped) from seed/image_mirror.json`);
+}
+
 const insertEdge = db.prepare(
   `INSERT OR IGNORE INTO edges (
     id, source_id, target_id, edge_type, signal_id, confidence, charge,
@@ -239,6 +305,86 @@ for (const e of edges) {
 }
 db.exec("COMMIT");
 console.log(`Edges inserted: ${edges.length}`);
+
+// --- Canon overlay (build-time DB patch for corrections) -------------
+// nodes.json / edges.json / signals.json stay pristine. The overlay carries
+// CORRECTIONS only (not new ingestions — those still come from gatherers
+// writing to the canon files directly). Use it for: slug-collision splits,
+// curator-driven bi-temporal supersessions, manual additions that don't have
+// a natural producer. Apply order: signals → nodes → edges → supersessions
+// (referential integrity: a supersession's invalidated_by may reference a new
+// signal_id; a new edge may reference new node_ids and/or new signal_ids).
+//
+// CRITICAL: must run BEFORE the wal_checkpoint near the end of this file —
+// same WAL trap as the image overlay and the embeddings block.
+type CanonOverlay = {
+  add_signals?: any[];
+  add_nodes?: any[];
+  add_edges?: any[];
+  supersede_edges?: Array<{
+    edge_id: string;
+    valid_until: string;
+    invalidated_by: string;
+    reason?: string;
+  }>;
+};
+let canonOverlay: CanonOverlay | null = null;
+try {
+  canonOverlay = JSON.parse(readFileSync(join(seedDir, "canon_overlay.json"), "utf-8")) as CanonOverlay;
+} catch (err) {
+  if ((err as NodeJS.ErrnoException)?.code !== "ENOENT") throw err;
+  console.log("Canon overlay: seed/canon_overlay.json absent — skipped.");
+}
+if (canonOverlay) {
+  let appliedSignals = 0, appliedNodes = 0, appliedEdges = 0, appliedSupersessions = 0;
+  // UPDATE is idempotent via `valid_until IS NULL`: a second run won't shift
+  // valid_until forward, and won't re-supersede an already-superseded edge.
+  const supersedeEdge = db.prepare(
+    "UPDATE edges SET valid_until = ?, invalidated_by = ? WHERE id = ? AND valid_until IS NULL"
+  );
+  db.exec("BEGIN");
+  for (const s of canonOverlay.add_signals ?? []) {
+    insertSignal.run(
+      s.id, s.title, s.source_url ?? null, s.source_type ?? null,
+      s.cla_layer ?? null, s.summary ?? null, s.content ?? null,
+      s.submitted_by ?? null, s.confidence ?? null, toInt(s.lived_experience ?? false),
+      s.created_at ?? nowSeedIso,
+      s.consent_scope ?? "structural_only", s.consent_attribution ?? "attributed",
+      toInt(s.consent_revocable ?? true),
+      s.processing_trace ?? null, s.source_origin ?? "ai_assisted",
+      s.batch_id ?? null, s.status ?? "active", s.provenance_chain ?? null
+    );
+    appliedSignals++;
+  }
+  for (const n of canonOverlay.add_nodes ?? []) {
+    insertNode.run(
+      n.id, n.type, n.name, n.slug ?? null,
+      asString(n.metadata),
+      n.created_at ?? nowSeedIso,
+      n.updated_by ?? "canon-overlay"
+    );
+    appliedNodes++;
+  }
+  for (const e of canonOverlay.add_edges ?? []) {
+    insertEdge.run(
+      e.id, e.source_id, e.target_id, e.edge_type,
+      e.signal_id ?? null, e.confidence ?? null, e.charge ?? null,
+      e.created_at ?? nowSeedIso, e.created_by ?? "canon-overlay",
+      e.event_time ?? null, e.valid_from ?? null,
+      e.valid_until ?? null, e.invalidated_by ?? null
+    );
+    appliedEdges++;
+  }
+  for (const s of canonOverlay.supersede_edges ?? []) {
+    const result = supersedeEdge.run(s.valid_until, s.invalidated_by, s.edge_id);
+    if (result.changes > 0) appliedSupersessions++;
+  }
+  db.exec("COMMIT");
+  console.log(
+    `Canon overlay applied: ${appliedSignals} signals, ${appliedNodes} nodes, ` +
+    `${appliedEdges} edges, ${appliedSupersessions} supersessions from seed/canon_overlay.json`
+  );
+}
 
 const insertAlias = db.prepare(
   "INSERT OR IGNORE INTO node_aliases (source, external_id, node_id, created_at) VALUES (?, ?, ?, ?)"

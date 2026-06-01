@@ -8,16 +8,27 @@ Field intelligence infrastructure for the digital arts. A knowledge commons and 
 
 ---
 
-## What's in the graph (May 2026)
+## What's in the graph (May 2026 — Seed Canon, curated-platform + V&A pipeline)
 
-| | count |
-|---|---|
-| Nodes | **1,491** across 10 types: artwork (728), concept (435), practitioner (146), institution (121), scene (30), collective (12), platform (8), classification_regime (6), publication (3), project (2) |
-| Edges | **4,544** — 9 curated edge types + 2 auto-derived from the embedding pipeline (STYLE_KIN, VISUALLY_AFFINE) |
-| Multimodal embeddings | **1,338** Gemini Embedding 2 vectors (artworks fused text+image; practitioners/concepts/scenes text-only) |
-| AI attribution proposals pending review | **17** |
+**Exact counts: [`seed/STATS.md`](seed/STATS.md)** (generated from the canon, so
+they never drift) · live: `GET /api/stats`. In shape:
 
-See [`docs/EMBEDDINGS.md`](docs/EMBEDDINGS.md) for the embedding pipeline; [`seed/SOURCES.md`](seed/SOURCES.md) for the canonical edge-type list and source provenance; [`CLAUDE.md`](CLAUDE.md) for architecture + operator notes.
+- **Nodes** — `artwork` (platform tokens + V&A holdings, **every one with a
+  mirrored R2 image**), `practitioner` (platform artists + V&A pioneers),
+  `concept` (8 base + fxhash tag-concepts), `classification_regime` (6),
+  `collective` (V&A groups), `platform` (Art Blocks, fxhash), `institution` (V&A).
+- **Curated edges** — CLASSIFIED_BY, CREATED_BY, EXHIBITED_AT, EMBODIES (two-tier:
+  generative-art/computer-art + fxhash tag-concepts), PRACTICES (V&A makers →
+  computer-art). BELONGS_TO / COLLABORATES_WITH / USES_TECHNIQUE / INFLUENCES
+  reserved at 0; RESPONDS_TO empty by design (artist-intent only).
+- **Multimodal embeddings** — Gemini Embedding 2 (768-d), committed sidecars baked
+  into `seed.db`; auto-derived STYLE_KIN + VISUALLY_AFFINE + Tier-2 concept-EMBODIES
+  refreshed by the daily `embed-derive-daily` workflow; `/embed-space` projects all
+  vectors.
+
+**The May 2026 rebuild + V&A de-bias pass.** The canon went through a long arc (full story in [`CLAUDE.md`](CLAUDE.md) § "The rebuild journey"): the contaminated original was wiped; a four-source *sweep* (MoMA / Wikidata / Art Blocks / fxhash) was generated, then culled — until the Wikidata `digital_art_qids` list was found to be **corrupt** (one QID, "graphic artist", dragged in 3,652 non-digital painters/sculptors — Duchamp, Miró). The cull couldn't catch it because it *trusted the source tag*. So the tainted sources were dropped and the canon was **re-run from the two genuinely-clean platform gatherers — Art Blocks + fxhash**, plus a rule-derived editorial layer. Two May-2026 passes then refined it: a **V&A de-bias pass** added the **Victoria & Albert Museum's Computer Arts Society collection** — the 1960s–70s computer-art spine (Nake, Cohen, Mohr, Molnár, Nees …), all IIIF-imaged (the every-artwork-imaged bar Wikidata's Commons images couldn't clear); and an **fxhash curation pass** replaced a provenance-murky chronological dump with a `--curate`d selection (fxhash relevance + a secondary-market demand gate → the collector-validated 2021 generative canon: SMOLSKULL, RGB Elementary Cellular Automaton, Dragons …), killing the permissionless trash and over-dominance. Each source now contributes its *most significant slice*. The canon stays clean *by construction*: `merge_batches.py` assembles only the batches present; **every artwork carries a mirrored R2 image** (the `merge --require-cdn` invariant). The EMBODIES layer is enriched from **artist-applied fxhash tags** into source-attested tag-concepts (`abstract`, `pixel`, `geometric`, …), with the embedding pipeline propagating inferred tag-labels to visually-similar untagged works. Counts live in [`seed/STATS.md`](seed/STATS.md); the producer contract is in [`seed/_build/PRODUCER_CONTRACT.md`](seed/_build/PRODUCER_CONTRACT.md).
+
+See [`docs/EMBEDDINGS.md`](docs/EMBEDDINGS.md) for the embedding pipeline; [`seed/SOURCES.md`](seed/SOURCES.md) for the selection criteria + provenance; [`CLAUDE.md`](CLAUDE.md) for architecture + operator notes.
 
 ---
 
@@ -58,7 +69,7 @@ seed/_build/embed_nodes.py  ──► Gemini API  ──► seed/embeddings.bin 
                               ┌────────────────────────┴───────────────────┐
                               ▼                                            ▼
                    /field, /embed-space, /neighbours        /review?kind=ai_suggestion
-                   profile-page enrichment                   17 attribution candidates
+                   profile-page enrichment                   attribution candidates
 ```
 
 Full reference: [`docs/EMBEDDINGS.md`](docs/EMBEDDINGS.md).
@@ -72,7 +83,7 @@ Full reference: [`docs/EMBEDDINGS.md`](docs/EMBEDDINGS.md).
 - **D3 + Canvas** — graph viz (`/graph`), field viz (`/field`), embedding scatter (`/embed-space`)
 - **Google Gemini Embedding 2** — multimodal vector space (offline batch via Python, online derive in TS)
 - **UMAP** (umap-learn) — offline 2D projection for `/embed-space`
-- **Cloudflare R2** — content-addressable image mirror (393 artwork images)
+- **Cloudflare R2** — content-addressable image mirror (every artwork)
 - **Fly.io** — backend hosting, single 512MB machine in `fra`, persistent `/data` volume
 - **Docker** — multi-stage build, runtime image ~74 MB
 
@@ -94,7 +105,7 @@ Full reference: [`docs/EMBEDDINGS.md`](docs/EMBEDDINGS.md).
 |---|---|
 | `/graph` | D3 force-directed graph view |
 | `/field` | Generative dot-field view (press `e` for embeddings mode) |
-| `/embed-space` | UMAP 2D scatter of all 1,338 embedding vectors |
+| `/embed-space` | UMAP 2D scatter of all embedding vectors |
 | `/neighbours/:type/:slug` | Top-K cosine neighbours of any node, with knobs |
 
 ### Curation
@@ -140,14 +151,14 @@ adai-v1/
 ├── db.sql                       — CR-SQLite schema (CRR + local-only tables)
 ├── seed/
 │   ├── nodes.json, edges.json, signals.json, contributors.json, aliases.json
-│   ├── embeddings.bin           — 1,338 × 768 f32 LE (committed, ~4 MB)
+│   ├── embeddings.bin           — Gemini multimodal vectors (committed, baked into seed.db)
 │   ├── embeddings.json          — sidecar metadata (offsets, hashes)
 │   ├── embeddings.umap2d.json   — UMAP projection, served at /api/embed-space
 │   ├── SOURCES.md               — canonical edge types + source provenance
 │   ├── COVERAGE.md, README.md
 │   └── _build/                  — offline Python pipeline (gitignored from Docker)
 │       ├── embed_nodes.py, image_fetch.py, project_umap.py, calibrate.py
-│       ├── fetch_*.py           — MoMA, Wikidata, fxhash, Art Blocks, Met data fetchers
+│       ├── fetch_artblocks.py, fetch_fxhash.py — the two live gatherers (fetch_wikidata.py quarantined)
 │       └── upload_to_r2.py      — R2 image mirror uploader
 ├── public/
 │   └── field/                   — /field generative dot-field view

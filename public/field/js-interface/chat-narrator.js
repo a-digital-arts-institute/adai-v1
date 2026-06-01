@@ -83,7 +83,7 @@
       .join('\n');
 
     // Image coverage (artwork-side editorial fact).
-    const renderable = (u) => /\.(jpe?g|png|gif|webp)(\?|$)/i.test(u || '');
+    const renderable = (u) => /^https?:\/\//i.test(u || '');
     const artworks = g.byType.get('artwork') || [];
     const artImgCount = artworks.filter(a => renderable(a.cdn_image_url) || renderable(a.image_url)).length;
 

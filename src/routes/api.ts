@@ -1,5 +1,6 @@
 import { Router } from "express";
 import crypto from "node:crypto";
+import { createGzip } from "node:zlib";
 import { readFileSync, existsSync, statSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -20,6 +21,11 @@ const PROJECT_ROOT = join(__dirname, "..", "..");
 
 const router = Router();
 
+// Tag stamped on every embedding-derived edge by src/embed/derive.ts
+// (CREATED_BY_TAG). The /field streaming loader splits these out of the initial
+// payload and lazy-loads them only when the user enters embeddings ('e') mode.
+const DERIVED_CREATED_BY = "embedding-multimodal-v1";
+
 // GET /api/stats
 router.get("/api/stats", (_req, res) => {
   const db = getDb();
@@ -30,11 +36,38 @@ router.get("/api/stats", (_req, res) => {
     .prepare("SELECT COUNT(*) as count FROM intake_queue WHERE status = 'pending'")
     .get() as any;
 
+  // Split the *live* (valid_until IS NULL) edge count into curated vs the
+  // embedding-derived overlay. The /field streaming loader stamps its
+  // IndexedDB cache on (nodes, curated_edges) so a nightly re-derive — which
+  // only changes derived_edges — doesn't needlessly invalidate the curated
+  // graph cache; the derived layer is lazy-loaded and stamped separately.
+  //
+  // curated_edges MUST be computed with the exact same WHERE clause as
+  // /api/graph/stream's edge query (live, non-derived, both endpoints
+  // non-'related') — the stamp it forms (`${nodes}:${curated_edges}`) has to
+  // equal the stream's meta stamp, or the IndexedDB cache never validates and
+  // every visit re-streams. 'related' is reserved/empty today so the related
+  // filter is a no-op, but pinning the clauses together keeps it that way.
+  const { count: curatedEdges } = db
+    .prepare(
+      `SELECT COUNT(*) as count FROM edges e
+       WHERE e.valid_until IS NULL
+         AND e.created_by IS NOT '${DERIVED_CREATED_BY}'
+         AND e.source_id IN (SELECT id FROM nodes WHERE type != 'related')
+         AND e.target_id IN (SELECT id FROM nodes WHERE type != 'related')`
+    )
+    .get() as any;
+  const { count: derivedEdges } = db
+    .prepare(`SELECT COUNT(*) as count FROM edges WHERE valid_until IS NULL AND created_by = '${DERIVED_CREATED_BY}'`)
+    .get() as any;
+
   res.set(JSON_HEADERS).json({
     total_nodes: totalNodes,
     total_edges: totalEdges,
     total_signals: totalSignals,
     pending_reviews: pendingReviews,
+    curated_edges: curatedEdges,
+    derived_edges: derivedEdges,
   });
 });
 
@@ -101,6 +134,145 @@ router.get("/api/graph", (req, res) => {
         ...(n.image_url ? { image_url: n.image_url } : {}),
       };
     }),
+    edges: edgeRows.map((e: any) => ({
+      source: e.source_id,
+      target: e.target_id,
+      type: e.edge_type,
+      confidence: e.confidence,
+      created_by: e.created_by,
+    })),
+  });
+});
+
+// GET /api/graph/stream — the /field graph as newline-delimited JSON (NDJSON).
+//
+// Same projection as /api/graph but (a) streamed line-by-line so the client
+// can parse + index in a Web Worker as bytes arrive (no 9 MB main-thread
+// JSON.parse freeze), and (b) CURATED-ONLY by default — the ~10k derived
+// STYLE_KIN / VISUALLY_AFFINE edges are excluded and lazy-loaded via
+// /api/graph/derived when the user enters embeddings mode.
+//
+// Wire format, one JSON object per line:
+//   {"meta":{"nodes":N,"edges":M,"stamp":"N:M"}}   ← always first
+//   {"n":{id,name,type,slug,year?,cdn_image_url?,image_url?}}
+//   {"e":{source,target,type,confidence,created_by}}
+//
+// stamp = `${nodes}:${curated_edges}` — matches /api/stats so the worker can
+// check its IndexedDB cache (via /api/stats) before deciding to stream.
+router.get("/api/graph/stream", (req, res) => {
+  const db = getDb();
+  const NODE_COLS =
+    "id, name, type, slug, " +
+    "json_extract(metadata,'$.image_url') AS image_url, " +
+    "json_extract(metadata,'$.cdn_image_url') AS cdn_image_url, " +
+    YEAR_SQL_FRAGMENT;
+
+  const nodeRows = db
+    .prepare(`SELECT ${NODE_COLS} FROM nodes WHERE type != 'related' ORDER BY name`)
+    .all() as any[];
+  const edgeRows = db
+    .prepare(
+      `SELECT e.source_id, e.target_id, e.edge_type, e.confidence, e.created_by
+       FROM edges e
+       WHERE e.valid_until IS NULL
+         AND e.created_by IS NOT '${DERIVED_CREATED_BY}'
+         AND e.source_id IN (SELECT id FROM nodes WHERE type != 'related')
+         AND e.target_id IN (SELECT id FROM nodes WHERE type != 'related')`
+    )
+    .all() as any[];
+
+  // Per-node "intention" = count of distinct curated edge types touching it.
+  // The client's /field layout snaps nodes to brand-dot positions in intention
+  // order, so it needs this BEFORE edges arrive — that's what lets the worker
+  // render the node constellation progressively (nodes first) while the edges
+  // (67% of the payload, only needed on zoom) are still streaming.
+  const typesByNode = new Map<string, Set<string>>();
+  for (const e of edgeRows) {
+    let s = typesByNode.get(e.source_id); if (!s) { s = new Set(); typesByNode.set(e.source_id, s); }
+    let t = typesByNode.get(e.target_id); if (!t) { t = new Set(); typesByNode.set(e.target_id, t); }
+    s.add(e.edge_type); t.add(e.edge_type);
+  }
+
+  // Compress at the app level. Fly's edge does NOT compress chunked/streamed
+  // responses, so without this the raw NDJSON ships at ~7 MB (vs ~1 MB gzipped)
+  // — 7× the wire transfer, which dominates load time. gzip is a Transform
+  // stream, so the response stays chunked/streamed; the worker still parses
+  // incrementally. gzip (not brotli) keeps CPU low on the 1-core Fly machine.
+  const acceptsGzip = /\bgzip\b/.test(String(req.headers["accept-encoding"] || ""));
+  res.set({
+    "Content-Type": "application/x-ndjson; charset=utf-8",
+    "Cache-Control": "no-cache",
+  });
+  let sink: NodeJS.WritableStream = res;
+  if (acceptsGzip) {
+    res.set("Content-Encoding", "gzip");
+    res.set("Vary", "Accept-Encoding");
+    const gzip = createGzip();
+    gzip.pipe(res);
+    sink = gzip;
+  }
+
+  // Batch writes (~64 KB) so we don't issue one syscall per row.
+  let buf = "";
+  const FLUSH_AT = 64 * 1024;
+  const push = (obj: unknown) => {
+    buf += JSON.stringify(obj) + "\n";
+    if (buf.length >= FLUSH_AT) {
+      sink.write(buf);
+      buf = "";
+    }
+  };
+
+  push({ meta: { nodes: nodeRows.length, edges: edgeRows.length, stamp: `${nodeRows.length}:${edgeRows.length}` } });
+  for (const n of nodeRows) {
+    const year = n.type === "artwork" ? formatArtworkYear(n) : null;
+    const intention = typesByNode.get(n.id)?.size ?? 0;
+    push({
+      n: {
+        id: n.id,
+        name: n.name,
+        type: n.type,
+        slug: n.slug,
+        int: intention,
+        ...(year ? { year } : {}),
+        // Prefer the R2 cdn; only ship the upstream image_url when there's no
+        // cdn (the client falls cdn -> image_url, so the upstream is redundant
+        // when a cdn exists — ~4.7k nodes worth of long URLs saved).
+        ...(n.cdn_image_url
+          ? { cdn_image_url: n.cdn_image_url }
+          : n.image_url
+            ? { image_url: n.image_url }
+            : {}),
+      },
+    });
+  }
+  // created_by is omitted — every curated edge carries the same constant
+  // ('contributor:migration') and the client filters by type, not provenance.
+  for (const e of edgeRows) {
+    push({ e: { source: e.source_id, target: e.target_id, type: e.edge_type, confidence: e.confidence } });
+  }
+  if (buf) sink.write(buf);
+  sink.end();
+});
+
+// GET /api/graph/derived — ONLY the embedding-derived edges (STYLE_KIN /
+// VISUALLY_AFFINE), as one JSON payload. Lazy-loaded by /field the first time
+// the user enters embeddings ('e') mode; merged into the already-indexed graph
+// client-side. Small enough (~10k edges) not to need streaming.
+router.get("/api/graph/derived", (_req, res) => {
+  const db = getDb();
+  const edgeRows = db
+    .prepare(
+      `SELECT e.source_id, e.target_id, e.edge_type, e.confidence, e.created_by
+       FROM edges e
+       WHERE e.valid_until IS NULL
+         AND e.created_by = '${DERIVED_CREATED_BY}'
+         AND e.source_id IN (SELECT id FROM nodes WHERE type != 'related')
+         AND e.target_id IN (SELECT id FROM nodes WHERE type != 'related')`
+    )
+    .all() as any[];
+  res.set(JSON_HEADERS).json({
+    stamp: String(edgeRows.length),
     edges: edgeRows.map((e: any) => ({
       source: e.source_id,
       target: e.target_id,
