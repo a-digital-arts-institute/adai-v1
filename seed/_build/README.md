@@ -89,8 +89,22 @@ land there; the merger reads them; nothing else should.
 
 ## Quick commands
 
+**One command reproduces the whole canon** (deterministic — pins the committed
+token sets + reuses the embedding/image caches, 0 API spend when unchanged):
+
 ```bash
-# Rebuild canon: Art Blocks + curated fxhash + V&A (the shipped pipeline)
+seed/_build/build_canon.sh          # reproduce (offline, byte-stable)
+BUILD_REFRESH=1 seed/_build/build_canon.sh   # re-select fxhash by --curate
+```
+
+It chains every step below in order. The committed derived artifacts
+(`rescued_tags.json`, `image_overlay.json`, `image_mirror.json`,
+`embeddings.{bin,json}`) are the lockfiles; update them with their producers
+(`rescue_tags.py`, `find_missing_images.py`, `upload_to_r2.py`) and commit, then
+re-build. The manual sequence (what the runner does):
+
+```bash
+# Rebuild canon: Art Blocks + curated fxhash + V&A + SuperRare (the shipped pipeline)
 rm -rf seed/_build/runs/*
 python3 seed/_build/fetch_artblocks.py
 python3 seed/_build/fetch_fxhash.py --curate --top 1200 --min-secondary-sales 10 --min-minted 40 --min-sellthrough 0.7  # curated quality slice (--preview to calibrate)
