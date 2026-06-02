@@ -2976,6 +2976,10 @@
         const study = window.ADAI_FIELD_STUDY;
         const zoomScale = study && typeof study.zoomScale === 'number' ? study.zoomScale : 1;
         const cameraZoomed = zoomScale > 1.01;
+        // Camera transform fetched ONCE per frame (one layout read) so we can
+        // project all ~4700 dots inline — calling projectFieldDot per dot did a
+        // getBoundingClientRect each, which tanked the focus-state framerate.
+        const T = cameraZoomed && study && study.getTransform ? study.getTransform() : null;
         // Dim the constellation through BOTH the reveal and focus phases. If we
         // only dimmed during focus, switching node→node would flash the field to
         // full brightness for the ~900ms reveal (dimmed → bright → dimmed pulse).
@@ -2985,10 +2989,13 @@
         for (let i = 0; i < bundle.sim.length; i++) {
           const s = bundle.sim[i];
           let px, py, pr;
-          if (cameraZoomed) {
-            // Follow the camera: position from the shared projection, radius from
-            // the rest radius scaled by the camera, so dots grow with the field
-            // (and shrink back) in perfect sync — no hide, no static-overlap pop.
+          if (T) {
+            // Follow the camera, projected inline from the once-per-frame
+            // transform (radius scaled by the camera so dots grow/shrink in sync).
+            px = T.left + (s.bx * T.scale + T.x) * T.screenScale;
+            py = T.top + (s.by * T.scale + T.y) * T.screenScale;
+            pr = s.r * zoomScale;
+          } else if (cameraZoomed) {
             const p = projectFieldDot(s);
             px = p.x; py = p.y; pr = s.r * zoomScale;
           } else {
@@ -2998,6 +3005,11 @@
             }
             px = s.x; py = s.y; pr = s.r;
           }
+          // Off-screen cull. At rest the whole field is on-screen (no effect),
+          // but when the camera is zoomed most projected dots fall outside the
+          // viewport — skipping them is the big win for focus-state framerate.
+          const m = pr * CFG.HALO_RADIUS_MULT + 4;
+          if (px < -m || px > w + m || py < -m || py > h + m) continue;
           const base = (s.alpha != null ? s.alpha : 1) * focusDim;
           const color = colorForType(s.type);
           halos.push({ x: px, y: py, r: pr * CFG.HALO_RADIUS_MULT, color, alpha: base * CFG.HALO_ALPHA });

@@ -723,11 +723,30 @@
       };
     }
 
+    // Current camera transform as plain numbers, so a caller can project many
+    // points inline without a getBoundingClientRect per point. One layout read
+    // per call. Project as: x = left + (bx*scale + camX)*screenScale.
+    function getTransform() {
+      const stage = findStage();
+      if (!stage) return null;
+      const rect = stage.getBoundingClientRect();
+      if (!rect.width || !rect.height) return null;
+      return {
+        left: rect.left,
+        top: rect.top,
+        scale: camera.scale,
+        x: camera.x,
+        y: camera.y,
+        screenScale: getStageScreenScale(stage, rect),
+      };
+    }
+
     window.ADAI_FIELD_STUDY = {
       reset,
       zoomToNode,
       zoomToBrandPoint,
       projectBrandPoint,
+      getTransform,
       // Relative camera zoom (1 at rest). The graph overlay reads this so it can
       // scale the constellation in lockstep with the bitmap instead of hiding it.
       get zoomScale() { return camera.scale; },
