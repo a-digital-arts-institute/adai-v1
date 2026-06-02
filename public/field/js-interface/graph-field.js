@@ -2652,16 +2652,32 @@
     resetEdgeThreadStyle(ctx);
 
     for (const { item, point } of visibleNeighbors) {
-      const a = (filterMatch(item) ? 1 : 0.16) * focusAlpha;
+      const matched = filterMatch(item);
+      const a = (matched ? 1 : 0.16) * focusAlpha;
       const r = clamp(point.radius, 3, 13);
+      // Artwork neighbours render as their thumbnail; the edge-coloured ring
+      // around it still encodes the relationship type. Non-artworks (and
+      // unloaded images) stay as a coloured dot.
+      const node = graph.byId.get(item.id);
+      const img = matched ? getImageFor(node) : null;
+      const tr = clamp(r * 1.8, 8, 30);          // thumbnail radius
+      const ringR = img ? tr + 3 : r * 1.55;     // edge ring sits outside the thumb
+
       ctx.globalAlpha = a;
       ctx.strokeStyle = item.edgeColor || '#E8E6E1';
-      ctx.lineWidth = filterMatch(item) ? 1.65 : 0.85;
+      ctx.lineWidth = matched ? 1.65 : 0.85;
       ctx.beginPath();
-      ctx.arc(point.x, point.y, r * 1.55, 0, Math.PI * 2);
+      ctx.arc(point.x, point.y, ringR, 0, Math.PI * 2);
       ctx.stroke();
 
-      if (!filterMatch(item)) continue;
+      if (!matched) continue;
+
+      if (img) {
+        ctx.globalAlpha = focusAlpha;
+        drawCircleImage(ctx, img, point.x, point.y, tr);
+        continue;
+      }
+
       ctx.globalAlpha = 0.32 * focusAlpha;
       ctx.fillStyle = item.edgeColor || '#E8E6E1';
       ctx.beginPath();
@@ -2677,6 +2693,13 @@
 
     const focusPulse = 0.5 + 0.5 * Math.sin(performance.now() / 520);
     drawCentralFocusGlow(ctx, focusPoint, focusRadius, colorForType(focusedSim?.type), focusPulse, focusAlpha);
+    // If the focused node is an artwork, show its image as a hero thumbnail
+    // inside the glow.
+    const focusImg = getImageFor(graph.byId.get(bundle.focusedId));
+    if (focusImg) {
+      ctx.globalAlpha = focusAlpha;
+      drawCircleImage(ctx, focusImg, focusPoint.x, focusPoint.y, clamp(focusRadius * 2.4, 20, CFG.THUMB_HERO_RADIUS));
+    }
 
     if (!bundle.transitioning) {
       const occupiedLabels = [];
@@ -3109,7 +3132,10 @@
         const study = window.ADAI_FIELD_STUDY;
         const zoomScale = study && typeof study.zoomScale === 'number' ? study.zoomScale : 1;
         const cameraZoomed = zoomScale > 1.01;
-        const focusDim = inPlaceFocus ? CFG.FIELD_FOCUS_BACKGROUND_ALPHA : 1;
+        // Dim the constellation through BOTH the reveal and focus phases. If we
+        // only dimmed during focus, switching node→node would flash the field to
+        // full brightness for the ~900ms reveal (dimmed → bright → dimmed pulse).
+        const focusDim = (inPlaceFocus || inPlaceReveal) ? CFG.FIELD_FOCUS_BACKGROUND_ALPHA : 1;
         const halos = [];
         const cores = [];
         for (let i = 0; i < bundle.sim.length; i++) {
