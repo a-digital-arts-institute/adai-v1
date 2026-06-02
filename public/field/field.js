@@ -271,7 +271,12 @@
   function startStudyZoom() {
     const DEFAULT_ZOOM = 2;
     const MIN_ZOOM = 1;
-    const MAX_ZOOM = 14;
+    // Cap how far focusing a node zooms the camera. A tiny / peripheral dot used
+    // to zoom to ~14×, which spread its graph neighbours far off-screen ("I only
+    // see a few"). Keeping it modest means every node — central or peripheral,
+    // small or large fan-out — focuses the same natural way: pan to the dot,
+    // neighbours anchored around it, in view.
+    const MAX_ZOOM = 4;
     const BITMAP_SCALE_CAP = 2.35;
     const TARGET_SCREEN_RADIUS_RATIO = 0.01;
     const MIN_TARGET_SCREEN_RADIUS = 5;

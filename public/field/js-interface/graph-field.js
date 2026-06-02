@@ -100,11 +100,10 @@
     FIELD_REVEAL_TO_FOCUS_MS: 620,
     FIELD_REVEAL_STAGGER_MS: 0,
     FIELD_REVEAL_MAX_NODES: 42,
-    // Max neighbours a focus shows. A hub (SuperRare, a concept, V&A) has
-    // hundreds — anchoring them all is an unreadable, heavy mess. Keep the most
-    // relationally-rich ones so a hub reads like a small node; same field-
-    // anchored render, just capped. Nodes under this show every neighbour.
-    MAX_INPLACE_NEIGHBORS: 50,
+    // Max neighbours a focus shows. A hub has hundreds — show up to this many,
+    // chosen most-connected with a partial random spread (see
+    // buildInPlaceNeighbors). Nodes under this show every neighbour.
+    MAX_INPLACE_NEIGHBORS: 100,
     FIELD_FOCUS_GLOW_ALPHA: 0.42,
     FIELD_FOCUS_GLOW_RADIUS: 7.2,
     IN_PLACE_ANCHOR_MARGIN: 48,
@@ -1844,15 +1843,18 @@
       }
     }
     // Cap high fan-out so a hub reads like a normal node (and stays performant).
-    // Keep the most relationally-rich neighbours so the cap is meaningful; nodes
-    // with fewer than the cap show all of theirs (landscape unaffected).
+    // Selection = most-connected, partially randomised: degree times a stable
+    // pseudo-random factor (seeded by id, so it doesn't flicker frame-to-frame or
+    // between the reveal and focus passes). Better-connected neighbours win on
+    // average, but the set is a varied spread rather than a fixed alphabetical
+    // slice. Nodes under the cap show all their neighbours (landscape unaffected).
     if (out.length > CFG.MAX_INPLACE_NEIGHBORS) {
-      out.sort((a, b) => {
-        const ia = graph.intentionOf ? graph.intentionOf(a.id) : 0;
-        const ib = graph.intentionOf ? graph.intentionOf(b.id) : 0;
-        if (ib !== ia) return ib - ia;
-        return (a.name || a.id).localeCompare(b.name || b.id);
-      });
+      const degree = (id) => (graph.neighborsOf ? graph.neighborsOf(id).size : 0);
+      const score = (id) => {
+        const noise = (hashString(id) % 1000) / 1000;   // [0,1), deterministic
+        return (degree(id) + 1) * (0.6 + 0.8 * noise);   // factor in [0.6, 1.4)
+      };
+      out.sort((a, b) => score(b.id) - score(a.id));
       out.length = CFG.MAX_INPLACE_NEIGHBORS;
     }
     return out;
