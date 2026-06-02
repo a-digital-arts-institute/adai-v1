@@ -99,6 +99,11 @@
     FIELD_REVEAL_TO_FOCUS_MS: 620,
     FIELD_REVEAL_STAGGER_MS: 0,
     FIELD_REVEAL_MAX_NODES: 42,
+    // Max neighbours a focus shows. A hub (SuperRare, a concept, V&A) has
+    // hundreds — anchoring them all is an unreadable, heavy mess. Keep the most
+    // relationally-rich ones so a hub reads like a small node; same field-
+    // anchored render, just capped. Nodes under this show every neighbour.
+    MAX_INPLACE_NEIGHBORS: 50,
     FIELD_FOCUS_GLOW_ALPHA: 0.42,
     FIELD_FOCUS_GLOW_RADIUS: 7.2,
     IN_PLACE_ANCHOR_MARGIN: 48,
@@ -378,13 +383,24 @@
   // then evenly subsample to `want`). The registry has tens of thousands
   // of dots; dedup spreads picks across the full composition.
   function pickDistinctPositions(brand, want) {
-    const GRID = 14;
-    const seen = new Map();
-    for (const p of brand.positions) {
-      const key = `${(p.x / GRID) | 0},${(p.y / GRID) | 0}`;
-      if (!seen.has(key)) seen.set(key, p);
+    // De-dupe brand dots onto a grid so two nodes don't sit on the exact same
+    // spot. A coarse grid (14px) only yields ~2690 distinct slots — far fewer
+    // than the ~4700 nodes — which left ~2000 nodes unplaced (off-field). Try
+    // progressively finer grids until we have at least `want` slots, so EVERY
+    // node gets a field position; then sample evenly down to `want`.
+    const dedupe = (GRID) => {
+      const seen = new Map();
+      for (const p of brand.positions) {
+        const key = `${(p.x / GRID) | 0},${(p.y / GRID) | 0}`;
+        if (!seen.has(key)) seen.set(key, p);
+      }
+      return Array.from(seen.values());
+    };
+    let distinct = [];
+    for (const GRID of [14, 10, 8, 6, 4, 3, 2, 1]) {
+      distinct = dedupe(GRID);
+      if (distinct.length >= want) break;
     }
-    const distinct = Array.from(seen.values());
     if (distinct.length <= want) return distinct;
     const stride = distinct.length / want;
     const picked = new Array(want);
@@ -1982,6 +1998,21 @@
     return projectFieldAnchor(item.fieldAnchor) || projectFieldDot(item.sim);
   }
 
+  // Focus position for an in-place reveal: the focused node's own field dot when
+  // it's on-screen (normal case — unchanged), else screen-centre. The fallback
+  // only triggers when the dot can't be framed (a node near the field edge the
+  // camera couldn't centre), so it renders instead of vanishing.
+  function inPlaceFocusPoint(bundle, width, height) {
+    const p = projectFieldDot(bundle.simById?.get(bundle.focusedId));
+    if (p && visiblePoint(p, width, height, 0)) return p;
+    return {
+      x: width / 2,
+      y: height / 2,
+      radius: clamp(Math.min(width, height) * 0.014, 8, 18),
+      scale: 1,
+    };
+  }
+
   function visiblePoint(p, width, height, margin = 72) {
     return !!p && p.x >= -margin && p.x <= width + margin && p.y >= -margin && p.y <= height + margin;
   }
@@ -2008,6 +2039,18 @@
           r: CFG.ZOOM_NEIGHBOR_RADIUS
         });
       }
+    }
+    // Cap high fan-out so a hub reads like a normal node (and stays performant).
+    // Keep the most relationally-rich neighbours so the cap is meaningful; nodes
+    // with fewer than the cap show all of theirs (landscape unaffected).
+    if (out.length > CFG.MAX_INPLACE_NEIGHBORS) {
+      out.sort((a, b) => {
+        const ia = graph.intentionOf ? graph.intentionOf(a.id) : 0;
+        const ib = graph.intentionOf ? graph.intentionOf(b.id) : 0;
+        if (ib !== ia) return ib - ia;
+        return (a.name || a.id).localeCompare(b.name || b.id);
+      });
+      out.length = CFG.MAX_INPLACE_NEIGHBORS;
     }
     return out;
   }
@@ -2497,7 +2540,7 @@
 
   function drawInPlaceReveal(ctx, bundle, graph, width, height, filterMatch, revealAlpha = 1, revealState = bundle.fieldReveal) {
     const focusedSim = bundle.simById?.get(bundle.focusedId);
-    const focusPoint = projectFieldDot(focusedSim);
+    const focusPoint = inPlaceFocusPoint(bundle, width, height);
     if (!visiblePoint(focusPoint, width, height, 140)) return;
 
     const startedAt = revealState?.startedAt || performance.now();
@@ -2635,7 +2678,7 @@
 
   function drawInPlaceFocus(ctx, bundle, graph, width, height, filterMatch, dimmedAlpha, focusAlpha = 1) {
     const focusedSim = bundle.simById?.get(bundle.focusedId);
-    const focusPoint = projectFieldDot(focusedSim);
+    const focusPoint = inPlaceFocusPoint(bundle, width, height);
     if (!visiblePoint(focusPoint, width, height, 140)) return;
 
     const focusRadius = clamp(focusPoint.radius, 4, 18);
@@ -2767,7 +2810,7 @@
 
   function hitInPlaceNode(bundle, x, y, width, height) {
     const focusSim = bundle.simById?.get(bundle.focusedId);
-    const focusPoint = projectFieldDot(focusSim);
+    const focusPoint = inPlaceFocusPoint(bundle, width, height);
     if (visiblePoint(focusPoint, width, height, 96)) {
       const fr = Math.max(clamp(focusPoint.radius, 4, 18) * 2.6, CFG.CLICK_TOLERANCE);
       const dx = focusPoint.x - x;
