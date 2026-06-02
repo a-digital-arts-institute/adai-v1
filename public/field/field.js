@@ -728,6 +728,9 @@
       zoomToNode,
       zoomToBrandPoint,
       projectBrandPoint,
+      // Relative camera zoom (1 at rest). The graph overlay reads this so it can
+      // scale the constellation in lockstep with the bitmap instead of hiding it.
+      get zoomScale() { return camera.scale; },
       get isZoomed() { return zoomed; }
     };
 

@@ -3097,28 +3097,41 @@
       const inPlaceFocus = bundle.viewLevel === 'field-focus';
       const inPlaceReveal = bundle.viewLevel === 'field-reveal';
       const focusedId = bundle.focusedId;
-      const fieldStudy = document.body.classList.contains('field-study-zoomed');
-
-      // ---- 30k snapshot layer ----
-      // Drawn at base so the constellation stays browsable (semantic colour +
-      // hover name label). Hidden while the Shape-of-Time bitmap is camera-
-      // zoomed (fieldStudy), and faded back (focusDim) during an in-place focus
-      // so the glow + relationship threads read over it. Halos first (so cores
-      // draw over them), each pass batched by colour+alpha (see drawDotsBatched).
-      if (!fieldStudy) {
+      // ---- 30k constellation layer ----
+      // Always drawn: the colour-coded constellation is the browsable base view.
+      // Crucially it is TRANSFORM-LINKED to the Shape-of-Time camera — each dot is
+      // projected through ADAI_FIELD_STUDY so it zooms/pans in lockstep with the
+      // bitmap rather than being hidden on zoom-in (and popping on zoom-out). At
+      // rest (zoomScale 1) the projection is identity, so the base look + drift
+      // breathing are unchanged. focusDim fades it back during an in-place focus
+      // so the glow + relationship threads read over it.
+      {
+        const study = window.ADAI_FIELD_STUDY;
+        const zoomScale = study && typeof study.zoomScale === 'number' ? study.zoomScale : 1;
+        const cameraZoomed = zoomScale > 1.01;
         const focusDim = inPlaceFocus ? CFG.FIELD_FOCUS_BACKGROUND_ALPHA : 1;
         const halos = [];
         const cores = [];
         for (let i = 0; i < bundle.sim.length; i++) {
           const s = bundle.sim[i];
-          if (drift) {
-            s.x += (Math.random() - 0.5) * drift;
-            s.y += (Math.random() - 0.5) * drift;
+          let px, py, pr;
+          if (cameraZoomed) {
+            // Follow the camera: position from the shared projection, radius from
+            // the rest radius scaled by the camera, so dots grow with the field
+            // (and shrink back) in perfect sync — no hide, no static-overlap pop.
+            const p = projectFieldDot(s);
+            px = p.x; py = p.y; pr = s.r * zoomScale;
+          } else {
+            if (drift) {
+              s.x += (Math.random() - 0.5) * drift;
+              s.y += (Math.random() - 0.5) * drift;
+            }
+            px = s.x; py = s.y; pr = s.r;
           }
           const base = (s.alpha != null ? s.alpha : 1) * focusDim;
           const color = colorForType(s.type);
-          halos.push({ x: s.x, y: s.y, r: s.r * CFG.HALO_RADIUS_MULT, color, alpha: base * CFG.HALO_ALPHA });
-          cores.push({ x: s.x, y: s.y, r: s.r, color, alpha: base * CFG.BASE_ALPHA });
+          halos.push({ x: px, y: py, r: pr * CFG.HALO_RADIUS_MULT, color, alpha: base * CFG.HALO_ALPHA });
+          cores.push({ x: px, y: py, r: pr, color, alpha: base * CFG.BASE_ALPHA });
         }
         drawDotsBatched(ctx, halos);
         drawDotsBatched(ctx, cores);
