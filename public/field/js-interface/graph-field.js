@@ -18,9 +18,10 @@
  * Result: bundle.sim[i].(bx,by) coincides exactly with a Shape-of-Time
  * dot — bound aesthetically — while the *which dot* is decided by UMAP.
  *
- * Zoom layer (10k/5k rose/bucket petal layouts, zoomToVirtualFocus,
- * breadcrumb, replays) is unchanged and animates from these snapped
- * baseX/baseY coordinates.
+ * Focus is a single in-place reveal: clicking a node anchors the focus to its
+ * field dot (or screen-centre for an edge node), draws curved threads to its
+ * neighbours on nearby dots, and dims the rest. (The old 10k/5k rose/bucket
+ * "zoom layer" was removed once every node became reachable in the field.)
  */
 (() => {
   // ---- config ----
@@ -945,11 +946,6 @@
     return computeBucketedLayout(graph, focusedId, w, h);
   }
 
-  // Legacy alias — every old caller now goes through the dispatcher.
-  function compute10kLayout(graph, focusedId, w, h) {
-    return computeLayoutFor(graph, focusedId, w, h);
-  }
-
   // Generic position tween. Mutates targets each frame, calls onDone at end.
   function runTween(durationMs, onTick, onDone) {
     const start = performance.now();
@@ -1641,199 +1637,6 @@
     });
   }
 
-  function zoomToPractitioner(graph, bundle, focusedId, canvasW, canvasH, opts = {}) {
-    if (bundle.transitioning) return;
-    if (bundle.viewLevel !== '30k' && bundle.focusedId === focusedId) return;
-    if (!opts.noPush) pushHistory(bundle);
-    bundle.transitioning = true;
-
-    const previousFocusId = bundle.focusedId;
-    const wasZoomedIn = (bundle.viewLevel && bundle.viewLevel !== '30k');
-    const oldNeighbors = bundle.zoomNeighbors || [];
-    const oldVirtualFocus = bundle.zoomFocus;
-
-    // Old neighbours fade out via outgoingNeighbors (they keep rendering during
-    // the transition, then drop after). New neighbours start at centre.
-    if (wasZoomedIn) {
-      bundle.outgoingNeighbors = oldNeighbors.map(n => ({
-        ...n,
-        fromAlpha: n.alpha != null ? n.alpha : 1,
-        fromX: n.tx ?? n.x, fromY: n.ty ?? n.y, fromR: n.tr ?? n.r,
-      }));
-    } else {
-      bundle.outgoingNeighbors = [];
-    }
-
-    bundle.viewLevel = '10k';
-    bundle.focusedId = focusedId;
-    bundle.zoomFocus = null;
-    applyDefaultFiltersForMode(bundle);  // reset + reapply current mode's defaults
-    setGraphFocusActive(true);
-
-    const layout = compute10kLayout(graph, focusedId, canvasW, canvasH);
-    bundle.zoomCenter = { x: layout.cx, y: layout.cy };
-    bundle.zoomNeighbors = layout.neighbors;
-
-    // Sim tween targets:
-    // - new focus -> centre, full alpha
-    // - previous focus -> back to base position, dim
-    // - everyone else -> stay where they are, dim
-    for (const s of bundle.sim) {
-      s.tweenFromX = s.x; s.tweenFromY = s.y; s.tweenFromR = s.r;
-      s.tweenFromAlpha = s.alpha != null ? s.alpha : 1;
-      if (s.id === focusedId) {
-        s.tweenToX = layout.cx; s.tweenToY = layout.cy;
-        s.tweenToR = CFG.ZOOM_FOCUS_RADIUS;
-        s.tweenToAlpha = 1;
-      } else if (s.id === previousFocusId) {
-        s.tweenToX = s.baseX; s.tweenToY = s.baseY;
-        s.tweenToR = s.baseR;
-        s.tweenToAlpha = CFG.ZOOM_OFFSCREEN_ALPHA;
-      } else {
-        s.tweenToX = s.x; s.tweenToY = s.y; s.tweenToR = s.r;
-        s.tweenToAlpha = CFG.ZOOM_OFFSCREEN_ALPHA;
-      }
-    }
-
-    // If there was a virtual focus (e.g., we were at 5k looking at a scene),
-    // shrink it out.
-    const oldFocusFromAlpha = oldVirtualFocus ? oldVirtualFocus.alpha : 0;
-    const oldFocusFromR = oldVirtualFocus ? oldVirtualFocus.r : 0;
-
-    setBrandOpacityForZoom(true);
-
-    runTween(CFG.ZOOM_TRANSITION_MS, (e) => {
-      for (const s of bundle.sim) {
-        s.x = s.tweenFromX + (s.tweenToX - s.tweenFromX) * e;
-        s.y = s.tweenFromY + (s.tweenToY - s.tweenFromY) * e;
-        s.r = s.tweenFromR + (s.tweenToR - s.tweenFromR) * e;
-        s.alpha = s.tweenFromAlpha + (s.tweenToAlpha - s.tweenFromAlpha) * e;
-      }
-      for (const n of bundle.outgoingNeighbors) {
-        n.alpha = n.fromAlpha * (1 - e);
-      }
-      if (oldVirtualFocus) {
-        oldVirtualFocus.alpha = oldFocusFromAlpha * (1 - e);
-        oldVirtualFocus.r = oldFocusFromR * (1 - e);
-      }
-      for (const n of bundle.zoomNeighbors) {
-        n.tx = n.startX + (n.x - n.startX) * e;
-        n.ty = n.startY + (n.y - n.startY) * e;
-        n.tr = n.startR + (n.r - n.startR) * e;
-        n.alpha = e;
-      }
-    }, () => {
-      bundle.transitioning = false;
-      bundle.outgoingNeighbors = [];
-      // If we were at 5k and transitioning back, the virtual focus is now gone
-      if (bundle.zoomFocus === oldVirtualFocus) bundle.zoomFocus = null;
-      renderBreadcrumb(bundle, graph);
-      renderEdgeFilter(bundle, graph);
-      renderEmbedStrip(bundle, graph);
-      renderBookmarksStrip(bundle, graph);
-    });
-  }
-
-  // Zoom to a non-practitioner entity (currently used for scenes; works for
-  // any node type that's not in bundle.sim). The entity becomes a virtual
-  // focus (bundle.zoomFocus) drawn at canvas centre, animated in from its
-  // position in the previous 10k neighbour ring.
-  function zoomToVirtualFocus(graph, bundle, focusedId, canvasW, canvasH, level, opts = {}) {
-    if (bundle.transitioning) return;
-    if (bundle.focusedId === focusedId) return;
-    if (!opts.noPush) pushHistory(bundle);
-    bundle.transitioning = true;
-
-    const node = graph.byId.get(focusedId);
-    if (!node) { bundle.transitioning = false; return; }
-
-    // Capture outgoing 10k state for crossfade
-    const prevNeighbors = bundle.zoomNeighbors || [];
-    const prevFocusEntry = bundle.sim.find(s => s.id === bundle.focusedId);
-    const sceneInPrev = prevNeighbors.find(n => n.id === focusedId);
-    bundle.outgoingNeighbors = prevNeighbors
-      .filter(n => n.id !== focusedId)
-      .map(n => ({ ...n, fromAlpha: n.alpha != null ? n.alpha : 1, fromX: n.tx ?? n.x, fromY: n.ty ?? n.y, fromR: n.tr ?? n.r }));
-    bundle.outgoingFocusSimId = bundle.focusedId;  // the 10k practitioner that's leaving focus
-
-    // Compute new layout (centre + neighbours of the new focus)
-    const layout = compute10kLayout(graph, focusedId, canvasW, canvasH);
-    bundle.zoomCenter = { x: layout.cx, y: layout.cy };
-    bundle.zoomNeighbors = layout.neighbors;
-
-    // The new focus is a virtual entity (not in sim). It animates from where
-    // it sat in the previous 10k neighbour ring to the new centre.
-    const startX = sceneInPrev ? (sceneInPrev.tx ?? sceneInPrev.x) : layout.cx;
-    const startY = sceneInPrev ? (sceneInPrev.ty ?? sceneInPrev.y) : layout.cy;
-    const startR = sceneInPrev ? (sceneInPrev.tr ?? sceneInPrev.r) : 0;
-    bundle.zoomFocus = {
-      id: focusedId,
-      name: node.name,
-      type: node.type,
-      fromX: startX, fromY: startY, fromR: startR, fromAlpha: 1,
-      toX: layout.cx, toY: layout.cy, toR: CFG.ZOOM_FOCUS_RADIUS, toAlpha: 1,
-      x: startX, y: startY, r: startR, alpha: 1,
-    };
-
-    // Outgoing 10k focus practitioner (in sim) returns to dimmed state
-    if (prevFocusEntry) {
-      prevFocusEntry.tweenFromX = prevFocusEntry.x;
-      prevFocusEntry.tweenFromY = prevFocusEntry.y;
-      prevFocusEntry.tweenFromR = prevFocusEntry.r;
-      prevFocusEntry.tweenFromAlpha = prevFocusEntry.alpha != null ? prevFocusEntry.alpha : 1;
-      prevFocusEntry.tweenToX = prevFocusEntry.x;
-      prevFocusEntry.tweenToY = prevFocusEntry.y;
-      prevFocusEntry.tweenToR = prevFocusEntry.r;
-      prevFocusEntry.tweenToAlpha = CFG.ZOOM_OFFSCREEN_ALPHA;
-    }
-
-    bundle.viewLevel = level;
-    bundle.focusedId = focusedId;
-    applyDefaultFiltersForMode(bundle);  // reset + reapply current mode's defaults
-    setGraphFocusActive(true);
-    setBrandOpacityForZoom(true);
-
-    runTween(CFG.ZOOM_TRANSITION_MS, (e) => {
-      // Outgoing focus practitioner fades down
-      if (prevFocusEntry) {
-        prevFocusEntry.alpha = prevFocusEntry.tweenFromAlpha + (prevFocusEntry.tweenToAlpha - prevFocusEntry.tweenFromAlpha) * e;
-      }
-      // Outgoing neighbours fade out toward centre
-      for (const n of bundle.outgoingNeighbors) {
-        n.alpha = n.fromAlpha * (1 - e);
-        n.tx = n.fromX + (layout.cx - n.fromX) * e * 0.4;
-        n.ty = n.fromY + (layout.cy - n.fromY) * e * 0.4;
-      }
-      // Virtual focus moves from old neighbour position to centre
-      const f = bundle.zoomFocus;
-      f.x = f.fromX + (f.toX - f.fromX) * e;
-      f.y = f.fromY + (f.toY - f.fromY) * e;
-      f.r = f.fromR + (f.toR - f.fromR) * e;
-      f.alpha = f.fromAlpha + (f.toAlpha - f.fromAlpha) * e;
-      // Incoming neighbours fade in from centre to ring positions
-      for (const n of bundle.zoomNeighbors) {
-        n.tx = n.startX + (n.x - n.startX) * e;
-        n.ty = n.startY + (n.y - n.startY) * e;
-        n.tr = n.startR + (n.r - n.startR) * e;
-        n.alpha = e;
-      }
-    }, () => {
-      bundle.transitioning = false;
-      bundle.outgoingNeighbors = [];
-      renderBreadcrumb(bundle, graph);
-      renderEdgeFilter(bundle, graph);
-      renderEmbedStrip(bundle, graph);
-      renderBookmarksStrip(bundle, graph);
-    });
-  }
-
-  function zoomToScene(graph, bundle, sceneId, canvasW, canvasH) {
-    zoomToVirtualFocus(graph, bundle, sceneId, canvasW, canvasH, '5k');
-  }
-
-  // Universal click-into-node dispatcher. Practitioners use the sim-entry
-  // pathway (their dot is already at 30k home, so the zoom moves it to
-  // centre). Everything else uses the virtual-focus pathway.
   function zoomToNode(graph, bundle, nodeId, canvasW, canvasH, opts = {}) {
     const node = graph.byId.get(nodeId);
     if (!node) return;
@@ -2574,17 +2377,9 @@
   function focusNodeInPlace(graph, bundle, nodeId, opts = {}) {
     const node = graph.byId.get(nodeId);
     if (!node) return;
-    // Streaming-safety: the field positions only the in-sim subset of the graph.
-    // A node that isn't placed in the field can't anchor an in-place reveal, so
-    // fall back to the legacy zoom view (search/archivist may target off-field
-    // nodes). Without this guard such a focus enters a blank field-focus state.
-    if (!bundle.simById || !bundle.simById.has(nodeId)) {
-      const cv = document.getElementById('graph-canvas');
-      zoomToVirtualFocus(graph, bundle, nodeId,
-        cv ? cv.clientWidth : window.innerWidth,
-        cv ? cv.clientHeight : window.innerHeight, '5k', opts);
-      return;
-    }
+    // Every node is placed in the field now, so the focus always renders here.
+    // (If a node ever lacked a dot, inPlaceFocusPoint centres it rather than
+    // falling back to any legacy view.)
     const revealBlend = opts.fromReveal
       ? {
           ...(bundle.fieldReveal || {}),
@@ -3276,9 +3071,7 @@
         ctx.fillStyle = CFG.DOT_HEX;
       }
 
-      // ---- 10k / 5k zoom layer ----
-      const inTransition = bundle.transitioning;
-      const showZoom = !inPlaceFocus && !inPlaceReveal && (zoomed || (inTransition && bundle.zoomNeighbors && bundle.zoomNeighbors.length));
+      // ---- in-place reveal / focus layer ----
       const filters = bundle.activeFilters;
       const filtersActive = filters && filters.size > 0;
       const filterMatch = (n) => !filtersActive || filters.has(n.edgeType);
@@ -3302,216 +3095,6 @@
       }
       if (inPlaceFocus) {
         drawInPlaceFocus(ctx, bundle, graph, w, h, filterMatch, dimmedAlpha, focusAlpha);
-      }
-      if (showZoom && bundle.zoomCenter) {
-        // Focus position: if practitioner (in sim) use that; else use zoomFocus
-        const simFocus = bundle.sim.find(x => x.id === focusedId);
-        const virtualFocus = bundle.zoomFocus;
-        const focus = simFocus || virtualFocus;
-        const cx = focus ? focus.x : bundle.zoomCenter.x;
-        const cy = focus ? focus.y : bundle.zoomCenter.y;
-
-        // Outgoing neighbours fade out (drawn faintly during transitions only).
-        const outgoing = bundle.outgoingNeighbors || [];
-        if (outgoing.length) {
-          ctx.lineWidth = CFG.EDGE_THREAD_WIDTH;
-          for (const n of outgoing) {
-            const a = (n.alpha ?? 0) * CFG.EDGE_THREAD_ALPHA;
-            if (a < 0.005) continue;
-            ctx.strokeStyle = n.edgeColor || '#888';
-            ctx.globalAlpha = a;
-            // No edge thread to draw (from where to where?). Skip.
-          }
-          ctx.fillStyle = CFG.DOT_HEX;
-          for (const n of outgoing) {
-            const a = (n.alpha ?? 0) * CFG.BASE_ALPHA;
-            if (a < 0.005) continue;
-            ctx.globalAlpha = a;
-            ctx.beginPath();
-            ctx.arc(n.tx ?? n.fromX, n.ty ?? n.fromY, n.tr ?? n.fromR, 0, Math.PI * 2);
-            ctx.fill();
-          }
-        }
-
-        // Edge threads first — thickness encodes confidence (high = thick,
-        // unverified = barely there). Drawn under dots so dots stay crisp.
-        for (const n of bundle.zoomNeighbors) {
-          const baseA = (n.alpha != null ? n.alpha : 1) * CFG.EDGE_THREAD_ALPHA;
-          const a = filterMatch(n) ? baseA : baseA * dimmedAlpha;
-          if (a < 0.01) continue;
-          const baseWidth = CFG.EDGE_THREAD_WIDTH_BY_CONFIDENCE[n.edgeConfidence] || CFG.EDGE_THREAD_WIDTH_DEFAULT;
-          applyEdgeThreadStyle(ctx, n, a, baseWidth);
-          ctx.beginPath();
-          ctx.moveTo(cx, cy);
-          ctx.lineTo(n.tx ?? n.x, n.ty ?? n.y);
-          ctx.stroke();
-        }
-        resetEdgeThreadStyle(ctx);
-
-        // Neighbour halos — batched (one fill per alpha bucket instead of one
-        // per neighbour; matters when a high-degree node has thousands).
-        const nHalos = [];
-        for (const n of bundle.zoomNeighbors) {
-          const baseA = (n.alpha != null ? n.alpha : 1) * CFG.HALO_ALPHA * 1.4;
-          const a = filterMatch(n) ? baseA : baseA * dimmedAlpha;
-          if (a < 0.005) continue;
-          nHalos.push({ x: n.tx ?? n.x, y: n.ty ?? n.y, r: (n.tr ?? n.r) * CFG.HALO_RADIUS_MULT, color: CFG.DOT_HEX, alpha: a });
-        }
-        drawDotsBatched(ctx, nHalos);
-        // Neighbour cores. Artwork neighbours with a ready CDN image render as
-        // a thumbnail (drawImage — can't batch); non-image neighbours batch as
-        // dots. Two passes: collect dot-cores, then blit thumbnails over them.
-        const nCores = [];
-        const thumbs = [];
-        for (const n of bundle.zoomNeighbors) {
-          const baseA = (n.alpha != null ? n.alpha : 1) * CFG.BASE_ALPHA;
-          const a = filterMatch(n) ? baseA : baseA * dimmedAlpha;
-          if (a < 0.005) continue;
-          const node = graph.byId.get(n.id);
-          const img = getImageFor(node);
-          if (img) {
-            thumbs.push({ img, x: n.tx ?? n.x, y: n.ty ?? n.y, tr: thumbPetalRadiusFor(n.groupArtworkCount || 1), a });
-          } else {
-            nCores.push({ x: n.tx ?? n.x, y: n.ty ?? n.y, r: n.tr ?? n.r, color: CFG.DOT_HEX, alpha: a });
-          }
-        }
-        drawDotsBatched(ctx, nCores);
-        for (const t of thumbs) {
-          ctx.globalAlpha = t.a;
-          drawCircleImage(ctx, t.img, t.x, t.y, t.tr);
-        }
-        ctx.fillStyle = CFG.DOT_HEX;
-        // Neighbour labels (only after transition done, to keep motion clean).
-        // Cache each label's hit-rect on the neighbour so the click handler
-        // can treat the label as part of the click target.
-        if (!bundle.transitioning) {
-          const all = bundle.zoomNeighbors;
-          const many = all.length > CFG.LABEL_MAX_SHOWN;
-          const lensR = CFG.LABEL_LENS_RADIUS;
-          const lensR2 = lensR * lensR;
-          const haveCursor = cursorX != null && cursorY != null;
-
-          // Build candidate labels with a priority score.
-          //   sparse node (<= LABEL_MAX_SHOWN): EVERY name is a candidate at
-          //     full strength — reads like a normal labelled graph.
-          //   dense node: only the hovered name + names within the cursor lens
-          //     are candidates (priority by proximity) — sweep to read.
-          const candidates = [];
-          for (const n of all) {
-            const baseA = (n.alpha != null ? n.alpha : 1) * CFG.NAME_TEXT_ALPHA;
-            const a = filterMatch(n) ? baseA : baseA * dimmedAlpha;
-            if (a < 0.05) { n.labelBBox = null; continue; }
-            const nx = n.tx ?? n.x, ny = n.ty ?? n.y;
-            const isHovered = n.id === hoveredId;
-            let prio;
-            if (isHovered) {
-              prio = 2;                       // hovered always wins
-            } else if (!many) {
-              prio = 1;                       // sparse → always show
-            } else if (haveCursor) {
-              const cdx = nx - cursorX, cdy = ny - cursorY;
-              const cd2 = cdx * cdx + cdy * cdy;
-              if (cd2 > lensR2) { n.labelBBox = null; continue; }
-              prio = 1 - Math.sqrt(cd2) / lensR;   // nearer cursor = higher
-            } else {
-              n.labelBBox = null; continue;   // dense + no cursor → no labels
-            }
-            candidates.push({ n, nx, ny, a, prio, isHovered });
-          }
-          candidates.sort((p, q) => q.prio - p.prio);
-
-          // Draw highest-priority first, skipping any name whose box collides
-          // with one already drawn. This thins clutter where dots pack tight
-          // (the "can't read it" problem) — the most relevant names win the
-          // space. A dark backing pill lifts each name off the busy field.
-          ctx.font = `${CFG.NAME_TEXT_SIZE}px 'SF Mono', monospace`;
-          ctx.textBaseline = 'middle';
-          const half = CFG.NAME_TEXT_SIZE * 0.7;
-          const drawn = [];
-          let count = 0;
-          for (const c of candidates) {
-            const { n, nx, ny } = c;
-            if (count >= CFG.LABEL_MAX_SHOWN) { n.labelBBox = null; continue; }
-            const dx = nx - cx, dy = ny - cy;
-            const d = Math.hypot(dx, dy) || 1;
-            const nNode = graph.byId.get(n.id);
-            const labelOff = (nNode && getImageFor(nNode))
-              ? thumbPetalRadiusFor(n.groupArtworkCount || 1) + 6
-              : 10;
-            const lx = nx + (dx / d) * labelOff;
-            const ly = ny + (dy / d) * labelOff;
-            const align = dx >= 0 ? 'left' : 'right';
-            const name = n.name || (n.id || '').split(':')[1] || n.id;
-            ctx.textAlign = align;
-            const wText = ctx.measureText(name).width;
-            const x0 = align === 'left' ? lx : lx - wText;
-            const x1 = align === 'left' ? lx + wText : lx;
-            const box = { x0, y0: ly - half, x1, y1: ly + half };
-            // collision check (3px padding) against already-drawn labels
-            let collides = false;
-            for (const b of drawn) {
-              if (box.x0 < b.x1 + 3 && box.x1 + 3 > b.x0 &&
-                  box.y0 < b.y1 + 3 && box.y1 + 3 > b.y0) { collides = true; break; }
-            }
-            if (collides) { n.labelBBox = null; continue; }
-            // backing pill
-            ctx.globalAlpha = c.a * CFG.LABEL_BACKING_ALPHA;
-            ctx.fillStyle = '#0a0a0c';
-            ctx.fillRect(x0 - 3, box.y0 - 1, (x1 - x0) + 6, (box.y1 - box.y0) + 2);
-            // name
-            ctx.globalAlpha = c.a;
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillText(name, lx, ly);
-            n.labelBBox = box;
-            drawn.push(box);
-            count++;
-          }
-        } else {
-          for (const n of bundle.zoomNeighbors) n.labelBBox = null;
-        }
-
-        // Focus halo + name (works for both sim focus and virtual focus).
-        // If the focus is an artwork with a ready image, the white core dot
-        // is replaced by a hero thumbnail. The soft halo behind it stays —
-        // it reads as a glow around the work.
-        if (focus) {
-          const fa = focus.alpha != null ? focus.alpha : 1;
-          const focusNode = graph.byId.get(focusedId);
-          const focusImg = getImageFor(focusNode);
-          const heroR = focusImg ? CFG.THUMB_HERO_RADIUS : (focus.r || 0);
-          ctx.fillStyle = CFG.DOT_HEX;
-          ctx.globalAlpha = 0.18 * fa;
-          ctx.beginPath();
-          ctx.arc(focus.x, focus.y, heroR * (focusImg ? 1.4 : 3.5), 0, Math.PI * 2);
-          ctx.fill();
-          ctx.globalAlpha = fa;
-          if (focusImg) {
-            drawCircleImage(ctx, focusImg, focus.x, focus.y, heroR);
-          } else {
-            ctx.beginPath();
-            ctx.arc(focus.x, focus.y, focus.r || 0, 0, Math.PI * 2);
-            ctx.fill();
-          }
-          if (!bundle.transitioning) {
-            ctx.font = `13px 'SF Mono', monospace`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'top';
-            ctx.fillStyle = '#fff';
-            const name = focusNode?.name || focus.name || focusedId;
-            const labelTop = focus.y + heroR + (focusImg ? 10 : 0);
-            // Type tag above name for non-practitioner focuses (eg scenes)
-            if (focusNode && focusNode.type !== 'practitioner') {
-              ctx.font = `10px 'SF Mono', monospace`;
-              ctx.fillStyle = '#7eb8da';
-              ctx.fillText(focusNode.type.toUpperCase(), focus.x, labelTop + 10);
-              ctx.font = `13px 'SF Mono', monospace`;
-              ctx.fillStyle = '#fff';
-              ctx.fillText(name, focus.x, labelTop + 26);
-            } else {
-              ctx.fillText(name, focus.x, labelTop + 12);
-            }
-          }
-        }
       }
 
       ctx.globalAlpha = 1;
