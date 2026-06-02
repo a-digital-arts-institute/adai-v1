@@ -165,7 +165,6 @@ adai-v1/
 ├── results/                     — 59 legacy per-practitioner JSONs (reference)
 ├── docs/
 │   ├── EMBEDDINGS.md            — canonical reference for the embedding pipeline
-│   ├── SPEC-GAP-ANALYSIS.md     — early spec gap audit
 │   └── BUILD-INSTRUCTIONS.md    — original build spec
 ├── Dockerfile / fly.toml / entrypoint.sh   — Fly.io deployment
 ├── CLAUDE.md                    — architecture + operator notes
@@ -234,4 +233,3 @@ Human-readable with type prefix: `artwork:fidenza`, `practitioner:casey reas`, `
 - [`docs/EMBEDDINGS.md`](docs/EMBEDDINGS.md) — embedding pipeline reference: design rationale, schema, calibration, visualisation surfaces
 - [`seed/SOURCES.md`](seed/SOURCES.md) — canonical edge-type list and source provenance
 - [`seed/COVERAGE.md`](seed/COVERAGE.md) — coverage gaps and known issues
-- [`docs/SPEC-GAP-ANALYSIS.md`](docs/SPEC-GAP-ANALYSIS.md) — early spec audit
