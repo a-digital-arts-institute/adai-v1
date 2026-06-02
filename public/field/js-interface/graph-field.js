@@ -1995,11 +1995,15 @@
     const out = [];
     for (const group of groups) {
       for (const item of group.items) {
-        const sim = bundle.simById?.get(item.id);
-        if (!sim) continue;
+        // Keep EVERY curated neighbour, even one without its own field dot
+        // (a platform like SuperRare, a concept like landscape, etc.). Those get
+        // anchored to a free dot near the focus at render time, the same as any
+        // other neighbour — dropping them was why an artwork's EXHIBITED_AT /
+        // EMBODIES targets showed only "when lucky" (when they happened to be
+        // placed in the field that load).
         out.push({
           ...item,
-          sim,
+          sim: bundle.simById?.get(item.id) || null,
           alpha: 1,
           r: CFG.ZOOM_NEIGHBOR_RADIUS
         });
