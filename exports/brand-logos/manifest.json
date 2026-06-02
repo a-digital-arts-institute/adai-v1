@@ -1,0 +1,211 @@
+{
+  "generatedAt": "2026-05-29T17:59:51.182Z",
+  "source": "public/field/brand.html via public/field/adai-system.js",
+  "font": "Courier Prime",
+  "colors": [
+    {
+      "key": "light",
+      "label": "Light",
+      "hex": "#F2F2F2"
+    },
+    {
+      "key": "ink",
+      "label": "Ink",
+      "hex": "#0C0C0E"
+    }
+  ],
+  "assets": [
+    {
+      "label": "a(dai)",
+      "type": "monogram",
+      "color": "Light",
+      "svg": "svg/01-a-dai-light.svg",
+      "png": "png/01-a-dai-light-4096x1024.png",
+      "dimensions": "4096x1024"
+    },
+    {
+      "label": "a(dai)",
+      "type": "monogram",
+      "color": "Ink",
+      "svg": "svg/01-a-dai-ink.svg",
+      "png": "png/01-a-dai-ink-4096x1024.png",
+      "dimensions": "4096x1024"
+    },
+    {
+      "label": "A(DAI)",
+      "type": "monogram",
+      "color": "Light",
+      "svg": "svg/02-a-dai-light.svg",
+      "png": "png/02-a-dai-light-4096x1024.png",
+      "dimensions": "4096x1024"
+    },
+    {
+      "label": "A(DAI)",
+      "type": "monogram",
+      "color": "Ink",
+      "svg": "svg/02-a-dai-ink.svg",
+      "png": "png/02-a-dai-ink-4096x1024.png",
+      "dimensions": "4096x1024"
+    },
+    {
+      "label": "a.d.a.i",
+      "type": "monogram",
+      "color": "Light",
+      "svg": "svg/03-a-d-a-i-light.svg",
+      "png": "png/03-a-d-a-i-light-4096x1024.png",
+      "dimensions": "4096x1024"
+    },
+    {
+      "label": "a.d.a.i",
+      "type": "monogram",
+      "color": "Ink",
+      "svg": "svg/03-a-d-a-i-ink.svg",
+      "png": "png/03-a-d-a-i-ink-4096x1024.png",
+      "dimensions": "4096x1024"
+    },
+    {
+      "label": "a|dai|",
+      "type": "monogram",
+      "color": "Light",
+      "svg": "svg/04-a-dai-light.svg",
+      "png": "png/04-a-dai-light-4096x1024.png",
+      "dimensions": "4096x1024"
+    },
+    {
+      "label": "a|dai|",
+      "type": "monogram",
+      "color": "Ink",
+      "svg": "svg/04-a-dai-ink.svg",
+      "png": "png/04-a-dai-ink-4096x1024.png",
+      "dimensions": "4096x1024"
+    },
+    {
+      "label": "a{dai}",
+      "type": "monogram",
+      "color": "Light",
+      "svg": "svg/05-a-dai-light.svg",
+      "png": "png/05-a-dai-light-4096x1024.png",
+      "dimensions": "4096x1024"
+    },
+    {
+      "label": "a{dai}",
+      "type": "monogram",
+      "color": "Ink",
+      "svg": "svg/05-a-dai-ink.svg",
+      "png": "png/05-a-dai-ink-4096x1024.png",
+      "dimensions": "4096x1024"
+    },
+    {
+      "label": "a/dai/",
+      "type": "monogram",
+      "color": "Light",
+      "svg": "svg/06-a-dai-light.svg",
+      "png": "png/06-a-dai-light-4096x1024.png",
+      "dimensions": "4096x1024"
+    },
+    {
+      "label": "a/dai/",
+      "type": "monogram",
+      "color": "Ink",
+      "svg": "svg/06-a-dai-ink.svg",
+      "png": "png/06-a-dai-ink-4096x1024.png",
+      "dimensions": "4096x1024"
+    },
+    {
+      "label": "a[dai]",
+      "type": "monogram",
+      "color": "Light",
+      "svg": "svg/07-a-dai-light.svg",
+      "png": "png/07-a-dai-light-4096x1024.png",
+      "dimensions": "4096x1024"
+    },
+    {
+      "label": "a[dai]",
+      "type": "monogram",
+      "color": "Ink",
+      "svg": "svg/07-a-dai-ink.svg",
+      "png": "png/07-a-dai-ink-4096x1024.png",
+      "dimensions": "4096x1024"
+    },
+    {
+      "label": "a~dai~",
+      "type": "monogram",
+      "color": "Light",
+      "svg": "svg/08-a-dai-light.svg",
+      "png": "png/08-a-dai-light-4096x1024.png",
+      "dimensions": "4096x1024"
+    },
+    {
+      "label": "a~dai~",
+      "type": "monogram",
+      "color": "Ink",
+      "svg": "svg/08-a-dai-ink.svg",
+      "png": "png/08-a-dai-ink-4096x1024.png",
+      "dimensions": "4096x1024"
+    },
+    {
+      "label": "a::dai",
+      "type": "monogram",
+      "color": "Light",
+      "svg": "svg/09-a-dai-light.svg",
+      "png": "png/09-a-dai-light-4096x1024.png",
+      "dimensions": "4096x1024"
+    },
+    {
+      "label": "a::dai",
+      "type": "monogram",
+      "color": "Ink",
+      "svg": "svg/09-a-dai-ink.svg",
+      "png": "png/09-a-dai-ink-4096x1024.png",
+      "dimensions": "4096x1024"
+    },
+    {
+      "label": "a>dai<",
+      "type": "monogram",
+      "color": "Light",
+      "svg": "svg/10-a-dai-light.svg",
+      "png": "png/10-a-dai-light-4096x1024.png",
+      "dimensions": "4096x1024"
+    },
+    {
+      "label": "a>dai<",
+      "type": "monogram",
+      "color": "Ink",
+      "svg": "svg/10-a-dai-ink.svg",
+      "png": "png/10-a-dai-ink-4096x1024.png",
+      "dimensions": "4096x1024"
+    },
+    {
+      "label": "a digital arts institute",
+      "type": "wordmark",
+      "color": "Light",
+      "svg": "svg/wordmark-a-digital-arts-institute-light.svg",
+      "png": "png/wordmark-a-digital-arts-institute-light-4096x1024.png",
+      "dimensions": "4096x1024"
+    },
+    {
+      "label": "a digital arts institute",
+      "type": "wordmark",
+      "color": "Ink",
+      "svg": "svg/wordmark-a-digital-arts-institute-ink.svg",
+      "png": "png/wordmark-a-digital-arts-institute-ink-4096x1024.png",
+      "dimensions": "4096x1024"
+    },
+    {
+      "label": "a(dai) + a digital arts institute",
+      "type": "lockup",
+      "color": "Light",
+      "svg": "svg/primary-lockup-a-dai-wordmark-light.svg",
+      "png": "png/primary-lockup-a-dai-wordmark-light-4096x1536.png",
+      "dimensions": "4096x1536"
+    },
+    {
+      "label": "a(dai) + a digital arts institute",
+      "type": "lockup",
+      "color": "Ink",
+      "svg": "svg/primary-lockup-a-dai-wordmark-ink.svg",
+      "png": "png/primary-lockup-a-dai-wordmark-ink-4096x1536.png",
+      "dimensions": "4096x1536"
+    }
+  ]
+}

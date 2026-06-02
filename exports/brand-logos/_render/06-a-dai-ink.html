@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    html, body { margin: 0; width: 4096px; height: 1024px; overflow: hidden; background: transparent; }
+    body { display: flex; align-items: center; justify-content: center; color: #0C0C0E; }
+    .stage { width: 4096px; height: 1024px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; padding: 307px; }
+    .mono { font-family: 'Courier Prime', 'Courier New', monospace; font-size: 520px; font-weight: 300; letter-spacing: 0.1em; line-height: 1; white-space: nowrap; }
+    .word { font-family: 'Courier Prime', 'Courier New', monospace; font-size: 240px; font-weight: 300; letter-spacing: 0.16em; line-height: 1; white-space: nowrap; }
+    .standalone { text-align: center; }
+    .lockup { display: inline-flex; flex-direction: column; align-items: center; gap: 92px; transform-origin: center center; }
+  </style>
+</head>
+<body>
+  <div class="stage"><div class="mono">a/dai/</div></div>
+  <script>
+    (async () => {
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+      const stage = document.querySelector('.stage');
+      const target = document.querySelector('.lockup') || document.querySelector('.mono') || document.querySelector('.word');
+      const maxW = stage.clientWidth;
+      const maxH = stage.clientHeight;
+      if (target.classList.contains('lockup')) {
+        const scale = Math.min(1, maxW / target.scrollWidth, maxH / target.scrollHeight);
+        target.style.transform = 'scale(' + scale + ')';
+      } else {
+        let size = parseFloat(getComputedStyle(target).fontSize);
+        for (let i = 0; i < 120 && (target.scrollWidth > maxW || target.scrollHeight > maxH); i++) {
+          size *= 0.96;
+          target.style.fontSize = size + 'px';
+        }
+      }
+      document.body.dataset.ready = 'true';
+    })();
+  </script>
+</body>
+</html>
