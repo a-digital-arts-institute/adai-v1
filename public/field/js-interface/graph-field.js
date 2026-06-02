@@ -2724,12 +2724,14 @@
 
       ctx.font = `${CFG.NAME_TEXT_SIZE}px 'SF Mono', monospace`;
       ctx.textBaseline = 'middle';
+      // Try to label every visible neighbour, highest-priority first. placeLabel
+      // drops only those that would overlap, so we get as many readable labels as
+      // fit instead of an arbitrary budget that left nodes silently unlabelled.
       const labelItems = visibleNeighbors
         .filter(({ item }) => filterMatch(item))
         .sort((a, b) => {
           return labelPriority(b.item, b.point, focusPoint) - labelPriority(a.item, a.point, focusPoint);
-        })
-        .slice(0, labelBudget(width, height, visibleNeighbors.length));
+        });
       for (const { item, point } of visibleNeighbors) item.labelBBox = null;
       for (const { item, point } of labelItems) {
         if (!filterMatch(item)) { item.labelBBox = null; continue; }
