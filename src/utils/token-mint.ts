@@ -91,6 +91,118 @@ export function mintToken(db: DatabaseSync, opts: MintOptions): MintResult {
   };
 }
 
+// --- Restore -----------------------------------------------------------
+//
+// `restoreToken` is the sister of `mintToken` for the disaster-recovery
+// path: a pre-supplied raw token (one you already issued and saved) gets
+// re-inserted into the table. Useful after a volume wipe — the operator
+// keeps the raw tokens in a gitignored `.tokens.json` and the
+// `restore-tokens` CLI replays them so existing API clients keep working.
+//
+// Idempotent: re-running with the same raw token is a no-op (matched by
+// sha256(raw)). Contributor row is created if missing (analogue of
+// mintToken's createIfMissing). The function does NOT return the raw
+// token — the caller already has it.
+
+export interface RestoreOptions {
+  rawToken: string;              // pre-existing 'adai_…' bearer; sha256 will be computed
+  contributorName: string;
+  label?: string | null;
+  scope?: TokenScope;            // default 'write'
+  tier?: TrustTier;              // used only when contributor must be created
+}
+
+export interface RestoreResult {
+  token_prefix: string;
+  contributor_id: string;
+  contributor_name: string;
+  contributor_trust_tier: string;
+  scope: TokenScope;
+  label: string | null;
+  contributor_created: boolean;
+  token_inserted: boolean;       // false when the (hash) was already present
+}
+
+const RAW_TOKEN_RE = /^adai_[0-9a-f]{40,}$/;
+
+export function restoreToken(db: DatabaseSync, opts: RestoreOptions): RestoreResult {
+  const name = opts.contributorName?.trim();
+  if (!name) {
+    throw new MintError("missing_contributor", "contributor name is required");
+  }
+  const raw = (opts.rawToken ?? "").trim();
+  if (!RAW_TOKEN_RE.test(raw)) {
+    throw new MintError(
+      "invalid_raw_token",
+      `raw token must match /^adai_[0-9a-f]{40,}$/ (got "${raw.slice(0, 13)}…")`
+    );
+  }
+  const scope: TokenScope = opts.scope ?? "write";
+  if (!VALID_SCOPES.has(scope)) {
+    throw new MintError("invalid_scope", `scope must be one of: ${[...VALID_SCOPES].join(", ")}`);
+  }
+
+  let row = db.prepare("SELECT id, name, trust_tier FROM contributors WHERE name = ?").get(name) as any;
+  let contributorCreated = false;
+
+  if (!row) {
+    const tier: TrustTier = (opts.tier ?? "probationary") as TrustTier;
+    if (!VALID_TIERS.has(tier)) {
+      throw new MintError("invalid_tier", `tier must be one of: ${[...VALID_TIERS].join(", ")}`);
+    }
+    const id = `contributor-${crypto.randomBytes(8).toString("hex")}`;
+    db.prepare(
+      "INSERT INTO contributors (id, name, type, trust_tier, contributions, approved_count) VALUES (?, ?, ?, ?, ?, ?)"
+    ).run(id, name, "contributor", tier, 0, 0);
+    row = { id, name, trust_tier: tier };
+    contributorCreated = true;
+  }
+
+  const hash = crypto.createHash("sha256").update(raw).digest("hex");
+  const prefix = raw.slice(0, 5 + 8);
+
+  const existing = db
+    .prepare("SELECT contributor_id, scope FROM contributor_tokens WHERE token_hash = ?")
+    .get(hash) as any;
+
+  let tokenInserted = false;
+  if (existing) {
+    // Already restored. Cheap consistency guard: if the existing row points
+    // at a different contributor, that's almost certainly a typo in
+    // .tokens.json or a misrouted token — refuse rather than silently
+    // shadow it. Same scope mismatch: refuse.
+    if (existing.contributor_id !== row.id) {
+      throw new MintError(
+        "token_belongs_to_other_contributor",
+        `token ${prefix} is already attached to a different contributor_id (${existing.contributor_id}); refusing to re-bind`
+      );
+    }
+    if (existing.scope !== scope) {
+      throw new MintError(
+        "token_scope_mismatch",
+        `token ${prefix} is already stored with scope='${existing.scope}', refusing to overwrite with '${scope}'`
+      );
+    }
+  } else {
+    db.prepare(
+      `INSERT INTO contributor_tokens (token_hash, token_prefix, contributor_id, label, scope)
+       VALUES (?, ?, ?, ?, ?)`
+    ).run(hash, prefix, row.id, opts.label ?? null, scope);
+    tokenInserted = true;
+  }
+
+  return {
+    token_prefix: prefix,
+    contributor_id: row.id,
+    contributor_name: row.name,
+    contributor_trust_tier: row.trust_tier,
+    scope,
+    label: opts.label ?? null,
+    contributor_created: contributorCreated,
+    token_inserted: tokenInserted,
+  };
+}
+
 export interface RevokeResult {
   token_prefix: string;
   contributor_id: string;

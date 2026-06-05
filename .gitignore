@@ -6,7 +6,9 @@
 .env.py
 proton-recovery-kit.pdf
 
-# Local-only operator token cache (raw admin bearer tokens — never sync)
+# Local-only operator token cache (raw admin/contributor bearer tokens — never
+# sync). Re-inserted via `just restore-tokens` / `npm run token:restore` after
+# a volume wipe. See .tokens.json.example for the schema.
 .tokens.json
 
 # ─────────────────────────────────────────────────────────────────────────────
