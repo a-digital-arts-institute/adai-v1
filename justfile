@@ -56,8 +56,10 @@ wait-healthy:
 # --- Fly: deploy / wipe ------------------------------------------------
 
 # Build + deploy via the IAD remote builder (Depot times out for us).
+# --ha=false: flyctl's HA default silently creates a SECOND machine + volume
+# (= two divergent DBs behind one hostname, observed June 2026). Never omit it.
 deploy:
-    FLY_REMOTE_BUILDER_REGION=iad flyctl deploy
+    FLY_REMOTE_BUILDER_REGION=iad flyctl deploy --ha=false
 
 # DANGER: rm /data/adai.db on prod + restart so entrypoint copies fresh seed.
 # All local-only rows (contributor_tokens, intake_queue, archivist_sessions,

@@ -50,8 +50,18 @@ before proceeding — this replaces what's live. Note any uncommitted seed/*.jso
 
 ```bash
 export PATH="$HOME/.fly/bin:$PATH"
-FLY_REMOTE_BUILDER_REGION=iad flyctl deploy --app adai-basel
+FLY_REMOTE_BUILDER_REGION=iad flyctl deploy --app adai-basel --ha=false
 ```
+
+- **`--ha=false` is mandatory.** Without it flyctl defaults to HA and silently
+  creates a SECOND machine with its own fresh volume — two divergent DBs behind
+  one hostname (observed June 2026: runtime writes round-robin between them and
+  token restores only land on one). One machine, one volume, always.
+- If the app has no `data` volume at all (full teardown), `flyctl deploy`
+  errors with `requires an unattached 'data' volume` AFTER the build — create
+  it first (`flyctl volumes create data --app adai-basel --region fra --size 1 --yes`),
+  then redeploy from the already-pushed image
+  (`flyctl deploy --app adai-basel --ha=false --image registry.fly.io/adai-basel:<tag from the build log>`).
 
 - Long (~3–6 min): the builder runs `npm run seed:consolidated` (re-bakes
   `seed.db` from `seed/*.json` + the committed `embeddings.{bin,json}` sidecars,
