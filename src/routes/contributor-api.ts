@@ -102,7 +102,7 @@ router.get("/api/v1/contributions", requireToken, (req, res) => {
   const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.min(Math.floor(limitRaw), 200) : 50;
 
   const where: string[] = ["q.submitted_by = ?"];
-  const params: unknown[] = [name];
+  const params: string[] = [name];
   if (statusFilter) {
     where.push("q.status = ?");
     params.push(statusFilter);
