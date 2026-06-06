@@ -1,0 +1,52 @@
+# Litestream — continuous replication of the live SQLite DB to Cloudflare R2.
+#
+# Why: the volume is single-host and unreplicated; if its Fly host dies, the
+# only copy of any runtime writes (contributor API, nightly UMAP) dies with it.
+# Litestream streams the WAL to R2 every `sync-interval`, so a fresh volume on a
+# new host restores the live DB on boot (see entrypoint.sh) losing <=30s, and a
+# total loss falls back to the baked genesis seed.db.
+#
+# IMPORTANT — this MUST point at a PRIVATE bucket, NOT the image bucket.
+# The `adai` image bucket is published via the pub-*.r2.dev managed domain, so
+# every object in it is world-readable by path. This backup is the whole
+# /data/adai.db file, which carries local-only tables that must NOT be public:
+#   contributor_tokens (auth hashes), archivist_sessions, settings,
+#   intake_queue, rejected_ai_suggestions.
+# So replication targets a dedicated PRIVATE bucket (public access OFF) with its
+# own object-scoped token, kept separate from the image-upload credentials.
+#
+# Expanded from these Fly secrets at load time (Litestream supports ${VAR}):
+#   R2_ENDPOINT                  shared, account-level endpoint
+#   R2_BACKUP_BUCKET             e.g. adai-backups  (public access OFF)
+#   R2_BACKUP_ACCESS_KEY_ID      Object Read & Write token scoped to that bucket
+#   R2_BACKUP_SECRET_ACCESS_KEY
+# Until these are set, entrypoint.sh leaves Litestream OFF (safe by default).
+#
+# NB: adai runs CR-SQLite in WAL mode. Litestream takes ownership of WAL
+# checkpointing at runtime — the app must NOT issue its own wal_checkpoint(TRUNCATE)
+# while the server is live. adai only does that in the build-time seeder, so the
+# runtime is clean. CR-SQLite's clock/trigger tables ride the same WAL and
+# replicate transparently.
+
+dbs:
+  - path: /data/adai.db
+    replicas:
+      - type: s3
+        bucket: ${R2_BACKUP_BUCKET}
+        path: adai.db
+        endpoint: ${R2_ENDPOINT}
+        access-key-id: ${R2_BACKUP_ACCESS_KEY_ID}
+        secret-access-key: ${R2_BACKUP_SECRET_ACCESS_KEY}
+        # Frugal cadence — R2 bills per Class-A op, so don't hammer it:
+        #   sync-interval 30s   WAL frames upload every 30s, but ONLY when there
+        #                       are new writes. adai is read-mostly → idle costs
+        #                       ~nothing, and it keeps the <=30s-loss guarantee.
+        #   snapshot-interval   a snapshot is a FULL-DB upload (the expensive op).
+        #     24h               Once a day is plenty: snapshots only bound restore
+        #                       time and let old WAL prune. (Was 1h = 24x/day = the
+        #                       chatty/costly default to avoid.)
+        #   retention-check 24h prune pass (LIST + DELETE) runs daily, not hourly.
+        sync-interval: 30s
+        snapshot-interval: 24h
+        retention: 72h
+        retention-check-interval: 24h
