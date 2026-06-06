@@ -2809,6 +2809,42 @@
       setTimeout(() => replayPath(graph, bundle, urlPath, { snapshot: false }), 400);
     }
 
+    // If the URL has ?node=<id-or-slug>, zoom straight to that node on load —
+    // the shareable deep-link for "look at this exact node in the field"
+    // (e.g. /field?node=concept:protocol-art). Unlike ?reading the param is
+    // KEPT in the URL: it IS the share artifact, and re-focusing on reload is
+    // what you'd expect from such a link.
+    const deepLinkRaw = new URL(window.location.href).searchParams.get('node');
+    if (deepLinkRaw && deepLinkRaw.trim()) {
+      const wanted = deepLinkRaw.trim();
+      let targetId = graph.byId.has(wanted) ? wanted : null;
+      if (!targetId) {
+        // Fall back to slug match, with or without a `type:` prefix, so both
+        // /field?node=protocol-art and /field?node=concept:protocol-art
+        // resolve even when the stored id uses the legacy spaced form.
+        const m = wanted.match(/^([a-z_]+):(.+)$/);
+        for (const n of graph.nodes) {
+          if (m ? (n.type === m[1] && n.slug === m[2]) : n.slug === wanted) {
+            targetId = n.id;
+            break;
+          }
+        }
+      }
+      if (targetId) {
+        // Same beat as ?reading — let the brand viz finish its first paint,
+        // then drive the field-study zoom (pans the bitmap camera AND reveals
+        // the node's neighbourhood). Falls back to the in-place reveal when
+        // the field study isn't up (e.g. stage missing).
+        const id = targetId;
+        setTimeout(() => {
+          if (window.ADAI_FIELD_STUDY?.zoomToNode?.(id)) return;
+          bundle.revealInPlace(id);
+        }, 600);
+      } else {
+        console.warn('[adai] ?node= deep-link did not resolve:', wanted);
+      }
+    }
+
     // ---- interaction state ----
     const panel = createEntityPanel();
     let hoveredId = null;

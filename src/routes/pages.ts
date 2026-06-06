@@ -346,6 +346,10 @@ function profileHandler(req: any, res: any) {
   // embedding. Cheap to add — it's a query-param page, no per-node cost.
   body += ` <a href='/neighbours/${encodeURIComponent(node.type)}/${encodeURIComponent(slug)}' class='btn'>Find neighbours</a>`;
 
+  // Shareable deep-link into the field view, zoomed straight to this node —
+  // the URL contributors send around ("look at what I added").
+  body += ` <a href='/field?node=${encodeURIComponent(node.id)}' class='btn'>View in field</a>`;
+
   res.set(HTML_HEADERS).send(htmlPage(node.name, body));
 }
 
