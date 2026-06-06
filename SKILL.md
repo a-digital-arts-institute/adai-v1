@@ -1,6 +1,6 @@
 ---
 name: adai-contribute
-description: Contribute to the A(DAI) Digital Arts Knowledge Commons graph (https://adai-basel.fly.dev) on behalf of a practitioner using their bearer token in ADAI_TOKEN. Use this skill when the user wants to add a text signal about an existing node, create a new node (practitioner, artwork, concept, scene, institution, collective, platform, etc.), add or supersede an edge between two nodes (CREATED_BY, EMBODIES, PRACTICES, EXHIBITED_AT, CLASSIFIED_BY, BELONGS_TO, COLLABORATES_WITH, USES_TECHNIQUE, INFLUENCES, RESPONDS_TO), upload an image and attach it to a node, or — with an admin-scope token — mint, list, or revoke contributor tokens for others. Talks to /api/v1/* via curl. Respects trust tiers (auto/reviewed go live, probationary queue at /review for curator approval). Never infer INFLUENCES or RESPONDS_TO from style or visual similarity; both require attested artist intent.
+description: Contribute to the A(DAI) Digital Arts Knowledge Commons graph (https://adai-basel.fly.dev) on behalf of a practitioner using their bearer token in ADAI_TOKEN. Use this skill when the user wants to add a text signal about an existing node, create a new node (practitioner, artwork, concept, scene, institution, collective, platform, etc.), add or supersede an edge between two nodes (CREATED_BY, EMBODIES, PRACTICES, EXHIBITED_AT, CLASSIFIED_BY, BELONGS_TO, COLLABORATES_WITH, USES_TECHNIQUE, INFLUENCES, RESPONDS_TO), upload an image and attach it to a node, review the practitioner's own contribution history, or — with an admin-scope token — mint, list, or revoke contributor tokens for others. Talks to /api/v1/* via curl. Respects trust tiers (auto/reviewed go live, probationary queue at /review for curator approval). Never infer INFLUENCES or RESPONDS_TO from style or visual similarity; both require attested artist intent.
 ---
 
 # A(DAI) contributor skill — for Claude (and any other AI assistant) writing to the knowledge commons
@@ -48,15 +48,38 @@ If it's `probationary`, every write lands in the curator queue at
 still contribute** — just be especially careful with edges and node
 creates, since each one is a curator's time.
 
-If `r2_configured` is `false`, image uploads (§1.6) will hard-fail with
+If `r2_configured` is `false`, image uploads (§1.5) will hard-fail with
 `503 r2_not_configured`. The other endpoints still work — tell the
 practitioner to set the `R2_*` env vars if they need images.
 
 ---
 
+## 0.5 — Opening move
+
+Once `whoami` succeeds, tell the practitioner who they're writing as and
+what you can do for them (say things about existing entries, create new
+ones, connect them, attach images — §1). Then offer a few starting
+points; these map to the most common sessions and keep first-time
+contributors out of trouble:
+
+- **"Does ___ already exist in the graph?"** — always the first check (§1.0).
+- **"Show me what you'll add before you post it."** — draft → sign-off → POST.
+- **"What's my source for this?"** — required for INFLUENCES / RESPONDS_TO (§1.4).
+- **"Will this go live now, or be reviewed first?"** — trust tier (§3).
+- **"What have I contributed so far?"** — contribution history (§1.6).
+- **"Here are the works from my show — add them and attach these images."**
+  — batch intake; confirm the count first (§5).
+
+One more thing to surface unprompted: the graph is a **public commons** and
+contributions are attributed. If something they're telling you sounds
+private (an unannounced collab, a personal anecdote about someone else),
+ask before writing it.
+
+---
+
 ## 1 — The verbs
 
-You have one read verb and four write verbs. Pick the smallest one that
+You have two read verbs and four write verbs. Pick the smallest one that
 does the job.
 
 ### 1.0 `GET /api/graph` — discover what already exists
@@ -138,6 +161,11 @@ curl -s -X POST "$ADAI_BASE/api/v1/nodes" \
 Returns `{ node_id, created, status, signal_id, intake_id, warnings }`.
 `created: false` means a node with that id already existed — your
 metadata is **not** merged in that case; use PATCH (§1.3) instead.
+
+After a successful create, hand the practitioner the share links: the
+profile page `$ADAI_BASE/<type>/<slug>` and the field view zoomed straight
+to the node, `$ADAI_BASE/field?node=<node_id>` (URL-encode the id). The
+second one is the "look at what I added" link.
 
 **Common metadata fields by type.** Metadata is free-form, but the UI
 reads these specific keys and renders them everywhere (profile pages,
@@ -326,6 +354,27 @@ in the response). Max payload: 12 MB.
 `503 r2_not_configured` immediately — don't bother attempting. The
 upload is the *only* endpoint that needs R2; signals/nodes/edges all
 work without it.
+
+### 1.6 `GET /api/v1/contributions` — the practitioner's own history
+
+Answers "what have I contributed, and did it go live?" — every write made
+with this token's contributor identity, newest first, with review status.
+Token-scoped: it only ever shows their own rows.
+
+```bash
+curl -s -H "Authorization: Bearer $ADAI_TOKEN" "$ADAI_BASE/api/v1/contributions" | jq
+
+# only the ones still waiting on a curator
+curl -s -H "Authorization: Bearer $ADAI_TOKEN" \
+  "$ADAI_BASE/api/v1/contributions?status=pending&limit=20" | jq
+```
+
+Response: `{ contributor, totals: { approved: N, pending: N, rejected: N },
+returned, items }` where each item carries `action` (`signal` /
+`create_node` / `patch_node` / `add_edge` / `attach_image`), `target_node`,
+`status`, `created_at`, and the anchoring `signal_id` + `title`. A
+`rejected` item includes the curator's `rejection_reason` — relay it
+honestly; it's feedback, not a scolding.
 
 ---
 
