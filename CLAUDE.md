@@ -264,13 +264,23 @@ git add seed/embeddings.{bin,json,umap2d.json} && git commit
 
 ### Deploy gotchas
 
-- **Persistent volume**: `/data` survives deploys, so new code sees the old DB. To ship fresh seed data (including any new embeddings or derive thresholds), SSH in and remove the DB files, then restart:
+> **⚠️ CANON FROZEN — DO NOT WIPE `/data` (owner decision, 2026-06-06).**
+> The live DB now carries practitioner contributions made through the
+> contributor API (aiio's protocol-art session onward) that exist **nowhere
+> in `seed/*.json`** — a volume wipe destroys them permanently. The
+> reseed-bake-wipe dance below is **retired from routine use**: deploy code
+> with plain `just deploy` (the volume survives, the entrypoint never
+> overwrites an existing DB). `just nuke-volume` / `just redeploy-fresh`
+> remain only as disaster-recovery tools — and even then, prefer restoring
+> from the Litestream replica, which has the live writes.
+
+- **Persistent volume**: `/data` survives deploys, so new code sees the old DB. To ship fresh seed data (including any new embeddings or derive thresholds) you would SSH in, remove the DB files, and restart — **retired under the canon freeze above; kept for disaster-recovery reference**:
   ```bash
   flyctl ssh console --app adai-basel -C "sh -c 'rm -f /data/adai.db /data/adai.db-shm /data/adai.db-wal'"
   flyctl machine restart <machine-id> --app adai-basel
   ```
-  On restart, the entrypoint sees no DB and copies the baked one. **Use `just nuke-volume` (or the chained `just redeploy-fresh`) for this — it picks the machine ID, confirms, and reminds you to restore tokens.** Wiping the volume drops every local-only row (`contributor_tokens`, `intake_queue`, `archivist_sessions`, `rejected_ai_suggestions`, …); the tokens come back via `just restore-tokens` reading `.tokens.json`, but the rest is gone for good — only do this when you actually want fresh state.
-- **Schema migrations are not automatic**. `initDb` runs `db.sql` against the live DB on every boot — fine for `CREATE TABLE IF NOT EXISTS` and `CREATE INDEX IF NOT EXISTS`, but it will fail if the new schema adds a column to an existing table (observed: adding `valid_until` to `edges` crash-looped an older volume). The May 2026 `intake_queue.kind` column add is wrapped in a `try/catch` in `src/db.ts` keyed to SQLite's stable "duplicate column name" error so it's idempotent — **don't strip the try/catch**. When schema expands further, either reuse the same pattern or blow away the volume.
+  On restart, the entrypoint sees no DB and copies the baked one. **Use `just nuke-volume` (or the chained `just redeploy-fresh`) for this — it picks the machine ID, confirms, and reminds you to restore tokens.** Wiping the volume drops every local-only row (`contributor_tokens`, `intake_queue`, `archivist_sessions`, `rejected_ai_suggestions`, …) **and every live CRR write since the freeze** (signals, contributor-created nodes/edges); the tokens come back via `just restore-tokens` reading `.tokens.json`, but the rest is gone for good.
+- **Schema migrations are not automatic**. `initDb` runs `db.sql` against the live DB on every boot — fine for `CREATE TABLE IF NOT EXISTS` and `CREATE INDEX IF NOT EXISTS`, but it will fail if the new schema adds a column to an existing table (observed: adding `valid_until` to `edges` crash-looped an older volume). The May 2026 `intake_queue.kind` column add is wrapped in a `try/catch` in `src/db.ts` keyed to SQLite's stable "duplicate column name" error so it's idempotent — **don't strip the try/catch**. When schema expands further, reuse the same pattern — blowing away the volume is no longer an option under the canon freeze.
 - **WAL checkpoint trap in the seeder**: `src/seed-consolidated.ts` ends with `PRAGMA wal_checkpoint(TRUNCATE)` — **keep it**. CR-SQLite runs in WAL mode; small writes at the end of the seeder (e.g. the A(DAI) bootstrap, the embeddings load, the chained derive pass) otherwise sit in `seed.db-wal`. The Dockerfile only copies `seed.db` to the runtime stage, so uncheckpointed writes silently disappear. If you add inserts anywhere after the main node/edge loops, make sure the checkpoint still runs after them.
 - **Embedding sidecar drift**: if `seed/embeddings.bin` (or `.json`) is missing or out of sync with `seed/nodes.json`, the builder will produce a `seed.db` with no `node_embeddings` rows and no STYLE_KIN / VISUALLY_AFFINE edges (the chained derive silently skips when embeddings are absent). Production then 404s `/api/embed-space` and shows empty profile-page sections. Always re-run `embed_nodes.py` + `project_umap.py` after material changes to `seed/nodes.json`, and re-commit the three sidecars. The script is idempotent — only nodes whose `(text_hash, image_hash)` changed get re-embedded.
 

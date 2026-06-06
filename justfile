@@ -61,12 +61,20 @@ wait-healthy:
 deploy:
     FLY_REMOTE_BUILDER_REGION=iad flyctl deploy --ha=false
 
+# ⚠️ CANON FROZEN (owner decision, 2026-06-06): we do NOT wipe /data anymore.
+# The live DB carries practitioner contributions (aiio's protocol-art session
+# onward) that exist nowhere in seed/*.json — a wipe destroys them for good.
+# Deploy code with `just deploy` only. This recipe is kept strictly for
+# disaster recovery (prefer the Litestream replica even then).
+#
 # DANGER: rm /data/adai.db on prod + restart so entrypoint copies fresh seed.
 # All local-only rows (contributor_tokens, intake_queue, archivist_sessions,
 # rejected_ai_suggestions, …) are lost — follow with `just restore-tokens`.
 # Prompts for 'yes' before doing anything destructive.
-[doc("DANGER: rm /data/adai.db on prod + restart (entrypoint copies fresh seed). Prompts for confirmation.")]
+[doc("RETIRED — canon frozen 2026-06-06, live contributions live only on the volume. Disaster recovery only.")]
 nuke-volume: warm
+    @echo "⚠️  CANON FROZEN (2026-06-06): the live DB holds practitioner contributions that exist nowhere else."
+    @echo "    This wipe destroys them permanently. Disaster recovery only — prefer the Litestream replica."
     @read -p "About to delete {{db_path}} on prod. Type 'yes' to continue: " ans && [ "$ans" = "yes" ] || { echo "aborted"; exit 1; }
     flyctl ssh console --app {{app}} -C "sh -c 'rm -f {{db_path}} {{db_path}}-shm {{db_path}}-wal && echo wiped'"
     @just _restart-machine
@@ -82,6 +90,7 @@ _check-tokens-file:
     @test -f {{tokens_file}} || { echo "missing {{tokens_file}} — refusing to redeploy without it (would orphan auth). See {{tokens_file}}.example." >&2; exit 1; }
 
 # Full dance: check tokens → deploy → wipe volume → wait → restore tokens.
+# ⚠️ RETIRED with the canon freeze (2026-06-06) — see nuke-volume above.
 redeploy-fresh: _check-tokens-file deploy nuke-volume wait-healthy restore-tokens
 
 # --- Fly: tokens -------------------------------------------------------
