@@ -8,7 +8,19 @@
 // page can never drift.
 
 import type { DatabaseSync } from "node:sqlite";
-import { topKByNodeId, withMetadata, type Neighbour } from "./neighbours.js";
+import { topKByNodeId, topKCentredArtworks, withMetadata, type Neighbour } from "./neighbours.js";
+
+// Quality floor for the concept/scene "Closest artworks" section, applied in
+// the MEAN-CENTRED artwork space (see topKCentredArtworks for why raw cosine
+// can't gate this). Calibrated June 2026 against the live canon: a concept
+// with no genuinely-related artworks (concept:protocol-art at mint time)
+// topped out at 0.369 centred; related concepts (pixel, glitch, bitcoin,
+// landscape …) reach 0.53–0.64. 0.40 sits in the gap. Env-tunable like the
+// derive τs; re-check with the calibration script if the canon reshapes.
+const TAU_CLOSEST_ARTWORKS = (() => {
+  const v = Number(process.env.TAU_CLOSEST_ARTWORKS);
+  return Number.isFinite(v) ? v : 0.4;
+})();
 
 export interface EmbeddingSection {
   /** Stable machine key — used by the client to colour/route a section. */
@@ -157,20 +169,21 @@ export function buildEmbeddingSections(
   }
 
   if (node.type === "concept" || node.type === "scene") {
+    // Mean-centred similarity with a quality floor: a concept with no
+    // genuinely-related artworks gets an empty list (and therefore no
+    // section), instead of eight nearest-by-weak-math strangers.
     const closest = withMetadata(
       db,
-      topKByNodeId(db, node.id, {
-        queryKind: "identity",
-        candidateKind: "identity",
-        typePrefixes: ["artwork:"],
+      topKCentredArtworks(db, node.id, {
         k: 8,
+        minSimilarity: TAU_CLOSEST_ARTWORKS,
       })
     );
     if (closest.length) {
       sections.push({
         key: "closest_artworks",
         title: "Closest artworks in embedding space",
-        blurb: `Artworks whose fused text+image vector sits closest to this ${node.type}'s text embedding.`,
+        blurb: `Artworks whose mean-centred text+image vector sits closest to this ${node.type}'s text embedding. Matches below the quality floor are hidden.`,
         neighbours: closest,
       });
     }

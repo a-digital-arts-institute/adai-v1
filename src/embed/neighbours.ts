@@ -90,6 +90,77 @@ export function topKByVector(
 }
 
 /**
+ * Top-K artworks nearest to a node in the MEAN-CENTRED artwork space.
+ *
+ * Why centred and not raw cosine: generative-art embeddings are anisotropic
+ * (every vector points roughly the same way), so raw concept→artwork cosine
+ * sits in a compressed 0.79–0.90 band where "related" and "unrelated" are
+ * nearly indistinguishable — a freshly-minted concept with zero related
+ * artworks still gets eight ~0.80 "matches". Subtracting the global artwork
+ * mean removes that common component; the centred scores separate cleanly
+ * (calibrated June 2026 on the live canon: unrelated concepts top out
+ * ~0.37, genuinely related ones reach 0.53–0.64). Same lesson as the
+ * Tier-2 propagation in concept-edges.ts.
+ *
+ * Used by the "Closest artworks" section on concept/scene profile pages,
+ * with a minSimilarity floor so the section hides when nothing clears it.
+ */
+export function topKCentredArtworks(
+  db: DatabaseSync,
+  nodeId: string,
+  opts: { k?: number; minSimilarity?: number } = {}
+): Neighbour[] {
+  const k = opts.k ?? 8;
+  const minSim = opts.minSimilarity ?? 0;
+  const all = loadAll(db);
+  const query = all.get(`identity:${nodeId}`);
+  if (!query) return [];
+
+  const arts: VectorRow[] = [];
+  for (const [, row] of all) {
+    if (row.kind !== "identity") continue;
+    if (!row.node_id.startsWith("artwork:")) continue;
+    if (row.node_id === nodeId) continue;
+    arts.push(row);
+  }
+  if (arts.length === 0) return [];
+
+  const D = arts[0]!.vec.length;
+  const mean = new Float32Array(D);
+  for (const r of arts) {
+    for (let i = 0; i < D; i++) mean[i]! += r.vec[i]!;
+  }
+  for (let i = 0; i < D; i++) mean[i]! /= arts.length;
+
+  const centre = (v: Float32Array): Float32Array => {
+    const c = new Float32Array(D);
+    let n = 0;
+    for (let i = 0; i < D; i++) {
+      c[i] = v[i]! - mean[i]!;
+      n += c[i]! * c[i]!;
+    }
+    n = Math.sqrt(n) || 1;
+    for (let i = 0; i < D; i++) c[i]! /= n;
+    return c;
+  };
+
+  const q = centre(query.vec);
+  const top: Neighbour[] = [];
+  for (const r of arts) {
+    const s = cosine(q, centre(r.vec));
+    if (s < minSim) continue;
+    if (top.length < k) {
+      top.push({ node_id: r.node_id, similarity: s });
+      top.sort((a, b) => b.similarity - a.similarity);
+    } else if (s > top[top.length - 1]!.similarity) {
+      top[top.length - 1] = { node_id: r.node_id, similarity: s };
+      top.sort((a, b) => b.similarity - a.similarity);
+    }
+  }
+  return top;
+}
+
+/**
  * Top-K neighbours of a node already stored in node_embeddings, by id.
  * Returns [] if the node has no row of the requested query kind.
  *
