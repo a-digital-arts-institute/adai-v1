@@ -17,6 +17,17 @@ auto_start_machines = true
 min_machines_running = 0
 processes = ['app']
 
+# Health check — lets fly-proxy detect a sick instance and stop routing to it,
+# and is the prerequisite for automatic failover once more than one machine runs.
+# Probes the cheap JSON stats endpoint. grace_period covers the first-boot reseed
+# (entrypoint copies the baked seed.db onto an empty volume, ~10s).
+[[http_service.checks]]
+interval = '30s'
+timeout = '5s'
+grace_period = '30s'
+method = 'GET'
+path = '/api/stats'
+
 [[vm]]
 memory = '512mb'
 cpu_kind = 'shared'

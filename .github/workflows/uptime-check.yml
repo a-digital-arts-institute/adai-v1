@@ -1,0 +1,97 @@
+name: uptime-check
+
+# Lightweight external uptime monitor. Probes the live server's cheap JSON
+# stats endpoint on a schedule. On failure it opens (or updates) a single
+# deduplicated GitHub issue and fails the job — a failed scheduled run also
+# emails the repo owner per GitHub's default notification settings. On the
+# next successful probe it comments + auto-closes the open alert.
+#
+# NB: GitHub may delay scheduled runs by 5-15 min under load, so this catches
+# sustained outages, not seconds-level blips. It only runs once merged to the
+# default branch (scheduled workflows ignore other branches). It does NOT
+# replace the in-platform fly health check — it's the off-platform watcher
+# that notices when the whole machine/host is gone (the exact failure we hit).
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+  contents: read
+
+concurrency:
+  group: uptime-check
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Probe https://adai-basel.fly.dev/api/stats
+        id: probe
+        run: |
+          code=$(curl -sS -o /tmp/body -w '%{http_code}' --max-time 30 \
+            https://adai-basel.fly.dev/api/stats || echo 000)
+          echo "http_code=$code" >> "$GITHUB_OUTPUT"
+          echo "HTTP $code"
+          head -c 500 /tmp/body || true
+          if [ "$code" = "200" ]; then
+            echo "ok=true"  >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open or refresh the down-alert issue
+        if: steps.probe.outputs.ok != 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const marker = '<!-- uptime-monitor -->';
+            const code = '${{ steps.probe.outputs.http_code }}';
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = `${marker}\n` +
+              `Uptime probe failed: \`GET /api/stats\` returned **HTTP ${code}** at ${new Date().toISOString()}.\n\n` +
+              `Run: ${runUrl}`;
+            const { data: open } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: 'open', per_page: 100,
+            });
+            const existing = open.find(i => (i.body || '').includes(marker));
+            if (!existing) {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title: '🔴 adai-basel is DOWN', body, labels: ['uptime-down'],
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing.number, body,
+              });
+            }
+
+      - name: Auto-close the down-alert issue on recovery
+        if: steps.probe.outputs.ok == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const marker = '<!-- uptime-monitor -->';
+            const { data: open } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo, state: 'open', per_page: 100,
+            });
+            for (const issue of open.filter(i => (i.body || '').includes(marker))) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo, issue_number: issue.number,
+                body: `✅ Recovered: \`GET /api/stats\` returned 200 at ${new Date().toISOString()}. Auto-closing.`,
+              });
+              await github.rest.issues.update({
+                owner: context.repo.owner, repo: context.repo.repo, issue_number: issue.number, state: 'closed',
+              });
+            }
+
+      - name: Fail the job when down (triggers the workflow-failure email)
+        if: steps.probe.outputs.ok != 'true'
+        run: |
+          echo "::error::adai-basel uptime probe failed (HTTP ${{ steps.probe.outputs.http_code }})"
+          exit 1
