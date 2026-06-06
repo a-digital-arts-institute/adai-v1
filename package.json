@@ -18,6 +18,7 @@
     "token:issue": "tsx src/cli/issue-token.ts",
     "token:revoke": "tsx src/cli/revoke-token.ts",
     "token:restore": "tsx src/cli/restore-tokens.ts",
+    "contributor:rename": "tsx src/cli/rename-contributor.ts",
     "build": "tsc",
     "export:logos": "node scripts/export-brand-logos.mjs",
     "test": "tsx --test tests/*.test.ts",
