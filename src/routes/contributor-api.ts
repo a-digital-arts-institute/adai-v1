@@ -82,6 +82,106 @@ router.get("/api/v1/whoami", requireToken, (req, res) => {
   });
 });
 
+// ---------- GET /api/v1/contributions --------------------------------------
+// The contributor's own history — every write they've made through this API
+// (and the legacy form), with its review status. Answers "what have I
+// contributed, and did it go live?" without a curator having to dig through
+// /review. Token-scoped: you only ever see your own rows.
+//
+// Query params: ?status=pending|approved|rejected  ?limit=N (default 50, max 200)
+//
+// Caveat: intake_queue is a local-only table, so history reaches back to the
+// last volume genesis — long enough for "what did I add this week?", which is
+// the question this answers.
+
+router.get("/api/v1/contributions", requireToken, (req, res) => {
+  const db = getDb();
+  const name = req.contributor!.name;
+  const statusFilter = typeof req.query.status === "string" ? req.query.status : null;
+  const limitRaw = Number(req.query.limit);
+  const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.min(Math.floor(limitRaw), 200) : 50;
+
+  const where: string[] = ["q.submitted_by = ?"];
+  const params: unknown[] = [name];
+  if (statusFilter) {
+    where.push("q.status = ?");
+    params.push(statusFilter);
+  }
+
+  const rows = db
+    .prepare(
+      `SELECT q.id AS intake_id, q.signal_id, q.target_node, q.status,
+              q.created_at, q.reviewed_at, q.rejection_reason,
+              q.proposed_nodes, q.proposed_edges,
+              s.title AS title, s.source_type AS source_type
+         FROM intake_queue q
+         LEFT JOIN signals s ON s.id = q.signal_id
+        WHERE ${where.join(" AND ")}
+        ORDER BY q.created_at DESC
+        LIMIT ?`
+    )
+    .all(...params, limit) as Array<{
+      intake_id: string;
+      signal_id: string | null;
+      target_node: string | null;
+      status: string;
+      created_at: string | null;
+      reviewed_at: string | null;
+      rejection_reason: string | null;
+      proposed_nodes: string | null;
+      proposed_edges: string | null;
+      title: string | null;
+      source_type: string | null;
+    }>;
+
+  // Derive a human-readable action per row from the signal's source_type +
+  // the proposed op, so the caller doesn't have to parse proposed_nodes.
+  const items = rows.map((r) => {
+    let action = "signal";
+    if (r.source_type === "api_edge") action = "add_edge";
+    else if (r.source_type === "api_image") action = "attach_image";
+    else if (r.source_type === "api_node") {
+      action = "create_node";
+      try {
+        const ops = JSON.parse(r.proposed_nodes ?? "[]");
+        if (Array.isArray(ops) && ops[0]?.op) action = ops[0].op; // create_node | patch_node | attach_image
+      } catch {
+        /* keep the source_type-derived default */
+      }
+    }
+    return {
+      intake_id: r.intake_id,
+      action,
+      target_node: r.target_node,
+      status: r.status,
+      created_at: r.created_at,
+      reviewed_at: r.reviewed_at,
+      ...(r.rejection_reason ? { rejection_reason: r.rejection_reason } : {}),
+      signal_id: r.signal_id,
+      title: r.title,
+    };
+  });
+
+  const totals = db
+    .prepare(
+      `SELECT status, COUNT(*) AS n FROM intake_queue WHERE submitted_by = ? GROUP BY status`
+    )
+    .all(name) as Array<{ status: string; n: number }>;
+  const byStatus: Record<string, number> = {};
+  for (const t of totals) byStatus[t.status] = t.n;
+
+  res.set(JSON_HEADERS).json({
+    contributor: {
+      id: req.contributor!.id,
+      name,
+      trust_tier: req.contributor!.trust_tier,
+    },
+    totals: byStatus,
+    returned: items.length,
+    items,
+  });
+});
+
 // ---------- POST /api/v1/signals ------------------------------------------
 // JSON: { target_node, title, content, source_url?, consent_scope?, consent_attribution? }
 
