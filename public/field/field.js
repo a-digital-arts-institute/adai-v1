@@ -366,13 +366,23 @@
 
       const width = stage.offsetWidth;
       const height = stage.offsetHeight;
+      // Overscan: how far past the field edge the camera may pan. 0 at rest
+      // (scale 1 — the field always fills the frame) ramping to a half-viewport
+      // by DEFAULT_ZOOM, which is exactly enough to centre ANY field point,
+      // including the spiral rim. Without it, focusing a rim dot (where
+      // live-contributed nodes land until their nightly UMAP placement) pinned
+      // the focus to the screen edge and the whole neighbour layout — computed
+      // 360° around the focus — squeezed into the remaining sliver.
+      const overscanT = clamp((nextCamera.scale - 1) / (DEFAULT_ZOOM - 1), 0, 1);
+      const overscanX = overscanT * width / 2;
+      const overscanY = overscanT * height / 2;
       const minX = width - width * nextCamera.scale;
       const minY = height - height * nextCamera.scale;
 
       return {
         scale: nextCamera.scale,
-        x: clamp(nextCamera.x, minX, 0),
-        y: clamp(nextCamera.y, minY, 0)
+        x: clamp(nextCamera.x, minX - overscanX, overscanX),
+        y: clamp(nextCamera.y, minY - overscanY, overscanY)
       };
     }
 
