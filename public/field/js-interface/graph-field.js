@@ -117,6 +117,10 @@
     // candidate remains, a too-close one is still used rather than dropping
     // the neighbour entirely.
     IN_PLACE_ANCHOR_MIN_SEP: 34,
+    // Desired anchor targets are clamped this many px inside the viewport,
+    // so the widened elliptical layouts scatter UP TO the screen edges but
+    // never beyond them (room for a dot + the start of its label).
+    IN_PLACE_TARGET_INSET: 76,
     IN_PLACE_CURVE_NEAR_RADIUS: 76,
     IN_PLACE_CURVE_CONTROL_SCALE: 0.34,
     IN_PLACE_CURVE_MIN_BEND: 18,
@@ -855,10 +859,15 @@
   // diversity): a high-intention node blooms with many petals.
   function computeRoseLayout(graph, focusedId, w, h) {
     const cx = w / 2, cy = h / 2;
-    const R = Math.min(w, h) * 0.42;
+    // Elliptical radii: scale each axis by ITS viewport dimension instead of
+    // the old R = min(w,h) — on a wide window the circular layout left the
+    // horizontal space unused and everything read as bunched around the
+    // focus. Vertically this matches the old 0.42·min on landscape screens.
+    const Rx = w * 0.40;
+    const Ry = h * 0.42;
     const groups = gatherNeighborsByType(graph, focusedId);
     const k = groups.length;
-    if (k === 0) return { cx, cy, neighbors: [], layout: 'rose', petalCount: 0 };
+    if (k === 0) return { cx, cy, neighbors: [], layout: 'rose', petalCount: 0, Rx, Ry };
 
     const out = [];
     groups.forEach((group, gi) => {
@@ -875,13 +884,14 @@
         // u in [0.18, 0.82] avoids collapsing at petal base (r=0)
         const u = N === 1 ? 0.5 : 0.18 + (n / (N - 1)) * 0.64;
         const thetaRel = (u - 0.5) * Math.PI / k;
-        // r = R · cos(k · θ)  — the rose math
-        const r = R * Math.cos(k * thetaRel);
+        // rN = cos(k · θ)  — the rose math, normalised; each axis then
+        // stretches by its own viewport-proportional radius.
+        const rN = Math.cos(k * thetaRel);
         const thetaAbs = petalCenter + thetaRel;
         out.push({
           ...it,
-          x: cx + r * Math.cos(thetaAbs),
-          y: cy + r * Math.sin(thetaAbs),
+          x: cx + rN * Math.cos(thetaAbs) * Rx,
+          y: cy + rN * Math.sin(thetaAbs) * Ry,
           r: CFG.ZOOM_NEIGHBOR_RADIUS,
           groupArtworkCount: artworkCount,
           startX: cx, startY: cy, startR: 0,
@@ -889,7 +899,7 @@
         });
       });
     });
-    return { cx, cy, neighbors: out, layout: 'rose', petalCount: k };
+    return { cx, cy, neighbors: out, layout: 'rose', petalCount: k, Rx, Ry };
   }
 
   // Bucketed-wedges layout (case 20 in sketch-brand.js, generalised).
@@ -898,10 +908,13 @@
   // edge types stay legible.
   function computeBucketedLayout(graph, focusedId, w, h) {
     const cx = w / 2, cy = h / 2;
-    const R = Math.min(w, h) * 0.44;
+    // Elliptical radii — same rationale as computeRoseLayout: use the
+    // horizontal space a wide viewport actually has.
+    const Rx = w * 0.42;
+    const Ry = h * 0.44;
     const groups = gatherNeighborsByType(graph, focusedId);
     const k = groups.length;
-    if (k === 0) return { cx, cy, neighbors: [], layout: 'bucketed', wedgeCount: 0 };
+    if (k === 0) return { cx, cy, neighbors: [], layout: 'bucketed', wedgeCount: 0, Rx, Ry };
 
     const out = [];
     const wedgeWidth = (Math.PI * 2) / k;
@@ -916,14 +929,13 @@
       // Grid the wedge: rowsCount rows of dots, dotsPerRow per row
       const rowsCount = Math.max(1, Math.ceil(Math.sqrt(N * 0.7)));
       const dotsPerRow = Math.max(1, Math.ceil(N / rowsCount));
-      const innerR = R * 0.32;
-      const outerR = R;
       items.forEach((it, idx) => {
         const row = Math.floor(idx / dotsPerRow);
         const col = idx % dotsPerRow;
         const inThisRow = Math.min(dotsPerRow, N - row * dotsPerRow);
         const rNorm = rowsCount === 1 ? 0.5 : row / (rowsCount - 1);
-        const r = innerR + rNorm * (outerR - innerR);
+        // Normalised ring position in [0.32 .. 1], stretched per-axis below.
+        const rr = 0.32 + rNorm * 0.68;
         const angSpread = wedgeWidth * 0.78;
         const angOffset = inThisRow === 1
           ? 0
@@ -931,8 +943,8 @@
         const ang = wedgeCenter + angOffset;
         out.push({
           ...it,
-          x: cx + Math.cos(ang) * r,
-          y: cy + Math.sin(ang) * r,
+          x: cx + Math.cos(ang) * rr * Rx,
+          y: cy + Math.sin(ang) * rr * Ry,
           r: CFG.ZOOM_NEIGHBOR_RADIUS,
           groupArtworkCount: artworkCount,
           startX: cx, startY: cy, startR: 0,
@@ -940,7 +952,7 @@
         });
       });
     });
-    return { cx, cy, neighbors: out, layout: 'bucketed', wedgeCount: k };
+    return { cx, cy, neighbors: out, layout: 'bucketed', wedgeCount: k, Rx, Ry };
   }
 
   // Pick rose for practitioner+scene (their bloom IS who they are).
@@ -1892,6 +1904,27 @@
       if (!desiredById.has(item.id)) ordered.push(item);
     }
 
+    // Items the layout doesn't know — embedding-sourced neighbours merged in
+    // by syncEmbeddingNeighborsIntoField (the layouts only place graph-edge
+    // neighbours). Without a desired position their target offset defaulted
+    // to (0,0) = the focus point itself, so they all clumped in a tight ring
+    // around the focus. Fan them on a deterministic golden-angle mid-ring
+    // instead (stable by list index — no flicker between anchor refreshes).
+    const extras = ordered.filter(item => !desiredById.has(item.id));
+    if (extras.length && layout) {
+      const GOLDEN = Math.PI * (3 - Math.sqrt(5)); // ≈137.5° — no two coincide
+      const Rx = layout.Rx || Math.min(width, height) * 0.42;
+      const Ry = layout.Ry || Math.min(width, height) * 0.42;
+      extras.forEach((item, i) => {
+        const ang = -Math.PI / 2 + i * GOLDEN;
+        const rad = 0.48 + 0.16 * (i % 3) / 2; // stagger 0.48 / 0.56 / 0.64
+        desiredById.set(item.id, {
+          x: layout.cx + Math.cos(ang) * Rx * rad,
+          y: layout.cy + Math.sin(ang) * Ry * rad,
+        });
+      });
+    }
+
     return { neighbors: ordered, layout, desiredById };
   }
 
@@ -2225,13 +2258,16 @@
     const layoutCx = layout?.cx ?? width / 2;
     const layoutCy = layout?.cy ?? height / 2;
 
+    const inset = CFG.IN_PLACE_TARGET_INSET;
     for (const item of neighbors) {
       const desired = desiredById.get(item.id);
       const dx = desired ? (desired.x - layoutCx) * CFG.IN_PLACE_LAYOUT_SCALE : 0;
       const dy = desired ? (desired.y - layoutCy) * CFG.IN_PLACE_LAYOUT_SCALE : 0;
-      const targetX = focusPoint.x + dx;
-      const targetY = focusPoint.y + dy;
-      const targetDistance = Math.hypot(dx, dy);
+      // Clamp targets to stay inside the viewport (the elliptical layouts
+      // reach for the edges; an off-centre focus must not push them past).
+      const targetX = clamp(focusPoint.x + dx, inset, width - inset);
+      const targetY = clamp(focusPoint.y + dy, inset, height - inset);
+      const targetDistance = Math.hypot(targetX - focusPoint.x, targetY - focusPoint.y);
 
       // Two-tier pick: prefer the best candidate that keeps MIN_SEP from every
       // already-chosen anchor; fall back to the best remaining one (stacking
