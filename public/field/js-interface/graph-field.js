@@ -109,6 +109,14 @@
     IN_PLACE_ANCHOR_MARGIN: 48,
     IN_PLACE_FOCUS_CLEARANCE: 28,
     IN_PLACE_LAYOUT_SCALE: 0.82,
+    // Minimum screen distance (px) between two chosen neighbour anchors.
+    // The anchor assignment snaps each neighbour to a real registry dot;
+    // without a spacing constraint two neighbours could land on nearly
+    // coincident dots and their dots + labels stacked unreadably (see the
+    // protocol-art review screenshot). Soft constraint: when no spaced
+    // candidate remains, a too-close one is still used rather than dropping
+    // the neighbour entirely.
+    IN_PLACE_ANCHOR_MIN_SEP: 34,
     IN_PLACE_CURVE_NEAR_RADIUS: 76,
     IN_PLACE_CURVE_CONTROL_SCALE: 0.34,
     IN_PLACE_CURVE_MIN_BEND: 18,
@@ -1800,13 +1808,19 @@
     return projectFieldAnchor(item.fieldAnchor) || projectFieldDot(item.sim);
   }
 
-  // Focus position for an in-place reveal: the focused node's own field dot when
-  // it's on-screen (normal case — unchanged), else screen-centre. The fallback
-  // only triggers when the dot can't be framed (a node near the field edge the
-  // camera couldn't centre), so it renders instead of vanishing.
+  // Focus position for an in-place reveal: the focused node's own field dot,
+  // even while it projects off-screen — every caller visiblePoint-guards and
+  // simply skips drawing/hit-testing until the dot is in view. Returning the
+  // true projection (instead of the old screen-centre fallback for off-screen
+  // dots) is what makes focus-to-focus camera flights read correctly: the old
+  // focus pans away with the world and the new one rides its dot in, rather
+  // than a ghost focus teleporting to screen-centre for the duration of the
+  // flight. The centre fallback survives only for a node with no field dot at
+  // all, so it renders instead of vanishing. (Edge dots no longer need the
+  // fallback: constrainCamera's zoom overscan can centre any field point.)
   function inPlaceFocusPoint(bundle, width, height) {
     const p = projectFieldDot(bundle.simById?.get(bundle.focusedId));
-    if (p && visiblePoint(p, width, height, 0)) return p;
+    if (p) return p;
     return {
       x: width / 2,
       y: height / 2,
@@ -2203,7 +2217,10 @@
 
     candidates.sort((a, b) => a.screenDistance - b.screenDistance);
 
-    const used = new Set();
+    const used = new Set();      // candidate indices already selected as anchors
+    const blocked = new Set();   // candidates within MIN_SEP of a selected anchor
+    const minSep = CFG.IN_PLACE_ANCHOR_MIN_SEP;
+    const minSep2 = minSep * minSep;
     const visible = [];
     const layoutCx = layout?.cx ?? width / 2;
     const layoutCy = layout?.cy ?? height / 2;
@@ -2216,8 +2233,13 @@
       const targetY = focusPoint.y + dy;
       const targetDistance = Math.hypot(dx, dy);
 
+      // Two-tier pick: prefer the best candidate that keeps MIN_SEP from every
+      // already-chosen anchor; fall back to the best remaining one (stacking
+      // beats dropping the neighbour when the local field is sparse).
       let bestIdx = -1;
       let bestScore = Infinity;
+      let bestSpacedIdx = -1;
+      let bestSpacedScore = Infinity;
       for (let i = 0; i < candidates.length; i++) {
         if (used.has(i)) continue;
         const c = candidates[i];
@@ -2228,11 +2250,26 @@
           bestScore = score;
           bestIdx = i;
         }
+        if (!blocked.has(i) && score < bestSpacedScore) {
+          bestSpacedScore = score;
+          bestSpacedIdx = i;
+        }
       }
 
-      if (bestIdx >= 0) {
-        used.add(bestIdx);
-        item.fieldAnchor = candidates[bestIdx];
+      const pickIdx = bestSpacedIdx >= 0 ? bestSpacedIdx : bestIdx;
+      if (pickIdx >= 0) {
+        used.add(pickIdx);
+        const chosen = candidates[pickIdx];
+        // Block every still-free candidate inside the separation radius so the
+        // next neighbours fan out instead of piling onto the same dot cluster.
+        for (let i = 0; i < candidates.length; i++) {
+          if (used.has(i) || blocked.has(i)) continue;
+          const c = candidates[i];
+          const sx = c.point.x - chosen.point.x;
+          const sy = c.point.y - chosen.point.y;
+          if (sx * sx + sy * sy < minSep2) blocked.add(i);
+        }
+        item.fieldAnchor = chosen;
       } else {
         item.fieldAnchor = null;
       }
