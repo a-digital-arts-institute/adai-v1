@@ -301,8 +301,15 @@
     let detailDpr = 1;
 
     function isUiClick(e) {
+      // [id^="adai-"] covers the dynamically-created field chrome from
+      // graph-field.js (#adai-breadcrumb, #adai-embed-strip, #adai-edge-filter,
+      // #adai-bookmarks, #adai-intro). Those panels are body-appended divs full
+      // of <span> chips — without this, a chip click bubbled here and zoomTo()
+      // re-targeted the camera to whatever dot sat under the chip's screen
+      // position, hijacking the navigation the chip had just performed
+      // (click "Artist X" in the embed strip / breadcrumb → land on unrelated Y).
       return !!e.target.closest?.(
-        '#chrome, #graph-canvas, #search-palette, #entity-view, #chat-narrator, #archivist-bar, #coming-soon, #philosophy, a, button, input, textarea, select, label'
+        '#chrome, #graph-canvas, #search-palette, #entity-view, #entity-panel, #chat-narrator, #archivist-bar, #coming-soon, #philosophy, [id^="adai-"], a, button, input, textarea, select, label'
       );
     }
 
