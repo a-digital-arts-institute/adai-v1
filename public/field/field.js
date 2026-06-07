@@ -301,6 +301,13 @@
     let detailDpr = 1;
 
     function isUiClick(e) {
+      // A detached target IS a UI click: chrome chip handlers (breadcrumb
+      // segments, embed-strip rows, …) run before this document-level
+      // listener and re-render their container via innerHTML — detaching the
+      // clicked element mid-dispatch. closest() can't walk a severed parent
+      // chain, so without this guard the click fell through and zoomTo()
+      // hijacked the navigation the chip had just performed.
+      if (e.target instanceof Node && !e.target.isConnected) return true;
       // [id^="adai-"] covers the dynamically-created field chrome from
       // graph-field.js (#adai-breadcrumb, #adai-embed-strip, #adai-edge-filter,
       // #adai-bookmarks, #adai-intro). Those panels are body-appended divs full
