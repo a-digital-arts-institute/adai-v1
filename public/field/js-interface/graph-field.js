@@ -121,6 +121,16 @@
     // so the widened elliptical layouts scatter UP TO the screen edges but
     // never beyond them (room for a dot + the start of its label).
     IN_PLACE_TARGET_INSET: 76,
+    // Anchor stickiness (px of score slack). Anchors re-assign on every
+    // camera step; without hysteresis the greedy pick swapped between
+    // near-equivalent dots frame to frame and the threads flicked during
+    // zoom transitions. A neighbour keeps its previous dot unless a new
+    // candidate beats it by more than this slack.
+    IN_PLACE_ANCHOR_STICKINESS: 90,
+    // Time constant (ms) for easing a neighbour's rendered position toward
+    // its (re)assigned anchor dot — anchor swaps glide instead of teleport.
+    // ~95% settled in 3× this value.
+    IN_PLACE_ANCHOR_EASE_MS: 140,
     IN_PLACE_CURVE_NEAR_RADIUS: 76,
     IN_PLACE_CURVE_CONTROL_SCALE: 0.34,
     IN_PLACE_CURVE_MIN_BEND: 18,
@@ -1153,11 +1163,15 @@
       el.scrollLeft = el.scrollWidth;
     });
 
-    // Wire click teleport-back per segment
+    // Wire click teleport-back per segment. stopPropagation matters: the
+    // teleport re-renders this breadcrumb synchronously, detaching the
+    // clicked span — a still-bubbling event with a detached target slips
+    // past the camera layer's isUiClick filter and hijacks the navigation.
     el.querySelectorAll('.adai-bcrumb-seg').forEach(seg => {
       const idx = parseInt(seg.dataset.idx, 10);
       if (idx === path.length - 1) return;  // current segment is not clickable
-      seg.addEventListener('click', () => {
+      seg.addEventListener('click', (ev) => {
+        ev.stopPropagation();
         bcrumbTeleport(bundle, graph, idx, path);
       }, { once: true });
     });
@@ -1397,9 +1411,9 @@
       }).join('');
     el.querySelectorAll('.adai-bookmark-chip').forEach(chip => {
       chip.addEventListener('click', (ev) => {
+        ev.stopPropagation();  // replay/delete re-renders strips → chip detaches mid-dispatch
         // × delete sub-element: delete bookmark and stop here.
         if (ev.target && ev.target.classList && ev.target.classList.contains('adai-bookmark-del')) {
-          ev.stopPropagation();
           deleteBookmark(ev.target.dataset.id);
           renderBookmarksStrip(bundle, graph);
           return;
@@ -1465,7 +1479,8 @@
     }
     el.innerHTML = html;
     el.querySelectorAll('.adai-filter-chip').forEach(chip => {
-      chip.addEventListener('click', () => {
+      chip.addEventListener('click', (ev) => {
+        ev.stopPropagation();  // re-render below detaches the chip mid-dispatch
         const t = chip.dataset.type;
         if (bundle.activeFilters.has(t)) bundle.activeFilters.delete(t);
         else bundle.activeFilters.add(t);
@@ -1603,7 +1618,8 @@
     }
     el.innerHTML = html;
     el.querySelectorAll('.adai-embed-chip').forEach(chip => {
-      chip.addEventListener('click', () => {
+      chip.addEventListener('click', (ev) => {
+        ev.stopPropagation();  // zoomTo re-renders this strip → chip detaches mid-dispatch
         const id = chip.dataset.nodeId;
         if (id && typeof bundle.zoomTo === 'function') {
           bundle.zoomTo(id);
@@ -1817,7 +1833,34 @@
   }
 
   function projectInPlaceItem(item) {
-    return projectFieldAnchor(item.fieldAnchor) || projectFieldDot(item.sim);
+    const target = item.fieldAnchor;
+    if (target) {
+      // Ease the rendered anchor toward its assigned dot in FIELD space —
+      // when stickiness does allow a swap, the ring/label/thread glide to
+      // the new dot instead of teleporting, and because the easing happens
+      // pre-projection it stays locked to the camera during pans/zooms.
+      // Time-based exponential smoothing: per-call safe (multiple calls in
+      // the same frame advance dt≈0), settles in ~3× the time constant.
+      let r = item.renderAnchor;
+      if (!r) {
+        r = item.renderAnchor = { x: target.x, y: target.y, radius: target.radius, t: 0 };
+      } else {
+        const now = performance.now();
+        const dt = Math.min(120, now - (r.t || now));
+        r.t = now;
+        if (r.x !== target.x || r.y !== target.y || r.radius !== target.radius) {
+          const k = 1 - Math.exp(-dt / CFG.IN_PLACE_ANCHOR_EASE_MS);
+          r.x += (target.x - r.x) * k;
+          r.y += (target.y - r.y) * k;
+          r.radius += (target.radius - r.radius) * k;
+          if (Math.abs(target.x - r.x) < 0.05 && Math.abs(target.y - r.y) < 0.05) {
+            r.x = target.x; r.y = target.y; r.radius = target.radius;
+          }
+        }
+      }
+      return projectFieldAnchor(r);
+    }
+    return projectFieldDot(item.sim);
   }
 
   // Focus position for an in-place reveal: the focused node's own field dot,
@@ -2258,6 +2301,13 @@
     const layoutCx = layout?.cx ?? width / 2;
     const layoutCy = layout?.cy ?? height / 2;
 
+    // Index candidates by their (stable) field coordinates so an item's
+    // previous anchor can be re-claimed across refreshes (stickiness).
+    const candIdxByPos = new Map();
+    for (let i = 0; i < candidates.length; i++) {
+      candIdxByPos.set(candidates[i].x + ',' + candidates[i].y, i);
+    }
+
     const inset = CFG.IN_PLACE_TARGET_INSET;
     for (const item of neighbors) {
       const desired = desiredById.get(item.id);
@@ -2292,7 +2342,24 @@
         }
       }
 
-      const pickIdx = bestSpacedIdx >= 0 ? bestSpacedIdx : bestIdx;
+      // Sticky re-claim: if this item kept an anchor from the previous
+      // refresh and that same registry dot is still available, prefer it
+      // unless a new candidate is clearly better (slack in score px).
+      // Identity stability beats marginal optimality — re-optimising from
+      // scratch on every camera step made near-equivalent dots swap and the
+      // threads flick during zoom transitions.
+      let pickIdx = bestSpacedIdx >= 0 ? bestSpacedIdx : bestIdx;
+      const referenceScore = bestSpacedIdx >= 0 ? bestSpacedScore : bestScore;
+      const prev = item.fieldAnchor;
+      if (prev) {
+        const pi = candIdxByPos.get(prev.x + ',' + prev.y);
+        if (pi != null && !used.has(pi) && !blocked.has(pi)) {
+          const c = candidates[pi];
+          const prevScore = Math.hypot(c.point.x - targetX, c.point.y - targetY)
+            + Math.abs(c.screenDistance - targetDistance) * 0.2;
+          if (prevScore <= referenceScore + CFG.IN_PLACE_ANCHOR_STICKINESS) pickIdx = pi;
+        }
+      }
       if (pickIdx >= 0) {
         used.add(pickIdx);
         const chosen = candidates[pickIdx];
