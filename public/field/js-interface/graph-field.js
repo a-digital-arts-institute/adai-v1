@@ -1808,13 +1808,19 @@
     return projectFieldAnchor(item.fieldAnchor) || projectFieldDot(item.sim);
   }
 
-  // Focus position for an in-place reveal: the focused node's own field dot when
-  // it's on-screen (normal case — unchanged), else screen-centre. The fallback
-  // only triggers when the dot can't be framed (a node near the field edge the
-  // camera couldn't centre), so it renders instead of vanishing.
+  // Focus position for an in-place reveal: the focused node's own field dot,
+  // even while it projects off-screen — every caller visiblePoint-guards and
+  // simply skips drawing/hit-testing until the dot is in view. Returning the
+  // true projection (instead of the old screen-centre fallback for off-screen
+  // dots) is what makes focus-to-focus camera flights read correctly: the old
+  // focus pans away with the world and the new one rides its dot in, rather
+  // than a ghost focus teleporting to screen-centre for the duration of the
+  // flight. The centre fallback survives only for a node with no field dot at
+  // all, so it renders instead of vanishing. (Edge dots no longer need the
+  // fallback: constrainCamera's zoom overscan can centre any field point.)
   function inPlaceFocusPoint(bundle, width, height) {
     const p = projectFieldDot(bundle.simById?.get(bundle.focusedId));
-    if (p && visiblePoint(p, width, height, 0)) return p;
+    if (p) return p;
     return {
       x: width / 2,
       y: height / 2,
