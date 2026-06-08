@@ -44,6 +44,8 @@ const RAW_SEED_STR =
   (qsSeed ? String(qsSeed) : fallbackSeedSource);
 
 const SEED = hash32(RAW_SEED_STR);
+window.ADAI_FIELD_SEED = SEED;
+window.ADAI_FIELD_SEED_SOURCE = RAW_SEED_STR;
 
 // Build PRNG and wire Math.random
 let __rnd = mulberry32(SEED >>> 0);
@@ -1643,6 +1645,7 @@ function createInteractiveDotField(canvas, ctx, mapPointerToField = null) {
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const MODE_CYCLE_KEY = FIELD.MODE_CYCLE_KEY;
   const DEFAULT_MODE_INDEX = Math.max(0, Math.min(FIELD.DEFAULT_MODE_INDEX || 0, FIELD.MODES.length - 1));
+  const RANDOM_MODE_STORAGE_KEY = "adai-field-random-mode-last";
   const influenceRadius = reducedMotion.matches ? 110 : 165;
   const passRadius = reducedMotion.matches ? 34 : 58;
   const activeSignalThreshold = 0.014;
@@ -1748,6 +1751,21 @@ function createInteractiveDotField(canvas, ctx, mapPointerToField = null) {
       modeEl.textContent = `${mode.name} [${MODE_CYCLE_KEY}]`;
     }
     requestFrame();
+  }
+
+  function randomInitialModeIndex() {
+    if (!modes.length) return DEFAULT_MODE_INDEX;
+    if (modes.length === 1) return 0;
+
+    let next = Math.floor(Math.random() * modes.length);
+    try {
+      const previous = Number(sessionStorage.getItem(RANDOM_MODE_STORAGE_KEY));
+      if (Number.isInteger(previous) && previous >= 0 && previous < modes.length && next === previous) {
+        next = (next + 1 + Math.floor(Math.random() * (modes.length - 1))) % modes.length;
+      }
+      sessionStorage.setItem(RANDOM_MODE_STORAGE_KEY, String(next));
+    } catch {}
+    return next;
   }
 
   function updateSignal(value) {
@@ -2132,7 +2150,7 @@ function createInteractiveDotField(canvas, ctx, mapPointerToField = null) {
   document.addEventListener("keydown", handleKeydown);
   window.addEventListener("blur", handlePointerLeave);
 
-  setMode(DEFAULT_MODE_INDEX);
+  setMode(randomInitialModeIndex());
   updateSignal(0);
   clearOverlay();
 

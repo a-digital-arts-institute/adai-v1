@@ -51,10 +51,9 @@ $PY seed/_build/derive_curation.py
 $PY seed/_build/merge_batches.py --require-cdn --no-validate   # fold curation
 $PY seed/_build/validate_seed.py --canon                  # 0 errors / 0 warnings
 
-step "4/6 embed + project (reuses committed cache → 0 API calls when unchanged)"
+step "4/6 embed (reuses committed cache → 0 API calls when unchanged)"
 $PY seed/_build/upload_to_r2.py --mirror                  # ensure mirrored before embed
 $PY seed/_build/embed_nodes.py
-$PY seed/_build/project_umap.py
 $PY seed/_build/cull_orphans.py --apply                   # keep embedding sidecars FK-consistent
 
 step "5/6 regenerate the single-source-of-truth counts"

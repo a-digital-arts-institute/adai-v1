@@ -12,8 +12,7 @@ vector space using Google's Gemini Embedding 2.
 ║  TO TEXT-ONLY — A WRONG VECTOR THAT LOOKS FINE. ORDER IS ALWAYS:           ║
 ║      1. upload_to_r2.py --mirror   (images → R2, cdn → image_mirror.json)  ║
 ║      2. embed_nodes.py             (this script)                           ║
-║      3. project_umap.py                                                    ║
-║  THE RUNNER materialize_wikidata_embeddings.sh ENFORCES THIS ORDER.        ║
+║  build_canon.sh runs them in this order.                                   ║
 ╚══════════════════════════════════════════════════════════════════════════╝
 
 Inputs:

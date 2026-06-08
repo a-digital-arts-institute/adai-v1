@@ -51,8 +51,8 @@ FLY_REMOTE_BUILDER_REGION=iad flyctl deploy --app adai-basel --ha=false
   entrypoint sees `/data/adai.db` already exists and leaves it alone. It only
   matters for a from-scratch machine (disaster recovery).
 - Run it backgrounded (`run_in_background`) and monitor; it's slow.
-- The machine restarts on the new image; `/data` (DB, tokens, intake queue,
-  UMAP refresh file) carries over untouched.
+- The machine restarts on the new image; `/data` (DB, tokens, intake queue)
+  carries over untouched.
 
 ## Verify (don't declare done until this passes)
 
@@ -83,9 +83,9 @@ done
 ## Notes
 
 - This does NOT push git. Commit/push separately if intended.
-- Embeddings/UMAP on prod refresh nightly via the `embed-derive-daily` GitHub
+- Embeddings on prod refresh nightly via the `embed-derive-daily` GitHub
   Action; a deploy ships whatever sidecars are committed (they bake into the
-  inert seed.db and serve `/api/embed-space`'s fallback only).
+  inert seed.db only).
 - Seed-data changes (`seed/*.json`) do NOT reach prod through a deploy
   anymore. They land in the baked (inert) seed.db only. Until the CRDT-patch
   transport from the roadmap exists, new canon reaches the live DB through

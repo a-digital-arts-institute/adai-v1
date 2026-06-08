@@ -18,7 +18,7 @@
 // Idempotent: re-runs INSERT OR REPLACE.
 
 import type { DatabaseSync } from "node:sqlite";
-import { encodeBlob, keyFor, loadAll, meanAndNormalise, type VectorRow, DIMS } from "./vectors.js";
+import { encodeBlob, keyFor, loadAll, meanAndNormalise, invalidateVectorCache, type VectorRow, DIMS } from "./vectors.js";
 
 const EMBED_MODEL_TAG = "gemini-embedding-2";
 
@@ -84,6 +84,9 @@ export function computeCentroids(db: DatabaseSync): CentroidStats {
     db.exec("ROLLBACK");
     throw e;
   }
+  // Style-centroid rows just changed — drop the cache so the derive pass that
+  // runs straight after reads them fresh (not the pre-write snapshot).
+  invalidateVectorCache();
 
   return {
     creators_with_centroid: wrote,

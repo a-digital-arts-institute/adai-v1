@@ -68,11 +68,33 @@ export function meanAndNormalise(vectors: Float32Array[]): Float32Array {
   return l2normalise(sum);
 }
 
+// Short-TTL in-process cache of the decoded vector map. Without it the
+// neighbours surfaces paid a full table read + JOIN + json_extract over every
+// node's metadata + decode of ~5.5k×768 floats on EVERY topK call —
+// buildEmbeddingSections fires four of those per /api/neighbours request, which
+// on the 1-CPU Fly box is the bulk of the latency. The map is read-only to all
+// callers (topK / centroids / islands only iterate or copy), so sharing the
+// instance is safe. Staleness is bounded by the TTL: a just-added or just-
+// retired node can lag the neighbours view by up to TTL_MS (rare, cosmetic).
+// The nightly derive runs in a SEPARATE process (cold cache) so its retired-
+// node exclusion is always fresh — the FK-resurrect protection is unaffected.
+let _vecCache: { ts: number; map: Map<string, VectorRow> } | null = null;
+const VEC_CACHE_TTL_MS = 15000;
+
+/** Drop the cache (call after a write that must be visible immediately). */
+export function invalidateVectorCache(): void {
+  _vecCache = null;
+}
+
 /**
  * Load every row from node_embeddings into memory, keyed by `${kind}:${node_id}`
  * so identity and style_centroid rows can coexist for the same node.
+ * Cached for VEC_CACHE_TTL_MS; pass { fresh: true } to bypass.
  */
-export function loadAll(db: DatabaseSync): Map<string, VectorRow> {
+export function loadAll(db: DatabaseSync, opts: { fresh?: boolean } = {}): Map<string, VectorRow> {
+  if (!opts.fresh && _vecCache && Date.now() - _vecCache.ts < VEC_CACHE_TTL_MS) {
+    return _vecCache.map;
+  }
   // Retired nodes (admin correction — metadata.retired, see
   // src/utils/visibility.ts) are excluded at the source: this loader feeds
   // the derive pass (STYLE_KIN / VISUALLY_AFFINE / SUGGESTS_CREATED_BY),
@@ -111,6 +133,7 @@ export function loadAll(db: DatabaseSync): Map<string, VectorRow> {
       text_hash: r.text_hash,
     });
   }
+  _vecCache = { ts: Date.now(), map: out };
   return out;
 }
 

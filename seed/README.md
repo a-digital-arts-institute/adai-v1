@@ -162,8 +162,7 @@ write path is `find_missing_images.py --apply --write` against the
   seed/_build/.venv/bin/python3 seed/_build/upload_to_r2.py --overlay  # → cdn_image_url
   # only if the overlay added ARTWORK images:
   seed/_build/.venv/bin/python3 seed/_build/embed_nodes.py
-  seed/_build/.venv/bin/python3 seed/_build/project_umap.py
-  git add seed/image_overlay.json seed/embeddings.{bin,json,umap2d.json}
+  git add seed/image_overlay.json seed/embeddings.{bin,json}
   ```
 
 The Docker builder re-applies the overlay on every build (image-only,

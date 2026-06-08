@@ -14,7 +14,6 @@ seed/canon_overlay.json -diff merge=union
 # Embedding sidecars — committed binaries / sparse JSON, never reviewable.
 seed/embeddings.bin       -diff binary
 seed/embeddings.json      -diff
-seed/embeddings.umap2d.json -diff
 
 # Archived run artifacts — historical, frozen, kept for provenance.
 # Don't pollute diff/blame with them.

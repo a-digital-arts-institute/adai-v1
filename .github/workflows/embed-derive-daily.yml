@@ -1,6 +1,6 @@
 name: embed-derive-daily
 
-# Daily refresh of the embedding layer against the live Fly DB. Three
+# Daily refresh of the embedding layer against the live Fly DB. Two
 # stages run in order against /data/adai.db:
 #
 #   1. backfill  — embed any node added via the contributor API that's
@@ -11,16 +11,6 @@ name: embed-derive-daily
 #                  SUGGESTS_CREATED_BY. Local SQL only, no API calls. This
 #                  is what propagates curator-approved CREATED_BY edges into
 #                  the embedding layer.
-#   3. UMAP      — re-project the 768-d vector space to 2D and write
-#                  /data/embeddings.umap2d.json (the server prefers this
-#                  over the baked sidecar — see /api/embed-space). UMAP runs
-#                  on the runner, not the Fly machine: we SSH-export the
-#                  node_embeddings rows as a compact AEVB binary, fit UMAP
-#                  on the runner's multi-core CPU + GB of RAM (~12 s for
-#                  ~1500 vectors), then SFTP the result back to the volume.
-#                  The 512MB / 1-CPU Fly machine timed out every run when
-#                  this step lived in-process. Debounced via lockfile so a
-#                  no-op day skips compute and skips the SFTP push.
 #
 # Drift snapshot runs last as a JSON line in the action log so a human can
 # eyeball whether τ values still sit at the originally-calibrated percentiles
@@ -50,20 +40,9 @@ jobs:
     steps:
       - name: checkout
         uses: actions/checkout@v5
-        # Need seed/_build/project_umap.py to run UMAP on the runner.
 
       - name: install flyctl
         uses: superfly/flyctl-actions/setup-flyctl@master
-
-      - name: setup python (for UMAP)
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.11"
-          cache: pip
-
-      - name: install python deps
-        # numba/llvmlite (umap-learn's dep) wheel install is ~30 s warm cache.
-        run: pip install --disable-pip-version-check numpy 'umap-learn>=0.5'
 
       - name: wake the machine
         env:
@@ -113,73 +92,6 @@ jobs:
         run: |
           curl -fsSL -o /dev/null https://adai-basel.fly.dev/api/stats
           flyctl ssh console --app adai-basel -C "node /app/dist/embed/cli.js derive"
-
-      - name: refresh UMAP projection (on runner)
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-        # Three-step round-trip. We don't run UMAP inside the Fly machine
-        # (single CPU, 512 MB — fits the chat workload, not a sklearn-driven
-        # kNN fit). Lockfile lives on the volume so cross-run debounce
-        # survives runner ephemerality.
-        run: |
-          set -eo pipefail
-          # Fly auto-stops idle machines; a multi-step workflow can fall into
-          # that window between commands. One HTTP request guarantees a hot
-          # VM before any SSH-substitution that --pipefail would silently
-          # kill on "no started VMs".
-          curl -fsSL -o /dev/null https://adai-basel.fly.dev/api/stats
-          echo "machine warm"
-
-          # Note: we deliberately do NOT redirect flyctl's stderr — the
-          # "Connecting to ..." chatter is on stderr and doesn't pollute the
-          # command substitution stdout, so leaving it visible makes any
-          # future SSH failure obvious in the action log.
-          # flyctl ssh console -C runs the command directly (execve-style),
-          # not through a shell — so any redirection / `||` / `&&` has to be
-          # wrapped in `sh -c '...'` to reach a shell on the other side.
-          COUNT=$(flyctl ssh console --app adai-basel -C "node /app/dist/embed/cli.js export-vectors --count-only" | tr -d '[:space:]')
-          LAST=$(flyctl ssh console --app adai-basel -C "sh -c 'cat /data/umap.lockfile 2>/dev/null || echo 0'" | tr -d '[:space:]')
-          HAVE_OUT=$(flyctl ssh console --app adai-basel -C "sh -c 'test -f /data/embeddings.umap2d.json && echo y || echo n'" | tr -d '[:space:]')
-
-          echo "COUNT=$COUNT LAST=$LAST HAVE_OUT=$HAVE_OUT"
-
-          if [ -z "$COUNT" ]; then
-            echo "UMAP: empty COUNT from export-vectors --count-only — aborting"
-            exit 1
-          fi
-
-          if [ "$COUNT" = "$LAST" ] && [ "$HAVE_OUT" = "y" ]; then
-            echo "UMAP skip: $COUNT vectors unchanged since last run, /data/embeddings.umap2d.json present"
-            exit 0
-          fi
-
-          echo "UMAP refresh: $LAST -> $COUNT vectors (have_out=$HAVE_OUT)"
-
-          # Pull vectors as AEVB binary. flyctl stderr (incl. the node
-          # experimental-sqlite warning) is allowed through to stderr; only
-          # the inner CLI's pure-binary stdout lands in /tmp/vectors.bin.
-          flyctl ssh console --app adai-basel -C "node /app/dist/embed/cli.js export-vectors" > /tmp/vectors.bin
-          BYTES=$(wc -c < /tmp/vectors.bin)
-          MAGIC=$(head -c 4 /tmp/vectors.bin)
-          if [ "$MAGIC" != "AEVB" ]; then
-            echo "UMAP: bad magic in /tmp/vectors.bin (got '$MAGIC', expected 'AEVB'); first 64 bytes:"
-            head -c 64 /tmp/vectors.bin | xxd
-            exit 1
-          fi
-          echo "exported $BYTES bytes (AEVB) to /tmp/vectors.bin"
-
-          # Fit UMAP on the runner. ~12 s for 1500 vectors on a typical
-          # GH runner. Output is normalised to [-1, 1] (see project_umap.py).
-          python3 seed/_build/project_umap.py \
-            --from-binary /tmp/vectors.bin \
-            --out /tmp/embeddings.umap2d.json
-
-          # Atomic-ish swap on the volume: SFTP-put to a sibling path and
-          # mv via SSH so the live server never sees a half-written file.
-          flyctl ssh sftp put --app adai-basel /tmp/embeddings.umap2d.json /data/embeddings.umap2d.json.new
-          printf '%s' "$COUNT" > /tmp/umap.lockfile
-          flyctl ssh sftp put --app adai-basel /tmp/umap.lockfile /data/umap.lockfile.new
-          flyctl ssh console --app adai-basel -C "sh -c 'mv /data/embeddings.umap2d.json.new /data/embeddings.umap2d.json && mv /data/umap.lockfile.new /data/umap.lockfile && echo SWAPPED'"
 
       - name: drift snapshot
         env:

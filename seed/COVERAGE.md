@@ -70,8 +70,8 @@ tag labels) — are recomputed each run; counts in [`STATS.md`](STATS.md).
 The 1960s V&A pioneers form a tight internal STYLE_KIN cluster
 (Nake↔Nees↔Mohr↔Molnár↔Noll↔Verostko) and receive **zero** Tier-2 cross-era
 edges — the embeddings keep 1968 and 2021 honestly distinct, so the eras connect
-through shared *curated* concepts, not fabricated visual similarity. Surfaces
-(profile sections, `/embed-space`) are live from the baked DB.
+through shared *curated* concepts, not fabricated visual similarity. Profile-page
+surfaces (style-kin / visually-affine sections) are live from the baked DB.
 
 ## Image coverage
 

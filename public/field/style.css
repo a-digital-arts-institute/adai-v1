@@ -15,6 +15,13 @@
   --signal: var(--brand-color);
   --signal-rgb: var(--brand-color-rgb);
   --mono: 'SF Mono', 'Menlo', 'Consolas', 'Courier New', monospace;
+  --bottom-control-bottom: 28px;
+  --bottom-control-height: 44px;
+  --bottom-control-radius: 0px;
+  --bottom-control-bg: rgba(6, 6, 8, 0.22);
+  --bottom-control-border: rgba(255, 255, 255, 0.07);
+  --bottom-control-shadow: 0 8px 22px rgba(0, 0, 0, 0.1);
+  --bottom-control-blur: blur(18px);
 }
 
 /* ---- Light Mode ---- */
@@ -285,6 +292,35 @@ html, body {
   margin: 0 -0.02em;
 }
 
+.adai-regenerate-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 18px;
+  padding: 0 4px;
+  background: transparent;
+  border: 0;
+  color: #8a8a8c;
+  font: inherit;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  text-transform: lowercase;
+}
+.adai-regenerate-btn:hover {
+  color: var(--text);
+}
+.adai-regenerate-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.05em;
+  color: var(--signal);
+  font-size: 12px;
+  line-height: 1;
+}
+
 /* ---- Coordinates ---- */
 #coordinates {
   position: fixed;
@@ -325,29 +361,26 @@ html, body {
 /* ---- Room Nav ---- */
 #rooms {
   position: fixed;
-  bottom: 28px;
+  bottom: var(--bottom-control-bottom);
   right: 32px;
   display: flex;
   align-items: center;
-  /* Wrap into right-aligned rows instead of one ~700px line — the single
-   * row spilled into the centre and sat under the (centre-docked) archivist
-   * bar on most screens (review note 16). max-width keeps it in the
-   * bottom-right corner; two tidy rows beat one overlapped one. */
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: flex-end;
-  max-width: 432px;
+  max-width: 380px;
+  height: var(--bottom-control-height);
   row-gap: 6px;
-  column-gap: 16px;
-  padding: 10px 16px;
-  font-size: 14px;
-  letter-spacing: 0.14em;
+  column-gap: 12px;
+  padding: 0 14px;
+  font-size: 12px;
+  letter-spacing: 0.12em;
   text-transform: lowercase;
   z-index: 10;
-  background: rgba(6, 6, 8, 0.22);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 16px;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(18px);
+  background: var(--bottom-control-bg);
+  border: 1px solid var(--bottom-control-border);
+  border-radius: var(--bottom-control-radius);
+  box-shadow: var(--bottom-control-shadow);
+  backdrop-filter: var(--bottom-control-blur);
 }
 .room-link {
   color: var(--text);
@@ -431,14 +464,19 @@ body.field-panning, body.field-panning * { cursor: grabbing !important; }
 
 /* ---- Responsive ---- */
 @media (max-width: 768px) {
+  :root {
+    --bottom-control-bottom: 16px;
+    --bottom-control-height: 40px;
+  }
   #logotype { font-size: 15px; top: 16px; left: 16px; }
   #coordinates { top: 16px; right: 16px; font-size: 10px; }
   #vitals { bottom: 16px; left: 16px; font-size: 10px; }
   #rooms {
-    bottom: 16px;
+    bottom: var(--bottom-control-bottom);
     right: 16px;
     gap: 12px;
-    padding: 8px 12px;
+    height: var(--bottom-control-height);
+    padding: 0 12px;
     font-size: 12px;
   }
 }
