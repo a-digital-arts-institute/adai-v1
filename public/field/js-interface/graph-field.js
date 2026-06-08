@@ -686,13 +686,89 @@
     return sim;
   }
 
+  // ---- latent islands (macro-layout) -----------------------------------
+  // GET /api/islands assigns each node a k-means cluster id over the embedding
+  // space (computed in embed:derive, src/embed/islands.ts). We turn those into
+  // contiguous REGIONS of the Shape of Time: each island gets an anchor and its
+  // nodes claim the nearest field dots, so the canon's latent geography (the
+  // plotter cove, the crypto reef, the concept archipelago…) reads spatially —
+  // without a UMAP scatterplot. Inside a region the field-flow type-runs still
+  // order locally. Falls back to flat field-flow if the endpoint has no data.
+  const ISLAND_GOLDEN = 2.399963229728653;
+
+  async function fetchIslands() {
+    try {
+      const res = await fetch('/api/islands', { cache: 'no-cache' });
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (!data || !data.k || !data.islands) return null;
+      return data; // { k, n, islands: { nodeId: islandId } }
+    } catch (err) {
+      console.warn('[adai] /api/islands failed:', err.message || err);
+      return null;
+    }
+  }
+
+  // Anchors must sit IN the actual dot cloud, not on a synthetic disk — the
+  // Shape of Time is not disk-shaped, and off-cloud anchors leave peripheral
+  // dots equidistant-and-scattered. Farthest-point sampling picks k well-spread
+  // real dot positions (deterministic from the centroid-nearest seed), so the
+  // capacity-balanced assignment below tiles the true field. Index k = centre
+  // catch-all for un-islanded nodes.
+  function computeIslandAnchors(positions, k, brand) {
+    const cx = brand.brandW / 2, cy = brand.brandH / 2;
+    const P = positions.length;
+    const anchors = [];
+    if (!P) { for (let i = 0; i <= k; i++) anchors.push({ x: cx, y: cy }); return anchors; }
+    // Seed: the dot nearest the centroid (deterministic).
+    let seed = 0, seedD = Infinity;
+    for (let i = 0; i < P; i++) {
+      const dx = positions[i].x - cx, dy = positions[i].y - cy, d = dx * dx + dy * dy;
+      if (d < seedD) { seedD = d; seed = i; }
+    }
+    const chosen = [seed];
+    const minD = new Float64Array(P).fill(Infinity);
+    for (let step = 1; step < k; step++) {
+      const last = positions[chosen[chosen.length - 1]];
+      let far = 0, farD = -1;
+      for (let i = 0; i < P; i++) {
+        const dx = positions[i].x - last.x, dy = positions[i].y - last.y, d = dx * dx + dy * dy;
+        if (d < minD[i]) minD[i] = d;
+        if (minD[i] > farD) { farD = minD[i]; far = i; }
+      }
+      chosen.push(far);
+    }
+    for (const ci of chosen) anchors.push({ x: positions[ci].x, y: positions[ci].y });
+    anchors.push({ x: cx, y: cy });
+    return anchors;
+  }
+
+  // Muted, brand-register hue per island so territories read as distinct
+  // without shouting over the white field.
+  function islandColorFor(island, k) {
+    if (island == null || island >= k) return '#8a8a8c';
+    const hue = Math.round((island * 360 / k + 12) % 360);
+    return `hsl(${hue}, 42%, 60%)`;
+  }
+
+  // Nearest real-island anchor (excludes the centre catch-all) to a brand-space
+  // point — tints the hover-reveal by region.
+  function nearestIslandColor(bx, by, anchors, k) {
+    if (!anchors || !k) return null;
+    let best = 0, bestD = Infinity;
+    for (let i = 0; i < k; i++) {
+      const dx = anchors[i].x - bx, dy = anchors[i].y - by;
+      const d = dx * dx + dy * dy;
+      if (d < bestD) { bestD = d; best = i; }
+    }
+    return islandColorFor(best, k);
+  }
+
   // ---- field-flow layout -----------------------------------------------
-  // Bind every graph node to a Shape-of-Time dot. Nodes are laid out in
-  // repeated type-runs along the field's own draw order (fieldIndex), so the
-  // coloured hover overlay rides the field as bands instead of reading as
-  // scattered confetti. Within each run, nodes fall back to intention then
-  // name order. Position is the spiral's; the colour is the run's.
-  function pairNodesToPositions(graph, brand) {
+  // Bind every graph node to a Shape-of-Time dot. With island data, nodes are
+  // grouped into per-island regions (above); without it, a flat field-flow of
+  // type-runs. Either way bundle.sim[i].(bx,by) lands on a real field dot.
+  function pairNodesToPositions(graph, brand, islandData) {
     // Pool of available brand dots (one slot per graph node).
     const wanted = graph.nodes.length;
     const pool = pickDistinctPositions(brand, wanted);
@@ -700,16 +776,113 @@
       x: p.x, y: p.y, radius: p.radius, used: false,
     }));
 
-    const sim = assignFieldFlowPositions(graph, available, graph.nodes);
+    // No island data yet (derive hasn't run) → flat field-flow fallback.
+    if (!islandData || !islandData.k) {
+      const sim = assignFieldFlowPositions(graph, available, graph.nodes);
+      sim.sort((a, b) => a._z - b._z || (a.flowIndex ?? 0) - (b.flowIndex ?? 0));
+      return {
+        sim, brandW: brand.brandW, brandH: brand.brandH,
+        snapshotType: 'field-flow', snapshotSize: sim.length,
+        totalGraph: graph.nodes.length, distinctCount: pool.length,
+      };
+    }
+
+    // Island layout. Group nodes by island; un-islanded (no identity vector,
+    // e.g. platforms/institutions) fall into the centre catch-all bucket.
+    const k = islandData.k;
+    const islandOf = islandData.islands;
+    const MISC = k;
+    const groups = new Map();
+    for (const n of graph.nodes) {
+      const isl = Object.prototype.hasOwnProperty.call(islandOf, n.id) ? islandOf[n.id] : MISC;
+      let g = groups.get(isl);
+      if (!g) { g = []; groups.set(isl, g); }
+      g.push(n);
+    }
+    const anchors = computeIslandAnchors(available, k, brand);
+    const islandIds = [...groups.keys()];
+    const capacity = new Map(islandIds.map(isl => [isl, groups.get(isl).length]));
+    const P = available.length;
+
+    // Balanced k-means over the field dots. Each pass: assign every dot to its
+    // NEAREST island that still has capacity (global distance-sorted greedy →
+    // balanced Voronoi cells, exactly sized to node counts), then move anchors
+    // to their cell centroids. A few passes tighten scattered cells into clean
+    // territories AND keep colour-by-anchor (the hover reveal) consistent with
+    // where the nodes actually sit.
+    const LLOYD_ITERS = 6;
+    let dotIsland = new Array(P).fill(-1);
+    for (let it = 0; it < LLOYD_ITERS; it++) {
+      const remaining = new Map(capacity);
+      const pairs = [];
+      for (let di = 0; di < P; di++) {
+        const p = available[di];
+        for (const isl of islandIds) {
+          const a = anchors[isl] || anchors[MISC];
+          const dx = p.x - a.x, dy = p.y - a.y;
+          pairs.push([dx * dx + dy * dy, di, isl]);
+        }
+      }
+      pairs.sort((x, y) => x[0] - y[0]);
+      dotIsland = new Array(P).fill(-1);
+      let assigned = 0;
+      for (let t = 0; t < pairs.length && assigned < P; t++) {
+        const di = pairs[t][1], isl = pairs[t][2];
+        if (dotIsland[di] !== -1) continue;
+        const rem = remaining.get(isl);
+        if (!rem) continue;
+        dotIsland[di] = isl;
+        remaining.set(isl, rem - 1);
+        assigned++;
+      }
+      if (it === LLOYD_ITERS - 1) break;
+      const sx = new Map(), sy = new Map(), cn = new Map();
+      for (const isl of islandIds) { sx.set(isl, 0); sy.set(isl, 0); cn.set(isl, 0); }
+      for (let di = 0; di < P; di++) {
+        const isl = dotIsland[di];
+        if (isl === -1) continue;
+        sx.set(isl, sx.get(isl) + available[di].x);
+        sy.set(isl, sy.get(isl) + available[di].y);
+        cn.set(isl, cn.get(isl) + 1);
+      }
+      for (const isl of islandIds) {
+        const c = cn.get(isl);
+        if (c > 0) anchors[isl] = { x: sx.get(isl) / c, y: sy.get(isl) / c };
+      }
+    }
+
+    // Place each island's nodes (type-run ordered) onto its assigned dots,
+    // dots ordered by distance to the converged anchor so the dense core sits
+    // centrally.
+    const dotsByIsland = new Map(islandIds.map(isl => [isl, []]));
+    for (let di = 0; di < P; di++) {
+      const isl = dotIsland[di];
+      if (isl !== -1) dotsByIsland.get(isl).push(available[di]);
+    }
+    const sim = [];
+    for (const isl of islandIds) {
+      const nodes = orderNodesByFieldFlow(graph, groups.get(isl)); // type-runs within the region
+      const a = anchors[isl] || anchors[MISC];
+      const dots = dotsByIsland.get(isl).sort((p, q) =>
+        ((p.x - a.x) ** 2 + (p.y - a.y) ** 2) - ((q.x - a.x) ** 2 + (q.y - a.y) ** 2)
+      );
+      const take = Math.min(nodes.length, dots.length);
+      for (let i = 0; i < take; i++) {
+        const nd = nodes[i], p = dots[i];
+        sim.push({
+          id: nd.id, name: nd.name, type: nd.type,
+          bx: p.x, by: p.y, bRad: p.radius, x: 0, y: 0,
+          _z: zForType(nd.type), island: isl, flowIndex: sim.length,
+          fieldColor: islandColorFor(isl, k),
+        });
+      }
+    }
     sim.sort((a, b) => a._z - b._z || (a.flowIndex ?? 0) - (b.flowIndex ?? 0));
     return {
-      sim,
-      brandW: brand.brandW,
-      brandH: brand.brandH,
-      snapshotType: 'field-flow',
-      snapshotSize: sim.length,
-      totalGraph: graph.nodes.length,
-      distinctCount: pool.length,
+      sim, brandW: brand.brandW, brandH: brand.brandH,
+      snapshotType: 'island-flow', snapshotSize: sim.length,
+      totalGraph: graph.nodes.length, distinctCount: pool.length,
+      islandK: k, islandAnchors: anchors, islandCount: groups.size,
     };
   }
 
@@ -2944,15 +3117,21 @@
     const canvas = ensureCanvas();
     let { ctx, w, h } = sizeCanvas(canvas);
 
-    // Wait for the spiral registry (the Shape-of-Time dots we bind to).
-    const brand = await waitForRegistry();
+    // Wait for the spiral registry (the Shape-of-Time dots we bind to) and the
+    // latent island assignment in parallel.
+    const [brand, islandData] = await Promise.all([waitForRegistry(), fetchIslands()]);
     if (!brand) {
       console.warn('[adai] dotRegistry unavailable — skipping graph layer');
       return;
     }
     console.log(`[adai] dotRegistry: ${brand.positions.length} brand positions; graph: ${graph.nodes.length} nodes`);
+    if (islandData && islandData.k) {
+      console.log(`[adai] islands: ${islandData.k} over ${islandData.n} nodes`);
+    } else {
+      console.log('[adai] /api/islands empty — flat field-flow layout');
+    }
 
-    const bundle = pairNodesToPositions(graph, brand);
+    const bundle = pairNodesToPositions(graph, brand, islandData);
     reproject(bundle);
     console.log(`[adai] snapshot: ${bundle.snapshotSize} nodes placed over ${bundle.distinctCount} distinct brand positions`);
     restoreBrandOpacity();
@@ -3344,7 +3523,11 @@
             }
             const reveal = colorRevealAt(px, py, cursorX, cursorY);
             if (reveal <= 0.01) continue;
-            const color = colorForFieldFlow(i);
+            // Island layout → tint by the region (nearest anchor) so hovering
+            // reveals the local latent territory's hue; else the flat run-banding.
+            const color = (bundle.islandK && bundle.islandAnchors)
+              ? nearestIslandColor(dot.x, dot.y, bundle.islandAnchors, bundle.islandK)
+              : colorForFieldFlow(i);
             colorHalos.push({
               x: px, y: py,
               r: Math.max(pr * 1.75, 1.6),

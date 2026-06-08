@@ -24,6 +24,7 @@
 import { initDb } from "../db.js";
 import { resolveCliDbPath } from "../utils/db-path.js";
 import { computeCentroids } from "./centroids.js";
+import { computeIslands } from "./islands.js";
 import { derive } from "./derive.js";
 import { loadAll, cosine } from "./vectors.js";
 import { embedNodeNow } from "./server.js";
@@ -90,6 +91,16 @@ function cmdDerive() {
   const dt = ((Date.now() - t0) / 1000).toFixed(1);
   console.log(`derive complete in ${dt}s${dryRun ? " (dry-run)" : ""}:`);
   console.log(JSON.stringify(stats, null, 2));
+
+  // Latent islands for the /field macro-layout. Recomputed every run from the
+  // same vectors; cheap (a few seconds) and deterministic. Env-tunable k.
+  const kEnv = Number(process.env.ISLAND_K);
+  const islandStats = computeIslands(db, {
+    k: Number.isFinite(kEnv) && kEnv >= 2 ? Math.floor(kEnv) : undefined,
+    dryRun,
+  });
+  console.log(`islands: k=${islandStats.k} over ${islandStats.n} nodes in ${islandStats.iters} iters; sizes ${JSON.stringify(islandStats.sizes)}`);
+
   db.exec("PRAGMA wal_checkpoint(TRUNCATE)");
 }
 

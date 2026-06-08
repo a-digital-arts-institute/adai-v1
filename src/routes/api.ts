@@ -499,6 +499,32 @@ router.post("/api/review/:id/reject", (req, res) => {
   res.set(HTML_HEADERS).send("<div class='msg msg-err'>Rejected.</div>");
 });
 
+// GET /api/islands — latent k-means cluster id per node, for the /field
+// macro-layout. Reads the local node_islands table (rewritten each
+// embed:derive run from the identity vectors — see src/embed/islands.ts).
+// The field groups nodes by island into contiguous regions of the Shape of
+// Time. Returns {} (no `islands`) when derive hasn't run yet, so the field
+// falls back to plain field-flow without erroring.
+router.get("/api/islands", (_req, res) => {
+  const db = getDb();
+  let rows: Array<{ node_id: string; island: number }> = [];
+  try {
+    rows = db
+      .prepare("SELECT node_id, island FROM node_islands")
+      .all() as Array<{ node_id: string; island: number }>;
+  } catch {
+    // Table absent (pre-migration boot) — treat as "no islands yet".
+    rows = [];
+  }
+  const islands: Record<string, number> = {};
+  let k = 0;
+  for (const r of rows) {
+    islands[r.node_id] = r.island;
+    if (r.island + 1 > k) k = r.island + 1;
+  }
+  res.set(JSON_HEADERS).json({ k, n: rows.length, islands });
+});
+
 // GET /api/neighbours/:type/:slug — embedding-derived sections for a node.
 //
 // Returns the same "Style kin / Visually affine / Style proximity / Closest

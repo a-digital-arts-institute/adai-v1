@@ -135,6 +135,20 @@ CREATE TABLE IF NOT EXISTS node_embeddings (
 
 CREATE INDEX IF NOT EXISTS idx_node_embeddings_kind ON node_embeddings(kind);
 
+-- Latent "islands": k-means cluster id per node over the identity vectors.
+-- Local-only (NOT a CRR) — a derived view of the embedding space, recomputed
+-- by `embed:derive` (k-means in src/embed/islands.ts). Drives the field-flow
+-- macro-layout: each island becomes a contiguous region of the Shape of Time.
+-- Wiped + rewritten each derive run; served read-only at GET /api/islands.
+CREATE TABLE IF NOT EXISTS node_islands (
+    node_id    TEXT PRIMARY KEY NOT NULL,
+    island     INTEGER NOT NULL,
+    updated_at TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+    FOREIGN KEY (node_id) REFERENCES nodes(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_node_islands_island ON node_islands(island);
+
 -- Pairs the curator rejected from the AI suggestion queue. The derive pass
 -- consults this to avoid re-proposing the same attribution every run.
 CREATE TABLE IF NOT EXISTS rejected_ai_suggestions (
