@@ -1,5 +1,5 @@
 /**
- * A(DAI) — graph-field (30k view: UMAP semantics snapped onto Shape of Time)
+ * A(DAI) — graph-field (30k view: graph nodes bound to Shape of Time)
  *
  * The brand sketch (sketch-brand.js) renders the Shape of Time and exposes
  * window.__adaiDotRegistry — the canonical (x, y, radius) of every dot it
@@ -7,16 +7,14 @@
  *
  * Layout = best of both worlds:
  *   1. Fetch /api/embed-space (Gemini 2 multimodal UMAP, 768-d → 2-d).
- *   2. Normalize each UMAP coord into a 15%-padded brand-space "target".
- *   3. Stride-pick a pool of distinct brand-dot positions from the spiral.
- *   4. Greedy nearest-snap: for each embedded node (in order of edge-type
- *      intention), claim the closest remaining brand dot. Position is the
- *      spiral's; cluster is the semantics'.
- *   5. Nodes without an embedding land on the outermost remaining dots
- *      (shuffled), so the spiral edges show the unembedded periphery.
+ *   2. Read the Shape-of-Time dot registry, preserving the field's draw order.
+ *   3. Field-flow mode places graph nodes in repeated type-runs along that
+ *      draw order, so the coloured overlay rides the field instead of reading
+ *      as scattered confetti.
+ *   4. Within each type-run, embedded nodes still follow UMAP target order, so
+ *      the graph keeps a soft semantic contour without overriding the field.
  *
- * Result: bundle.sim[i].(bx,by) coincides exactly with a Shape-of-Time
- * dot — bound aesthetically — while the *which dot* is decided by UMAP.
+ * Result: bundle.sim[i].(bx,by) coincides exactly with a Shape-of-Time dot.
  *
  * Focus is a single in-place reveal: clicking a node anchors the focus to its
  * field dot (or screen-centre for an edge node), draws curved threads to its
@@ -25,15 +23,10 @@
  */
 (() => {
   // ---- config ----
-  // 30k snapshot: only PRACTITIONERS render. The other 1,345 nodes (artworks,
-  // concepts, institutions, etc.) stay accessible via window.ADAI_GRAPH for
-  // the agent skills, but they don't appear at 30k. The reading is "a" canon
-  // of practitioners, not "the" graph — `editorial:two-readings` in force.
   const CFG = {
-    // 30k snapshot draws every graph node onto a Shape-of-Time dot. Embedded
-    // nodes (1,338 today) snap to the spiral position closest to their UMAP
-    // target; unembedded nodes (~150) take outer-edge dots. Semantics cluster
-    // through the spiral's geometry without overriding it.
+    // 30k snapshot draws every graph node onto a Shape-of-Time dot. In
+    // field-flow mode the coloured base layer follows the field's draw order;
+    // focused views still use the graph to reveal actual neighbours.
     DOT_HEX: '#FFFFFF',
     BASE_ALPHA: 0.92,
     NEUTRAL_ALPHA: 0.55,
@@ -43,7 +36,7 @@
     HALO_ALPHA: 0.26,
     HOVER_HALO_ALPHA: 0.55,
     SELECTED_HALO_ALPHA: 0.85,
-    DRIFT: 0.06,
+    DRIFT: 0,
     BG_BLEND: 'screen',
     BRAND_OPACITY_WHEN_ACTIVE: '1',
     BRAND_OPACITY_AT_ZOOM: '0.55',   // keep the field present while zoomed in
@@ -58,6 +51,44 @@
     // UMAP → brand-space normalisation. 15% inset on each axis so the
     // semantic cluster sits inside the spiral, not against its edges.
     UMAP_PADDING: 0.15,
+    FIELD_FLOW_LAYOUT: true,
+    FIELD_FLOW_RUN_MIN: 3,
+    FIELD_FLOW_RUN_MAX: 34,
+    FIELD_FLOW_RUN_SCALE: 36,
+    FIELD_PATTERN_COLORING: true,
+    FIELD_PATTERN_RUN: 96,
+    FIELD_PATTERN_RUN_MIN: 10,
+    FIELD_PATTERN_RUN_MAX: 300,
+    FIELD_PATTERN_COLORS: [
+      '#D9A33B',
+      '#7EB8DA',
+      '#9BA67A',
+      '#2A7672',
+      '#C77A4A',
+      '#C9A227',
+    ],
+    FIELD_COLOR_SETUPS: [
+      {
+        name: 'archive signal',
+        colors: ['#D9A33B', '#7EB8DA', '#9BA67A', '#2A7672', '#C77A4A', '#C9A227'],
+      },
+      {
+        name: 'mineral field',
+        colors: ['#AFC7C3', '#D0A94B', '#8E9D6B', '#4F92A3', '#B85C3D', '#D9D2BE'],
+      },
+      {
+        name: 'thermal archive',
+        colors: ['#E0B04E', '#A83A1E', '#7EB8DA', '#2F7B74', '#B88A1B', '#D7D0C3'],
+      },
+      {
+        name: 'cobalt index',
+        colors: ['#4169B0', '#D9A33B', '#93A06C', '#D93B2D', '#62A9B0', '#E8E6E1'],
+      },
+    ],
+    HOVER_COLOR_REVEAL_RADIUS: 150,
+    HOVER_COLOR_REVEAL_SOFTNESS: 170,
+    HOVER_COLOR_CORE_ALPHA: 0.78,
+    HOVER_COLOR_HALO_ALPHA: 0.32,
 
     // Type-driven palette so the snapped constellation reads as semantic
     // clusters. Brand-accent set, complementary to the white spiral.
@@ -422,9 +453,10 @@
     // node gets a field position; then sample evenly down to `want`.
     const dedupe = (GRID) => {
       const seen = new Map();
-      for (const p of brand.positions) {
+      for (let i = 0; i < brand.positions.length; i++) {
+        const p = brand.positions[i];
         const key = `${(p.x / GRID) | 0},${(p.y / GRID) | 0}`;
-        if (!seen.has(key)) seen.set(key, p);
+        if (!seen.has(key)) seen.set(key, { ...p, fieldIndex: i });
       }
       return Array.from(seen.values());
     };
@@ -476,8 +508,222 @@
     return CFG.TYPE_COLORS[type] || CFG.TYPE_COLOR_FALLBACK;
   }
 
+  let activeFieldColorSetup = null;
+
+  function hashStringToUint(value) {
+    let h = 2166136261 >>> 0;
+    const str = String(value || '');
+    for (let i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+
+  function fieldColorSeed() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('seed') ||
+      window.ADAI_FIELD_SEED ||
+      window.BrandBackgroundGenerator?.getSeed?.() ||
+      'adai-field-color';
+  }
+
+  function runForFieldColorSetup(seed, setupName) {
+    const minRun = Math.max(1, Math.floor(CFG.FIELD_PATTERN_RUN_MIN || 10));
+    const maxRun = Math.max(minRun, Math.floor(CFG.FIELD_PATTERN_RUN_MAX || 300));
+    const range = maxRun - minRun + 1;
+    const runHash = hashStringToUint(`${seed}:${setupName || 'field-color'}:run`);
+    return minRun + (runHash % range);
+  }
+
+  function fieldColorSetup() {
+    if (activeFieldColorSetup) return activeFieldColorSetup;
+
+    const seed = fieldColorSeed();
+    const setups = CFG.FIELD_COLOR_SETUPS || [];
+    if (!setups.length) {
+      activeFieldColorSetup = {
+        name: 'fallback',
+        run: runForFieldColorSetup(seed, 'fallback'),
+        colors: CFG.FIELD_PATTERN_COLORS,
+        offset: 0,
+      };
+      return activeFieldColorSetup;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const requested = (params.get('fieldColor') || '').trim().toLowerCase();
+    const requestedSetup = requested
+      ? setups.find((setup) => setup.name.toLowerCase().replace(/\s+/g, '-') === requested)
+      : null;
+    const seedHash = hashStringToUint(seed);
+    const setup = requestedSetup || setups[seedHash % setups.length];
+    const colors = setup.colors && setup.colors.length ? setup.colors : CFG.FIELD_PATTERN_COLORS;
+    const run = runForFieldColorSetup(seed, setup.name);
+    activeFieldColorSetup = {
+      ...setup,
+      colors,
+      run,
+      offset: colors.length ? seedHash % colors.length : 0,
+    };
+    window.ADAI_FIELD_COLOR_SETUP = {
+      name: activeFieldColorSetup.name,
+      run: activeFieldColorSetup.run,
+      runRange: [CFG.FIELD_PATTERN_RUN_MIN, CFG.FIELD_PATTERN_RUN_MAX],
+      offset: activeFieldColorSetup.offset,
+      colors: [...activeFieldColorSetup.colors],
+    };
+    document.documentElement.dataset.fieldColorSetup = activeFieldColorSetup.name;
+    document.documentElement.dataset.fieldColorRun = String(activeFieldColorSetup.run);
+    return activeFieldColorSetup;
+  }
+
+  function colorForFieldFlow(slot) {
+    const setup = fieldColorSetup();
+    const palette = setup.colors;
+    if (!palette || !palette.length) return CFG.TYPE_COLOR_FALLBACK;
+    const run = Math.max(1, setup.run || CFG.FIELD_PATTERN_RUN);
+    const band = Math.floor(Math.max(0, slot) / run) + (setup.offset || 0);
+    return palette[band % palette.length];
+  }
+
+  function colorForBaseDot(sim) {
+    if (CFG.FIELD_PATTERN_COLORING && sim?.fieldColor) return sim.fieldColor;
+    return colorForType(sim?.type);
+  }
+
   function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
+  }
+
+  function smoothstep(edge0, edge1, value) {
+    const t = clamp((value - edge0) / (edge1 - edge0), 0, 1);
+    return t * t * (3 - 2 * t);
+  }
+
+  function colorRevealAt(px, py, cursorX, cursorY) {
+    if (cursorX == null || cursorY == null) return 0;
+    const d = Math.hypot(px - cursorX, py - cursorY);
+    const falloff = 1 - smoothstep(
+      CFG.HOVER_COLOR_REVEAL_RADIUS,
+      CFG.HOVER_COLOR_REVEAL_RADIUS + CFG.HOVER_COLOR_REVEAL_SOFTNESS,
+      d
+    );
+    return clamp(falloff, 0, 1);
+  }
+
+  const FIELD_FLOW_TYPE_ORDER = [
+    'artwork',
+    'practitioner',
+    'concept',
+    'institution',
+    'platform',
+    'collective',
+    'scene',
+    'publication',
+    'classification_regime',
+    'project',
+    'event',
+    'related',
+  ];
+  const FIELD_FLOW_TYPE_RANK = new Map(FIELD_FLOW_TYPE_ORDER.map((type, idx) => [type, idx]));
+
+  function fieldFlowTypeRank(type) {
+    return FIELD_FLOW_TYPE_RANK.has(type) ? FIELD_FLOW_TYPE_RANK.get(type) : FIELD_FLOW_TYPE_ORDER.length;
+  }
+
+  function sortNodesWithinFieldRun(graph, targets) {
+    return (a, b) => {
+      const ta = targets.get(a.id);
+      const tb = targets.get(b.id);
+      if (ta && tb) {
+        const dy = ta.ty - tb.ty;
+        if (Math.abs(dy) > 0.001) return dy;
+        const dx = ta.tx - tb.tx;
+        if (Math.abs(dx) > 0.001) return dx;
+      } else if (ta) {
+        return -1;
+      } else if (tb) {
+        return 1;
+      }
+      const ia = graph.intentionOf(a.id);
+      const ib = graph.intentionOf(b.id);
+      if (ib !== ia) return ib - ia;
+      return (a.name || a.id).localeCompare(b.name || b.id);
+    };
+  }
+
+  function fieldFlowRunLength(type, count, total) {
+    const share = total ? count / total : 0;
+    return clamp(
+      Math.round(CFG.FIELD_FLOW_RUN_MIN + share * CFG.FIELD_FLOW_RUN_SCALE),
+      CFG.FIELD_FLOW_RUN_MIN,
+      CFG.FIELD_FLOW_RUN_MAX
+    );
+  }
+
+  function orderNodesByFieldFlow(graph, embedded, unembedded, targets) {
+    const groups = new Map();
+    const add = (node) => {
+      let group = groups.get(node.type);
+      if (!group) { group = []; groups.set(node.type, group); }
+      group.push(node);
+    };
+    for (const node of embedded) add(node);
+    for (const node of unembedded) add(node);
+
+    const sorter = sortNodesWithinFieldRun(graph, targets);
+    for (const group of groups.values()) group.sort(sorter);
+
+    const types = Array.from(groups.keys())
+      .sort((a, b) => fieldFlowTypeRank(a) - fieldFlowTypeRank(b) || a.localeCompare(b));
+    const total = embedded.length + unembedded.length;
+    const initialCounts = new Map(types.map(type => [type, groups.get(type).length]));
+    const ordered = [];
+
+    while (ordered.length < total) {
+      let progressed = false;
+      for (const type of types) {
+        const group = groups.get(type);
+        if (!group || !group.length) continue;
+        const run = fieldFlowRunLength(type, initialCounts.get(type) || 0, total);
+        const take = Math.min(run, group.length);
+        for (let i = 0; i < take; i++) ordered.push(group.shift());
+        progressed = true;
+      }
+      if (!progressed) break;
+    }
+
+    return ordered;
+  }
+
+  function assignFieldFlowPositions(graph, available, embedded, unembedded, targets) {
+    const positions = available
+      .slice()
+      .sort((a, b) => {
+        const ai = a.fieldIndex ?? 0;
+        const bi = b.fieldIndex ?? 0;
+        if (ai !== bi) return ai - bi;
+        if (a.y !== b.y) return a.y - b.y;
+        return a.x - b.x;
+      });
+    const nodes = orderNodesByFieldFlow(graph, embedded, unembedded, targets);
+    const sim = [];
+    for (let i = 0; i < nodes.length && i < positions.length; i++) {
+      const n = nodes[i];
+      const p = positions[i];
+      p.used = true;
+      sim.push({
+        id: n.id, name: n.name, type: n.type,
+        bx: p.x, by: p.y, bRad: p.radius,
+        x: 0, y: 0,
+        _z: zForType(n.type),
+        fieldIndex: p.fieldIndex,
+        flowIndex: i,
+        fieldColor: colorForFieldFlow(i),
+      });
+    }
+    return sim;
   }
 
   // ---- semantic snapping -----------------------------------------------
@@ -546,6 +792,24 @@
       targets.set(n.id, { tx, ty });
     }
 
+    let sim = [];
+    if (CFG.FIELD_FLOW_LAYOUT) {
+      sim = assignFieldFlowPositions(graph, available, embedded, unembedded, targets);
+      sim.sort((a, b) => a._z - b._z || (a.flowIndex ?? 0) - (b.flowIndex ?? 0));
+      return {
+        sim,
+        brandW: brand.brandW,
+        brandH: brand.brandH,
+        snapshotType: 'field-flow-snapped',
+        snapshotSize: sim.length,
+        totalGraph: graph.nodes.length,
+        distinctCount: pool.length,
+        embeddedCount: embedded.length,
+        unembeddedCount: unembedded.length,
+        embedModel: (embedSpace && embedSpace.model) || null,
+      };
+    }
+
     // 4. Greedy nearest-snap. Sort embedded by intention first so the
     //    most relationally-rich nodes claim their preferred spot before
     //    less-connected nodes squat the same brand dot.
@@ -556,7 +820,6 @@
       return (a.name || a.id).localeCompare(b.name || b.id);
     });
 
-    const sim = [];
     for (const n of embedded) {
       const t = targets.get(n.id);
       let bestI = -1, bestD2 = Infinity;
@@ -1085,8 +1348,8 @@
       return;
     }
     const history = bundle.history || [];
-    // Build path: field, then each historical focus, then current focus.
-    const path = [{ id: null, label: 'field' }];
+    // Build path: regenerate control, then each historical focus, then current focus.
+    const path = [{ id: null, label: 'regenerate', action: 'regenerate' }];
     for (const h of history) {
       if (h.focusedId) path.push({ id: h.focusedId });
     }
@@ -1111,6 +1374,11 @@
           }
         }
       }
+      if (seg.action === 'regenerate') {
+        html += `<button type="button" class="adai-bcrumb-seg adai-regenerate-btn" data-idx="${i}" data-action="regenerate" title="Regenerate field"><span class="adai-regenerate-icon" aria-hidden="true">↻</span><span>regenerate</span></button>`;
+        continue;
+      }
+
       const node = seg.id ? graph.byId.get(seg.id) : null;
       const name = node ? node.name : seg.label;
       const type = node ? node.type : null;
@@ -1166,6 +1434,14 @@
       }, { once: true });
     }
 
+    const regenerateBtn = el.querySelector('.adai-regenerate-btn');
+    if (regenerateBtn) {
+      regenerateBtn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        regenerateField();
+      }, { once: true });
+    }
+
     // Auto-scroll the breadcrumb so the latest (current) segment is always
     // visible at the right edge. Older segments scroll off-screen left,
     // softened by the mask gradient. Use rAF so layout has finished.
@@ -1178,6 +1454,7 @@
     // clicked span — a still-bubbling event with a detached target slips
     // past the camera layer's isUiClick filter and hijacks the navigation.
     el.querySelectorAll('.adai-bcrumb-seg').forEach(seg => {
+      if (seg.dataset.action === 'regenerate') return;
       const idx = parseInt(seg.dataset.idx, 10);
       if (idx === path.length - 1) return;  // current segment is not clickable
       seg.addEventListener('click', (ev) => {
@@ -1185,6 +1462,15 @@
         bcrumbTeleport(bundle, graph, idx, path);
       }, { once: true });
     });
+  }
+
+  function regenerateField() {
+    const next = new URL(window.location.href);
+    next.searchParams.delete('seed');
+    next.searchParams.delete('node');
+    next.searchParams.delete('reading');
+    next.searchParams.set('regen', String(Date.now()));
+    window.location.assign(next.toString());
   }
 
   // Teleport-back: pop history entries beyond targetIdx, then navigate.
@@ -3065,7 +3351,7 @@
     }
     window.addEventListener('resize', onResize, { passive: true });
 
-    canvas.addEventListener('mousemove', (e) => {
+    function handlePointerMove(e) {
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
@@ -3093,15 +3379,21 @@
         const zoomedIn = window.ADAI_FIELD_STUDY?.isZoomed;
         canvas.style.cursor = hit ? 'pointer' : (zoomedIn ? 'grab' : 'default');
       }
-    }, { passive: true });
+    }
 
-    canvas.addEventListener('mouseleave', () => {
+    canvas.addEventListener('mousemove', handlePointerMove, { passive: true });
+    canvas.addEventListener('pointermove', handlePointerMove, { passive: true });
+
+    function handlePointerLeave() {
       cursorX = null; cursorY = null;
       if (hoveredId) {
         hoveredId = null;
         canvas.style.cursor = 'default';
       }
-    });
+    }
+
+    canvas.addEventListener('mouseleave', handlePointerLeave);
+    canvas.addEventListener('pointerleave', handlePointerLeave);
 
     canvas.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -3222,13 +3514,13 @@
         // Camera transform fetched ONCE per frame (one layout read) so we can
         // project all ~4700 dots inline — calling projectFieldDot per dot did a
         // getBoundingClientRect each, which tanked the focus-state framerate.
-        const T = cameraZoomed && study && study.getTransform ? study.getTransform() : null;
+        const T = study && study.getTransform ? study.getTransform() : null;
         // Dim the constellation through BOTH the reveal and focus phases. If we
         // only dimmed during focus, switching node→node would flash the field to
         // full brightness for the ~900ms reveal (dimmed → bright → dimmed pulse).
         const focusDim = (inPlaceFocus || inPlaceReveal) ? CFG.FIELD_FOCUS_BACKGROUND_ALPHA : 1;
-        const halos = [];
-        const cores = [];
+        const colorHalos = [];
+        const colorCores = [];
         for (let i = 0; i < bundle.sim.length; i++) {
           const s = bundle.sim[i];
           let px, py, pr;
@@ -3253,13 +3545,45 @@
           // viewport — skipping them is the big win for focus-state framerate.
           const m = pr * CFG.HALO_RADIUS_MULT + 4;
           if (px < -m || px > w + m || py < -m || py > h + m) continue;
-          const base = (s.alpha != null ? s.alpha : 1) * focusDim;
-          const color = colorForType(s.type);
-          halos.push({ x: px, y: py, r: pr * CFG.HALO_RADIUS_MULT, color, alpha: base * CFG.HALO_ALPHA });
-          cores.push({ x: px, y: py, r: pr, color, alpha: base * CFG.BASE_ALPHA });
         }
-        drawDotsBatched(ctx, halos);
-        drawDotsBatched(ctx, cores);
+
+        if (!zoomed && !inPlaceReveal && !inPlaceFocus && cursorX != null && cursorY != null) {
+          const rect = T ? null : (bundle.canvasRect || { left: 0, top: 0, width: w, height: h });
+          const sx = rect ? rect.width / bundle.brandW : 1;
+          const sy = rect ? rect.height / bundle.brandH : 1;
+          const screenScale = rect ? Math.min(sx, sy) : 1;
+          const dots = fieldRegistryDots();
+          for (let i = 0; i < dots.length; i++) {
+            const dot = dots[i];
+            let px, py, pr;
+            if (T) {
+              px = T.left + (dot.x * T.scale + T.x) * T.screenScale;
+              py = T.top + (dot.y * T.scale + T.y) * T.screenScale;
+              pr = Math.max(0.55, dot.radius * T.scale * T.screenScale);
+            } else {
+              px = rect.left + dot.x * sx;
+              py = rect.top + dot.y * sy;
+              pr = Math.max(0.55, dot.radius * screenScale);
+            }
+            const reveal = colorRevealAt(px, py, cursorX, cursorY);
+            if (reveal <= 0.01) continue;
+            const color = colorForFieldFlow(i);
+            colorHalos.push({
+              x: px, y: py,
+              r: Math.max(pr * 1.75, 1.6),
+              color,
+              alpha: CFG.HOVER_COLOR_HALO_ALPHA * reveal
+            });
+            colorCores.push({
+              x: px, y: py,
+              r: pr,
+              color,
+              alpha: CFG.HOVER_COLOR_CORE_ALPHA * reveal
+            });
+          }
+        }
+        drawDotsBatched(ctx, colorHalos);
+        drawDotsBatched(ctx, colorCores);
         ctx.fillStyle = CFG.DOT_HEX;
 
         // Hover halo + name label (only meaningful at 30k). The label lets a

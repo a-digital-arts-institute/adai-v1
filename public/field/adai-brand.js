@@ -1008,6 +1008,13 @@ document.addEventListener('DOMContentLoaded', () => {
             Section Heading Style
           </div>
         </div>
+        <div class="brand-credit" aria-label="Brand identity credit">
+          <div class="brand-credit__ruler" aria-hidden="true"></div>
+          <div class="brand-credit__text">
+            Brand Identity by
+            <a href="https://x.com/pixel0symphony" target="_blank" rel="noopener">Pixel Symphony</a>
+          </div>
+        </div>
       </div>
     `;
 
@@ -1046,5 +1053,4 @@ document.addEventListener('DOMContentLoaded', () => {
   renderGeometrySection();
   renderColorSection();
   renderTypeSection();
-  renderGenerativeSection();
 });

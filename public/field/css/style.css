@@ -1154,6 +1154,39 @@ body {
   margin-bottom: var(--space-xs);
 }
 
+.brand-credit {
+  margin-top: var(--space-lg);
+  font-family: var(--font-mono);
+}
+
+.brand-credit__ruler {
+  width: min(220px, 42vw);
+  height: 1px;
+  margin-bottom: var(--space-sm);
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0.5),
+    rgba(255, 255, 255, 0.14)
+  );
+}
+
+.brand-credit__text {
+  font-size: var(--fs-xs);
+  line-height: 1.7;
+  color: var(--color-text-muted);
+  letter-spacing: 0.03em;
+}
+
+.brand-credit__text a {
+  color: var(--color-text);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(var(--brand-color-rgb), 0.75);
+}
+
+.brand-credit__text a:hover {
+  color: var(--brand-color);
+}
+
 .gen-demo {
   position: relative;
   max-width: 800px;
