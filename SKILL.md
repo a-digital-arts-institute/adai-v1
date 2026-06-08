@@ -1,6 +1,6 @@
 ---
 name: adai-contribute
-description: Contribute to the A(DAI) Digital Arts Knowledge Commons graph (https://adai-basel.fly.dev) on behalf of a practitioner using their bearer token in ADAI_TOKEN. Use this skill when the user wants to add a text signal about an existing node, create a new node (practitioner, artwork, concept, scene, institution, collective, platform, etc.), add or supersede an edge between two nodes (CREATED_BY, EMBODIES, PRACTICES, EXHIBITED_AT, CLASSIFIED_BY, BELONGS_TO, COLLABORATES_WITH, USES_TECHNIQUE, INFLUENCES, RESPONDS_TO), upload an image and attach it to a node, review the practitioner's own contribution history, or — with an admin-scope token — mint, list, or revoke contributor tokens for others. Talks to /api/v1/* via curl. Respects trust tiers (auto/reviewed go live, probationary queue at /review for curator approval). Never infer INFLUENCES or RESPONDS_TO from style or visual similarity; both require attested artist intent.
+description: Contribute to the A(DAI) Digital Arts Knowledge Commons graph (https://adai-basel.fly.dev) on behalf of a practitioner using their bearer token in ADAI_TOKEN. Use this skill when the user wants to add a text signal about an existing node, create a new node (practitioner, artwork, concept, scene, institution, collective, platform, etc.), add or supersede an edge between two nodes (CREATED_BY, EMBODIES, PRACTICES, EXHIBITED_AT, CLASSIFIED_BY, BELONGS_TO, COLLABORATES_WITH, USES_TECHNIQUE, INFLUENCES, RESPONDS_TO), upload an image and attach it to a node, tag a session of writes with a batch_id, review the practitioner's own contribution history, or — with an admin-scope token — mint/list/revoke contributor tokens, work the curator review queue (list, approve, reject, bulk by batch or contributor), revoke a signal, retire a node, or roll back an entire contribution batch ("delete and start again", provenance-preserving). Talks to /api/v1/* via curl. Respects trust tiers (auto/reviewed go live, probationary queue at /review for curator approval). Never infer INFLUENCES or RESPONDS_TO from style or visual similarity; both require attested artist intent.
 ---
 
 # A(DAI) contributor skill — for Claude (and any other AI assistant) writing to the knowledge commons
@@ -68,7 +68,7 @@ contributors out of trouble:
 - **"Will this go live now, or be reviewed first?"** — trust tier (§3).
 - **"What have I contributed so far?"** — contribution history (§1.6).
 - **"Here are the works from my show — add them and attach these images."**
-  — batch intake; confirm the count first (§5).
+  — batch intake; confirm the count and set a `batch_id` first (§1.7, §6).
 
 One more thing to surface unprompted: the graph is a **public commons** and
 contributions are attributed. If something they're telling you sounds
@@ -372,9 +372,42 @@ curl -s -H "Authorization: Bearer $ADAI_TOKEN" \
 Response: `{ contributor, totals: { approved: N, pending: N, rejected: N },
 returned, items }` where each item carries `action` (`signal` /
 `create_node` / `patch_node` / `add_edge` / `attach_image`), `target_node`,
-`status`, `created_at`, and the anchoring `signal_id` + `title`. A
-`rejected` item includes the curator's `rejection_reason` — relay it
-honestly; it's feedback, not a scolding.
+`status`, `created_at`, the anchoring `signal_id` + `title`, and the
+`batch_id` when the write carried one (§1.7). Filter to one session with
+`?batch=<batch_id>`. A `rejected` item includes the curator's
+`rejection_reason` — relay it honestly; it's feedback, not a scolding.
+
+### 1.7 `batch_id` — tag a session of related writes
+
+Every write endpoint accepts an **optional batch handle** so a whole
+session can be inspected later — and, if it went wrong, rolled back by an
+admin in ONE call (§4.7) instead of fifty. **Always set one when you're
+doing more than a couple of related writes** (a show's worth of artworks,
+a gallery archive, any §6 bulk intake). For one-off contributions it's
+fine to omit.
+
+- `POST /signals`, `POST /nodes`, `POST /edges`: pass `"batch_id": "..."`
+  in the JSON body.
+- `POST /images`: pass `batch_id` as a multipart field (or JSON key).
+- `PATCH /nodes/:id`: the body IS the metadata merge-patch, so the handle
+  rides as a **query param**: `PATCH /api/v1/nodes/:id?batch_id=...`.
+
+Format: 1–120 chars, letters/digits plus `. _ : -` (no spaces). Convention:
+`<contributor-slug>-<purpose>-<YYYY-MM-DD>`, e.g.
+`nguyen-wahed-archive-2026-06-08`. Generate it once at the start of the
+session, use it on every write in that session, and tell the practitioner
+what it is — it's their receipt.
+
+```bash
+BATCH="casey-reas-show-intake-2026-06-08"
+curl -s -X POST "$ADAI_BASE/api/v1/nodes" \
+  -H "Authorization: Bearer $ADAI_TOKEN" -H "Content-Type: application/json" \
+  -d "{\"type\":\"artwork\",\"name\":\"Process 18\",\"batch_id\":\"$BATCH\"}"
+
+# later: everything this session did, in one view
+curl -s -H "Authorization: Bearer $ADAI_TOKEN" \
+  "$ADAI_BASE/api/v1/contributions?batch=$BATCH" | jq
+```
 
 ---
 
@@ -422,10 +455,22 @@ The response includes a `note` field saying as much.
 
 `whoami` will show `"scope": "admin"`. Admin tokens can do everything a
 write token can (signals / nodes / edges / images, attributed to the
-admin contributor), **plus** mint write-scope tokens for other
-practitioners and revoke any token. They cannot mint other admin tokens —
-that's intentionally limited to the operator running the local CLI on
-the host.
+admin contributor), **plus**:
+
+- mint write-scope tokens for other practitioners and revoke any token
+  (§4.1–4.3) — but never mint other admin tokens; that's intentionally
+  limited to the operator running the local CLI on the host;
+- work the curator review queue over JSON — list, approve, reject,
+  bulk-sweep by batch or contributor (§4.4);
+- run the **correction primitives** — revoke a signal, retire a node,
+  retire a whole batch (§4.5–4.7).
+
+One principle behind all of it: **nothing is ever deleted.** Signals flip
+to `status='revoked'`, edges get bi-temporally superseded
+(`valid_until` + `invalidated_by`), nodes get `metadata.retired` and
+vanish from every listing while staying reachable by direct URL for
+audit. Every correction is anchored by an admin signal recording who,
+when, and why — corrections have provenance exactly like contributions.
 
 ### 4.1 Mint a contributor token for someone
 
@@ -472,6 +517,109 @@ curl -s -X POST "$ADAI_BASE/api/v1/tokens/adai_abc12345/revoke" \
 Soft-delete: the row stays for audit, `revoked_at` gets set, the bearer
 hits 401 from then on.
 
+### 4.4 Work the review queue
+
+The JSON twin of the `/review` web page — same materialisation logic on
+the server, so approving here is identical to a curator clicking Approve.
+
+```bash
+# What's pending? (filters: ?status= ?contributor= ?batch= ?kind= ?limit=)
+curl -s -H "Authorization: Bearer $ADAI_TOKEN" \
+  "$ADAI_BASE/api/v1/review?status=pending" | jq
+
+# Approve / reject one item
+curl -s -X POST "$ADAI_BASE/api/v1/review/<intake_id>/approve" \
+  -H "Authorization: Bearer $ADAI_TOKEN"
+curl -s -X POST "$ADAI_BASE/api/v1/review/<intake_id>/reject" \
+  -H "Authorization: Bearer $ADAI_TOKEN" -H "Content-Type: application/json" \
+  -d '{"reason":"duplicate of practitioner:casey-reas"}'
+
+# Bulk sweep — a whole batch or contributor in one call. ALWAYS dry-run
+# first; the response lists exactly which intake_ids would be touched.
+curl -s -X POST "$ADAI_BASE/api/v1/review/bulk" \
+  -H "Authorization: Bearer $ADAI_TOKEN" -H "Content-Type: application/json" \
+  -d '{"action":"approve","batch_id":"nguyen-wahed-archive-2026-06-08","dry_run":true}'
+# then drop dry_run. For reject, "reason" is required.
+```
+
+Bulk requires at least one selector (`ids`, `batch_id`, `contributor`) —
+there is deliberately no "approve everything" switch. Caps at 500 items
+per call; the response's `remaining` tells you to loop.
+
+### 4.5 Revoke a signal
+
+Retract one contribution: flips the signal to `revoked` and (by default)
+supersedes every live edge it anchored. Idempotent.
+
+```bash
+curl -s -X POST "$ADAI_BASE/api/v1/signals/<signal_id>/revoke" \
+  -H "Authorization: Bearer $ADAI_TOKEN" -H "Content-Type: application/json" \
+  -d '{"reason":"practitioner asked to retract this"}'
+# {"signal_id":"...","already_revoked":false,"edges_superseded":2,"admin_signal_id":"..."}
+# pass {"cascade":false} to leave the anchored edges alive
+```
+
+### 4.6 Retire a node
+
+For a node that shouldn't exist (wrong entity, junk upload, duplicate the
+curator missed). Supersedes every live edge touching it and sets
+`metadata.retired` — the node disappears from `/api/graph`, `/field`,
+`/explore`, search, embeddings surfaces and the stats, but its row and
+full history stay (the profile URL still resolves, like the historical
+husks the canon overlay leaves).
+
+```bash
+# look before you leap
+curl -s -X POST "$ADAI_BASE/api/v1/nodes/artwork:wrong-thing/retire" \
+  -H "Authorization: Bearer $ADAI_TOKEN" -H "Content-Type: application/json" \
+  -d '{"reason":"uploaded against the wrong artist","dry_run":true}'
+# then for real (drop dry_run)
+```
+
+Un-retiring is deliberate manual work: `PATCH /api/v1/nodes/:id` with
+`{"retired": null, "retired_at": null, "retired_by": null, "retired_reason": null}`
+brings the node back into listings, but its superseded edges stay
+superseded — re-attest the ones that should live again (§1.4).
+
+### 4.7 Batch rollback — "delete and start again"
+
+The big one. When an upload session went wrong (wrong CSV, wrong artist
+mapping, a gallery wants a clean restart), retire the **whole batch** in
+one call — provided the writes carried a `batch_id` (§1.7; one more
+reason to always set it on bulk work).
+
+```bash
+# 0. what batches exist?
+curl -s -H "Authorization: Bearer $ADAI_TOKEN" \
+  "$ADAI_BASE/api/v1/batches?contributor=Nguyen%20Wahed%20Gallery" | jq
+
+# 1. ALWAYS dry-run first — the response is the full plan
+curl -s -X POST "$ADAI_BASE/api/v1/batches/nguyen-wahed-archive-2026-06-08/retire" \
+  -H "Authorization: Bearer $ADAI_TOKEN" -H "Content-Type: application/json" \
+  -d '{"reason":"wrong mapping, gallery restarting","dry_run":true}' | jq
+
+# 2. read the plan WITH the practitioner/gallery, then execute (drop dry_run)
+```
+
+What it does, in order: revokes every active signal in the batch →
+supersedes every live edge those signals anchored → retires every node
+the batch **created** → rejects every still-pending intake row from the
+batch. What it deliberately does NOT do:
+
+- **never retires pre-existing nodes** the batch merely collided with or
+  patched (guarded by creation time; they're listed under
+  `nodes_skipped_preexisting`);
+- **cannot auto-revert metadata patches / image attachments on
+  pre-existing nodes** (no before-image is stored) — these come back in
+  `patches_to_review`, each with its `signal_id` whose `content` records
+  the exact patch, so you can fix them by hand with PATCH (§1.3);
+- R2 image bytes stay (content-addressed, immutable, harmless orphans).
+
+After the rollback the gallery starts again with a **new** batch_id.
+The retired batch stays queryable forever (`/api/v1/batches`,
+`?batch=` on contributions) — that's the audit trail, not a mess to
+clean up.
+
 ---
 
 ## 5 — Don'ts
@@ -480,8 +628,8 @@ hits 401 from then on.
   server side; the `submitted_by` field comes from the token, never from
   anything you send.
 - **Don't bulk-import** without the practitioner's explicit go-ahead. If
-  they say "ingest all my old shows", confirm the count first and offer
-  to break it into reviewable batches.
+  they say "ingest all my old shows", confirm the count first and follow
+  the §6 playbook (one batch_id, sign-off before POSTing).
 - **Don't infer `INFLUENCES` or `RESPONDS_TO`** from similarity (see §1.4).
 - **Don't write to `/api/contribute`.** That's the legacy public web form
   used by anonymous browsers on `$ADAI_BASE/contribute`. It doesn't read
@@ -489,9 +637,11 @@ hits 401 from then on.
   practitioner and won't respect their trust tier. Always use `/api/v1/*`.
 - **Don't try to issue or rotate your own token.** That happens out-of-
   band; the practitioner runs `npm run token:issue` locally.
-- **Don't delete data.** There is no DELETE endpoint by design. To
-  invalidate an edge, supersede it (§1.4). To retract a signal, ask the
-  curator.
+- **Don't delete data.** There is no DELETE endpoint by design — for
+  anyone. The correction primitives exist instead: supersede an edge
+  (§1.4), and an **admin** can revoke a signal (§4.5), retire a node
+  (§4.6), or roll back a batch (§4.7) — all provenance-preserving. If
+  you're write-scope and something needs retracting, ask the curator.
 
 If your token is admin-scope (§4), additional rules apply:
 - **Don't mint a token without the practitioner asking.** A token they
@@ -503,10 +653,49 @@ If your token is admin-scope (§4), additional rules apply:
   ephemeral channels.
 - **Revoke proactively.** If a contributor lost their laptop, leaked a
   token in a screenshot, or just stopped contributing, rotate.
+- **Always dry-run before any retire/bulk action** (§4.4, §4.6, §4.7) and
+  read the plan back to whoever asked for the correction. The plan is
+  cheap; an unnecessary retirement is annoying to reverse.
+- **Prefer queue rejection over post-hoc rollback.** If a bulk upload is
+  coming from a new contributor, keep them `probationary` for the first
+  batch — then "start again" is just a bulk reject of pending items and
+  nothing ever touched the graph. Rollback of *live* writes is the
+  fallback, not the plan.
+- **Don't "clean up" history.** A retired batch, a revoked signal, a
+  superseded edge are records, not clutter. Never try to make them
+  disappear harder than the primitives already do.
 
 ---
 
-## 6 — When in doubt
+## 6 — Bulk archive intake (galleries, estates, collections)
+
+The script for "we want to upload our archive" — designed so a botched
+run is a non-event:
+
+1. **Mint the gallery a token at `probationary`** (§4.1; or ask the
+   operator). Tell them this is the safety net for the first batch, not
+   a demotion: every write queues for curator review, so a wrong upload
+   can be rejected wholesale and *nothing ever touches the graph*.
+2. **Agree the manifest before any POST** (§7): how many artworks, which
+   artists, what fields, which images. Count confirmed by a human.
+3. **One `batch_id` for the whole session** (§1.7), e.g.
+   `nguyen-wahed-archive-2026-06-08`. Every signal/node/edge/image write
+   carries it. Tell the gallery the id — it's their receipt.
+4. **Upload.** Check existence before every create (§1.0). Watch
+   `GET /api/v1/contributions?batch=<id>` as you go.
+5. **Review.** The curator (or an admin Claude, §4.4) sweeps the batch:
+   spot-check, then `review/bulk` approve — or reject with a reason if
+   the batch is wrong.
+6. **If it went wrong after going live** (the contributor was
+   `reviewed`/`auto`, or the queue was approved too fast): admin
+   batch rollback, §4.7. Dry-run, read the plan together, execute,
+   start again with a new batch_id.
+7. **Graduate the tier** (operator decision) once a batch or two have
+   landed clean — then future sessions go live immediately.
+
+---
+
+## 7 — When in doubt
 
 Ask the practitioner. The graph is small and human; cleanup is cheap
 compared to a confident hallucination. If they hand you a CSV of 400

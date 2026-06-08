@@ -7,6 +7,7 @@ import { htmlPage, htmlEscape, CSS, HTML_HEADERS } from "../templates.js";
 import { topKByNodeId, withMetadata, type Neighbour } from "../embed/neighbours.js";
 import { buildEmbeddingSections } from "../embed/sections.js";
 import { formatArtworkYearFromMetadata, formatArtworkYear, YEAR_SQL_FRAGMENT } from "../utils/year.js";
+import { NODE_NOT_RETIRED } from "../utils/visibility.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.join(__dirname, "..", "..");
@@ -62,7 +63,7 @@ function aliasLink(source: string, externalId: string): string {
 router.get("/", (_req, res) => {
   const db = getDb();
   const { count: entityCount } = db
-    .prepare(`SELECT COUNT(*) as count FROM nodes WHERE type NOT IN ${ENTITY_TYPES_EXCLUDE}`)
+    .prepare(`SELECT COUNT(*) as count FROM nodes WHERE type NOT IN ${ENTITY_TYPES_EXCLUDE} AND ${NODE_NOT_RETIRED}`)
     .get() as any;
   const { count: regimeCount } = db
     .prepare("SELECT COUNT(*) as count FROM nodes WHERE type = 'classification_regime'")
@@ -83,7 +84,7 @@ router.get("/", (_req, res) => {
 <h2>Recent Additions</h2>`;
 
   const recent = db
-    .prepare(`SELECT id, name, type, slug FROM nodes WHERE type NOT IN ${ENTITY_TYPES_EXCLUDE} ORDER BY created_at DESC LIMIT 10`)
+    .prepare(`SELECT id, name, type, slug FROM nodes WHERE type NOT IN ${ENTITY_TYPES_EXCLUDE} AND ${NODE_NOT_RETIRED} ORDER BY created_at DESC LIMIT 10`)
     .all() as any[];
 
   for (const r of recent) {
@@ -110,7 +111,7 @@ router.get("/explore", (_req, res) => {
   const rows = db
     .prepare(
       `SELECT id, name, type, slug, ${YEAR_SQL_FRAGMENT}
-         FROM nodes WHERE type NOT IN ${ENTITY_TYPES_EXCLUDE} ORDER BY name`
+         FROM nodes WHERE type NOT IN ${ENTITY_TYPES_EXCLUDE} AND ${NODE_NOT_RETIRED} ORDER BY name`
     )
     .all() as any[];
 
@@ -606,7 +607,7 @@ function renderNeighbourTable(neighbours: Neighbour[]): string {
 router.get("/contribute", (_req, res) => {
   const db = getDb();
   const entities = db
-    .prepare(`SELECT id, name, slug FROM nodes WHERE type NOT IN ${ENTITY_TYPES_EXCLUDE} ORDER BY name`)
+    .prepare(`SELECT id, name, slug FROM nodes WHERE type NOT IN ${ENTITY_TYPES_EXCLUDE} AND ${NODE_NOT_RETIRED} ORDER BY name`)
     .all() as any[];
 
   let options = "";

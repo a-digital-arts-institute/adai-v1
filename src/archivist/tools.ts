@@ -88,6 +88,7 @@ function search_nodes(db: DatabaseSync, input: Record<string, unknown>): unknown
       .prepare(
         `SELECT ${NODE_COLS} FROM nodes
           WHERE type = ? AND (name LIKE ? COLLATE NOCASE OR slug LIKE ? COLLATE NOCASE)
+            AND json_extract(metadata,'$.retired') IS NOT 1
           ORDER BY
             CASE WHEN name = ? COLLATE NOCASE THEN 0
                  WHEN name LIKE ? COLLATE NOCASE THEN 1
@@ -100,7 +101,8 @@ function search_nodes(db: DatabaseSync, input: Record<string, unknown>): unknown
     rows = db
       .prepare(
         `SELECT ${NODE_COLS} FROM nodes
-          WHERE name LIKE ? COLLATE NOCASE OR slug LIKE ? COLLATE NOCASE
+          WHERE (name LIKE ? COLLATE NOCASE OR slug LIKE ? COLLATE NOCASE)
+            AND json_extract(metadata,'$.retired') IS NOT 1
           ORDER BY
             CASE WHEN name = ? COLLATE NOCASE THEN 0
                  WHEN name LIKE ? COLLATE NOCASE THEN 1

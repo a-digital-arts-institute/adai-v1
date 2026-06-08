@@ -332,10 +332,12 @@ function cmdExportVectors() {
   const countOnly = process.argv.includes("--count-only");
   const rawRows = db
     .prepare(
-      `SELECT node_id, kind, model, dims, vector
-         FROM node_embeddings
-        WHERE dims = ?
-        ORDER BY node_id, kind`
+      `SELECT ne.node_id, ne.kind, ne.model, ne.dims, ne.vector
+         FROM node_embeddings ne
+         JOIN nodes n ON n.id = ne.node_id
+        WHERE ne.dims = ?
+          AND json_extract(n.metadata,'$.retired') IS NOT 1
+        ORDER BY ne.node_id, ne.kind`
     )
     .all(768) as Array<{ node_id: string; kind: string; model: string; dims: number; vector: Uint8Array }>;
 
@@ -379,6 +381,7 @@ async function cmdBackfill() {
     .prepare(
       `SELECT n.id FROM nodes n
        WHERE n.type IN ('artwork','practitioner','collective','concept','scene')
+         AND json_extract(n.metadata,'$.retired') IS NOT 1
          AND NOT EXISTS (
            SELECT 1 FROM node_embeddings ne
            WHERE ne.node_id = n.id AND ne.kind = 'identity'

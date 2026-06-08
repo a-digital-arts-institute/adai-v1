@@ -73,10 +73,18 @@ export function meanAndNormalise(vectors: Float32Array[]): Float32Array {
  * so identity and style_centroid rows can coexist for the same node.
  */
 export function loadAll(db: DatabaseSync): Map<string, VectorRow> {
+  // Retired nodes (admin correction — metadata.retired, see
+  // src/utils/visibility.ts) are excluded at the source: this loader feeds
+  // the derive pass (STYLE_KIN / VISUALLY_AFFINE / SUGGESTS_CREATED_BY),
+  // centroids, calibration, and the neighbours surfaces — without this JOIN
+  // the nightly re-derive would resurrect edges pointing at retired nodes
+  // from their still-present vectors.
   const rows = db
     .prepare(
-      `SELECT node_id, kind, model, dims, vector, has_image, image_hash, text_hash
-       FROM node_embeddings`
+      `SELECT ne.node_id, ne.kind, ne.model, ne.dims, ne.vector, ne.has_image, ne.image_hash, ne.text_hash
+       FROM node_embeddings ne
+       JOIN nodes n ON n.id = ne.node_id
+       WHERE json_extract(n.metadata,'$.retired') IS NOT 1`
     )
     .all() as Array<{
       node_id: string;

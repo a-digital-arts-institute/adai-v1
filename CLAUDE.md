@@ -186,15 +186,27 @@ Endpoints:
 - `PATCH /api/v1/nodes/:id` — JSON-merge-patch on `metadata` (null deletes a key)
 - `POST /api/v1/edges` — add an edge; supports bi-temporal supersession via `supersedes_edge_id`
 - `POST /api/v1/images` — `multipart/form-data` (`image=@file`, `node_id=...`) OR `application/json` with `image_base64` + `mime_type`; uploads to R2 with the same content-addressed key scheme as the offline Python uploader (`images/<sha[:2]>/<sha>.<ext>`), then attaches `cdn_image_url` to the node's metadata
+- `GET /api/v1/contributions` — the contributor's own history (`?status=`, `?batch=`, `?limit=`)
+
+Every write endpoint accepts an optional **`batch_id`** (body field; query param on PATCH since its body is the merge-patch), stamped onto the anchoring signal's `signals.batch_id` — the handle that makes a whole upload session inspectable (`GET /api/v1/batches`) and rollback-able in one admin call. Format `[A-Za-z0-9][A-Za-z0-9._:-]{0,119}`; convention `<contributor>-<purpose>-<date>` (SKILL.md §1.7).
 
 Admin endpoints (require `scope='admin'` token, enforced by `requireAdmin` in `src/auth.ts`):
 - `GET  /api/v1/tokens` — list tokens (`?contributor=<name>&active=1` filters)
 - `POST /api/v1/tokens` — mint a **write-scope** contributor token (refuses `scope=admin` in body; only the operator CLI can mint admins)
 - `POST /api/v1/tokens/:prefix/revoke` — soft-delete a token by prefix
+- `GET  /api/v1/review` — JSON twin of the `/review` queue (`?status=` default pending, `?contributor=`, `?batch=`, `?kind=`, `?limit=`)
+- `POST /api/v1/review/:id/approve` / `:id/reject` — same materialisation logic as the web curator UI, shared via `src/utils/review.ts` (the token-mint no-drift pattern)
+- `POST /api/v1/review/bulk` — `{action: approve|reject, reason?, ids?|batch_id?|contributor?, dry_run?}`; requires ≥1 selector, caps 500/call, returns `remaining`
+- `POST /api/v1/signals/:id/revoke` — `{reason, cascade?=true}`: status→`revoked` + supersede anchored edges
+- `POST /api/v1/nodes/:id/retire` — `{reason, dry_run?}`: supersede all live edges touching the node + set `metadata.retired`
+- `GET  /api/v1/batches` — batch rollup (signal counts active/revoked, contributors, intake status counts)
+- `POST /api/v1/batches/:batch_id/retire` — `{reason, dry_run?}`: the batch rollback — revoke signals → supersede edges → retire batch-created nodes → reject pending intake
+
+**Admin correction model (June 2026 — `src/utils/admin-actions.ts`): nothing is ever deleted.** Signals flip `status='revoked'`; edges supersede bi-temporally; nodes get `metadata.retired` (+`retired_at/by/reason`) and drop out of every *listing* surface while staying reachable by direct URL — like the canon-overlay husks. Every correction inserts an anchoring admin signal (`source_type='api_admin'`) that superseded edges reference via `invalidated_by`. Batch retire **never retires pre-existing nodes** the batch merely collided with (creation-time guard; reported as `nodes_skipped_preexisting`); metadata patches on pre-existing nodes can't auto-revert (no before-image) and return as `patches_to_review`. The **retired-node visibility rule** is `src/utils/visibility.ts` (`json_extract(metadata,'$.retired') IS NOT 1`), applied at: `/api/stats` + `/api/graph*` (⚠️ stamp-pinned — `total_nodes`/`curated_edges` must stay clause-identical to the stream queries or the /field IndexedDB cache never validates), pages listings, archivist search, `src/embed/vectors.ts loadAll` (so the nightly derive can't resurrect edges to retired nodes from their still-present vectors), embed backfill/export-vectors, and `/api/embed-space`. SKILL.md §4.4–4.7 documents the admin workflow, §6 the gallery/estate bulk-intake playbook (probationary-first + one batch_id per session).
 
 Scope and trust_tier are deliberately decoupled: `scope` (write|admin) governs *which endpoints* the token can hit, `trust_tier` (auto|reviewed|probationary) governs *whether writes auto-merge or queue*. An admin can be `probationary` (every contribution they make queues) and still mint tokens. The mint/revoke/list logic lives in `src/utils/token-mint.ts` and is shared between the HTTP endpoints and the operator CLI so the two paths can't drift.
 
-Trust gating mirrors the legacy `/api/contribute` policy: `trust_tier in (auto, reviewed)` writes land live, anything else queues in `intake_queue` as `kind='human_signal'` with `proposed_nodes` / `proposed_edges` populated. The curator's existing `/review` page renders these queued operations in human form (create-node / patch-node / attach-image / edge-with-supersession previews) and the existing `POST /api/review/:id/approve` materialises them via the helpers in `src/utils/contribution.ts`. Image bytes upload to R2 **regardless of tier** (content-addressed + immutable, so no harm); only the metadata attachment is queued for probationary contributors.
+Trust gating mirrors the legacy `/api/contribute` policy: `trust_tier in (auto, reviewed)` writes land live, anything else queues in `intake_queue` as `kind='human_signal'` with `proposed_nodes` / `proposed_edges` populated. The curator's existing `/review` page renders these queued operations in human form (create-node / patch-node / attach-image / edge-with-supersession previews) and the existing `POST /api/review/:id/approve` materialises them via the shared logic in `src/utils/review.ts` (which wraps the helpers in `src/utils/contribution.ts`). Image bytes upload to R2 **regardless of tier** (content-addressed + immutable, so no harm); only the metadata attachment is queued for probationary contributors.
 
 Token CLI:
 ```bash

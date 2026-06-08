@@ -31,6 +31,14 @@ import {
 } from "../utils/contribution.js";
 import { uploadImage, isR2Configured } from "../r2.js";
 import { embedNodeAsync } from "../embed/server.js";
+import { approveIntakeItem, rejectIntakeItem } from "../utils/review.js";
+import {
+  AdminActionError,
+  revokeSignal,
+  retireNode,
+  retireBatch,
+  listBatches,
+} from "../utils/admin-actions.js";
 
 const router = Router();
 
@@ -50,6 +58,18 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 12 * 1024 * 1024 }, // 12 MB cap, matches the Python uploader
 });
+
+// Optional batch handle on every write — stamped on the anchoring signal's
+// batch_id column so a whole upload session can be inspected (GET
+// /api/v1/batches) and, if it went wrong, rolled back in one admin call
+// (POST /api/v1/batches/:batch_id/retire). Conventions in SKILL.md §1.7.
+const BATCH_ID_RE = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,119}$/;
+function parseBatchId(raw: unknown): { ok: boolean; value: string | null } {
+  if (raw === undefined || raw === null || raw === "") return { ok: true, value: null };
+  if (typeof raw !== "string" || !BATCH_ID_RE.test(raw)) return { ok: false, value: null };
+  return { ok: true, value: raw };
+}
+const BATCH_ID_HINT = "batch_id must be 1-120 chars: letters/digits then letters, digits, '.', '_', ':', '-'";
 
 // CORS preflight for the API namespace. We allow Authorization here since the
 // shared JSON_HEADERS in templates.ts doesn't include it (the rest of the
@@ -88,7 +108,7 @@ router.get("/api/v1/whoami", requireToken, (req, res) => {
 // contributed, and did it go live?" without a curator having to dig through
 // /review. Token-scoped: you only ever see your own rows.
 //
-// Query params: ?status=pending|approved|rejected  ?limit=N (default 50, max 200)
+// Query params: ?status=pending|approved|rejected  ?batch=<batch_id>  ?limit=N (default 50, max 200)
 //
 // Caveat: intake_queue is a local-only table, so history reaches back to the
 // last volume genesis — long enough for "what did I add this week?", which is
@@ -107,13 +127,18 @@ router.get("/api/v1/contributions", requireToken, (req, res) => {
     where.push("q.status = ?");
     params.push(statusFilter);
   }
+  const batchFilter = typeof req.query.batch === "string" && req.query.batch ? req.query.batch : null;
+  if (batchFilter) {
+    where.push("s.batch_id = ?");
+    params.push(batchFilter);
+  }
 
   const rows = db
     .prepare(
       `SELECT q.id AS intake_id, q.signal_id, q.target_node, q.status,
               q.created_at, q.reviewed_at, q.rejection_reason,
               q.proposed_nodes, q.proposed_edges,
-              s.title AS title, s.source_type AS source_type
+              s.title AS title, s.source_type AS source_type, s.batch_id AS batch_id
          FROM intake_queue q
          LEFT JOIN signals s ON s.id = q.signal_id
         WHERE ${where.join(" AND ")}
@@ -132,23 +157,15 @@ router.get("/api/v1/contributions", requireToken, (req, res) => {
       proposed_edges: string | null;
       title: string | null;
       source_type: string | null;
+      batch_id: string | null;
     }>;
 
   // Derive a human-readable action per row from the signal's source_type +
   // the proposed op, so the caller doesn't have to parse proposed_nodes.
+  // (deriveAction is declared below with the admin review endpoints —
+  // function declarations hoist.)
   const items = rows.map((r) => {
-    let action = "signal";
-    if (r.source_type === "api_edge") action = "add_edge";
-    else if (r.source_type === "api_image") action = "attach_image";
-    else if (r.source_type === "api_node") {
-      action = "create_node";
-      try {
-        const ops = JSON.parse(r.proposed_nodes ?? "[]");
-        if (Array.isArray(ops) && ops[0]?.op) action = ops[0].op; // create_node | patch_node | attach_image
-      } catch {
-        /* keep the source_type-derived default */
-      }
-    }
+    const action = deriveAction(r.source_type, r.proposed_nodes);
     return {
       intake_id: r.intake_id,
       action,
@@ -159,6 +176,7 @@ router.get("/api/v1/contributions", requireToken, (req, res) => {
       ...(r.rejection_reason ? { rejection_reason: r.rejection_reason } : {}),
       signal_id: r.signal_id,
       title: r.title,
+      ...(r.batch_id ? { batch_id: r.batch_id } : {}),
     };
   });
 
@@ -187,7 +205,12 @@ router.get("/api/v1/contributions", requireToken, (req, res) => {
 
 router.post("/api/v1/signals", requireToken, (req, res) => {
   const db = getDb();
-  const { target_node, title, content, source_url, consent_scope, consent_attribution } = req.body ?? {};
+  const { target_node, title, content, source_url, consent_scope, consent_attribution, batch_id } = req.body ?? {};
+  const batch = parseBatchId(batch_id);
+  if (!batch.ok) {
+    res.status(400).set(JSON_HEADERS).json({ error: "invalid batch_id", hint: BATCH_ID_HINT });
+    return;
+  }
 
   if (!target_node || typeof target_node !== "string") {
     res.status(400).set(JSON_HEADERS).json({ error: "target_node is required" });
@@ -215,6 +238,7 @@ router.post("/api/v1/signals", requireToken, (req, res) => {
     source_type: "contribution",
     consent_scope,
     consent_attribution,
+    batch_id: batch.value,
   });
   const { intake_id, status } = insertIntake(db, {
     contributor: req.contributor!,
@@ -232,7 +256,12 @@ router.post("/api/v1/signals", requireToken, (req, res) => {
 
 router.post("/api/v1/nodes", requireToken, (req, res) => {
   const db = getDb();
-  const { type, name, slug: providedSlug, metadata, aliases } = req.body ?? {};
+  const { type, name, slug: providedSlug, metadata, aliases, batch_id } = req.body ?? {};
+  const batch = parseBatchId(batch_id);
+  if (!batch.ok) {
+    res.status(400).set(JSON_HEADERS).json({ error: "invalid batch_id", hint: BATCH_ID_HINT });
+    return;
+  }
 
   if (!type || typeof type !== "string") {
     res.status(400).set(JSON_HEADERS).json({ error: "type is required" });
@@ -276,6 +305,7 @@ router.post("/api/v1/nodes", requireToken, (req, res) => {
     title: `Create node: ${type}:${name}`,
     content: JSON.stringify({ type, name, slug, metadata: metadata ?? {}, aliases: aliasItems }),
     source_type: "api_node",
+    batch_id: batch.value,
   });
 
   if (isAutoMerge(req.contributor!.trust_tier)) {
@@ -332,6 +362,13 @@ router.patch("/api/v1/nodes/:id", requireToken, (req, res) => {
   const db = getDb();
   const nodeId = String(req.params.id);
   const patch = req.body;
+  // The body IS the merge-patch, so the batch handle rides as a query param
+  // here (?batch_id=...) instead of a body field.
+  const batch = parseBatchId(req.query.batch_id);
+  if (!batch.ok) {
+    res.status(400).set(JSON_HEADERS).json({ error: "invalid batch_id", hint: BATCH_ID_HINT });
+    return;
+  }
 
   if (!patch || typeof patch !== "object" || Array.isArray(patch)) {
     res.status(400).set(JSON_HEADERS).json({ error: "request body must be a JSON object (merge-patch on metadata)" });
@@ -348,6 +385,7 @@ router.patch("/api/v1/nodes/:id", requireToken, (req, res) => {
     title: `Patch node metadata: ${nodeId}`,
     content: JSON.stringify({ node_id: nodeId, patch }),
     source_type: "api_node",
+    batch_id: batch.value,
   });
 
   if (isAutoMerge(req.contributor!.trust_tier)) {
@@ -383,7 +421,12 @@ router.patch("/api/v1/nodes/:id", requireToken, (req, res) => {
 
 router.post("/api/v1/edges", requireToken, (req, res) => {
   const db = getDb();
-  const { source_id, target_id, edge_type, confidence, event_time, supersedes_edge_id } = req.body ?? {};
+  const { source_id, target_id, edge_type, confidence, event_time, supersedes_edge_id, batch_id } = req.body ?? {};
+  const batch = parseBatchId(batch_id);
+  if (!batch.ok) {
+    res.status(400).set(JSON_HEADERS).json({ error: "invalid batch_id", hint: BATCH_ID_HINT });
+    return;
+  }
 
   for (const [k, v] of [["source_id", source_id], ["target_id", target_id], ["edge_type", edge_type]] as const) {
     if (!v || typeof v !== "string") {
@@ -434,6 +477,7 @@ router.post("/api/v1/edges", requireToken, (req, res) => {
     title: `Add edge ${edge_type}: ${source_id} → ${target_id}`,
     content: JSON.stringify(proposed),
     source_type: "api_edge",
+    batch_id: batch.value,
   });
 
   if (isAutoMerge(req.contributor!.trust_tier)) {
@@ -487,11 +531,13 @@ router.post(
     let buf: Buffer | null = null;
     let mime = "application/octet-stream";
     let nodeId: string | null = null;
+    let batchRaw: unknown;
 
     if (req.file) {
       buf = req.file.buffer;
       mime = req.file.mimetype || mime;
       nodeId = typeof req.body.node_id === "string" ? req.body.node_id : null;
+      batchRaw = req.body.batch_id; // multer exposes text fields on req.body
     } else if (req.is("application/json")) {
       const body = req.body ?? {};
       const b64 = typeof body.image_base64 === "string" ? body.image_base64 : null;
@@ -500,6 +546,13 @@ router.post(
       }
       mime = typeof body.mime_type === "string" ? body.mime_type : mime;
       nodeId = typeof body.node_id === "string" ? body.node_id : null;
+      batchRaw = body.batch_id;
+    }
+
+    const batch = parseBatchId(batchRaw);
+    if (!batch.ok) {
+      res.status(400).set(JSON_HEADERS).json({ error: "invalid batch_id", hint: BATCH_ID_HINT });
+      return;
     }
 
     if (!buf || buf.length === 0) {
@@ -529,6 +582,7 @@ router.post(
       title: `Upload image to ${nodeId}`,
       content: JSON.stringify({ node_id: nodeId, key: upresult.key, sha256: upresult.sha256, bytes: upresult.bytes, content_type: upresult.content_type }),
       source_type: "api_image",
+      batch_id: batch.value,
     });
 
     const op: ProposedNodeOp = {
@@ -681,6 +735,259 @@ router.post("/api/v1/tokens/:prefix/revoke", requireAdmin, (req, res) => {
       return;
     }
     throw e;
+  }
+});
+
+// ---------- Admin: review queue (JSON twin of the /review web UI) ----------
+//
+// Same materialisation logic as POST /api/review/:id/approve|reject — both
+// call src/utils/review.ts, so the paths can't drift. These exist so an
+// admin-scope Claude can curate without a browser: list pending items,
+// approve/reject one, or sweep a whole batch/contributor in one call.
+
+function deriveAction(sourceType: string | null, proposedNodes: string | null): string {
+  let action = "signal";
+  if (sourceType === "api_edge") action = "add_edge";
+  else if (sourceType === "api_image") action = "attach_image";
+  else if (sourceType === "api_node") {
+    action = "create_node";
+    try {
+      const ops = JSON.parse(proposedNodes ?? "[]");
+      if (Array.isArray(ops) && ops[0]?.op) action = ops[0].op;
+    } catch { /* keep the source_type-derived default */ }
+  }
+  return action;
+}
+
+// GET /api/v1/review?status=pending&contributor=<name>&batch=<id>&kind=<kind>&limit=N
+router.get("/api/v1/review", requireAdmin, (req, res) => {
+  const db = getDb();
+  const status = typeof req.query.status === "string" && req.query.status ? req.query.status : "pending";
+  const contributor = typeof req.query.contributor === "string" && req.query.contributor ? req.query.contributor : null;
+  const batch = typeof req.query.batch === "string" && req.query.batch ? req.query.batch : null;
+  const kind = typeof req.query.kind === "string" && req.query.kind ? req.query.kind : null;
+  const limitRaw = Number(req.query.limit);
+  const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.min(Math.floor(limitRaw), 500) : 50;
+
+  const where: string[] = [];
+  const params: string[] = [];
+  if (status !== "_all") { where.push("q.status = ?"); params.push(status); }
+  if (contributor) { where.push("q.submitted_by = ?"); params.push(contributor); }
+  if (batch) { where.push("s.batch_id = ?"); params.push(batch); }
+  if (kind) { where.push("q.kind = ?"); params.push(kind); }
+
+  const rows = db
+    .prepare(
+      `SELECT q.id AS intake_id, q.signal_id, q.target_node, q.submitted_by, q.trust_tier,
+              q.status, q.kind, q.created_at, q.reviewed_at, q.rejection_reason,
+              q.proposed_nodes, q.proposed_edges,
+              s.title AS title, s.source_type AS source_type, s.batch_id AS batch_id
+         FROM intake_queue q
+         LEFT JOIN signals s ON s.id = q.signal_id
+        ${where.length ? `WHERE ${where.join(" AND ")}` : ""}
+        ORDER BY q.created_at DESC
+        LIMIT ?`
+    )
+    .all(...params, limit) as any[];
+
+  res.set(JSON_HEADERS).json({
+    returned: rows.length,
+    items: rows.map((r) => ({
+      intake_id: r.intake_id,
+      action: deriveAction(r.source_type, r.proposed_nodes),
+      kind: r.kind,
+      submitted_by: r.submitted_by,
+      trust_tier: r.trust_tier,
+      target_node: r.target_node,
+      status: r.status,
+      created_at: r.created_at,
+      reviewed_at: r.reviewed_at,
+      ...(r.rejection_reason ? { rejection_reason: r.rejection_reason } : {}),
+      signal_id: r.signal_id,
+      title: r.title,
+      ...(r.batch_id ? { batch_id: r.batch_id } : {}),
+    })),
+  });
+});
+
+// POST /api/v1/review/bulk — { action: 'approve'|'reject', reason?, ids?, batch_id?, contributor?, dry_run? }
+// Sweeps PENDING items matched by ids ∧ batch ∧ contributor (at least one
+// selector required — no blind approve-everything). Caps at 500 per call;
+// `remaining` in the response tells the caller to loop.
+router.post("/api/v1/review/bulk", requireAdmin, (req, res) => {
+  const db = getDb();
+  const { action, reason, ids, batch_id, contributor, dry_run } = req.body ?? {};
+
+  if (action !== "approve" && action !== "reject") {
+    res.status(400).set(JSON_HEADERS).json({ error: "action must be 'approve' or 'reject'" });
+    return;
+  }
+  if (action === "reject" && (!reason || typeof reason !== "string")) {
+    res.status(400).set(JSON_HEADERS).json({ error: "reason is required for reject" });
+    return;
+  }
+  const haveIds = Array.isArray(ids) && ids.length > 0;
+  if (haveIds && ids.length > 500) {
+    res.status(400).set(JSON_HEADERS).json({ error: "ids capped at 500 per call" });
+    return;
+  }
+  if (!haveIds && !batch_id && !contributor) {
+    res.status(400).set(JSON_HEADERS).json({ error: "need at least one selector: ids, batch_id, or contributor" });
+    return;
+  }
+
+  const where: string[] = ["q.status = 'pending'"];
+  const params: string[] = [];
+  if (haveIds) {
+    where.push(`q.id IN (${ids.map(() => "?").join(",")})`);
+    params.push(...ids.map(String));
+  }
+  if (typeof batch_id === "string" && batch_id) { where.push("s.batch_id = ?"); params.push(batch_id); }
+  if (typeof contributor === "string" && contributor) { where.push("q.submitted_by = ?"); params.push(contributor); }
+
+  const matchSql = `FROM intake_queue q LEFT JOIN signals s ON s.id = q.signal_id WHERE ${where.join(" AND ")}`;
+  const { count: matched } = db.prepare(`SELECT COUNT(*) AS count ${matchSql}`).get(...params) as any;
+  const rows = db
+    .prepare(`SELECT q.id ${matchSql} ORDER BY q.created_at ASC LIMIT 500`)
+    .all(...params) as Array<{ id: string }>;
+
+  if (dry_run === true) {
+    res.set(JSON_HEADERS).json({ dry_run: true, action, matched: Number(matched), intake_ids: rows.map((r) => r.id) });
+    return;
+  }
+
+  const reviewedBy = `api-${req.contributor!.name}`;
+  const failed: Array<{ intake_id: string; error: string }> = [];
+  let processed = 0;
+  for (const r of rows) {
+    const outcome = action === "approve"
+      ? approveIntakeItem(db, r.id, reviewedBy)
+      : rejectIntakeItem(db, r.id, String(reason), reviewedBy);
+    if (outcome.ok) processed += 1;
+    else failed.push({ intake_id: r.id, error: outcome.error });
+  }
+
+  res.set(JSON_HEADERS).json({
+    action,
+    matched: Number(matched),
+    processed,
+    failed,
+    remaining: Math.max(0, Number(matched) - rows.length),
+  });
+});
+
+// POST /api/v1/review/:id/approve — JSON twin of the web curator approve.
+router.post("/api/v1/review/:id/approve", requireAdmin, (req, res) => {
+  const db = getDb();
+  const outcome = approveIntakeItem(db, String(req.params.id), `api-${req.contributor!.name}`);
+  if (!outcome.ok) {
+    res.status(outcome.status).set(JSON_HEADERS).json({ error: outcome.error });
+    return;
+  }
+  res.set(JSON_HEADERS).json({ intake_id: outcome.intake_id, status: "approved" });
+});
+
+// POST /api/v1/review/:id/reject — JSON twin of the web curator reject.
+router.post("/api/v1/review/:id/reject", requireAdmin, (req, res) => {
+  const db = getDb();
+  const reason = req.body?.reason;
+  if (!reason || typeof reason !== "string") {
+    res.status(400).set(JSON_HEADERS).json({ error: "reason is required" });
+    return;
+  }
+  const outcome = rejectIntakeItem(db, String(req.params.id), reason, `api-${req.contributor!.name}`);
+  if (!outcome.ok) {
+    res.status(outcome.status).set(JSON_HEADERS).json({ error: outcome.error });
+    return;
+  }
+  res.set(JSON_HEADERS).json({ intake_id: outcome.intake_id, status: "rejected" });
+});
+
+// ---------- Admin: correction primitives ------------------------------------
+//
+// No DELETE — by design (SKILL.md §5). These are the provenance-preserving
+// equivalents: revoke a signal (+cascade its edges), retire a node (hide it
+// from listings + supersede its edges), retire a whole batch ("delete and
+// start again" for a botched upload session). All anchored by admin signals;
+// see src/utils/admin-actions.ts.
+
+function handleAdminError(res: any, e: any): void {
+  if (e instanceof AdminActionError) {
+    res.status(e.status).set(JSON_HEADERS).json({ error: e.code, detail: e.message });
+    return;
+  }
+  throw e;
+}
+
+// POST /api/v1/signals/:id/revoke — { reason, cascade? (default true) }
+router.post("/api/v1/signals/:id/revoke", requireAdmin, (req, res) => {
+  const db = getDb();
+  const reason = req.body?.reason;
+  if (!reason || typeof reason !== "string") {
+    res.status(400).set(JSON_HEADERS).json({ error: "reason is required" });
+    return;
+  }
+  try {
+    const result = revokeSignal(db, String(req.params.id), {
+      reason,
+      by: req.contributor!.name,
+      cascade: req.body?.cascade !== false,
+    });
+    res.set(JSON_HEADERS).json(result);
+  } catch (e: any) {
+    handleAdminError(res, e);
+  }
+});
+
+// POST /api/v1/nodes/:id/retire — { reason, dry_run? }
+router.post("/api/v1/nodes/:id/retire", requireAdmin, (req, res) => {
+  const db = getDb();
+  const reason = req.body?.reason;
+  if (!reason || typeof reason !== "string") {
+    res.status(400).set(JSON_HEADERS).json({ error: "reason is required" });
+    return;
+  }
+  try {
+    const result = retireNode(db, String(req.params.id), {
+      reason,
+      by: req.contributor!.name,
+      dryRun: req.body?.dry_run === true,
+    });
+    res.set(JSON_HEADERS).json(result);
+  } catch (e: any) {
+    handleAdminError(res, e);
+  }
+});
+
+// GET /api/v1/batches?contributor=<name>&limit=N — what batches exist, with
+// signal/intake rollups. The admin's map before any bulk decision.
+router.get("/api/v1/batches", requireAdmin, (req, res) => {
+  const db = getDb();
+  const contributor = typeof req.query.contributor === "string" && req.query.contributor ? req.query.contributor : null;
+  const limitRaw = Number(req.query.limit);
+  const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.floor(limitRaw) : 50;
+  const batches = listBatches(db, { contributor, limit });
+  res.set(JSON_HEADERS).json({ returned: batches.length, batches });
+});
+
+// POST /api/v1/batches/:batch_id/retire — { reason, dry_run? }
+// The rollback. ALWAYS dry_run first; the response is the full plan.
+router.post("/api/v1/batches/:batch_id/retire", requireAdmin, (req, res) => {
+  const db = getDb();
+  const reason = req.body?.reason;
+  if (!reason || typeof reason !== "string") {
+    res.status(400).set(JSON_HEADERS).json({ error: "reason is required" });
+    return;
+  }
+  try {
+    const result = retireBatch(db, String(req.params.batch_id), {
+      reason,
+      by: req.contributor!.name,
+      dryRun: req.body?.dry_run === true,
+    });
+    res.set(JSON_HEADERS).json(result);
+  } catch (e: any) {
+    handleAdminError(res, e);
   }
 });
 
