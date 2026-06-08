@@ -17,6 +17,7 @@ import type { DatabaseSync } from "node:sqlite";
 import { topKByNodeId, topKByVector, withMetadata, type Neighbour } from "../embed/neighbours.js";
 import { loadAll } from "../embed/vectors.js";
 import { YEAR_SQL_FRAGMENT, formatArtworkYear } from "../utils/year.js";
+import { NODE_NOT_RETIRED } from "../utils/visibility.js";
 
 // ---- types ------------------------------------------------------------
 
@@ -88,6 +89,7 @@ function search_nodes(db: DatabaseSync, input: Record<string, unknown>): unknown
       .prepare(
         `SELECT ${NODE_COLS} FROM nodes
           WHERE type = ? AND (name LIKE ? COLLATE NOCASE OR slug LIKE ? COLLATE NOCASE)
+            AND ${NODE_NOT_RETIRED}
           ORDER BY
             CASE WHEN name = ? COLLATE NOCASE THEN 0
                  WHEN name LIKE ? COLLATE NOCASE THEN 1
@@ -100,7 +102,8 @@ function search_nodes(db: DatabaseSync, input: Record<string, unknown>): unknown
     rows = db
       .prepare(
         `SELECT ${NODE_COLS} FROM nodes
-          WHERE name LIKE ? COLLATE NOCASE OR slug LIKE ? COLLATE NOCASE
+          WHERE (name LIKE ? COLLATE NOCASE OR slug LIKE ? COLLATE NOCASE)
+            AND ${NODE_NOT_RETIRED}
           ORDER BY
             CASE WHEN name = ? COLLATE NOCASE THEN 0
                  WHEN name LIKE ? COLLATE NOCASE THEN 1

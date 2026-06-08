@@ -6,15 +6,10 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getDb } from "../db.js";
 import { HTML_HEADERS, JSON_HEADERS } from "../templates.js";
-import {
-  materialiseCreateNode,
-  materialisePatchNode,
-  materialiseAttachImage,
-  materialiseEdge,
-} from "../utils/contribution.js";
+import { approveIntakeItem, rejectIntakeItem } from "../utils/review.js";
 import { buildEmbeddingSections } from "../embed/sections.js";
-import { embedNodeAsync } from "../embed/server.js";
 import { YEAR_SQL_FRAGMENT, formatArtworkYear } from "../utils/year.js";
+import { NODE_NOT_RETIRED } from "../utils/visibility.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = join(__dirname, "..", "..");
@@ -26,10 +21,19 @@ const router = Router();
 // payload and lazy-loads them only when the user enters embeddings ('e') mode.
 const DERIVED_CREATED_BY = "embedding-multimodal-v1";
 
+// Visible-node clause shared by /api/stats and the /api/graph* family.
+// Retired nodes (admin correction — see src/utils/visibility.ts) and the
+// reserved 'related' type are filtered from every listing surface.
+const VISIBLE_NODES = `type != 'related' AND ${NODE_NOT_RETIRED}`;
+
 // GET /api/stats
 router.get("/api/stats", (_req, res) => {
   const db = getDb();
-  const { count: totalNodes } = db.prepare("SELECT COUNT(*) as count FROM nodes").get() as any;
+  // total_nodes is PINNED to /api/graph/stream's node WHERE clause — the
+  // /field worker stamps its IndexedDB cache on `${total_nodes}:${curated_edges}`
+  // and compares it to the stream's `${nodes}:${edges}` meta. Diverge these
+  // and the cache never validates (every visit re-streams).
+  const { count: totalNodes } = db.prepare(`SELECT COUNT(*) as count FROM nodes WHERE ${VISIBLE_NODES}`).get() as any;
   const { count: totalEdges } = db.prepare("SELECT COUNT(*) as count FROM edges").get() as any;
   const { count: totalSignals } = db.prepare("SELECT COUNT(*) as count FROM signals").get() as any;
   const { count: pendingReviews } = db
@@ -53,12 +57,19 @@ router.get("/api/stats", (_req, res) => {
       `SELECT COUNT(*) as count FROM edges e
        WHERE e.valid_until IS NULL
          AND e.created_by IS NOT '${DERIVED_CREATED_BY}'
-         AND e.source_id IN (SELECT id FROM nodes WHERE type != 'related')
-         AND e.target_id IN (SELECT id FROM nodes WHERE type != 'related')`
+         AND e.source_id IN (SELECT id FROM nodes WHERE ${VISIBLE_NODES})
+         AND e.target_id IN (SELECT id FROM nodes WHERE ${VISIBLE_NODES})`
     )
     .get() as any;
+  // Pinned to /api/graph/derived's WHERE clause for the same stamp reason.
   const { count: derivedEdges } = db
-    .prepare(`SELECT COUNT(*) as count FROM edges WHERE valid_until IS NULL AND created_by = '${DERIVED_CREATED_BY}'`)
+    .prepare(
+      `SELECT COUNT(*) as count FROM edges e
+       WHERE e.valid_until IS NULL
+         AND e.created_by = '${DERIVED_CREATED_BY}'
+         AND e.source_id IN (SELECT id FROM nodes WHERE ${VISIBLE_NODES})
+         AND e.target_id IN (SELECT id FROM nodes WHERE ${VISIBLE_NODES})`
+    )
     .get() as any;
 
   res.set(JSON_HEADERS).json({
@@ -83,40 +94,30 @@ router.get("/api/graph", (req, res) => {
     YEAR_SQL_FRAGMENT;
 
   let nodeRows: any[];
-  if (!typeFilter) {
+  if (!typeFilter || typeFilter === "_all") {
     // Include scenes in the default view — they are the primary connective
     // tissue for ~22 practitioners (Paul-canon pass, April 28). Filtering
     // them out makes those practitioners appear orphan when zoomed out.
     nodeRows = db
-      .prepare(`SELECT ${NODE_COLS} FROM nodes WHERE type != 'related' ORDER BY name`)
-      .all();
-  } else if (typeFilter === "_all") {
-    nodeRows = db
-      .prepare(`SELECT ${NODE_COLS} FROM nodes WHERE type != 'related' ORDER BY name`)
+      .prepare(`SELECT ${NODE_COLS} FROM nodes WHERE ${VISIBLE_NODES} ORDER BY name`)
       .all();
   } else {
     nodeRows = db
-      .prepare(`SELECT ${NODE_COLS} FROM nodes WHERE type = ? ORDER BY name`)
+      .prepare(`SELECT ${NODE_COLS} FROM nodes WHERE type = ? AND ${NODE_NOT_RETIRED} ORDER BY name`)
       .all(typeFilter);
   }
 
   let edgeRows: any[];
-  if (!typeFilter) {
+  if (!typeFilter || typeFilter === "_all") {
     edgeRows = db
       .prepare(
-        "SELECT e.source_id, e.target_id, e.edge_type, e.confidence, e.created_by FROM edges e WHERE e.valid_until IS NULL AND e.source_id IN (SELECT id FROM nodes WHERE type != 'related') AND e.target_id IN (SELECT id FROM nodes WHERE type != 'related')"
-      )
-      .all();
-  } else if (typeFilter === "_all") {
-    edgeRows = db
-      .prepare(
-        "SELECT e.source_id, e.target_id, e.edge_type, e.confidence, e.created_by FROM edges e WHERE e.valid_until IS NULL AND e.source_id IN (SELECT id FROM nodes WHERE type != 'related') AND e.target_id IN (SELECT id FROM nodes WHERE type != 'related')"
+        `SELECT e.source_id, e.target_id, e.edge_type, e.confidence, e.created_by FROM edges e WHERE e.valid_until IS NULL AND e.source_id IN (SELECT id FROM nodes WHERE ${VISIBLE_NODES}) AND e.target_id IN (SELECT id FROM nodes WHERE ${VISIBLE_NODES})`
       )
       .all();
   } else {
     edgeRows = db
       .prepare(
-        "SELECT e.source_id, e.target_id, e.edge_type, e.confidence, e.created_by FROM edges e WHERE e.valid_until IS NULL AND e.source_id IN (SELECT id FROM nodes WHERE type = ?) AND e.target_id IN (SELECT id FROM nodes WHERE type = ?)"
+        `SELECT e.source_id, e.target_id, e.edge_type, e.confidence, e.created_by FROM edges e WHERE e.valid_until IS NULL AND e.source_id IN (SELECT id FROM nodes WHERE type = ? AND ${NODE_NOT_RETIRED}) AND e.target_id IN (SELECT id FROM nodes WHERE type = ? AND ${NODE_NOT_RETIRED})`
       )
       .all(typeFilter, typeFilter);
   }
@@ -167,8 +168,11 @@ router.get("/api/graph/stream", (req, res) => {
     "json_extract(metadata,'$.cdn_image_url') AS cdn_image_url, " +
     YEAR_SQL_FRAGMENT;
 
+  // Node + edge WHERE clauses are PINNED to /api/stats total_nodes /
+  // curated_edges — together they form the IndexedDB cache stamp. Change
+  // one, change both.
   const nodeRows = db
-    .prepare(`SELECT ${NODE_COLS} FROM nodes WHERE type != 'related' ORDER BY name`)
+    .prepare(`SELECT ${NODE_COLS} FROM nodes WHERE ${VISIBLE_NODES} ORDER BY name`)
     .all() as any[];
   const edgeRows = db
     .prepare(
@@ -176,8 +180,8 @@ router.get("/api/graph/stream", (req, res) => {
        FROM edges e
        WHERE e.valid_until IS NULL
          AND e.created_by IS NOT '${DERIVED_CREATED_BY}'
-         AND e.source_id IN (SELECT id FROM nodes WHERE type != 'related')
-         AND e.target_id IN (SELECT id FROM nodes WHERE type != 'related')`
+         AND e.source_id IN (SELECT id FROM nodes WHERE ${VISIBLE_NODES})
+         AND e.target_id IN (SELECT id FROM nodes WHERE ${VISIBLE_NODES})`
     )
     .all() as any[];
 
@@ -267,8 +271,8 @@ router.get("/api/graph/derived", (_req, res) => {
        FROM edges e
        WHERE e.valid_until IS NULL
          AND e.created_by = '${DERIVED_CREATED_BY}'
-         AND e.source_id IN (SELECT id FROM nodes WHERE type != 'related')
-         AND e.target_id IN (SELECT id FROM nodes WHERE type != 'related')`
+         AND e.source_id IN (SELECT id FROM nodes WHERE ${VISIBLE_NODES})
+         AND e.target_id IN (SELECT id FROM nodes WHERE ${VISIBLE_NODES})`
     )
     .all() as any[];
   res.set(JSON_HEADERS).json({
@@ -301,9 +305,13 @@ router.get("/api/graph/:slug/component", (req, res) => {
     return;
   }
 
-  const nodeRows = db.prepare(`SELECT ${NODE_COLS} FROM nodes`).all() as any[];
+  const nodeRows = db.prepare(`SELECT ${NODE_COLS} FROM nodes WHERE ${NODE_NOT_RETIRED}`).all() as any[];
   const nodeById = new Map<string, any>();
   for (const n of nodeRows) nodeById.set(n.id, n);
+  // The start node always hydrates, even when retired — direct inspection of
+  // a husk is allowed; only listings filter it. (Its edges are superseded at
+  // retire time, so the BFS goes nowhere either way.)
+  nodeById.set(start.id, start);
 
   const edgeRows = db
     .prepare("SELECT source_id, target_id, edge_type, confidence, created_by FROM edges WHERE valid_until IS NULL")
@@ -467,148 +475,33 @@ router.post("/api/contribute", (req, res) => {
   res.set(HTML_HEADERS).send(responseHtml);
 });
 
-// Hash a rejected (source, edge_type, target) triple so the embedding
-// derive pass can skip pairs the curator has already vetoed. Matches the
-// pairHash convention in src/embed/derive.ts.
-const sha256Hex = (s: string): string =>
-  crypto.createHash("sha256").update(s).digest("hex");
-
-// POST /api/review/:id/approve
+// POST /api/review/:id/approve — thin HTML wrapper over the shared
+// approve logic in src/utils/review.ts (also used by the admin JSON
+// endpoints in contributor-api.ts).
 router.post("/api/review/:id/approve", (req, res) => {
   const db = getDb();
-  const id = req.params.id;
-
-  const item = db
-    .prepare(
-      "SELECT id, signal_id, target_node, submitted_by, kind, proposed_edges, proposed_nodes FROM intake_queue WHERE id = ? AND status = 'pending'"
-    )
-    .get(id) as any;
-
-  if (!item) {
-    res.status(404).set(JSON_HEADERS).json({ error: "not found or already reviewed" });
+  const outcome = approveIntakeItem(db, req.params.id, "curator");
+  if (!outcome.ok) {
+    res.status(outcome.status).set(JSON_HEADERS).json({ error: outcome.error });
     return;
   }
-
-  // For AI-suggestion items, materialise the proposed edge into the live
-  // graph. The `proposed_edges` column carries a JSON array of edge specs
-  // produced by the embedding derive pass.
-  if (item.kind === "ai_suggestion" && item.proposed_edges) {
-    let proposals: Array<{ source_id: string; target_id: string; edge_type: string; similarity?: number }> = [];
-    try {
-      proposals = JSON.parse(item.proposed_edges);
-    } catch {
-      res.status(500).set(JSON_HEADERS).json({ error: "proposed_edges is not valid JSON" });
-      return;
-    }
-    const insertEdge = db.prepare(
-      `INSERT INTO edges (
-         id, source_id, target_id, edge_type, signal_id,
-         confidence, charge, created_at, created_by,
-         event_time, valid_from, valid_until, invalidated_by
-       ) VALUES (?, ?, ?, ?, ?, 'medium', NULL,
-                 strftime('%Y-%m-%dT%H:%M:%SZ','now'), 'curator-from-ai-suggestion',
-                 NULL, strftime('%Y-%m-%dT%H:%M:%SZ','now'), NULL, NULL)`
-    );
-    for (const p of proposals) {
-      const edgeId = `${p.source_id}--${p.edge_type}--${p.target_id}--curator-from-ai-suggestion`;
-      insertEdge.run(edgeId, p.source_id, p.target_id, p.edge_type, item.signal_id);
-    }
-  }
-
-  // For human_signal items submitted via /api/v1/*, materialise the queued
-  // payload. Shape matches the helpers in src/utils/contribution.ts —
-  // proposed_nodes is a discriminated array (create_node / patch_node /
-  // attach_image), proposed_edges is a flat list of edge specs (may carry
-  // supersedes_edge_id for bi-temporal supersession).
-  if (item.kind === "human_signal") {
-    const createdBy = `curator-from-${item.submitted_by ?? "api"}`;
-    const touchedNodes = new Set<string>();
-    if (item.proposed_nodes) {
-      let ops: any[] = [];
-      try { ops = JSON.parse(item.proposed_nodes); } catch { ops = []; }
-      for (const op of ops) {
-        if (op?.op === "create_node") {
-          const result = materialiseCreateNode(db, op, { signalId: item.signal_id, createdBy });
-          // Use the materialised id so a slug normalisation upstream doesn't
-          // desync the embed call from the actual row written.
-          if (result.node_id) touchedNodes.add(result.node_id);
-        } else if (op?.op === "patch_node") {
-          materialisePatchNode(db, op, { createdBy });
-          if (op.node_id) touchedNodes.add(op.node_id);
-        } else if (op?.op === "attach_image") {
-          materialiseAttachImage(db, op, { createdBy });
-          if (op.node_id) touchedNodes.add(op.node_id);
-        }
-      }
-    }
-    if (item.proposed_edges) {
-      let edges: any[] = [];
-      try { edges = JSON.parse(item.proposed_edges); } catch { edges = []; }
-      for (const e of edges) {
-        materialiseEdge(db, { ...e, signal_id: item.signal_id }, { signalId: item.signal_id, createdBy });
-      }
-    }
-    // Embed any nodes the curator just materialised. Same fire-and-forget
-    // contract as the auto-merge path in contributor-api.ts — failures fall
-    // through to the daily backfill.
-    for (const nodeId of touchedNodes) embedNodeAsync(db, nodeId);
-  }
-
-  db.prepare(
-    "UPDATE intake_queue SET status = 'approved', reviewed_by = 'curator', reviewed_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = ?"
-  ).run(id);
-
-  db.prepare("UPDATE contributors SET approved_count = approved_count + 1 WHERE name = ?").run(item.submitted_by);
-
   res.set(HTML_HEADERS).send("<div class='msg msg-ok'>Approved and is now live.</div>");
 });
 
-// POST /api/review/:id/reject
+// POST /api/review/:id/reject — thin HTML wrapper over the shared reject
+// logic in src/utils/review.ts.
 router.post("/api/review/:id/reject", (req, res) => {
   const db = getDb();
-  const id = req.params.id;
   const reason = req.body?.reason;
-
   if (!reason) {
     res.status(400).set(JSON_HEADERS).json({ error: "reason is required" });
     return;
   }
-
-  const item = db
-    .prepare(
-      "SELECT id, kind, proposed_edges FROM intake_queue WHERE id = ? AND status = 'pending'"
-    )
-    .get(id) as any;
-  if (!item) {
-    res.status(404).set(JSON_HEADERS).json({ error: "not found or already reviewed" });
+  const outcome = rejectIntakeItem(db, req.params.id, reason, "curator");
+  if (!outcome.ok) {
+    res.status(outcome.status).set(JSON_HEADERS).json({ error: outcome.error });
     return;
   }
-
-  // For AI suggestions, record the rejected pair in rejected_ai_suggestions
-  // so the next derive pass won't re-propose it. Hash is sha256(source||
-  // type||target) — same convention as src/embed/derive.ts.
-  if (item.kind === "ai_suggestion" && item.proposed_edges) {
-    let proposals: Array<{ source_id: string; target_id: string; edge_type: string }> = [];
-    try {
-      proposals = JSON.parse(item.proposed_edges);
-    } catch {
-      proposals = [];
-    }
-    const insertRej = db.prepare(
-      `INSERT OR REPLACE INTO rejected_ai_suggestions
-         (pair_hash, source_id, target_id, edge_type, reason)
-         VALUES (?, ?, ?, ?, ?)`
-    );
-    for (const p of proposals) {
-      const h = sha256Hex(`${p.source_id}|${p.edge_type}|${p.target_id}`);
-      insertRej.run(h, p.source_id, p.target_id, p.edge_type, reason);
-    }
-  }
-
-  db.prepare(
-    "UPDATE intake_queue SET status = 'rejected', rejection_reason = ?, reviewed_by = 'curator', reviewed_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = ?"
-  ).run(reason, id);
-
   res.set(HTML_HEADERS).send("<div class='msg msg-err'>Rejected.</div>");
 });
 
@@ -664,7 +557,7 @@ router.get("/api/embed-space", (_req, res) => {
               json_extract(metadata,'$.cdn_image_url') AS cdn_image_url,
               json_extract(metadata,'$.image_url')     AS image_url,
               ${YEAR_SQL_FRAGMENT}
-         FROM nodes WHERE id IN (${placeholders})`
+         FROM nodes WHERE id IN (${placeholders}) AND ${NODE_NOT_RETIRED}`
     )
     .all(...ids) as Array<{
       id: string; name: string; type: string; slug: string;
@@ -675,7 +568,9 @@ router.get("/api/embed-space", (_req, res) => {
       active_years_1: string | null; active_years_2: string | null;
     }>;
   const byId = new Map(meta.map((m) => [m.id, m]));
-  const items = raw.items.map((p: any) => {
+  // Vectors whose node is retired (or gone) drop from the scatter — the UMAP
+  // sidecar may lag the live DB by up to one cron cycle.
+  const items = raw.items.filter((p: any) => byId.has(p.node_id)).map((p: any) => {
     const m = byId.get(p.node_id);
     const year = m && m.type === "artwork" ? formatArtworkYear(m) : null;
     return {

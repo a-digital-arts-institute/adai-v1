@@ -202,7 +202,8 @@ export function withMetadata(db: DatabaseSync, neighbours: Neighbour[]): Neighbo
               json_extract(metadata,'$.cdn_image_url') AS cdn_image_url,
               json_extract(metadata,'$.image_url')     AS image_url,
               ${YEAR_SQL_FRAGMENT}
-         FROM nodes WHERE id IN (${placeholders})`
+         FROM nodes WHERE id IN (${placeholders})
+          AND json_extract(metadata,'$.retired') IS NOT 1`
     )
     .all(...ids) as Array<{
       id: string;
@@ -220,7 +221,10 @@ export function withMetadata(db: DatabaseSync, neighbours: Neighbour[]): Neighbo
       active_years_2: string | null;
     }>;
   const byId = new Map(rows.map((r) => [r.id, r]));
-  return neighbours.map((n) => {
+  // Retired nodes drop from the metadata join above — belt-and-braces on
+  // top of loadAll's source-level filter (a stale vector cache could still
+  // surface one as a candidate).
+  return neighbours.filter((n) => byId.has(n.node_id)).map((n) => {
     const meta = byId.get(n.node_id);
     if (!meta) return n;
     const year = meta.type === "artwork" ? formatArtworkYear(meta) : null;
