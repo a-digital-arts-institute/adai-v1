@@ -14,7 +14,10 @@ internal_port = 8080
 force_https = true
 auto_stop_machines = 'stop'
 auto_start_machines = true
-min_machines_running = 0
+# Keep one machine always warm so visitors never hit a cold-start boot (the
+# main first-hit latency). auto_stop still applies to any machines above this
+# floor. Flip back to 0 to scale-to-zero when not actively demoing.
+min_machines_running = 1
 processes = ['app']
 
 # Health check — lets fly-proxy detect a sick instance and stop routing to it,
