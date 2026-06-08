@@ -15,7 +15,12 @@
   font-family: var(--mono, 'SF Mono', 'Menlo', 'Consolas', monospace);
   color: var(--text, #E8E6E1);
   pointer-events: none; /* shell is decorative; children re-enable as needed */
+  transition: width 200ms ease;
 }
+/* Minimised (log closed) the bar slims down so the centre dock stops
+ * brushing the bottom-right rooms nav (review note 16); it grows back to
+ * full width the moment the log opens. */
+#archivist-bar:not(.is-open) { width: min(540px, calc(100vw - 32px)); }
 /* Dock positions — left/right anchor the bar to a side, center keeps the
  * original middle-of-the-screen placement. We persist the choice per tab. */
 #archivist-bar.dock-center { left: 50%; transform: translateX(-50%); }
@@ -42,14 +47,20 @@
 }
 #archivist-bar.is-open .arch-log { display: flex; }
 
+/* Pinned to the top-right of the BAR shell (a sibling of .arch-log), not
+ * inside the scrollable log — an absolute child of an overflow container
+ * scrolls away with the content (review: "the collapse option disappears
+ * when you scroll down"). The bar shell is pointer-events:none, so the
+ * button re-enables them; visible only while the log is open. */
 .arch-panel-minimize {
   position: absolute;
   top: 8px;
   right: 8px;
-  z-index: 2;
+  z-index: 3;
+  pointer-events: auto;
   width: 24px;
   height: 24px;
-  display: inline-flex;
+  display: none;
   align-items: center;
   justify-content: center;
   background: rgba(8, 8, 10, 0.88);
@@ -61,6 +72,7 @@
   padding: 0;
   cursor: pointer;
 }
+#archivist-bar.is-open .arch-panel-minimize { display: inline-flex; }
 .arch-panel-minimize:hover {
   color: var(--text, #E8E6E1);
   border-color: #4a4a4c;

@@ -143,6 +143,7 @@
     el.id = 'archivist-bar';
     el.setAttribute('aria-label', 'archivist chat');
     el.innerHTML = `
+      <button type="button" class="arch-panel-minimize" data-arch-panel-minimize title="minimize panel" aria-label="minimize archivist panel">−</button>
       <div class="arch-log" id="arch-log" role="log" aria-live="polite"></div>
       <div class="arch-bar">
         <span class="arch-prompt" aria-hidden="true">⟁</span>
@@ -200,18 +201,21 @@
     const root = ensureRoot();
     const log = root.querySelector('#arch-log');
     if (!log) return;
-    const panelMinimize = '<button type="button" class="arch-panel-minimize" data-arch-panel-minimize title="minimize panel" aria-label="minimize archivist panel">−</button>';
+    // (The minimize button lives in the bar SHELL, not in this scrollable
+    // log — an absolutely-positioned child of an overflow container scrolls
+    // away with the content, which is exactly the "collapse button
+    // disappears when you scroll" review bug.)
     // Help panel takes precedence over both the empty state and the
     // ongoing log — it's modal-ish within the surface.
     if (STATE.helpOpen) {
-      log.innerHTML = panelMinimize + HELP_HTML;
+      log.innerHTML = HELP_HTML;
       return;
     }
     if (STATE.turns.length === 0) {
-      log.innerHTML = panelMinimize + HELP_HTML;
+      log.innerHTML = HELP_HTML;
       return;
     }
-    log.innerHTML = panelMinimize + STATE.turns.map((t, i) => renderTurn(t, i)).join('');
+    log.innerHTML = STATE.turns.map((t, i) => renderTurn(t, i)).join('');
     log.scrollTop = log.scrollHeight;
   }
   function renderTurn(turn /*, idx */) {

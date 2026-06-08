@@ -119,8 +119,13 @@
     IN_PLACE_ANCHOR_MIN_SEP: 34,
     // Desired anchor targets are clamped this many px inside the viewport,
     // so the widened elliptical layouts scatter UP TO the screen edges but
-    // never beyond them (room for a dot + the start of its label).
+    // never beyond them (room for a dot + the start of its label). Top and
+    // bottom are deeper than the sides: the top band carries the breadcrumb
+    // (54px) + bookmarks strip (88px), the bottom the archivist bar — review
+    // note 14 asked that graph content stop drifting under them.
     IN_PLACE_TARGET_INSET: 76,
+    IN_PLACE_TARGET_INSET_TOP: 132,
+    IN_PLACE_TARGET_INSET_BOTTOM: 96,
     // Anchor stickiness (px of score slack). Anchors re-assign on every
     // camera step; without hysteresis the greedy pick swapped between
     // near-equivalent dots frame to frame and the threads flicked during
@@ -131,6 +136,11 @@
     // its (re)assigned anchor dot — anchor swaps glide instead of teleport.
     // ~95% settled in 3× this value.
     IN_PLACE_ANCHOR_EASE_MS: 140,
+    // Hovered neighbour magnification (review note 17: dense focus views —
+    // e.g. a platform with dozens of artworks — render thumbs too small to
+    // tell apart). The hovered item's dot/thumb/ring scale up by this factor
+    // (eased per frame) and its label wins placement priority.
+    IN_PLACE_HOVER_MAGNIFY: 2.1,
     IN_PLACE_CURVE_NEAR_RADIUS: 76,
     IN_PLACE_CURVE_CONTROL_SCALE: 0.34,
     IN_PLACE_CURVE_MIN_BEND: 18,
@@ -2140,6 +2150,35 @@
     occupied.push({ x0: rect.x0, y0: rect.y0, x1: rect.x1, y1: rect.y1 });
   }
 
+  // Screen rects of the DOM chrome (breadcrumb, bookmark/edge-filter/embed
+  // strips, logotype, vitals, rooms nav, archivist bar) so canvas labels are
+  // never placed underneath them (review note 14: "avoid graph content
+  // underlaying across the top navigation / pathway"). Cached and refreshed
+  // at most twice a second — getBoundingClientRect per frame would thrash
+  // layout; the chrome moves rarely (renders, dock cycling, resize).
+  const CHROME_RECT_SELECTORS = [
+    '#adai-breadcrumb', '#adai-bookmarks', '#adai-edge-filter',
+    '#adai-embed-strip', '#logotype', '#coordinates', '#vitals',
+    '#rooms', '#archivist-bar',
+  ];
+  let chromeRectsCache = { t: 0, rects: [] };
+  function chromeOccupiedRects() {
+    const now = performance.now();
+    if (now - chromeRectsCache.t < 500) return chromeRectsCache.rects;
+    const rects = [];
+    for (const sel of CHROME_RECT_SELECTORS) {
+      const el = document.querySelector(sel);
+      if (!el) continue;
+      // Hidden/empty chrome (display:none, cleared innerHTML) collapses to a
+      // ~0-size rect and is skipped here.
+      const r = el.getBoundingClientRect();
+      if (r.width < 2 || r.height < 2) continue;
+      rects.push({ x0: r.left - 4, y0: r.top - 4, x1: r.right + 4, y1: r.bottom + 4 });
+    }
+    chromeRectsCache = { t: now, rects };
+    return rects;
+  }
+
   function labelBudget(width, height, candidateCount) {
     const areaBudget = Math.floor((width * height) / 52000);
     const max = candidateCount > 36 ? CFG.LABEL_DENSE_MAX_VISIBLE : CFG.LABEL_MAX_VISIBLE;
@@ -2309,14 +2348,17 @@
     }
 
     const inset = CFG.IN_PLACE_TARGET_INSET;
+    const insetTop = CFG.IN_PLACE_TARGET_INSET_TOP;
+    const insetBottom = CFG.IN_PLACE_TARGET_INSET_BOTTOM;
     for (const item of neighbors) {
       const desired = desiredById.get(item.id);
       const dx = desired ? (desired.x - layoutCx) * CFG.IN_PLACE_LAYOUT_SCALE : 0;
       const dy = desired ? (desired.y - layoutCy) * CFG.IN_PLACE_LAYOUT_SCALE : 0;
       // Clamp targets to stay inside the viewport (the elliptical layouts
       // reach for the edges; an off-centre focus must not push them past).
+      // Top/bottom insets are deeper — they clear the chrome bands.
       const targetX = clamp(focusPoint.x + dx, inset, width - inset);
-      const targetY = clamp(focusPoint.y + dy, inset, height - inset);
+      const targetY = clamp(focusPoint.y + dy, insetTop, height - insetBottom);
       const targetDistance = Math.hypot(targetX - focusPoint.x, targetY - focusPoint.y);
 
       // Two-tier pick: prefer the best candidate that keeps MIN_SEP from every
@@ -2635,16 +2677,25 @@
     }
     resetEdgeThreadStyle(ctx);
 
-    for (const { item, point } of visibleNeighbors) {
+    // Hover magnification (review note 17): the hovered item's dot/thumb
+    // grows by IN_PLACE_HOVER_MAGNIFY, eased per frame so it breathes in
+    // and out rather than popping. Hovered item draws LAST so the enlarged
+    // thumb sits above its packed neighbours.
+    const hovId = bundle.getHoveredId ? bundle.getHoveredId() : null;
+    const drawNeighbourDot = ({ item, point }) => {
       const matched = filterMatch(item);
       const a = (matched ? 1 : 0.16) * focusAlpha;
-      const r = clamp(point.radius, 3, 13);
+      const targetMag = item.id === hovId ? CFG.IN_PLACE_HOVER_MAGNIFY : 1;
+      item._mag = (item._mag == null ? 1 : item._mag) + (targetMag - (item._mag == null ? 1 : item._mag)) * 0.28;
+      if (Math.abs(item._mag - targetMag) < 0.01) item._mag = targetMag;
+      const m = item._mag;
+      const r = clamp(point.radius, 3, 13) * m;
       // Artwork neighbours render as their thumbnail; the edge-coloured ring
       // around it still encodes the relationship type. Non-artworks (and
       // unloaded images) stay as a coloured dot.
       const node = graph.byId.get(item.id);
       const img = matched ? getImageFor(node) : null;
-      const tr = clamp(r * 1.8, 8, 30);          // thumbnail radius
+      const tr = clamp(clamp(point.radius, 3, 13) * 1.8, 8, 30) * m; // thumbnail radius
       const ringR = img ? tr + 3 : r * 1.55;     // edge ring sits outside the thumb
 
       ctx.globalAlpha = a;
@@ -2654,12 +2705,12 @@
       ctx.arc(point.x, point.y, ringR, 0, Math.PI * 2);
       ctx.stroke();
 
-      if (!matched) continue;
+      if (!matched) return;
 
       if (img) {
         ctx.globalAlpha = focusAlpha;
         drawCircleImage(ctx, img, point.x, point.y, tr);
-        continue;
+        return;
       }
 
       ctx.globalAlpha = 0.32 * focusAlpha;
@@ -2673,7 +2724,13 @@
       ctx.beginPath();
       ctx.arc(point.x, point.y, Math.max(1.4, r * 0.28), 0, Math.PI * 2);
       ctx.fill();
+    };
+    let hoveredEntry = null;
+    for (const entry of visibleNeighbors) {
+      if (entry.item.id === hovId) { hoveredEntry = entry; continue; }
+      drawNeighbourDot(entry);
     }
+    if (hoveredEntry) drawNeighbourDot(hoveredEntry);
 
     const focusPulse = 0.5 + 0.5 * Math.sin(performance.now() / 520);
     drawCentralFocusGlow(ctx, focusPoint, focusRadius, colorForType(focusedSim?.type), focusPulse, focusAlpha);
@@ -2686,7 +2743,9 @@
     }
 
     if (!bundle.transitioning) {
-      const occupiedLabels = [];
+      // Seed with the DOM chrome rects so labels never render under the
+      // breadcrumb/strips/nav (copied — reserveLabel mutates the array).
+      const occupiedLabels = chromeOccupiedRects().slice();
       const focusNode = graph.byId.get(bundle.focusedId);
       ctx.font = `13px 'SF Mono', monospace`;
       ctx.textBaseline = 'middle';
@@ -2714,7 +2773,11 @@
       const labelItems = visibleNeighbors
         .filter(({ item }) => filterMatch(item))
         .sort((a, b) => {
-          return labelPriority(b.item, b.point, focusPoint) - labelPriority(a.item, a.point, focusPoint);
+          // Hovered item always labels first (its magnified thumb is the
+          // one the visitor is deciding whether to click).
+          const hovBonus = (it) => (it.id === hovId ? 10000 : 0);
+          return (labelPriority(b.item, b.point, focusPoint) + hovBonus(b.item))
+               - (labelPriority(a.item, a.point, focusPoint) + hovBonus(a.item));
         });
       for (const { item, point } of visibleNeighbors) item.labelBBox = null;
       for (const { item, point } of labelItems) {
@@ -3026,7 +3089,9 @@
       const newId = hit ? hit.id : null;
       if (newId !== hoveredId) {
         hoveredId = newId;
-        canvas.style.cursor = hit ? 'pointer' : 'default';
+        // Empty field while zoomed is draggable (field.js pan) — show it.
+        const zoomedIn = window.ADAI_FIELD_STUDY?.isZoomed;
+        canvas.style.cursor = hit ? 'pointer' : (zoomedIn ? 'grab' : 'default');
       }
     }, { passive: true });
 
