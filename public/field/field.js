@@ -782,6 +782,77 @@
       get isZoomed() { return zoomed; }
     };
 
+    // ---- Drag-to-pan while zoomed (review note 13) ----
+    // The instinct on the floor is to click outside the focus and drag the
+    // field around. pointerdown→move beyond a small threshold pans the
+    // camera (constrainCamera's bounds incl. the zoom overscan still apply);
+    // a movement-free click keeps its existing meaning. The capture-phase
+    // interceptor below swallows the click that FOLLOWS a pan, so the
+    // graph-canvas handler doesn't read the release as "zoom home".
+    const DRAG_THRESHOLD_PX = 5;
+    let suppressClickUntil = 0;
+    let drag = null;
+    // Like isUiClick but WITHOUT #graph-canvas — that's exactly where pans
+    // start. Real chrome (breadcrumb, strips, archivist, overlays) still
+    // refuses the drag.
+    function isUiPointer(e) {
+      if (e.target instanceof Node && !e.target.isConnected) return true;
+      return !!e.target.closest?.(
+        '#chrome, #search-palette, #entity-view, #entity-panel, #chat-narrator, #archivist-bar, #coming-soon, #philosophy, [id^="adai-"], a, button, input, textarea, select, label'
+      );
+    }
+    document.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0 || drag) return;
+      if (isUiPointer(e)) return;
+      if (camera.scale <= 1.01) return;   // nothing to pan at rest
+      const stage = findStage();
+      if (!stage) return;
+      const rect = stage.getBoundingClientRect();
+      if (!rect.width) return;
+      drag = {
+        startX: e.clientX, startY: e.clientY,
+        camX: camera.x, camY: camera.y,
+        screenScale: getStageScreenScale(stage, rect),
+        moved: false,
+      };
+    }, true);
+    document.addEventListener('pointermove', (e) => {
+      if (!drag) return;
+      const dx = e.clientX - drag.startX;
+      const dy = e.clientY - drag.startY;
+      if (!drag.moved) {
+        if (Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
+        drag.moved = true;
+        // A drag takes over from any in-flight camera animation.
+        if (animationFrame) { cancelAnimationFrame(animationFrame); animationFrame = 0; }
+        document.body.classList.add('field-panning');
+      }
+      applyCamera({
+        scale: camera.scale,
+        x: drag.camX + dx / drag.screenScale,
+        y: drag.camY + dy / drag.screenScale,
+      }, 'motion');
+    });
+    const endDrag = () => {
+      if (!drag) return;
+      const moved = drag.moved;
+      drag = null;
+      document.body.classList.remove('field-panning');
+      if (moved) {
+        applyCamera(camera, 'final');
+        suppressClickUntil = performance.now() + 350;
+      }
+    };
+    document.addEventListener('pointerup', endDrag);
+    document.addEventListener('pointercancel', endDrag);
+    document.addEventListener('click', (e) => {
+      if (performance.now() < suppressClickUntil) {
+        e.stopPropagation();
+        e.preventDefault();
+        suppressClickUntil = 0;
+      }
+    }, true);
+
     document.addEventListener('click', (e) => {
       if (isUiClick(e)) return;
       if (e.detail >= 2) {

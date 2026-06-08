@@ -426,6 +426,9 @@ body.field-graph-focused #field-detail-canvas {
   opacity: 0.055 !important;
 }
 
+/* While drag-panning the zoomed field (field.js sets the class) */
+body.field-panning, body.field-panning * { cursor: grabbing !important; }
+
 /* ---- Responsive ---- */
 @media (max-width: 768px) {
   #logotype { font-size: 15px; top: 16px; left: 16px; }

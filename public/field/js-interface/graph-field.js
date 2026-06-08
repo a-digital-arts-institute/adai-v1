@@ -136,6 +136,11 @@
     // its (re)assigned anchor dot — anchor swaps glide instead of teleport.
     // ~95% settled in 3× this value.
     IN_PLACE_ANCHOR_EASE_MS: 140,
+    // Hovered neighbour magnification (review note 17: dense focus views —
+    // e.g. a platform with dozens of artworks — render thumbs too small to
+    // tell apart). The hovered item's dot/thumb/ring scale up by this factor
+    // (eased per frame) and its label wins placement priority.
+    IN_PLACE_HOVER_MAGNIFY: 2.1,
     IN_PLACE_CURVE_NEAR_RADIUS: 76,
     IN_PLACE_CURVE_CONTROL_SCALE: 0.34,
     IN_PLACE_CURVE_MIN_BEND: 18,
@@ -2672,16 +2677,25 @@
     }
     resetEdgeThreadStyle(ctx);
 
-    for (const { item, point } of visibleNeighbors) {
+    // Hover magnification (review note 17): the hovered item's dot/thumb
+    // grows by IN_PLACE_HOVER_MAGNIFY, eased per frame so it breathes in
+    // and out rather than popping. Hovered item draws LAST so the enlarged
+    // thumb sits above its packed neighbours.
+    const hovId = bundle.getHoveredId ? bundle.getHoveredId() : null;
+    const drawNeighbourDot = ({ item, point }) => {
       const matched = filterMatch(item);
       const a = (matched ? 1 : 0.16) * focusAlpha;
-      const r = clamp(point.radius, 3, 13);
+      const targetMag = item.id === hovId ? CFG.IN_PLACE_HOVER_MAGNIFY : 1;
+      item._mag = (item._mag == null ? 1 : item._mag) + (targetMag - (item._mag == null ? 1 : item._mag)) * 0.28;
+      if (Math.abs(item._mag - targetMag) < 0.01) item._mag = targetMag;
+      const m = item._mag;
+      const r = clamp(point.radius, 3, 13) * m;
       // Artwork neighbours render as their thumbnail; the edge-coloured ring
       // around it still encodes the relationship type. Non-artworks (and
       // unloaded images) stay as a coloured dot.
       const node = graph.byId.get(item.id);
       const img = matched ? getImageFor(node) : null;
-      const tr = clamp(r * 1.8, 8, 30);          // thumbnail radius
+      const tr = clamp(clamp(point.radius, 3, 13) * 1.8, 8, 30) * m; // thumbnail radius
       const ringR = img ? tr + 3 : r * 1.55;     // edge ring sits outside the thumb
 
       ctx.globalAlpha = a;
@@ -2691,12 +2705,12 @@
       ctx.arc(point.x, point.y, ringR, 0, Math.PI * 2);
       ctx.stroke();
 
-      if (!matched) continue;
+      if (!matched) return;
 
       if (img) {
         ctx.globalAlpha = focusAlpha;
         drawCircleImage(ctx, img, point.x, point.y, tr);
-        continue;
+        return;
       }
 
       ctx.globalAlpha = 0.32 * focusAlpha;
@@ -2710,7 +2724,13 @@
       ctx.beginPath();
       ctx.arc(point.x, point.y, Math.max(1.4, r * 0.28), 0, Math.PI * 2);
       ctx.fill();
+    };
+    let hoveredEntry = null;
+    for (const entry of visibleNeighbors) {
+      if (entry.item.id === hovId) { hoveredEntry = entry; continue; }
+      drawNeighbourDot(entry);
     }
+    if (hoveredEntry) drawNeighbourDot(hoveredEntry);
 
     const focusPulse = 0.5 + 0.5 * Math.sin(performance.now() / 520);
     drawCentralFocusGlow(ctx, focusPoint, focusRadius, colorForType(focusedSim?.type), focusPulse, focusAlpha);
@@ -2753,7 +2773,11 @@
       const labelItems = visibleNeighbors
         .filter(({ item }) => filterMatch(item))
         .sort((a, b) => {
-          return labelPriority(b.item, b.point, focusPoint) - labelPriority(a.item, a.point, focusPoint);
+          // Hovered item always labels first (its magnified thumb is the
+          // one the visitor is deciding whether to click).
+          const hovBonus = (it) => (it.id === hovId ? 10000 : 0);
+          return (labelPriority(b.item, b.point, focusPoint) + hovBonus(b.item))
+               - (labelPriority(a.item, a.point, focusPoint) + hovBonus(a.item));
         });
       for (const { item, point } of visibleNeighbors) item.labelBBox = null;
       for (const { item, point } of labelItems) {
@@ -3065,7 +3089,9 @@
       const newId = hit ? hit.id : null;
       if (newId !== hoveredId) {
         hoveredId = newId;
-        canvas.style.cursor = hit ? 'pointer' : 'default';
+        // Empty field while zoomed is draggable (field.js pan) — show it.
+        const zoomedIn = window.ADAI_FIELD_STUDY?.isZoomed;
+        canvas.style.cursor = hit ? 'pointer' : (zoomedIn ? 'grab' : 'default');
       }
     }, { passive: true });
 
