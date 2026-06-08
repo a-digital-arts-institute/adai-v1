@@ -288,11 +288,31 @@ function buildBatchPlan(db: DatabaseSync, batchId: string): BatchRetirePlan & { 
   const retireSet = new Set(nodesToRetire);
   const patchesFiltered = patchesToReview.filter((p) => !retireSet.has(p.node_id));
 
+  // The execution's SECOND supersession pass (retireNodeInner on each
+  // batch-created node) also catches live edges touching those nodes but
+  // anchored OUTSIDE the batch — e.g. a curator-approved edge added after
+  // the upload. Count them here so the dry-run's edges_to_supersede equals
+  // what the live run will actually report (signal-anchored edges already
+  // counted above are excluded to avoid double-counting).
+  let nodeTouchingEdges = 0;
+  if (nodesToRetire.length > 0) {
+    const nodePh = nodesToRetire.map(() => "?").join(",");
+    const { count } = db
+      .prepare(
+        `SELECT COUNT(*) AS count FROM edges
+          WHERE valid_until IS NULL
+            AND (source_id IN (${nodePh}) OR target_id IN (${nodePh}))
+            AND (signal_id IS NULL OR signal_id NOT IN (${placeholders}))`
+      )
+      .get(...nodesToRetire, ...nodesToRetire, ...signalIds) as any;
+    nodeTouchingEdges = Number(count);
+  }
+
   return {
     batch_id: batchId,
     signals_total: signals.length,
     signals_active: signals.filter((s) => s.status === "active").length,
-    edges_to_supersede: Number(liveEdges),
+    edges_to_supersede: Number(liveEdges) + nodeTouchingEdges,
     nodes_to_retire: nodesToRetire.sort(),
     nodes_skipped_preexisting: nodesSkipped.sort(),
     patches_to_review: patchesFiltered,

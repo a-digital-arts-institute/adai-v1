@@ -176,6 +176,11 @@ describe("retireBatch", () => {
     insertEdge(db, "e-batch", "artwork:new-piece", "practitioner:target", sig3);
     insertIntake(db, { contributor: GALLERY, signal_id: sig3, target_node: "practitioner:target" });
 
+    // A LATER edge touching the batch-created node but anchored OUTSIDE the
+    // batch (e.g. curator-approved after the upload). The rollback supersedes
+    // it via node retirement — the dry-run plan must count it too.
+    insertEdge(db, "e-later", "practitioner:target", "artwork:new-piece", null);
+
     // Write 4: a metadata patch on a pre-existing node (unrevertable → report).
     const sig4 = insertSignal(db, {
       contributor: GALLERY, title: "Patch node", content: "{}",
@@ -209,6 +214,9 @@ describe("retireBatch", () => {
     assert.equal(plan.patches_to_review.length, 1);
     assert.equal(plan.patches_to_review[0]!.node_id, "artwork:existing");
     assert.equal(plan.pending_intake_to_reject, 1);
+    // 1 batch-anchored edge (e-batch) + 1 non-batch edge touching the
+    // batch-created node (e-later, superseded via node retirement).
+    assert.equal(plan.edges_to_supersede, 2);
     // nothing mutated
     const sig = db.prepare("SELECT COUNT(*) AS n FROM signals WHERE batch_id = 'gallery-batch-1' AND status = 'active'").get() as any;
     assert.equal(sig.n, 5);
@@ -217,12 +225,15 @@ describe("retireBatch", () => {
   it("retires the batch: revokes signals, supersedes edges, retires created nodes, rejects pending", () => {
     const db = freshDb();
     setupBatch(db);
+    const plan = retireBatch(db, "gallery-batch-1", { reason: "wrong archive", by: "admin", dryRun: true });
     const r = retireBatch(db, "gallery-batch-1", { reason: "wrong archive", by: "admin" });
     assert.equal(r.retired, true);
     assert.equal(r.signals_revoked, 5);
     assert.equal(r.nodes_retired, 1);
     assert.equal(r.pending_rejected, 1);
-    assert.ok(r.edges_superseded! >= 1);
+    assert.equal(r.edges_superseded, 2);
+    // The dry-run plan is an honest preview: same edge count as the live run.
+    assert.equal(r.edges_superseded, plan.edges_to_supersede);
 
     // Signals revoked, anchor signal active.
     const active = db.prepare("SELECT COUNT(*) AS n FROM signals WHERE batch_id = 'gallery-batch-1' AND status = 'active'").get() as any;
@@ -241,6 +252,12 @@ describe("retireBatch", () => {
     const edge = db.prepare("SELECT valid_until, invalidated_by FROM edges WHERE id = 'e-batch'").get() as any;
     assert.ok(edge.valid_until);
     assert.equal(edge.invalidated_by, r.admin_signal_id);
+
+    // The non-batch edge touching the retired node is superseded too (via
+    // node retirement), pointing at the same admin anchor.
+    const later = db.prepare("SELECT valid_until, invalidated_by FROM edges WHERE id = 'e-later'").get() as any;
+    assert.ok(later.valid_until);
+    assert.equal(later.invalidated_by, r.admin_signal_id);
 
     // Pending intake rejected with the reason recorded.
     const rejected = db.prepare("SELECT status, rejection_reason FROM intake_queue WHERE submitted_by = 'Probie'").get() as any;

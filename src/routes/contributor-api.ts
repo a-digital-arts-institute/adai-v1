@@ -810,6 +810,19 @@ router.get("/api/v1/review", requireAdmin, (req, res) => {
   });
 });
 
+// Boolean body flags on the destructive admin endpoints must be REAL JSON
+// booleans. A loose check would let a string "false" silently do the more
+// destructive thing (cascade staying on, dry_run staying off) — reject
+// anything mistyped instead. undefined → fallback; non-boolean → 400.
+function readBoolFlag(res: any, value: unknown, name: string, fallback: boolean): boolean | null {
+  if (value === undefined) return fallback;
+  if (typeof value !== "boolean") {
+    res.status(400).set(JSON_HEADERS).json({ error: `${name} must be a boolean (true or false)` });
+    return null;
+  }
+  return value;
+}
+
 // POST /api/v1/review/bulk — { action: 'approve'|'reject', reason?, ids?, batch_id?, contributor?, dry_run? }
 // Sweeps PENDING items matched by ids ∧ batch ∧ contributor (at least one
 // selector required — no blind approve-everything). Caps at 500 per call;
@@ -835,6 +848,8 @@ router.post("/api/v1/review/bulk", requireAdmin, (req, res) => {
     res.status(400).set(JSON_HEADERS).json({ error: "need at least one selector: ids, batch_id, or contributor" });
     return;
   }
+  const dryRun = readBoolFlag(res, dry_run, "dry_run", false);
+  if (dryRun === null) return;
 
   const where: string[] = ["q.status = 'pending'"];
   const params: string[] = [];
@@ -851,7 +866,7 @@ router.post("/api/v1/review/bulk", requireAdmin, (req, res) => {
     .prepare(`SELECT q.id ${matchSql} ORDER BY q.created_at ASC LIMIT 500`)
     .all(...params) as Array<{ id: string }>;
 
-  if (dry_run === true) {
+  if (dryRun) {
     res.set(JSON_HEADERS).json({ dry_run: true, action, matched: Number(matched), intake_ids: rows.map((r) => r.id) });
     return;
   }
@@ -867,12 +882,16 @@ router.post("/api/v1/review/bulk", requireAdmin, (req, res) => {
     else failed.push({ intake_id: r.id, error: outcome.error });
   }
 
+  // Failed items are still status='pending' in the DB, so they genuinely
+  // remain — count them (matched − processed, not matched − attempted). A
+  // caller looping on remaining>0 with the same selector should check
+  // `failed` to avoid retrying permanently-broken rows forever.
   res.set(JSON_HEADERS).json({
     action,
     matched: Number(matched),
     processed,
     failed,
-    remaining: Math.max(0, Number(matched) - rows.length),
+    remaining: Math.max(0, Number(matched) - processed),
   });
 });
 
@@ -927,11 +946,13 @@ router.post("/api/v1/signals/:id/revoke", requireAdmin, (req, res) => {
     res.status(400).set(JSON_HEADERS).json({ error: "reason is required" });
     return;
   }
+  const cascade = readBoolFlag(res, req.body?.cascade, "cascade", true);
+  if (cascade === null) return;
   try {
     const result = revokeSignal(db, String(req.params.id), {
       reason,
       by: req.contributor!.name,
-      cascade: req.body?.cascade !== false,
+      cascade,
     });
     res.set(JSON_HEADERS).json(result);
   } catch (e: any) {
@@ -947,11 +968,13 @@ router.post("/api/v1/nodes/:id/retire", requireAdmin, (req, res) => {
     res.status(400).set(JSON_HEADERS).json({ error: "reason is required" });
     return;
   }
+  const dryRun = readBoolFlag(res, req.body?.dry_run, "dry_run", false);
+  if (dryRun === null) return;
   try {
     const result = retireNode(db, String(req.params.id), {
       reason,
       by: req.contributor!.name,
-      dryRun: req.body?.dry_run === true,
+      dryRun,
     });
     res.set(JSON_HEADERS).json(result);
   } catch (e: any) {
@@ -979,11 +1002,13 @@ router.post("/api/v1/batches/:batch_id/retire", requireAdmin, (req, res) => {
     res.status(400).set(JSON_HEADERS).json({ error: "reason is required" });
     return;
   }
+  const dryRun = readBoolFlag(res, req.body?.dry_run, "dry_run", false);
+  if (dryRun === null) return;
   try {
     const result = retireBatch(db, String(req.params.batch_id), {
       reason,
       by: req.contributor!.name,
-      dryRun: req.body?.dry_run === true,
+      dryRun,
     });
     res.set(JSON_HEADERS).json(result);
   } catch (e: any) {
