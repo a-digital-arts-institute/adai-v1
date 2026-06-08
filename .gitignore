@@ -99,10 +99,9 @@ Meeting notes/
 *.pdf
 
 # ─────────────────────────────────────────────────────────────────────────────
-# NOTE: seed/embeddings.{bin,json,umap2d.json} are intentionally NOT ignored
+# NOTE: seed/embeddings.{bin,json} are intentionally NOT ignored
 # (decision May 2026) so the Docker builder bakes them into seed.db. Recreate
 # via:
 #   seed/_build/.venv/bin/python3 seed/_build/embed_nodes.py
-#   seed/_build/.venv/bin/python3 seed/_build/project_umap.py
 # then commit. Stripping them here silently breaks embeddings on next build.
 # ─────────────────────────────────────────────────────────────────────────────

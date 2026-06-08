@@ -169,7 +169,7 @@ second one is the "look at what I added" link.
 
 **Common metadata fields by type.** Metadata is free-form, but the UI
 reads these specific keys and renders them everywhere (profile pages,
-graph/field hover, embed-space tooltip, listings). Put structured data
+graph/field hover, listings). Put structured data
 in the fields below when you have it — fall back to free text otherwise.
 
 For `type: "artwork"` — **year** (single source of truth for any

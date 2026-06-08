@@ -6,7 +6,7 @@
 __pycache__/
 *.pyc
 
-# Local venv for upload_to_r2.py, embed_nodes.py, project_umap.py
+# Local venv for upload_to_r2.py, embed_nodes.py
 .venv/
 
 # Per-source HTTP caches (MoMA CSVs etc) — re-downloaded by gatherers as needed

@@ -1,18 +1,12 @@
 import { Router } from "express";
 import crypto from "node:crypto";
 import { createGzip } from "node:zlib";
-import { readFileSync, existsSync, statSync } from "node:fs";
-import { join, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
 import { getDb } from "../db.js";
 import { HTML_HEADERS, JSON_HEADERS } from "../templates.js";
 import { approveIntakeItem, rejectIntakeItem } from "../utils/review.js";
 import { buildEmbeddingSections } from "../embed/sections.js";
 import { YEAR_SQL_FRAGMENT, formatArtworkYear } from "../utils/year.js";
 import { NODE_NOT_RETIRED } from "../utils/visibility.js";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const PROJECT_ROOT = join(__dirname, "..", "..");
 
 const router = Router();
 
@@ -503,103 +497,6 @@ router.post("/api/review/:id/reject", (req, res) => {
     return;
   }
   res.set(HTML_HEADERS).send("<div class='msg msg-err'>Rejected.</div>");
-});
-
-// GET /api/embed-space — UMAP 2D projection joined with node metadata.
-//
-// Two possible sources, checked in order:
-//   1. /data/embeddings.umap2d.json — written by the daily GH Action's UMAP
-//      refresh step against the live DB; includes contributor-added nodes.
-//   2. <PROJECT_ROOT>/seed/embeddings.umap2d.json — baked at Docker build
-//      time from the offline pipeline; first-deploy fallback before the
-//      daily cron has run.
-//
-// The cache key includes the file's mtime so a refreshed projection on
-// the volume invalidates the in-memory cache without needing a restart.
-
-const UMAP_VOLUME_PATH = "/data/embeddings.umap2d.json";
-const UMAP_BAKED_PATH = join(PROJECT_ROOT, "seed", "embeddings.umap2d.json");
-
-let umapCache: { mtimeMs: number; path: string; payload: any } | null = null;
-
-function loadUmap(): { path: string; raw: any } | null {
-  const candidates = [UMAP_VOLUME_PATH, UMAP_BAKED_PATH];
-  for (const p of candidates) {
-    if (!existsSync(p)) continue;
-    return { path: p, raw: JSON.parse(readFileSync(p, "utf-8")) };
-  }
-  return null;
-}
-
-router.get("/api/embed-space", (_req, res) => {
-  const db = getDb();
-  const loaded = loadUmap();
-  if (!loaded) {
-    res.status(404).set(JSON_HEADERS).json({
-      error: "UMAP projection not available",
-      hint: "Run `seed/_build/.venv/bin/python3 seed/_build/project_umap.py` to produce seed/embeddings.umap2d.json, or wait for the next embed-derive-daily run.",
-    });
-    return;
-  }
-  // Invalidate cache on file change — the daily UMAP refresh writes a
-  // fresh /data/embeddings.umap2d.json with a new mtime.
-  const stat = statSync(loaded.path);
-  if (umapCache && umapCache.path === loaded.path && umapCache.mtimeMs === stat.mtimeMs) {
-    res.set(JSON_HEADERS).json(umapCache.payload);
-    return;
-  }
-  const raw = loaded.raw;
-  const ids = raw.items.map((i: any) => i.node_id);
-  const placeholders = ids.map(() => "?").join(",");
-  const meta = db
-    .prepare(
-      `SELECT id, name, type, slug,
-              json_extract(metadata,'$.cdn_image_url') AS cdn_image_url,
-              json_extract(metadata,'$.image_url')     AS image_url,
-              ${YEAR_SQL_FRAGMENT}
-         FROM nodes WHERE id IN (${placeholders}) AND ${NODE_NOT_RETIRED}`
-    )
-    .all(...ids) as Array<{
-      id: string; name: string; type: string; slug: string;
-      cdn_image_url: string | null; image_url: string | null;
-      year_raw: string | null; year_start: number | null;
-      year_end: number | null; year_ongoing: number | null;
-      year_meta: string | null;
-      active_years_1: string | null; active_years_2: string | null;
-    }>;
-  const byId = new Map(meta.map((m) => [m.id, m]));
-  // Vectors whose node is retired (or gone) drop from the scatter — the UMAP
-  // sidecar may lag the live DB by up to one cron cycle.
-  const items = raw.items.filter((p: any) => byId.has(p.node_id)).map((p: any) => {
-    const m = byId.get(p.node_id);
-    const year = m && m.type === "artwork" ? formatArtworkYear(m) : null;
-    return {
-      id: p.node_id,
-      kind: p.kind,
-      x: p.x,
-      y: p.y,
-      ...(m
-        ? {
-            name: m.name,
-            type: m.type,
-            slug: m.slug,
-            ...(year ? { year } : {}),
-            ...(m.cdn_image_url ? { cdn_image_url: m.cdn_image_url } : {}),
-            ...(m.image_url ? { image_url: m.image_url } : {}),
-          }
-        : {}),
-    };
-  });
-  const payload = {
-    model: raw.model,
-    method: raw.method,
-    params: raw.params,
-    source: loaded.path === UMAP_VOLUME_PATH ? "volume" : "baked",
-    n_items: items.length,
-    items,
-  };
-  umapCache = { path: loaded.path, mtimeMs: stat.mtimeMs, payload };
-  res.set(JSON_HEADERS).json(payload);
 });
 
 // GET /api/neighbours/:type/:slug — embedding-derived sections for a node.

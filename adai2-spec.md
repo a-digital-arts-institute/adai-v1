@@ -1,5 +1,14 @@
 # SPEC: ADAI-2 Frontend Backport & UMAP Integration
 
+> **⚠️ SUPERSEDED (June 2026) — historical record only.** The UMAP-as-coordinate-
+> system approach this spec proposes was implemented and later reversed. The 30k
+> `/field` view no longer uses the UMAP projection: it lays nodes out in
+> **field-flow** order (type-runs along the Shape-of-Time draw order) and reveals
+> palette colour only under the cursor. The UMAP projection, the `/api/embed-space`
+> endpoint, and the `/embed-space` scatter were all removed. The **embeddings**
+> (768-d vectors, STYLE_KIN / VISUALLY_AFFINE / neighbours) remain. Read this for
+> intent/history, not current behaviour.
+
 ## 1. Objective
 Backport the ADAI-2 frontend (currently in `/Users/sugar/devel/adai/ADAI-2`) into the `adai-v1` repository. Replace the arbitrary "intention-based" spiral snapping with the semantic UMAP embedding space (`/api/embed-space`) as the absolute coordinate system for the 30k view. 
 

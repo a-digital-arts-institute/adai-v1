@@ -4,8 +4,8 @@ Cull ORPHANS — a maintenance janitor for two kinds of dangling artefact that
 accumulate as canon shrinks (a cull, a disambiguation supersession, a re-run
 that drops newly-minted tokens):
 
-  A. Stale EMBEDDING vectors — rows in seed/embeddings.{json,bin} (and points in
-     seed/embeddings.umap2d.json) whose node_id is no longer in seed/nodes.json.
+  A. Stale EMBEDDING vectors — rows in seed/embeddings.{json,bin} whose node_id
+     is no longer in seed/nodes.json.
      The embed pipeline only ever ADDS / reuses rows keyed by (text_hash,
      image_hash); it never prunes node_ids that vanished from canon. So a node
      that left the graph keeps a vector forever. Harmless but cruft.
@@ -21,9 +21,8 @@ SAFE BY DEFAULT. With no flags this is a pure read: it lists R2, diffs against
 canon, and PRINTS what it WOULD remove. It mutates nothing until you pass an
 explicit destructive flag:
 
-  --apply    rewrite seed/embeddings.{bin,json} + prune embeddings.umap2d.json,
-             dropping orphan rows and RECOMPUTING byte offsets so the three
-             files stay mutually consistent.
+  --apply    rewrite seed/embeddings.{bin,json}, dropping orphan rows and
+             RECOMPUTING byte offsets so the two files stay mutually consistent.
   --delete   batch-delete orphan objects from the R2 bucket.
 
 A loud SAFETY GUARD refuses --delete if the referenced-key set came back
@@ -63,7 +62,6 @@ MIRROR_PATH = ROOT / "seed" / "image_mirror.json"
 OVERLAY_PATH = ROOT / "seed" / "image_overlay.json"
 EMB_BIN_PATH = ROOT / "seed" / "embeddings.bin"
 EMB_META_PATH = ROOT / "seed" / "embeddings.json"
-EMB_UMAP_PATH = ROOT / "seed" / "embeddings.umap2d.json"
 ENV_PATH = ROOT / ".env"
 
 # R2 object key prefix for all node images (content-addressed). Anything else
@@ -273,24 +271,6 @@ def cull_embeddings(canon_ids: set[str], apply: bool) -> None:
     print(f"rewrote {EMB_BIN_PATH.name} + {EMB_META_PATH.name}: "
           f"{len(new_meta)} rows kept, {len(orphans)} dropped")
 
-    # Prune the UMAP projection of the same orphan node_ids.
-    if EMB_UMAP_PATH.exists():
-        umap = json.loads(EMB_UMAP_PATH.read_text())
-        items = umap.get("items", [])
-        kept = [it for it in items if it.get("node_id") in canon_ids]
-        dropped = len(items) - len(kept)
-        if dropped:
-            umap["items"] = kept
-            umap["n_items"] = len(kept)
-            tmp_umap = EMB_UMAP_PATH.with_suffix(".json.tmp")
-            tmp_umap.write_text(json.dumps(umap, indent=2) + "\n")
-            tmp_umap.replace(EMB_UMAP_PATH)
-            print(f"pruned {EMB_UMAP_PATH.name}: {len(kept)} points kept, {dropped} dropped")
-        else:
-            print(f"{EMB_UMAP_PATH.name}: no orphan points")
-    else:
-        print(f"no {EMB_UMAP_PATH.name} — UMAP prune skipped")
-
 
 # ----- B. orphan R2 images ----------------------------------------------
 
@@ -394,7 +374,7 @@ def main() -> int:
         description="Cull orphan embeddings + unreferenced R2 images. Dry-run by default."
     )
     ap.add_argument("--apply", action="store_true",
-                    help="rewrite seed/embeddings.{bin,json} + prune umap2d.json (destructive)")
+                    help="rewrite seed/embeddings.{bin,json} (destructive)")
     ap.add_argument("--delete", action="store_true",
                     help="delete orphan objects from the R2 bucket (destructive)")
     ap.add_argument("--limit", type=int, default=0,

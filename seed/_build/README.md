@@ -74,7 +74,6 @@ rebuild — recoverable from git history, gone from the live tree.
 | Embed stack | What it does |
 |---|---|
 | `embed_nodes.py` | Gemini Embedding 2 (multimodal) → `seed/embeddings.{bin,json}`. Idempotent. |
-| `project_umap.py` | UMAP-2D projection → `seed/embeddings.umap2d.json`. Deterministic. |
 | `calibrate.py` + `calibration_pairs.json` | Threshold calibration for τ_kin / τ_visual / τ_attribute. |
 
 ## What's NOT here
@@ -120,7 +119,6 @@ python3 seed/_build/gen_stats.py                          # regenerate seed/STAT
 
 # Embeddings — needs GEMINI_API_KEY in .env. ALWAYS mirror (above) first.
 seed/_build/.venv/bin/python3 seed/_build/embed_nodes.py
-seed/_build/.venv/bin/python3 seed/_build/project_umap.py
 seed/_build/.venv/bin/python3 seed/_build/cull_orphans.py            # dry-run: orphan embeddings + R2
 seed/_build/.venv/bin/python3 seed/_build/cull_orphans.py --apply   # after a cull: realign sidecars
 

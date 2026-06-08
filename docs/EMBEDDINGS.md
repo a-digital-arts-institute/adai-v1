@@ -50,12 +50,6 @@ A split between offline batch (heavy, occasional, API-bound) and online derive (
                 │       ▼                                  │
                 │  seed/embeddings.bin   (f32 LE × 768)    │
                 │  seed/embeddings.json  (offsets, hashes) │
-                │       │                                  │
-                │       ▼                                  │
-                │  project_umap.py                         │
-                │       │                                  │
-                │       ▼                                  │
-                │  seed/embeddings.umap2d.json             │
                 └────────────────┬─────────────────────────┘
                                  │  (committed to git)
                                  ▼
@@ -84,7 +78,6 @@ A split between offline batch (heavy, occasional, API-bound) and online derive (
                 │  • /neighbours/:type/:slug → topK        │
                 │  • /field — dashed derived edges,        │
                 │             'e' toggles embed mode       │
-                │  • /embed-space — UMAP scatter           │
                 │  • /review?kind=ai_suggestion            │
                 │  • Approval → real CREATED_BY edge       │
                 │  • Rejection → rejected_ai_suggestions   │
@@ -100,7 +93,7 @@ A split between offline batch (heavy, occasional, API-bound) and online derive (
 | Derive (cosine pairwise) is fast and self-contained | TypeScript — runs inside the Node server, no Python boundary |
 | Re-derive after a curator approval should be cheap | `npm run embed:derive` in-process; sub-second pass over the current vector set (~16k post-rebuild) |
 
-Sidecars (`embeddings.bin`, `embeddings.json`, `embeddings.umap2d.json`) are **committed to git** so the Docker build picks them up at build time. The `.gitignore` carries a warning against re-ignoring them — accidentally stripping them would silently produce an empty embedding space in production.
+Sidecars (`embeddings.bin`, `embeddings.json`) are **committed to git** so the Docker build picks them up at build time. The `.gitignore` carries a warning against re-ignoring them — accidentally stripping them would silently produce an empty embedding space in production.
 
 ---
 
@@ -165,7 +158,6 @@ seed/_build/
 ├── image_fetch.py        — HTTP fetch + Pillow downsample + local SQLite cache
 ├── calibration_pairs.json — hand-picked positives/negatives for threshold tuning
 ├── calibrate.py          — prints histograms, recommends τ values
-├── project_umap.py       — offline UMAP 2D projection
 └── .image_cache.sqlite   — gitignored fetch cache (~60 MB after first run)
 ```
 
@@ -202,12 +194,9 @@ seed/_build/.venv/bin/python3 seed/_build/embed_nodes.py --dry-run
 
 # Restrict to a subset
 seed/_build/.venv/bin/python3 seed/_build/embed_nodes.py --types artwork --limit 50
-
-# After embed: re-project to 2D for /embed-space
-seed/_build/.venv/bin/python3 seed/_build/project_umap.py
 ```
 
-`GEMINI_API_KEY` lives in `.env` (gitignored). The Python venv at `seed/_build/.venv` has `google-genai`, `pillow`, `python-dotenv`, `umap-learn`.
+`GEMINI_API_KEY` lives in `.env` (gitignored). The Python venv at `seed/_build/.venv` has `google-genai`, `pillow`, `python-dotenv`.
 
 ---
 
@@ -305,7 +294,6 @@ It is **platform-crossing**: the tag *vocabulary* is seeded from fxhash tags, bu
 | **Profile pages** (`/practitioner/:slug`, `/artwork/:slug`, `/concept/:slug`, `/scene/:slug`) | Style kin / Visually affine / Style proximity / pending AI proposals — computed on-demand from in-memory vectors (~1 ms per request) | `src/routes/pages.ts::renderEmbeddingSections` |
 | **`/neighbours/:type/:slug`** | Top-K cosine neighbours of any node; shareable URL with knobs for query/candidate kind, type prefix, k | `src/routes/pages.ts` (handler) + `src/embed/neighbours.ts` |
 | **`/field`** | Derived edges render dashed by default. Press **`e`** (or click the chrome chip) to flip into "embeddings mode": curatorial edges fade to ~3 % alpha, STYLE_KIN + VISUALLY_AFFINE rise to ~60 % | `public/field/sketch-graph.js::edgeDimming` |
-| **`/embed-space`** | UMAP 2D scatter of all embedding vectors; pan / zoom / hover / search / click-to-profile. Practitioners cluster by aesthetic, artworks by visual similarity, concepts by semantic field | `src/routes/pages.ts` (handler) + `src/routes/api.ts::/api/embed-space` |
 | **`/review?kind=ai_suggestion`** | Curatorial queue for AI attribution proposals with cosine scores visible | `src/routes/pages.ts::/review` + `src/routes/api.ts` approve/reject handlers |
 
 ### Edge colors
@@ -324,7 +312,7 @@ Plus the dashed stroke (`setLineDash([5, 4])`) so they're trivially distinguisha
 The pipeline ships with the Docker image — no runtime API calls, no GEMINI_API_KEY needed in production.
 
 - **Builder stage**: `COPY seed/` brings in the sidecars; `npm run seed:consolidated` loads embeddings and chains `derive()` so the baked `seed.db` ships complete.
-- **Runtime stage**: `seed.db` + `seed/embeddings.umap2d.json` (the only sidecar needed at runtime — the `.bin` and `.json` are already baked into `seed.db`).
+- **Runtime stage**: `seed.db` only — the `.bin` and `.json` sidecars are already baked into it, so no embedding sidecar ships separately at runtime.
 - **`.dockerignore`** excludes `seed/_build/` (483 MB venv + research artifacts).
 - **Volume migration**: on first deploy after a schema/data change, the persistent `/data/adai.db` keeps the old data. The documented fix is the volume nuke: `flyctl ssh console -C "sh -c 'rm -f /data/adai.db*'"` + `flyctl machine restart`. On restart the entrypoint copies the new baked seed.db.
 
@@ -351,7 +339,7 @@ Total derive pass: **0.3 s** over the full vector space.
 
 ### Spot checks that the embedding space is real
 
-- **Fidenza's UMAP neighbours** (Tyler Hobbs's signature work): Meridian, Subscapes, Ringers, Chromie Squiggle, Incomplete Control (Hobbs again), The Eternal Pump — exactly the top-tier Art Blocks generative neighbourhood
+- **Fidenza's nearest neighbours** (Tyler Hobbs's signature work): Meridian, Subscapes, Ringers, Chromie Squiggle, Incomplete Control (Hobbs again), The Eternal Pump — exactly the top-tier Art Blocks generative neighbourhood
 - **Fidenza's style-centroid match**: Tyler Hobbs at 0.93, then Casey Reas at 0.86 (Δ = 0.07 to the right creator)
 - **Casey Reas's style kin**: Kim Asendorf 0.94, Tyler Hobbs 0.93, Harm van den Dorpel, Mario Klingemann, Simon Denny, Vera Molnár — the generative/algorithmic crowd
 - **AI-attribution proposals that actually work**:
@@ -386,8 +374,7 @@ Grow `seed/_build/calibration_pairs.json` toward 100/100. Re-run `npm run embed:
 ```bash
 # After editing seed/nodes.json (especially adding new artworks or rich descriptions)
 seed/_build/.venv/bin/python3 seed/_build/embed_nodes.py    # idempotent
-seed/_build/.venv/bin/python3 seed/_build/project_umap.py   # re-project for /embed-space
-git add seed/embeddings.{bin,json,umap2d.json}
+git add seed/embeddings.{bin,json}
 git commit -m "embed: re-embed after <reason>"
 ```
 
@@ -409,5 +396,4 @@ The Docker build will pick up the new sidecars on next deploy.
 - [Gemini Embedding 2 announcement](https://developers.googleblog.com/en/building-with-gemini-embedding-2/)
 - [Gemini API model card](https://ai.google.dev/gemini-api/docs/models/gemini-embedding-2-preview)
 - [Vertex multimodal embeddings guide](https://docs.cloud.google.com/vertex-ai/generative-ai/docs/embeddings/get-multimodal-embeddings) (task prefixes, limits)
-- [UMAP paper](https://arxiv.org/abs/1802.03426) (used for the `/embed-space` projection)
 - A(DAI) implementation: this directory + `../src/embed/` + `../seed/_build/`

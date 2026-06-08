@@ -202,8 +202,8 @@ seed/{nodes,edges}.json   (adds PRACTICES, EMBODIES, CLASSIFIED_BY)
     ↓ canon validated again
     ↓
 embed pipeline
-    ↓ embed_nodes.py + project_umap.py + npm run embed:derive
-seed/embeddings.{bin,json,umap2d.json}   +   STYLE_KIN/VISUALLY_AFFINE
+    ↓ embed_nodes.py + npm run embed:derive
+seed/embeddings.{bin,json}   +   STYLE_KIN/VISUALLY_AFFINE
     ↓
 image overlay pass
     ↓ find_missing_images.py + upload_to_r2.py --overlay

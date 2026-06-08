@@ -5,14 +5,12 @@
  * window.__adaiDotRegistry — the canonical (x, y, radius) of every dot it
  * draws, in brand logical coords (window.__adaiBrandSize = { w, h }).
  *
- * Layout = best of both worlds:
- *   1. Fetch /api/embed-space (Gemini 2 multimodal UMAP, 768-d → 2-d).
- *   2. Read the Shape-of-Time dot registry, preserving the field's draw order.
- *   3. Field-flow mode places graph nodes in repeated type-runs along that
- *      draw order, so the coloured overlay rides the field instead of reading
- *      as scattered confetti.
- *   4. Within each type-run, embedded nodes still follow UMAP target order, so
- *      the graph keeps a soft semantic contour without overriding the field.
+ * Field-flow layout:
+ *   1. Read the Shape-of-Time dot registry, preserving the field's draw order.
+ *   2. Place graph nodes in repeated type-runs along that order, so the
+ *      coloured hover overlay rides the field as bands instead of reading as
+ *      scattered confetti. Within each run, nodes fall back to intention then
+ *      name order.
  *
  * Result: bundle.sim[i].(bx,by) coincides exactly with a Shape-of-Time dot.
  *
@@ -24,9 +22,8 @@
 (() => {
   // ---- config ----
   const CFG = {
-    // 30k snapshot draws every graph node onto a Shape-of-Time dot. In
-    // field-flow mode the coloured base layer follows the field's draw order;
-    // focused views still use the graph to reveal actual neighbours.
+    // 30k snapshot binds every graph node to a Shape-of-Time dot in field-flow
+    // order; focused views use the graph to reveal actual neighbours.
     DOT_HEX: '#FFFFFF',
     BASE_ALPHA: 0.92,
     NEUTRAL_ALPHA: 0.55,
@@ -48,10 +45,6 @@
     REGISTRY_POLL_MS: 80,
     REGISTRY_TIMEOUT_MS: 4000,
 
-    // UMAP → brand-space normalisation. 15% inset on each axis so the
-    // semantic cluster sits inside the spiral, not against its edges.
-    UMAP_PADDING: 0.15,
-    FIELD_FLOW_LAYOUT: true,
     FIELD_FLOW_RUN_MIN: 3,
     FIELD_FLOW_RUN_MAX: 34,
     FIELD_FLOW_RUN_SCALE: 36,
@@ -472,26 +465,6 @@
     return picked;
   }
 
-  // ---- UMAP layout source ----------------------------------------------
-  // /api/embed-space returns a precomputed UMAP projection of every node's
-  // multimodal embedding (Gemini Embedding 2, 768-d → 2-d via UMAP, cosine,
-  // n_neighbors=15, min_dist=0.1, seed=42). 1,338/1,491 nodes are covered.
-  async function fetchEmbedSpace() {
-    try {
-      const res = await fetch('/api/embed-space', { cache: 'no-cache' });
-      if (!res.ok) {
-        console.warn('[adai] /api/embed-space →', res.status);
-        return null;
-      }
-      const data = await res.json();
-      if (!data || !Array.isArray(data.items)) return null;
-      return data;
-    } catch (err) {
-      console.warn('[adai] /api/embed-space failed:', err.message || err);
-      return null;
-    }
-  }
-
   // Z-priority: smaller = drawn first (= behind). Practitioners + artworks
   // paint on top so they stay readable in dense snapped clusters.
   const Z_BY_TYPE = {
@@ -632,20 +605,8 @@
     return FIELD_FLOW_TYPE_RANK.has(type) ? FIELD_FLOW_TYPE_RANK.get(type) : FIELD_FLOW_TYPE_ORDER.length;
   }
 
-  function sortNodesWithinFieldRun(graph, targets) {
+  function sortNodesWithinFieldRun(graph) {
     return (a, b) => {
-      const ta = targets.get(a.id);
-      const tb = targets.get(b.id);
-      if (ta && tb) {
-        const dy = ta.ty - tb.ty;
-        if (Math.abs(dy) > 0.001) return dy;
-        const dx = ta.tx - tb.tx;
-        if (Math.abs(dx) > 0.001) return dx;
-      } else if (ta) {
-        return -1;
-      } else if (tb) {
-        return 1;
-      }
       const ia = graph.intentionOf(a.id);
       const ib = graph.intentionOf(b.id);
       if (ib !== ia) return ib - ia;
@@ -662,22 +623,21 @@
     );
   }
 
-  function orderNodesByFieldFlow(graph, embedded, unembedded, targets) {
+  function orderNodesByFieldFlow(graph, nodes) {
     const groups = new Map();
     const add = (node) => {
       let group = groups.get(node.type);
       if (!group) { group = []; groups.set(node.type, group); }
       group.push(node);
     };
-    for (const node of embedded) add(node);
-    for (const node of unembedded) add(node);
+    for (const node of nodes) add(node);
 
-    const sorter = sortNodesWithinFieldRun(graph, targets);
+    const sorter = sortNodesWithinFieldRun(graph);
     for (const group of groups.values()) group.sort(sorter);
 
     const types = Array.from(groups.keys())
       .sort((a, b) => fieldFlowTypeRank(a) - fieldFlowTypeRank(b) || a.localeCompare(b));
-    const total = embedded.length + unembedded.length;
+    const total = nodes.length;
     const initialCounts = new Map(types.map(type => [type, groups.get(type).length]));
     const ordered = [];
 
@@ -697,7 +657,7 @@
     return ordered;
   }
 
-  function assignFieldFlowPositions(graph, available, embedded, unembedded, targets) {
+  function assignFieldFlowPositions(graph, available, nodes) {
     const positions = available
       .slice()
       .sort((a, b) => {
@@ -707,10 +667,10 @@
         if (a.y !== b.y) return a.y - b.y;
         return a.x - b.x;
       });
-    const nodes = orderNodesByFieldFlow(graph, embedded, unembedded, targets);
+    const ordered = orderNodesByFieldFlow(graph, nodes);
     const sim = [];
-    for (let i = 0; i < nodes.length && i < positions.length; i++) {
-      const n = nodes[i];
+    for (let i = 0; i < ordered.length && i < positions.length; i++) {
+      const n = ordered[i];
       const p = positions[i];
       p.used = true;
       sim.push({
@@ -726,172 +686,30 @@
     return sim;
   }
 
-  // ---- semantic snapping -----------------------------------------------
-  // The heart of the field: UMAP says where in semantic space a node
-  // belongs; the Shape of Time provides the dot grid. We greedily pair
-  // each embedded node to the *closest available* spiral dot to its
-  // UMAP-target. Position is the spiral's; cluster is UMAP's.
-  function pairNodesToPositions(graph, brand, embedSpace) {
-    // 1. Pool of available brand dots (one slot per graph node).
+  // ---- field-flow layout -----------------------------------------------
+  // Bind every graph node to a Shape-of-Time dot. Nodes are laid out in
+  // repeated type-runs along the field's own draw order (fieldIndex), so the
+  // coloured hover overlay rides the field as bands instead of reading as
+  // scattered confetti. Within each run, nodes fall back to intention then
+  // name order. Position is the spiral's; the colour is the run's.
+  function pairNodesToPositions(graph, brand) {
+    // Pool of available brand dots (one slot per graph node).
     const wanted = graph.nodes.length;
     const pool = pickDistinctPositions(brand, wanted);
     const available = pool.map(p => ({
       x: p.x, y: p.y, radius: p.radius, used: false,
     }));
 
-    // 2. Partition graph nodes by whether they have an embedding.
-    const embedById = new Map();
-    if (embedSpace && Array.isArray(embedSpace.items)) {
-      for (const it of embedSpace.items) embedById.set(it.id, it);
-    }
-    const embedded = [];
-    const unembedded = [];
-    for (const n of graph.nodes) {
-      if (embedById.has(n.id)) embedded.push(n);
-      else unembedded.push(n);
-    }
-
-    // 3. UMAP bbox → 15%-padded brand-space target per embedded node.
-    let minX =  Infinity, minY =  Infinity;
-    let maxX = -Infinity, maxY = -Infinity;
-    for (const n of embedded) {
-      const e = embedById.get(n.id);
-      if (typeof e.x !== 'number' || typeof e.y !== 'number') continue;
-      if (e.x < minX) minX = e.x;
-      if (e.x > maxX) maxX = e.x;
-      if (e.y < minY) minY = e.y;
-      if (e.y > maxY) maxY = e.y;
-    }
-    if (!isFinite(minX) || maxX === minX || maxY === minY) {
-      minX = -1; maxX = 1; minY = -1; maxY = 1;
-    }
-    const pad = CFG.UMAP_PADDING;
-    const innerW = brand.brandW * (1 - 2 * pad);
-    const innerH = brand.brandH * (1 - 2 * pad);
-    
-    // Preserve aspect ratio: find the max range across both axes
-    const rangeX = maxX - minX;
-    const rangeY = maxY - minY;
-    const maxRange = Math.max(rangeX, rangeY);
-    
-    // Calculate scale factor to fit within the padded area
-    const scale = Math.min(innerW, innerH) / maxRange;
-    
-    // Center the cluster in the brand space
-    const cx = brand.brandW / 2;
-    const cy = brand.brandH / 2;
-    const umapCx = minX + rangeX / 2;
-    const umapCy = minY + rangeY / 2;
-
-    const targets = new Map();
-    for (const n of embedded) {
-      const e = embedById.get(n.id);
-      // Scale and translate relative to the center
-      const tx = cx + (e.x - umapCx) * scale;
-      const ty = cy + (e.y - umapCy) * scale;
-      targets.set(n.id, { tx, ty });
-    }
-
-    let sim = [];
-    if (CFG.FIELD_FLOW_LAYOUT) {
-      sim = assignFieldFlowPositions(graph, available, embedded, unembedded, targets);
-      sim.sort((a, b) => a._z - b._z || (a.flowIndex ?? 0) - (b.flowIndex ?? 0));
-      return {
-        sim,
-        brandW: brand.brandW,
-        brandH: brand.brandH,
-        snapshotType: 'field-flow-snapped',
-        snapshotSize: sim.length,
-        totalGraph: graph.nodes.length,
-        distinctCount: pool.length,
-        embeddedCount: embedded.length,
-        unembeddedCount: unembedded.length,
-        embedModel: (embedSpace && embedSpace.model) || null,
-      };
-    }
-
-    // 4. Greedy nearest-snap. Sort embedded by intention first so the
-    //    most relationally-rich nodes claim their preferred spot before
-    //    less-connected nodes squat the same brand dot.
-    embedded.sort((a, b) => {
-      const ia = graph.intentionOf(a.id);
-      const ib = graph.intentionOf(b.id);
-      if (ib !== ia) return ib - ia;
-      return (a.name || a.id).localeCompare(b.name || b.id);
-    });
-
-    for (const n of embedded) {
-      const t = targets.get(n.id);
-      let bestI = -1, bestD2 = Infinity;
-      // Brute-force over the available pool. ~1,300 embedded × ~1,500
-      // candidate dots ≈ 2M ops, runs in a few ms once at start time.
-      for (let i = 0; i < available.length; i++) {
-        if (available[i].used) continue;
-        const dx = available[i].x - t.tx;
-        const dy = available[i].y - t.ty;
-        const d2 = dx * dx + dy * dy;
-        if (d2 < bestD2) { bestD2 = d2; bestI = i; }
-      }
-      if (bestI === -1) break;          // pool exhausted; remainder will fallback
-      const p = available[bestI];
-      p.used = true;
-      sim.push({
-        id: n.id, name: n.name, type: n.type,
-        bx: p.x, by: p.y, bRad: p.radius,
-        x: 0, y: 0,
-        _z: zForType(n.type),
-      });
-    }
-
-    // 5. Fallback for unembedded nodes — drop them on the outermost
-    //    remaining dots (closest to the spiral periphery), shuffled so
-    //    the placement feels random rather than alphabetised.
-    if (unembedded.length) {
-      const cxBrand = brand.brandW / 2;
-      const cyBrand = brand.brandH / 2;
-      const remaining = available
-        .filter(p => !p.used)
-        .sort((a, b) => {
-          const da = (a.x - cxBrand) ** 2 + (a.y - cyBrand) ** 2;
-          const db = (b.x - cxBrand) ** 2 + (b.y - cyBrand) ** 2;
-          return db - da; // farthest from centre first
-        });
-      // Take the outer slice we actually need (or as much of the pool as
-      // we have if it's smaller).
-      const slice = remaining.slice(0, unembedded.length);
-      // Fisher–Yates shuffle inside the slice so the placement is random.
-      for (let i = slice.length - 1; i > 0; i--) {
-        const j = (Math.random() * (i + 1)) | 0;
-        const tmp = slice[i]; slice[i] = slice[j]; slice[j] = tmp;
-      }
-      for (let k = 0; k < unembedded.length && k < slice.length; k++) {
-        const n = unembedded[k];
-        const p = slice[k];
-        p.used = true;
-        sim.push({
-          id: n.id, name: n.name, type: n.type,
-          bx: p.x, by: p.y, bRad: p.radius,
-          x: 0, y: 0,
-          _z: zForType(n.type),
-        });
-      }
-    }
-
-    // 6. Z-sort so the high-priority types render on top of overlapping
-    //    low-priority ones in the snapped constellation.
-    sim.sort((a, b) => a._z - b._z);
-
+    const sim = assignFieldFlowPositions(graph, available, graph.nodes);
+    sim.sort((a, b) => a._z - b._z || (a.flowIndex ?? 0) - (b.flowIndex ?? 0));
     return {
       sim,
       brandW: brand.brandW,
       brandH: brand.brandH,
-      snapshotType: 'umap-snapped',
+      snapshotType: 'field-flow',
       snapshotSize: sim.length,
       totalGraph: graph.nodes.length,
       distinctCount: pool.length,
-      embeddedCount: embedded.length,
-      unembeddedCount: unembedded.length,
-      embedModel: (embedSpace && embedSpace.model) || null,
     };
   }
 
@@ -3126,25 +2944,17 @@
     const canvas = ensureCanvas();
     let { ctx, w, h } = sizeCanvas(canvas);
 
-    // Wait for the spiral registry and the UMAP projection in parallel.
-    const [brand, embedSpace] = await Promise.all([
-      waitForRegistry(),
-      fetchEmbedSpace(),
-    ]);
+    // Wait for the spiral registry (the Shape-of-Time dots we bind to).
+    const brand = await waitForRegistry();
     if (!brand) {
       console.warn('[adai] dotRegistry unavailable — skipping graph layer');
       return;
     }
     console.log(`[adai] dotRegistry: ${brand.positions.length} brand positions; graph: ${graph.nodes.length} nodes`);
-    if (embedSpace) {
-      console.log(`[adai] embed-space: ${embedSpace.items.length} UMAP points (model=${embedSpace.model || '?'})`);
-    } else {
-      console.warn('[adai] /api/embed-space unavailable — falling back to fully random distribution');
-    }
 
-    const bundle = pairNodesToPositions(graph, brand, embedSpace);
+    const bundle = pairNodesToPositions(graph, brand);
     reproject(bundle);
-    console.log(`[adai] snapshot: ${bundle.snapshotSize} nodes snapped (embedded=${bundle.embeddedCount}, fallback=${bundle.unembeddedCount}) over ${bundle.distinctCount} distinct brand positions`);
+    console.log(`[adai] snapshot: ${bundle.snapshotSize} nodes placed over ${bundle.distinctCount} distinct brand positions`);
     restoreBrandOpacity();
 
     window.ADAI_GRAPH_FIELD = bundle;
@@ -3381,7 +3191,8 @@
       }
     }
 
-    canvas.addEventListener('mousemove', handlePointerMove, { passive: true });
+    // Pointer events cover mouse, touch and pen — binding mousemove too would
+    // fire the handler twice per move on mouse devices.
     canvas.addEventListener('pointermove', handlePointerMove, { passive: true });
 
     function handlePointerLeave() {
@@ -3392,7 +3203,6 @@
       }
     }
 
-    canvas.addEventListener('mouseleave', handlePointerLeave);
     canvas.addEventListener('pointerleave', handlePointerLeave);
 
     canvas.addEventListener('click', (e) => {
@@ -3490,62 +3300,29 @@
 
     function frame() {
       ctx.clearRect(0, 0, w, h);
-      const driftAt30k = (!bundle.viewLevel || bundle.viewLevel === '30k')
-        && !bundle.transitioning;
-      const drift = driftAt30k ? CFG.DRIFT : 0;
       const hovId = bundle.getHoveredId();
       const selId = bundle.getSelectedId();
       const zoomed = (bundle.viewLevel && bundle.viewLevel !== '30k');
       const inPlaceFocus = bundle.viewLevel === 'field-focus';
       const inPlaceReveal = bundle.viewLevel === 'field-reveal';
       const focusedId = bundle.focusedId;
-      // ---- 30k constellation layer ----
-      // Always drawn: the colour-coded constellation is the browsable base view.
-      // Crucially it is TRANSFORM-LINKED to the Shape-of-Time camera — each dot is
-      // projected through ADAI_FIELD_STUDY so it zooms/pans in lockstep with the
-      // bitmap rather than being hidden on zoom-in (and popping on zoom-out). At
-      // rest (zoomScale 1) the projection is identity, so the base look + drift
-      // breathing are unchanged. focusDim fades it back during an in-place focus
-      // so the glow + relationship threads read over it.
+      // ---- 30k hover-reveal colour layer ----
+      // The white Shape of Time is the resting base (drawn by sketch-brand.js).
+      // Here we only bloom palette colour through the field dots under the
+      // cursor, projected through ADAI_FIELD_STUDY so the reveal tracks the
+      // camera. No persistent colour constellation is painted.
       {
         const study = window.ADAI_FIELD_STUDY;
         const zoomScale = study && typeof study.zoomScale === 'number' ? study.zoomScale : 1;
-        const cameraZoomed = zoomScale > 1.01;
-        // Camera transform fetched ONCE per frame (one layout read) so we can
-        // project all ~4700 dots inline — calling projectFieldDot per dot did a
-        // getBoundingClientRect each, which tanked the focus-state framerate.
+        // Camera transform fetched ONCE per frame (one layout read) so the
+        // hover-reveal dots can be projected inline without a per-dot layout read.
         const T = study && study.getTransform ? study.getTransform() : null;
-        // Dim the constellation through BOTH the reveal and focus phases. If we
-        // only dimmed during focus, switching node→node would flash the field to
-        // full brightness for the ~900ms reveal (dimmed → bright → dimmed pulse).
-        const focusDim = (inPlaceFocus || inPlaceReveal) ? CFG.FIELD_FOCUS_BACKGROUND_ALPHA : 1;
+        // The coloured base constellation is no longer drawn — the white Shape of
+        // Time stays primary and colour only blooms through the field dots under
+        // the cursor (hover-reveal below). The graph nodes' field positions still
+        // drive focus/threads; they just aren't painted as a resting colour layer.
         const colorHalos = [];
         const colorCores = [];
-        for (let i = 0; i < bundle.sim.length; i++) {
-          const s = bundle.sim[i];
-          let px, py, pr;
-          if (T) {
-            // Follow the camera, projected inline from the once-per-frame
-            // transform (radius scaled by the camera so dots grow/shrink in sync).
-            px = T.left + (s.bx * T.scale + T.x) * T.screenScale;
-            py = T.top + (s.by * T.scale + T.y) * T.screenScale;
-            pr = s.r * zoomScale;
-          } else if (cameraZoomed) {
-            const p = projectFieldDot(s);
-            px = p.x; py = p.y; pr = s.r * zoomScale;
-          } else {
-            if (drift) {
-              s.x += (Math.random() - 0.5) * drift;
-              s.y += (Math.random() - 0.5) * drift;
-            }
-            px = s.x; py = s.y; pr = s.r;
-          }
-          // Off-screen cull. At rest the whole field is on-screen (no effect),
-          // but when the camera is zoomed most projected dots fall outside the
-          // viewport — skipping them is the big win for focus-state framerate.
-          const m = pr * CFG.HALO_RADIUS_MULT + 4;
-          if (px < -m || px > w + m || py < -m || py > h + m) continue;
-        }
 
         if (!zoomed && !inPlaceReveal && !inPlaceFocus && cursorX != null && cursorY != null) {
           const rect = T ? null : (bundle.canvasRect || { left: 0, top: 0, width: w, height: h });
