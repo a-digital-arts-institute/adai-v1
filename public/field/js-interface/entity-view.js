@@ -37,6 +37,15 @@
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
+  // Clickable contribute CTA (review note 7): the /contribute form is live;
+  // direct API writes need a contributor token — the hover title says so
+  // instead of leaving a dead "via /contribute skill" string.
+  const CONTRIB_LINK = '<a class="ev-contrib-link" href="/contribute" target="_blank" rel="noopener" title="opens the contribute form in a new tab — direct API writes need a contributor token">contribute ↗</a>';
+  // Linkify the legacy phrase inside already-escaped empty-state copy.
+  function linkifyContribute(escapedText) {
+    return escapedText.replace(/contribute via \/contribute skill/g, CONTRIB_LINK);
+  }
+
   // ---------- Image helpers (artworks only — practitioners stay text/hatch) ----------
   // Trust any http(s) URL. The R2 cdn is content-addressed and guaranteed
   // image/* at upload (upload_to_r2 refuses non-image content-types), and
@@ -142,14 +151,14 @@
     // Empty hero — diagonal hatch placeholder, copy invites contribution.
     const fallback = showcase?.hero?.fallback_copy || 'img.hero / signature work';
     const isShowcase = !!showcase;
-    const sub = isShowcase
-      ? 'awaiting linkage — image fields not yet populated for this work'
-      : 'contribute via /contribute skill — sense, then link';
+    const subHtml = isShowcase
+      ? escapeHtml('awaiting linkage — image fields not yet populated for this work')
+      : `${CONTRIB_LINK} — sense, then link`;
     return `
       <figure class="ev-hero ev-hero--empty" data-hatch="1">
         <figcaption class="ev-hero-cap">
           <span class="ev-mono-tag">${escapeHtml(fallback)}</span><br>
-          <span class="ev-mono-dim">drop: ${escapeHtml(sub)}</span>
+          <span class="ev-mono-dim">drop: ${subHtml}</span>
         </figcaption>
       </figure>
     `;
@@ -230,7 +239,7 @@
       return `
         <section class="ev-section">
           <h2 class="ev-h2">// works <span class="ev-h2-count">/00</span></h2>
-          <p class="ev-empty">no works have been linked to this practitioner yet — <em>contribute via /contribute skill</em></p>
+          <p class="ev-empty">no works have been linked to this practitioner yet — <em>${CONTRIB_LINK}</em></p>
         </section>
       `;
     }
@@ -245,7 +254,7 @@
       const yearTag = w.year ? `<span class="ev-work-year">[${escapeHtml(w.year)}]</span>` : '';
       const mediumLine = (w.medium || w.method)
         ? `<p class="ev-work-medium">${escapeHtml(w.medium || '')} ${w.method ? `· <span class="ev-work-method">method: ${escapeHtml(w.method)}</span>` : ''}</p>`
-        : `<p class="ev-work-medium ev-mono-dim">medium · method · year — <em>awaiting via /contribute skill</em></p>`;
+        : `<p class="ev-work-medium ev-mono-dim">medium · method · year — <em>awaiting ${CONTRIB_LINK}</em></p>`;
       const blurbLine = w.blurb ? `<p class="ev-work-blurb">// ${escapeHtml(w.blurb)}</p>` : '';
       return `
         <article class="ev-work">
@@ -299,7 +308,7 @@
       return `
         <section class="ev-section">
           <h2 class="ev-h2">// relations <span class="ev-h2-count">/00 ·n=00</span></h2>
-          <p class="ev-empty">no relations linked yet — <em>contribute via /contribute skill</em></p>
+          <p class="ev-empty">no relations linked yet — <em>${CONTRIB_LINK}</em></p>
         </section>
       `;
     }
@@ -308,8 +317,11 @@
       const items = buckets.get(t);
       const rows = items.map(({ node: n, edges }) => {
         const qualifier = qualifiers[n.id] || edges.map(e => e.type.toLowerCase().replace(/_/g, ' ')).join(' · ');
+        // data-node-id makes the row a navigation surface (review note 6):
+        // the document click handler below re-opens the entity view on it,
+        // same as the embedding-neighbour cards.
         return `
-          <li class="ev-rel-row">
+          <li class="ev-rel-row" data-node-id="${escapeHtml(n.id)}" role="link" tabindex="0" title="open ${escapeHtml(n.name)}">
             <span class="ev-rel-leader">··········</span>
             <span class="ev-rel-tag">[${escapeHtml(t)}]</span>
             <span class="ev-rel-name">${escapeHtml(n.name)}</span>
@@ -337,7 +349,7 @@
       return `
         <section class="ev-section">
           <h2 class="ev-h2">// ${escapeHtml(label)} <span class="ev-h2-count">/00</span></h2>
-          <p class="ev-empty">${escapeHtml(opts.empty || `no ${label} listed yet — contribute via /contribute skill`)}</p>
+          <p class="ev-empty">${linkifyContribute(escapeHtml(opts.empty || `no ${label} listed yet — contribute via /contribute skill`))}</p>
         </section>
       `;
     }
@@ -365,7 +377,7 @@
     if (!showcase) {
       return `
         <footer class="ev-provenance">
-          <span class="ev-prov-tag">source_origin: graph-stub</span> · <span class="ev-prov-tag">awaiting enrichment via /contribute skill</span>
+          <span class="ev-prov-tag">source_origin: graph-stub</span> · <span class="ev-prov-tag">awaiting enrichment — ${CONTRIB_LINK}</span>
         </footer>
       `;
     }
@@ -543,7 +555,27 @@
   function open(id) {
     if (!id) return;
     const el = ensureContainer();
-    el.innerHTML = render(id);
+    // Defensive render (review note 11: "crashed in profile view, breadcrumb
+    // showed but no profile"). A throwing section must degrade to a visible
+    // error state, not a silently-empty overlay.
+    let html;
+    try {
+      html = render(id);
+    } catch (err) {
+      console.error('[entity-view] render failed for', id, err);
+      html = `
+        ${renderClose()}
+        <article class="ev-article">
+          <p class="ev-empty">profile failed to render for <span class="ev-mono-tag">${escapeHtml(id)}</span> —
+          <span class="ev-mono-dim">${escapeHtml((err && err.message) || 'unknown error')}</span>.
+          press esc and retry; if it persists, it's ours to fix.</p>
+        </article>
+      `;
+    }
+    el.innerHTML = html;
+    // Re-opens kept the previous scroll position — navigating from a card
+    // halfway down one profile landed halfway down the next (review note 5).
+    el.scrollTop = 0;
     el.classList.add('is-open');
     el.setAttribute('aria-hidden', 'false');
     STATE.open = true;
@@ -600,7 +632,8 @@
   // neighbour cards (re-open entity view on the clicked neighbour).
   document.addEventListener('click', (e) => {
     if (!STATE.open) return;
-    const card = e.target?.closest?.('.ev-emb-card');
+    // Embedding-neighbour cards AND relation rows both navigate (note 6).
+    const card = e.target?.closest?.('.ev-emb-card, .ev-rel-row[data-node-id]');
     if (card && card.dataset.nodeId) {
       e.preventDefault();
       const nextId = card.dataset.nodeId;
@@ -616,10 +649,24 @@
     const action = e.target?.closest?.('[data-action]')?.dataset?.action;
     if (action === 'close') {
       e.preventDefault(); close();
+    } else if (action === 'add') {
+      // The + header icon routes to the live contribute form (note 7).
+      e.preventDefault();
+      window.open('/contribute', '_blank', 'noopener');
     } else if (action === 'chat') {
       e.preventDefault();
       // Narrator wired in next phase — placeholder.
       console.log('[entity-view] chat narrator not yet wired');
+    }
+  });
+
+  // Keyboard activation for the relation rows (they carry role="link").
+  document.addEventListener('keydown', (e) => {
+    if (!STATE.open || (e.key !== 'Enter' && e.key !== ' ')) return;
+    const row = document.activeElement?.closest?.('.ev-rel-row[data-node-id]');
+    if (row) {
+      e.preventDefault();
+      row.click();
     }
   });
 
@@ -799,6 +846,20 @@
     .ev-rel-tag { color: #6a6a6c; }
     .ev-rel-name { color: var(--text); }
     .ev-rel-qualifier { color: #8a8a8c; text-align: right; }
+    .ev-rel-row[data-node-id] { cursor: pointer; }
+    .ev-rel-row[data-node-id]:hover,
+    .ev-rel-row[data-node-id]:focus-visible {
+      background: rgba(255,255,255,0.045); outline: none;
+    }
+    .ev-rel-row[data-node-id]:hover .ev-rel-name,
+    .ev-rel-row[data-node-id]:focus-visible .ev-rel-name {
+      color: #fff; text-decoration: underline; text-underline-offset: 3px;
+    }
+
+    .ev-contrib-link {
+      color: #8a8a8c; text-decoration: underline dotted; text-underline-offset: 3px;
+    }
+    .ev-contrib-link:hover { color: var(--text); }
 
     .ev-list { list-style: none; padding: 0; margin: 0; }
     .ev-list-row {

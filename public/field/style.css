@@ -329,7 +329,15 @@ html, body {
   right: 32px;
   display: flex;
   align-items: center;
-  gap: 18px;
+  /* Wrap into right-aligned rows instead of one ~700px line — the single
+   * row spilled into the centre and sat under the (centre-docked) archivist
+   * bar on most screens (review note 16). max-width keeps it in the
+   * bottom-right corner; two tidy rows beat one overlapped one. */
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  max-width: 432px;
+  row-gap: 6px;
+  column-gap: 16px;
   padding: 10px 16px;
   font-size: 14px;
   letter-spacing: 0.14em;
@@ -337,7 +345,7 @@ html, body {
   z-index: 10;
   background: rgba(6, 6, 8, 0.22);
   border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 999px;
+  border-radius: 16px;
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(18px);
 }

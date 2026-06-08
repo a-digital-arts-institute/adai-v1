@@ -119,8 +119,13 @@
     IN_PLACE_ANCHOR_MIN_SEP: 34,
     // Desired anchor targets are clamped this many px inside the viewport,
     // so the widened elliptical layouts scatter UP TO the screen edges but
-    // never beyond them (room for a dot + the start of its label).
+    // never beyond them (room for a dot + the start of its label). Top and
+    // bottom are deeper than the sides: the top band carries the breadcrumb
+    // (54px) + bookmarks strip (88px), the bottom the archivist bar — review
+    // note 14 asked that graph content stop drifting under them.
     IN_PLACE_TARGET_INSET: 76,
+    IN_PLACE_TARGET_INSET_TOP: 132,
+    IN_PLACE_TARGET_INSET_BOTTOM: 96,
     // Anchor stickiness (px of score slack). Anchors re-assign on every
     // camera step; without hysteresis the greedy pick swapped between
     // near-equivalent dots frame to frame and the threads flicked during
@@ -2140,6 +2145,35 @@
     occupied.push({ x0: rect.x0, y0: rect.y0, x1: rect.x1, y1: rect.y1 });
   }
 
+  // Screen rects of the DOM chrome (breadcrumb, bookmark/edge-filter/embed
+  // strips, logotype, vitals, rooms nav, archivist bar) so canvas labels are
+  // never placed underneath them (review note 14: "avoid graph content
+  // underlaying across the top navigation / pathway"). Cached and refreshed
+  // at most twice a second — getBoundingClientRect per frame would thrash
+  // layout; the chrome moves rarely (renders, dock cycling, resize).
+  const CHROME_RECT_SELECTORS = [
+    '#adai-breadcrumb', '#adai-bookmarks', '#adai-edge-filter',
+    '#adai-embed-strip', '#logotype', '#coordinates', '#vitals',
+    '#rooms', '#archivist-bar',
+  ];
+  let chromeRectsCache = { t: 0, rects: [] };
+  function chromeOccupiedRects() {
+    const now = performance.now();
+    if (now - chromeRectsCache.t < 500) return chromeRectsCache.rects;
+    const rects = [];
+    for (const sel of CHROME_RECT_SELECTORS) {
+      const el = document.querySelector(sel);
+      if (!el) continue;
+      // Hidden/empty chrome (display:none, cleared innerHTML) collapses to a
+      // ~0-size rect and is skipped here.
+      const r = el.getBoundingClientRect();
+      if (r.width < 2 || r.height < 2) continue;
+      rects.push({ x0: r.left - 4, y0: r.top - 4, x1: r.right + 4, y1: r.bottom + 4 });
+    }
+    chromeRectsCache = { t: now, rects };
+    return rects;
+  }
+
   function labelBudget(width, height, candidateCount) {
     const areaBudget = Math.floor((width * height) / 52000);
     const max = candidateCount > 36 ? CFG.LABEL_DENSE_MAX_VISIBLE : CFG.LABEL_MAX_VISIBLE;
@@ -2309,14 +2343,17 @@
     }
 
     const inset = CFG.IN_PLACE_TARGET_INSET;
+    const insetTop = CFG.IN_PLACE_TARGET_INSET_TOP;
+    const insetBottom = CFG.IN_PLACE_TARGET_INSET_BOTTOM;
     for (const item of neighbors) {
       const desired = desiredById.get(item.id);
       const dx = desired ? (desired.x - layoutCx) * CFG.IN_PLACE_LAYOUT_SCALE : 0;
       const dy = desired ? (desired.y - layoutCy) * CFG.IN_PLACE_LAYOUT_SCALE : 0;
       // Clamp targets to stay inside the viewport (the elliptical layouts
       // reach for the edges; an off-centre focus must not push them past).
+      // Top/bottom insets are deeper — they clear the chrome bands.
       const targetX = clamp(focusPoint.x + dx, inset, width - inset);
-      const targetY = clamp(focusPoint.y + dy, inset, height - inset);
+      const targetY = clamp(focusPoint.y + dy, insetTop, height - insetBottom);
       const targetDistance = Math.hypot(targetX - focusPoint.x, targetY - focusPoint.y);
 
       // Two-tier pick: prefer the best candidate that keeps MIN_SEP from every
@@ -2686,7 +2723,9 @@
     }
 
     if (!bundle.transitioning) {
-      const occupiedLabels = [];
+      // Seed with the DOM chrome rects so labels never render under the
+      // breadcrumb/strips/nav (copied — reserveLabel mutates the array).
+      const occupiedLabels = chromeOccupiedRects().slice();
       const focusNode = graph.byId.get(bundle.focusedId);
       ctx.font = `13px 'SF Mono', monospace`;
       ctx.textBaseline = 'middle';
