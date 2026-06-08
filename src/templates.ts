@@ -89,5 +89,5 @@ export function htmlEscape(s: string): string {
 }
 
 export function htmlPage(title: string, body: string): string {
-  return `<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>${title} — A(DAI)</title><style>${CSS}</style></head><body><div class='wrap'><header><h1>A<span>(DAI)</span></h1><nav><a href='/'>Home</a><a href='/explore'>Explore</a><a href='/graph'>Graph</a><a href='/contribute'>Contribute</a><a href='/review'>Review</a><a href='/api/stats'>Stats</a></nav></header>${body}<footer>A(DAI) — digital arts knowledge commons</footer></div></body></html>`;
+  return `<!DOCTYPE html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>${title} — A(DAI)</title><style>${CSS}</style></head><body><div class='wrap'><header><h1>A<span>(DAI)</span></h1><nav><a href='/'>field</a><a href='/contribute'>Contribute</a><a href='/review'>Review</a><a href='/api/stats'>Stats</a></nav></header>${body}<footer>A(DAI) — digital arts knowledge commons</footer></div></body></html>`;
 }

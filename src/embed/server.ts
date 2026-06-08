@@ -26,7 +26,7 @@
 
 import crypto from "node:crypto";
 import type { DatabaseSync } from "node:sqlite";
-import { encodeBlob, l2normalise, DIMS } from "./vectors.js";
+import { encodeBlob, l2normalise, DIMS, invalidateVectorCache } from "./vectors.js";
 
 const EMBED_MODEL = process.env.EMBED_MODEL || "gemini-embedding-2";
 const TASK_PREFIX = "task: sentence similarity | query: ";
@@ -307,6 +307,7 @@ export async function embedNodeNow(db: DatabaseSync, nodeId: string): Promise<Em
     imageHash,
     textHash || null
   );
+  invalidateVectorCache(); // new/updated vector must be visible to neighbours now
 
   return {
     status: "embedded",
