@@ -8,7 +8,7 @@ folding into [a-digital-arts-institute/adai-v1](https://github.com/a-digital-art
 
 **Live frontend** (everything `index.html` actually loads):
 
-- `index.html` — main entry, with `#sense / #query / #contribute / #connect / #philosophy` rooms
+- `index.html` — main entry, with `#sense / #query / #contribute / #philosophy` rooms
 - `style.css`, `css/`
 - `field.js` — Chrome layer (coords, vitals, room nav)
 - `sketch-brand.js` — Shape of Time renderer (the live animated layer)
