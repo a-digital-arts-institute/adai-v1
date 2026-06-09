@@ -61,11 +61,14 @@
     } catch {}
   }
   function loadPanelOpen() {
+    // Default closed: the archivist must not auto-open on entering the graph.
+    // It only opens on explicit user action; that choice is then remembered
+    // for the rest of the browser session (sessionStorage clears on tab close).
     try {
       const saved = sessionStorage.getItem(PANEL_OPEN_KEY);
-      return saved == null ? true : saved !== '0';
+      return saved == null ? false : saved !== '0';
     } catch {
-      return true;
+      return false;
     }
   }
   function savePanelOpen(open) {

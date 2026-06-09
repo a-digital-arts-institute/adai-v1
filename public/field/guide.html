@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contributor guide · A(DAI)</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='3' fill='%234169B0'/><text x='12' y='17' font-size='14' font-family='monospace' font-weight='400' fill='%23ffffff' text-anchor='middle'>()</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cobalt: #4169B0;
+      --cobalt-soft: rgba(65,105,176,0.08);
+      --ink: #111114;
+      --muted: #55565b;
+      --line: #e4e4e7;
+      --mono: 'IBM Plex Mono', 'SF Mono', Menlo, Consolas, monospace;
+      --serif: 'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'Segoe UI', Roboto, Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0; background: #ffffff; color: var(--ink);
+      font-family: var(--serif); font-size: 18px; line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 56px 24px 96px; }
+
+    /* top bar */
+    .topbar {
+      display: flex; justify-content: space-between; align-items: center;
+      font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em;
+      color: var(--muted); margin-bottom: 56px;
+    }
+    .topbar a { color: var(--cobalt); text-decoration: none; }
+    .topbar a:hover { text-decoration: underline; }
+    .topbar .mark { color: var(--ink); font-weight: 600; letter-spacing: 0.02em; }
+
+    /* hero */
+    .eyebrow {
+      font-family: var(--mono); font-size: 12px; font-weight: 600;
+      letter-spacing: 0.18em; text-transform: uppercase; color: var(--cobalt);
+      margin: 0 0 14px;
+    }
+    h1 {
+      font-family: var(--serif); font-weight: 500; font-size: 44px;
+      line-height: 1.1; letter-spacing: -0.01em; margin: 0 0 10px;
+    }
+    .lead {
+      font-size: 22px; color: var(--muted); margin: 0 0 8px;
+    }
+    .hero { padding-bottom: 36px; border-bottom: 2px solid var(--cobalt); margin-bottom: 44px; }
+
+    /* section headings */
+    .sec-label {
+      font-family: var(--mono); font-size: 12px; font-weight: 600;
+      letter-spacing: 0.16em; text-transform: uppercase; color: var(--cobalt);
+      margin: 0 0 14px;
+    }
+    p { margin: 0 0 18px; }
+    .intro p:last-child { margin-bottom: 0; }
+    .intro { margin-bottom: 52px; }
+
+    /* numbered items */
+    .item { margin: 0 0 40px; }
+    .item__head { display: flex; align-items: baseline; gap: 16px; margin: 0 0 10px; }
+    .item__num {
+      font-family: var(--mono); font-weight: 700; font-size: 15px;
+      color: var(--cobalt); flex: none; min-width: 28px;
+      border: 1.5px solid var(--cobalt); border-radius: 4px;
+      text-align: center; padding: 2px 0; line-height: 1.2;
+    }
+    .item__title {
+      font-family: var(--serif); font-weight: 600; font-size: 23px;
+      line-height: 1.25; margin: 0;
+    }
+    .item__body { padding-left: 44px; }
+    .item__body p:last-child { margin-bottom: 0; }
+
+    /* the hard rule callout */
+    .hardrule {
+      border: 2px solid var(--cobalt); background: var(--cobalt-soft);
+      padding: 26px 28px; margin: 0 0 40px;
+    }
+    .hardrule .item__head { margin-bottom: 6px; }
+    .hardrule__kicker {
+      font-family: var(--mono); font-size: 12px; font-weight: 700;
+      letter-spacing: 0.16em; text-transform: uppercase; color: var(--cobalt);
+      margin: 0 0 4px;
+    }
+    .defn { margin: 18px 0; padding-left: 18px; border-left: 3px solid var(--cobalt); }
+    .defn p { margin: 0 0 12px; }
+    .defn p:last-child { margin-bottom: 0; }
+    .defn b { font-weight: 600; }
+
+    /* sub block (images) */
+    .sub-label {
+      font-family: var(--mono); font-size: 13px; font-weight: 600;
+      letter-spacing: 0.04em; color: var(--ink); margin: 24px 0 12px;
+    }
+    ol.methods { margin: 0 0 18px; padding-left: 22px; }
+    ol.methods li { margin: 0 0 12px; }
+    ol.methods li::marker { color: var(--cobalt); font-family: var(--mono); font-weight: 600; }
+
+    /* ask lists — copyable prompt buttons */
+    .asklist { list-style: none; margin: 0; padding: 0; }
+    .asklist li { margin: 0; }
+    .asklist li:not(:last-child) .ask { border-bottom: 1px solid var(--line); }
+    .ask {
+      display: flex; align-items: center; gap: 13px; width: 100%;
+      text-align: left; background: transparent; border: 0;
+      padding: 14px 8px; cursor: pointer; font: inherit; color: var(--ink);
+      transition: background 120ms ease;
+    }
+    .ask:hover { background: var(--cobalt-soft); }
+    .ask:focus-visible { outline: 2px solid var(--cobalt); outline-offset: -2px; }
+    .ask__dot { flex: none; width: 7px; height: 7px; background: var(--cobalt); }
+    .ask__text { flex: 1 1 auto; min-width: 0; font-size: 17px; line-height: 1.5; }
+    .ask__q { font-style: italic; }
+    .ask__note { color: var(--muted); font-size: 16px; }
+    .ask__copy {
+      margin-left: auto; flex: none; align-self: center;
+      font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--cobalt);
+      border: 1px solid var(--line); padding: 4px 9px;
+      transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+    }
+    .ask:hover .ask__copy { border-color: var(--cobalt); }
+    .ask.copied .ask__copy { background: var(--cobalt); color: #fff; border-color: var(--cobalt); }
+    .block { margin-bottom: 52px; }
+
+    /* that's it */
+    .closer {
+      text-align: center; padding: 44px 0 0; margin-top: 8px;
+      border-top: 2px solid var(--cobalt);
+    }
+    .closer .sec-label { margin-bottom: 12px; }
+    .closer p { font-size: 20px; margin: 0; }
+
+    /* footer */
+    .foot {
+      margin-top: 64px; padding-top: 22px; border-top: 1px solid var(--line);
+      font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em;
+      color: var(--muted); display: flex; justify-content: space-between;
+      flex-wrap: wrap; gap: 10px;
+    }
+    .foot .mark { color: var(--ink); }
+    .foot a { color: var(--cobalt); text-decoration: none; }
+    .foot a:hover { text-decoration: underline; }
+
+    @media (max-width: 560px) {
+      h1 { font-size: 34px; }
+      .lead { font-size: 19px; }
+      .item__body { padding-left: 0; }
+      .wrap { padding: 36px 20px 72px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <span class="mark">A(DAI)</span>
+      <a href="/field">← back to the field</a>
+    </div>
+
+    <header class="hero">
+      <p class="eyebrow">A 2-minute read</p>
+      <h1>Contributor guide.</h1>
+      <p class="lead">Before you add to the graph.</p>
+    </header>
+
+    <section class="intro">
+      <p class="sec-label">A shared commons</p>
+      <p>You've been given access to A(DAI), a shared, public knowledge graph about digital art — artists, artworks, exhibitions, concepts, and the connections between them. Anything you add becomes part of that shared map.</p>
+      <p>You won't be writing to the graph by hand. You'll work through an AI assistant in a code sandbox — something like Claude Cowork — that handles the mechanics for you. You describe what you want to add in plain language; the assistant checks for duplicates, drafts the entries, shows you what it's about to post, and writes it once you confirm. A few things are worth knowing before you start. None of it is hard; it just helps you contribute well.</p>
+    </section>
+
+    <div class="item">
+      <div class="item__head">
+        <span class="item__num">1</span>
+        <h2 class="item__title">Your name is on everything you add</h2>
+      </div>
+      <div class="item__body">
+        <p>Every entry is stamped with you as the source — automatically, and it can't be faked as someone else. Note: that's who <em>submitted</em> it, not who it's <em>about</em>. If you add a show with ten artists, all ten entries are credited to you as the contributor. So you're effectively vouching for what you add. Add things you can stand behind.</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="item__head">
+        <span class="item__num">2</span>
+        <h2 class="item__title">It's public, and it's permanent</h2>
+      </div>
+      <div class="item__body">
+        <p>The graph is open — anyone can read it. And there's no delete button, on purpose. You don't erase mistakes here; you correct them — edit the details, or mark an old connection as outdated. So treat everything you add as public and lasting.</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="item__head">
+        <span class="item__num">3</span>
+        <h2 class="item__title">Don't worry about duplicates — just ask the assistant to check</h2>
+      </div>
+      <div class="item__body">
+        <p>The graph already holds thousands of artists and works, so something you want to add may already be there (often under a slightly different spelling). You don't need to search the graph yourself. Just ask the assistant to check first — <em>"can you see if this already exists?"</em> — and it will look and flag any matches before creating anything. That's all it takes to avoid duplicates.</p>
+      </div>
+    </div>
+
+    <div class="item hardrule">
+      <p class="hardrule__kicker">The one hard rule</p>
+      <h2 class="item__title">"Influenced by" and "responds to" need proof</h2>
+      <p style="margin-top:14px;">Most connections are factual and easy (who made a work, where it showed, who was in a show). But two connections are special:</p>
+      <div class="defn">
+        <p><b>Influenced by</b> — one artist shaped another</p>
+        <p><b>Responds to</b> — one artwork answers another</p>
+      </div>
+      <p style="margin-bottom:0;">You may add these only when the artist actually said so, or if you are an archivist. Never add them just because two works look or feel similar. And when you do add one, give the assistant the source (a link or quote) so it can be saved as a short note alongside the connection — that way anyone can check it.</p>
+    </div>
+
+    <div class="item">
+      <div class="item__head">
+        <span class="item__num">5</span>
+        <h2 class="item__title">Keep private things out</h2>
+      </div>
+      <div class="item__body">
+        <p>It's a public commons. Leave out anything confidential.</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="item__head">
+        <span class="item__num">6</span>
+        <h2 class="item__title">Look before it posts</h2>
+      </div>
+      <div class="item__body">
+        <p>The assistant should show you exactly what it's about to add, before it goes live. Always glance at it first. One show / one small batch at a time beats dumping everything at once.</p>
+      </div>
+    </div>
+
+    <div class="item">
+      <div class="item__head">
+        <span class="item__num">7</span>
+        <h2 class="item__title">Adding artworks and images</h2>
+      </div>
+      <div class="item__body">
+        <p>Adding several artworks at once is easy — just share the list with the assistant. For each work, the details that matter are title, artist, and year, plus medium if you have it (a theme or concept is a bonus). The assistant will create each one, link it to its artist and to the show it was in, and check for duplicates as it goes. No formatting needed — a plain list is fine.</p>
+
+        <p class="sub-label">Images</p>
+        <p>A(DAI) shows one representative image per entry — it's a map, not a photo gallery. You're not capped at one image overall, just one per entry, so a 12-work show = 12 entries, each with its own picture. Two ways to send them:</p>
+        <ol class="methods">
+          <li><b>Directly</b> — for a few works or one show: drop the files (or links) into the chat and say which work each belongs to.</li>
+          <li><b>As a batch</b> — for a whole archive: a structured file with an image column (file name or URL per work). Ask the assistant for the ready-to-fill template and it will share one.</li>
+        </ol>
+        <p>One image per work, under ~12 MB, with a source link where you have one. Hand the assistant the images (or point it to them) alongside the artwork list, and it will attach each one to the right entry.</p>
+      </div>
+    </div>
+
+    <section class="block">
+      <p class="sec-label">Handy things to say while contributing</p>
+      <ul class="asklist">
+        <li><button class="ask" type="button"><span class="ask__dot" aria-hidden="true"></span><span class="ask__text"><span class="ask__q">Who am I writing as?</span><span class="ask__note"> — confirm your identity before adding anything</span></span><span class="ask__copy">Copy</span></button></li>
+        <li><button class="ask" type="button"><span class="ask__dot" aria-hidden="true"></span><span class="ask__text"><span class="ask__q">Does this already exist?</span><span class="ask__note"> — check before creating</span></span><span class="ask__copy">Copy</span></button></li>
+        <li><button class="ask" type="button"><span class="ask__dot" aria-hidden="true"></span><span class="ask__text"><span class="ask__q">Show me what you'll add before you post it.</span></span><span class="ask__copy">Copy</span></button></li>
+        <li><button class="ask" type="button"><span class="ask__dot" aria-hidden="true"></span><span class="ask__text"><span class="ask__q">What's my source for this?</span><span class="ask__note"> — especially for influence / responds-to</span></span><span class="ask__copy">Copy</span></button></li>
+        <li><button class="ask" type="button"><span class="ask__dot" aria-hidden="true"></span><span class="ask__text"><span class="ask__q">Will this go live now, or be reviewed first?</span></span><span class="ask__copy">Copy</span></button></li>
+        <li><button class="ask" type="button"><span class="ask__dot" aria-hidden="true"></span><span class="ask__text"><span class="ask__q">Is anything here too private to be public?</span></span><span class="ask__copy">Copy</span></button></li>
+        <li><button class="ask" type="button"><span class="ask__dot" aria-hidden="true"></span><span class="ask__text"><span class="ask__q">Here are the works from the show — can you add them and attach these images?</span></span><span class="ask__copy">Copy</span></button></li>
+      </ul>
+    </section>
+
+    <section class="block">
+      <p class="sec-label">The bigger picture — just ask</p>
+      <p>Put any of these to the assistant directly, and it will answer for your situation:</p>
+      <ul class="asklist">
+        <li><button class="ask" type="button"><span class="ask__dot" aria-hidden="true"></span><span class="ask__text"><span class="ask__q">What is A(DAI)?</span></span><span class="ask__copy">Copy</span></button></li>
+        <li><button class="ask" type="button"><span class="ask__dot" aria-hidden="true"></span><span class="ask__text"><span class="ask__q">Who runs it, and how is it governed?</span></span><span class="ask__copy">Copy</span></button></li>
+        <li><button class="ask" type="button"><span class="ask__dot" aria-hidden="true"></span><span class="ask__text"><span class="ask__q">How is provenance and credit handled?</span></span><span class="ask__copy">Copy</span></button></li>
+        <li><button class="ask" type="button"><span class="ask__dot" aria-hidden="true"></span><span class="ask__text"><span class="ask__q">What happens if someone adds to my entry?</span></span><span class="ask__copy">Copy</span></button></li>
+        <li><button class="ask" type="button"><span class="ask__dot" aria-hidden="true"></span><span class="ask__text"><span class="ask__q">How do I see my profile?</span></span><span class="ask__copy">Copy</span></button></li>
+        <li><button class="ask" type="button"><span class="ask__dot" aria-hidden="true"></span><span class="ask__text"><span class="ask__q">How do I find out who has contributed?</span></span><span class="ask__copy">Copy</span></button></li>
+        <li><button class="ask" type="button"><span class="ask__dot" aria-hidden="true"></span><span class="ask__text"><span class="ask__q">How do I check my own history?</span></span><span class="ask__copy">Copy</span></button></li>
+      </ul>
+    </section>
+
+    <section class="closer">
+      <p class="sec-label">That's it</p>
+      <p>Welcome — your contributions make the map richer for everyone.</p>
+    </section>
+
+    <footer class="foot">
+      <span><span class="mark">A(DAI)</span> · A Digital Arts Institute</span>
+      <a href="https://digitalartsinstitute.io">digitalartsinstitute.io</a>
+    </footer>
+  </div>
+  <script>
+    // Click any prompt to copy it to the clipboard (the italic question text only).
+    document.querySelectorAll('.ask').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var q = btn.querySelector('.ask__q');
+        var text = q ? q.textContent.trim() : '';
+        if (!text) return;
+        var done = function () {
+          var label = btn.querySelector('.ask__copy');
+          btn.classList.add('copied');
+          if (label && !label.dataset.prev) label.dataset.prev = label.textContent;
+          if (label) label.textContent = 'Copied';
+          clearTimeout(btn._t);
+          btn._t = setTimeout(function () {
+            btn.classList.remove('copied');
+            if (label && label.dataset.prev) label.textContent = label.dataset.prev;
+          }, 1400);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(done).catch(fallback);
+        } else { fallback(); }
+        function fallback() {
+          var ta = document.createElement('textarea');
+          ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+          document.body.appendChild(ta); ta.focus(); ta.select();
+          try { document.execCommand('copy'); } catch (e) {}
+          document.body.removeChild(ta); done();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
