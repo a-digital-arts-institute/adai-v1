@@ -430,7 +430,7 @@
     return `
       <section class="ev-section ev-embeddings" id="ev-embeddings">
         <h2 class="ev-h2">// embedding neighbours <span class="ev-h2-count" id="ev-emb-count">/··</span></h2>
-        <p class="ev-empty" id="ev-emb-status">computing cosine neighbours over the embedding space…</p>
+        <p class="ev-empty adai-embed-loading" id="ev-emb-status"><span class="adai-spin"></span>computing cosine neighbours over the embedding space…</p>
       </section>
     `;
   }
@@ -486,12 +486,31 @@
     const root = document.getElementById('ev-embeddings');
     if (!root) return;
     const slug = node.slug || node.id.split(':').slice(1).join(':');
+    // Timeout the fetch so a stalled connection (Safari especially) surfaces a
+    // retry instead of an endless spinner. The neighbours are server-computed
+    // (cosine over precomputed vectors), so this is purely a network wait.
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 12000);
+    const showRetry = (label) => {
+      const status = root.querySelector('#ev-emb-status');
+      if (!status) return;
+      status.className = 'ev-empty adai-embed-retry';
+      status.textContent = `${label} — retry`;
+      status.onclick = () => {
+        if (STATE.currentId !== node.id) return;
+        status.className = 'ev-empty adai-embed-loading';
+        status.innerHTML = '<span class="adai-spin"></span>computing cosine neighbours over the embedding space…';
+        fillEmbeddings(node);
+      };
+    };
     try {
       const r = await fetch(`/api/neighbours/${encodeURIComponent(node.type)}/${encodeURIComponent(slug)}`, {
         headers: { 'accept': 'application/json' },
+        signal: ctrl.signal,
       });
+      clearTimeout(timer);
       if (!r.ok) {
-        root.querySelector('#ev-emb-status').textContent = `embedding neighbours unavailable (${r.status})`;
+        showRetry(`embedding neighbours unavailable (${r.status})`);
         return;
       }
       const payload = await r.json();
@@ -509,8 +528,11 @@
       body.innerHTML = renderEmbeddingsBody(payload);
       root.appendChild(body);
     } catch (err) {
-      const status = root.querySelector('#ev-emb-status');
-      if (status) status.textContent = 'embedding neighbours unavailable (network error)';
+      clearTimeout(timer);
+      if (STATE.currentId !== node.id) return;
+      showRetry(err && err.name === 'AbortError'
+        ? 'embedding neighbours slow to respond'
+        : 'embedding neighbours unavailable (network error)');
       console.warn('[entity-view] /api/neighbours fetch failed', err);
     }
   }

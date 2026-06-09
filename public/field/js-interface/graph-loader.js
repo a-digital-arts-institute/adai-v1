@@ -184,11 +184,23 @@
       };
 
       if (worker) {
+        let settled = false;
         const onMsg = (ev) => {
           const m = ev.data || {};
-          if (m.type === 'derived') { worker.removeEventListener('message', onMsg); merge(m.edges || []); }
-          else if (m.type === 'error' && !m.fatal) { worker.removeEventListener('message', onMsg); resolve(0); }
+          if (m.type === 'derived') { settled = true; clearTimeout(watchdog); if (worker) worker.removeEventListener('message', onMsg); merge(m.edges || []); }
+          else if (m.type === 'error' && !m.fatal) { settled = true; clearTimeout(watchdog); if (worker) worker.removeEventListener('message', onMsg); resolve(0); }
         };
+        // If the worker goes silent (Safari fetch/IDB stall), give up gracefully
+        // after the budget — embeddings mode just shows no derived edges rather
+        // than spinning forever. (The worker's own 15s fetch timeout usually
+        // posts an error first; this is the backstop for a wedged worker.)
+        const watchdog = setTimeout(() => {
+          if (settled) return;
+          settled = true;
+          if (worker) worker.removeEventListener('message', onMsg);
+          console.warn('[adai] derived layer load timed out — embeddings view without derived edges');
+          resolve(0);
+        }, 18000);
         worker.addEventListener('message', onMsg);
         worker.postMessage({ type: 'derived', url: DERIVED_URL });
       } else {
@@ -203,8 +215,23 @@
 
   // --- Worker-driven load --------------------------------------------------
   let worker = null;
+  // Single-publish guard: whichever path produces a first paint first (worker
+  // OR the direct fallback) wins. Without this, a worker that recovers *after*
+  // the watchdog already fell back would emit a 2nd 'adai:graph' and start a
+  // duplicate renderer.
+  let published = false;
+  let fellBack = false;
+  // Safari intermittently stalls a Worker's streaming fetch (reader.read never
+  // resolves) or IndexedDB.open (callbacks never fire) on reload — with no
+  // error, so the field hangs forever on "loading field". (Chrome doesn't hit
+  // these.) If the worker hasn't produced a first paint within this window,
+  // assume it's wedged, kill it and load on the main thread. Generous so a
+  // genuinely slow cold load on iPad wifi never trips it.
+  const WORKER_WATCHDOG_MS = 10000;
 
   function publish(payload, meta) {
+    if (published) return;
+    published = true;
     const indexed = wrapIndex(payload, meta);
     window.ADAI_GRAPH = indexed;
     setLoadingState('ready');
@@ -214,18 +241,30 @@
   function loadViaWorker(stats) {
     const stamp = `${stats.nodes}:${stats.curatedEdges}`;
     try {
-      worker = new Worker('/field-static/js-interface/graph-worker.js?v=20260530a');
+      worker = new Worker('/field-static/js-interface/graph-worker.js?v=20260609a');
     } catch (err) {
       console.warn('[adai] worker spawn failed, falling back:', err.message);
       return loadFallback(stats);
     }
+
+    let firstPaint = false;
+    const watchdog = setTimeout(() => {
+      if (firstPaint || published) return;
+      console.warn('[adai] graph worker silent >' + WORKER_WATCHDOG_MS + 'ms — falling back to direct fetch (Safari stream/IDB stall?)');
+      try { if (worker) worker.terminate(); } catch (_) { /* noop */ }
+      worker = null;
+      loadFallback(stats);
+    }, WORKER_WATCHDOG_MS);
+
     worker.addEventListener('message', (ev) => {
       const m = ev.data || {};
       if (m.type === 'ready') {
         // Cache hit — full index in one shot.
+        firstPaint = true; clearTimeout(watchdog);
         publish(m.payload, { stamp, fromCache: m.fromCache });
       } else if (m.type === 'nodes') {
         // Progressive: nodes are in, paint the constellation now. Edges follow.
+        firstPaint = true; clearTimeout(watchdog);
         publish(m.payload, { stamp, fromCache: false, progressive: true });
       } else if (m.type === 'edges') {
         // Edges arrived — merge into the live index (curated edges are only
@@ -236,11 +275,13 @@
           emit('adai:graph-edges', { count: m.edges.length });
         }
       } else if (m.type === 'error' && m.fatal) {
+        clearTimeout(watchdog);
         console.warn('[adai] worker load failed, falling back:', m.message);
         loadFallback(stats);
       }
     });
     worker.addEventListener('error', (e) => {
+      clearTimeout(watchdog);
       console.warn('[adai] worker error, falling back:', e.message);
       loadFallback(stats);
     });
@@ -250,6 +291,8 @@
   // Fallback: plain /api/graph fetch + main-thread index. No cache, no
   // streaming — only used where Workers are unavailable or the worker died.
   async function loadFallback(stats) {
+    if (fellBack || published) return;   // run once; never race a worker that already painted
+    fellBack = true;
     try {
       const raw = await fetchJSON(GRAPH_URL, GRAPH_TIMEOUT_MS);
       // Build the same maps buildIndex() would, inline.

@@ -853,6 +853,87 @@
       }
     }, true);
 
+    // ---- Pinch-to-zoom (touch) ----
+    // Two fingers magnify the field around their midpoint. Unlike drag-pan
+    // (which only pans an already-zoomed field), pinch works from rest, so it's
+    // the primary touch zoom gesture. touch-action:none on the field canvases
+    // (style.css) stops iPadOS from hijacking it as native page zoom. The same
+    // suppressClickUntil gate swallows the click that follows the lift, and the
+    // graph overlay's reveal/hit-test reproject in lockstep (graph-field.js
+    // re-syncs sim positions each frame while camera.scale > 1.01).
+    const pinchPointers = new Map();   // pointerId -> {x, y} (field touches only)
+    let pinch = null;
+    function pinchSpan() {
+      const p = [...pinchPointers.values()];
+      return {
+        dist: Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y),
+        midX: (p[0].x + p[1].x) / 2,
+        midY: (p[0].y + p[1].y) / 2,
+      };
+    }
+    function beginPinch() {
+      const stage = findStage();
+      if (!stage) return;
+      const rect = stage.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      if (animationFrame) { cancelAnimationFrame(animationFrame); animationFrame = 0; }
+      drag = null;                                   // a 2nd finger cancels single-finger pan
+      document.body.classList.remove('field-panning');
+      const screenScale = getStageScreenScale(stage, rect);
+      const span = pinchSpan();
+      const stageX = (span.midX - rect.left) / screenScale;
+      const stageY = (span.midY - rect.top) / screenScale;
+      pinch = {
+        startDist: span.dist || 1,
+        startScale: camera.scale,
+        rect, screenScale,
+        anchorX: (stageX - camera.x) / camera.scale,  // field point under the midpoint
+        anchorY: (stageY - camera.y) / camera.scale,
+        moved: false,
+      };
+    }
+    function updatePinch() {
+      if (!pinch) return;
+      const span = pinchSpan();
+      const ratio = (span.dist || 1) / pinch.startDist;
+      if (!pinch.moved && Math.abs(ratio - 1) > 0.02) pinch.moved = true;
+      const scale = clamp(pinch.startScale * ratio, MIN_ZOOM, MAX_ZOOM);
+      const stageX = (span.midX - pinch.rect.left) / pinch.screenScale;
+      const stageY = (span.midY - pinch.rect.top) / pinch.screenScale;
+      if (scale > 1.01 && !zoomed) {
+        zoomed = true;
+        document.body.classList.add('field-study-zoomed');
+      }
+      applyCamera({
+        scale,
+        x: stageX - pinch.anchorX * scale,
+        y: stageY - pinch.anchorY * scale,
+      }, 'motion');
+    }
+    function endPinchPointer(e) {
+      if (!pinchPointers.has(e.pointerId)) return;
+      pinchPointers.delete(e.pointerId);
+      if (pinch && pinchPointers.size < 2) {
+        const wasPinch = pinch.moved;
+        pinch = null;
+        if (wasPinch) suppressClickUntil = performance.now() + 350;
+        if (camera.scale <= 1.02) reset();           // pinched back to rest → home
+        else applyCamera(camera, 'final');           // settle a crisp frame at the held zoom
+      }
+    }
+    document.addEventListener('pointerdown', (e) => {
+      if (e.pointerType !== 'touch' || isUiPointer(e)) return;
+      pinchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pinchPointers.size === 2) beginPinch();
+    }, true);
+    document.addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'touch' || !pinchPointers.has(e.pointerId)) return;
+      pinchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pinch && pinchPointers.size >= 2) updatePinch();
+    });
+    document.addEventListener('pointerup', endPinchPointer);
+    document.addEventListener('pointercancel', endPinchPointer);
+
     document.addEventListener('click', (e) => {
       if (isUiClick(e)) return;
       if (e.detail >= 2) {

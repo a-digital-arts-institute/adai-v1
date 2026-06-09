@@ -66,14 +66,18 @@ form textarea { min-height: 120px; resize: vertical; }
 .msg-ok { background: #0f1f0f; border: 1px solid #2a5a3a; color: #6fbf8a; }
 .msg-err { background: #1f0f0f; border: 1px solid #5a2a2a; color: #bf6f6f; }`;
 
+// NB: do NOT add `Connection: "close"` here. It was cargo-culted from the
+// original MVP port and forces a fresh TCP connection per request (no keep-alive
+// reuse). Chrome tolerates it; Safari — which manages its 6-connections-per-host
+// pool assuming keep-alive — fills the pool with closing sockets and DEADLOCKS
+// (field/embedding fetches hang for minutes). Keep-alive (the HTTP/1.1 default,
+// already used by the /api/graph/stream endpoint) is correct and fixes Safari.
 export const HTML_HEADERS = {
   "Content-Type": "text/html; charset=utf-8",
-  Connection: "close",
 } as const;
 
 export const JSON_HEADERS = {
   "Content-Type": "application/json",
-  Connection: "close",
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",

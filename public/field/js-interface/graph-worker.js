@@ -35,21 +35,30 @@ const IDB_STORE = 'graph';
 const IDB_KEY = 'current';
 
 // ---- IndexedDB (promise wrappers) ---------------------------------------
+// IDB is a best-effort cache only. On Safari, indexedDB.open() intermittently
+// never fires any callback on reload (the prior page's connection is slow to
+// release), which would hang the whole load. So this open() races a timeout and
+// also handles onblocked — any failure rejects, and the callers degrade to a
+// plain network load. The 3s budget is generous for a local DB open.
 function idbOpen() {
   return new Promise((resolve, reject) => {
+    let settled = false;
+    const finish = (fn, arg) => { if (settled) return; settled = true; clearTimeout(timer); fn(arg); };
+    const timer = setTimeout(() => finish(reject, new Error('idb open timeout')), 3000);
     let req;
     try {
       req = indexedDB.open(IDB_NAME, 1);
     } catch (err) {
-      reject(err);
+      finish(reject, err);
       return;
     }
     req.onupgradeneeded = () => {
       const db = req.result;
       if (!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE);
     };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
+    req.onsuccess = () => finish(resolve, req.result);
+    req.onerror = () => finish(reject, req.error || new Error('idb open error'));
+    req.onblocked = () => finish(reject, new Error('idb open blocked'));
   });
 }
 
@@ -100,8 +109,24 @@ async function writeCache(stamp, nodes, edges) {
 // each complete line. Carries a partial trailing line across chunk
 // boundaries. Returns { nodes, edges, meta }.
 async function streamGraph(url, onNodesReady) {
-  const res = await fetch(url, { cache: 'no-cache' });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  // Stall guard: Safari can leave a Worker fetch's reader.read() pending forever
+  // on reload. Re-arm a timer on every chunk; if no bytes arrive for STALL_MS,
+  // abort so this surfaces as an error (→ main-thread fallback) instead of a
+  // permanent hang. Armed before the fetch so a stalled connect is covered too.
+  const STALL_MS = 8000;
+  const ctrl = new AbortController();
+  let stallTimer = null;
+  const arm = () => { if (stallTimer) clearTimeout(stallTimer); stallTimer = setTimeout(() => ctrl.abort(), STALL_MS); };
+  const disarm = () => { if (stallTimer) { clearTimeout(stallTimer); stallTimer = null; } };
+  arm();
+  let res;
+  try {
+    res = await fetch(url, { cache: 'no-cache', signal: ctrl.signal });
+  } catch (err) {
+    disarm();
+    throw err;
+  }
+  if (!res.ok) { disarm(); throw new Error(`HTTP ${res.status}`); }
   const nodes = [];
   const edges = [];
   let meta = null;
@@ -121,8 +146,10 @@ async function streamGraph(url, onNodesReady) {
   };
 
   if (!res.body || !res.body.getReader) {
-    // No streaming support — fall back to a single text read.
-    for (const line of (await res.text()).split('\n')) handle(line);
+    // No streaming support — fall back to a single text read (still stall-timed).
+    const text = await res.text();
+    disarm();
+    for (const line of text.split('\n')) handle(line);
     if (!nodesFlushed) onNodesReady(nodes);
     return { nodes, edges, meta };
   }
@@ -133,6 +160,7 @@ async function streamGraph(url, onNodesReady) {
   for (;;) {
     const { done, value } = await reader.read();
     if (done) break;
+    arm();   // got bytes — reset the stall window
     carry += decoder.decode(value, { stream: true });
     let nl;
     while ((nl = carry.indexOf('\n')) >= 0) {
@@ -140,6 +168,7 @@ async function streamGraph(url, onNodesReady) {
       carry = carry.slice(nl + 1);
     }
   }
+  disarm();
   carry += decoder.decode();
   if (carry) {
     for (const line of carry.split('\n')) handle(line);
@@ -236,10 +265,18 @@ async function handleLoad(stamp, streamUrl) {
 }
 
 async function handleDerived(url) {
-  const res = await fetch(url, { cache: 'no-cache' });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const data = await res.json();
-  self.postMessage({ type: 'derived', edges: data.edges || [] });
+  // Timeout so a stalled Safari fetch can't leave embeddings-mode hanging — on
+  // abort this throws → onmessage posts a non-fatal error → loader resolves(0).
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 15000);
+  try {
+    const res = await fetch(url, { cache: 'no-cache', signal: ctrl.signal });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    self.postMessage({ type: 'derived', edges: data.edges || [] });
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 self.onmessage = (ev) => {
