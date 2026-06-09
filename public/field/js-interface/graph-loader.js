@@ -221,6 +221,7 @@
   // duplicate renderer.
   let published = false;
   let fellBack = false;
+  let curatedEdgesLoaded = false;
   // Safari intermittently stalls a Worker's streaming fetch (reader.read never
   // resolves) or IndexedDB.open (callbacks never fire) on reload — with no
   // error, so the field hangs forever on "loading field". (Chrome doesn't hit
@@ -232,10 +233,16 @@
   function publish(payload, meta) {
     if (published) return;
     published = true;
+    curatedEdgesLoaded = !(meta && meta.progressive);
     const indexed = wrapIndex(payload, meta);
     window.ADAI_GRAPH = indexed;
     setLoadingState('ready');
     emit('adai:graph', indexed);
+  }
+
+  function discardWorker() {
+    try { if (worker) worker.terminate(); } catch (_) { /* noop */ }
+    worker = null;
   }
 
   function loadViaWorker(stats) {
@@ -251,8 +258,7 @@
     const watchdog = setTimeout(() => {
       if (firstPaint || published) return;
       console.warn('[adai] graph worker silent >' + WORKER_WATCHDOG_MS + 'ms — falling back to direct fetch (Safari stream/IDB stall?)');
-      try { if (worker) worker.terminate(); } catch (_) { /* noop */ }
-      worker = null;
+      discardWorker();
       loadFallback(stats);
     }, WORKER_WATCHDOG_MS);
 
@@ -272,32 +278,65 @@
         const g = window.ADAI_GRAPH;
         if (g && typeof g.mergeEdges === 'function') {
           g.mergeEdges(m.edges);
+          curatedEdgesLoaded = true;
           emit('adai:graph-edges', { count: m.edges.length });
         }
       } else if (m.type === 'error' && m.fatal) {
         clearTimeout(watchdog);
         console.warn('[adai] worker load failed, falling back:', m.message);
-        loadFallback(stats);
+        discardWorker();
+        loadFallback(stats, { mergeIntoPublished: true });
       }
     });
     worker.addEventListener('error', (e) => {
       clearTimeout(watchdog);
       console.warn('[adai] worker error, falling back:', e.message);
-      loadFallback(stats);
+      discardWorker();
+      loadFallback(stats, { mergeIntoPublished: true });
     });
     worker.postMessage({ type: 'load', stamp, streamUrl: STREAM_URL });
   }
 
   // Fallback: plain /api/graph fetch + main-thread index. No cache, no
   // streaming — only used where Workers are unavailable or the worker died.
-  async function loadFallback(stats) {
-    if (fellBack || published) return;   // run once; never race a worker that already painted
+  function edgeKey(e) {
+    return `${e.source}\u0001${e.target}\u0001${e.type}\u0001${e.created_by || ''}`;
+  }
+
+  async function loadFallback(stats, options = {}) {
+    const mayRecoverProgressive =
+      options.mergeIntoPublished && published && !curatedEdgesLoaded;
+    if (fellBack || (published && !mayRecoverProgressive)) return;
     fellBack = true;
     try {
       const raw = await fetchJSON(GRAPH_URL, GRAPH_TIMEOUT_MS);
       // Build the same maps buildIndex() would, inline.
       const nodes = raw.nodes || [];
       const edges = raw.edges || [];
+
+      // If the worker already published the node-only progressive paint, do not
+      // emit a second adai:graph event. Recover by merging the fallback edge
+      // payload into the live index; this fills the curated graph after a
+      // Safari worker stall without starting a duplicate renderer.
+      if (mayRecoverProgressive) {
+        const g = window.ADAI_GRAPH;
+        if (g && typeof g.mergeEdges === 'function') {
+          const seen = new Set((g.edges || []).map(edgeKey));
+          const missing = edges.filter((e) => {
+            const k = edgeKey(e);
+            if (seen.has(k)) return false;
+            seen.add(k);
+            return true;
+          });
+          g.mergeEdges(missing);
+          curatedEdgesLoaded = true;
+          // The legacy /api/graph already includes derived edges, so mark loaded.
+          derivedPromise = Promise.resolve(edges.length);
+          emit('adai:graph-edges', { count: missing.length, fallback: true });
+          return;
+        }
+      }
+
       const byId = new Map(), byType = new Map();
       for (const n of nodes) {
         byId.set(n.id, n);

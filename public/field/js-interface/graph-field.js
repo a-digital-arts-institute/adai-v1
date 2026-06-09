@@ -3357,8 +3357,17 @@
     const TOUCH_REVEAL_FADE_MS = 850;
     let touchReveal = null;           // {x,y,id,moved} for the active single-finger reveal
     const activeTouchIds = new Set(); // live touch pointers on the canvas (≥2 ⇒ pinch)
-    let suppressTapZoom = false;      // a finger-drag reveal must not zoom on release
+    let suppressTapZoomUntil = 0;     // expires even if Safari never emits the synthetic click
+    let multiTouchSession = false;    // suppress residual clicks until all pinch fingers lift
     const TOUCH_REVEAL_THRESHOLD = 8; // px before a touch is a drag-reveal, not a tap
+    const TOUCH_CLICK_SUPPRESS_MS = 500;
+
+    function suppressTapZoomBriefly() {
+      suppressTapZoomUntil = Math.max(
+        suppressTapZoomUntil,
+        performance.now() + TOUCH_CLICK_SUPPRESS_MS
+      );
+    }
 
     function onResize() {
       const next = sizeCanvas(canvas);
@@ -3427,11 +3436,11 @@
       activeTouchIds.add(e.pointerId);
       if (activeTouchIds.size >= 2) {
         // Second finger ⇒ pinch (field.js drives it). Drop any reveal + hover,
-        // and suppress the tap-zoom for the rest of this multi-touch session
-        // (incl. a residual finger lifting after the pinch ends) — only a fresh
-        // single-finger down below re-enables it.
+        // and suppress the tap-zoom around the multi-touch session so a residual
+        // click from lift-off does not zoom.
+        multiTouchSession = true;
         touchReveal = null;
-        suppressTapZoom = true;
+        suppressTapZoomBriefly();
         cursorX = null; cursorY = null; cursorFadeStart = 0; cursorStrength = 1;
         if (hoveredId) { hoveredId = null; canvas.style.cursor = 'default'; }
         return;
@@ -3442,16 +3451,20 @@
       touchReveal = { x, y, id: e.pointerId, moved: false };
       cursorX = x; cursorY = y;          // bloom colour under the finger at once
       cursorStrength = 1; cursorFadeStart = 0;
-      suppressTapZoom = false;
+      suppressTapZoomUntil = 0;
+      multiTouchSession = false;
     }
 
     function handlePointerUp(e) {
       if (e.pointerType !== 'touch') return;
+      const wasMultiTouch = multiTouchSession || activeTouchIds.size >= 2;
       activeTouchIds.delete(e.pointerId);
+      if (wasMultiTouch) suppressTapZoomBriefly();
+      if (activeTouchIds.size === 0) multiTouchSession = false;
       if (touchReveal && e.pointerId === touchReveal.id) {
         if (touchReveal.moved) {
           // It was a reveal-drag, not a tap — don't zoom, ease the colour out.
-          suppressTapZoom = true;
+          suppressTapZoomBriefly();
           cursorFadeStart = performance.now();
         } else {
           // A clean tap — clear reveal and let the click handler zoom.
@@ -3480,7 +3493,10 @@
       // A finger-drag that revealed colour ends in a synthetic click — swallow
       // it so the field doesn't zoom on what was a "read", not a "tap". (Set by
       // handlePointerUp; mouse clicks never set it.)
-      if (suppressTapZoom) { suppressTapZoom = false; return; }
+      if (performance.now() < suppressTapZoomUntil) {
+        suppressTapZoomUntil = 0;
+        return;
+      }
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;

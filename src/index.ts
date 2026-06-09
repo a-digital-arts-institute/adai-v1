@@ -59,20 +59,28 @@ const PRECOMPRESS_TYPE: Record<string, string> = {
   ".svg": "image/svg+xml; charset=utf-8",
 };
 
-// Long-cache the `?v=`-busted assets in production only. In dev we serve
-// `no-cache` so editing a file (without bumping `?v=`) is picked up on reload
-// instead of being pinned for a year. (NODE_ENV=production is set in the
-// runtime Docker stage.) HTML is always no-cache — it isn't fingerprinted.
-const ASSET_CACHE_CONTROL =
-  process.env.NODE_ENV === "production"
-    ? "public, max-age=31536000, immutable"
-    : "no-cache";
+// Long-cache `?v=`-busted assets in production only. Unversioned assets under
+// /field-static (skill markdown, font files referenced from CSS) must revalidate
+// so a deploy can update them. Dev always serves no-cache so edits are live.
+const IMMUTABLE_ASSET_CACHE_CONTROL = "public, max-age=31536000, immutable";
+const REVALIDATE_CACHE_CONTROL = "no-cache";
+function assetCacheControl(req: express.Request) {
+  if (process.env.NODE_ENV !== "production") return REVALIDATE_CACHE_CONTROL;
+  const v = req.query.v;
+  const hasVersion = Array.isArray(v) ? v.some(Boolean) : Boolean(v);
+  return hasVersion ? IMMUTABLE_ASSET_CACHE_CONTROL : REVALIDATE_CACHE_CONTROL;
+}
+
+app.use("/field-static", (req, res, next) => {
+  res.setHeader("Cache-Control", assetCacheControl(req));
+  next();
+});
 
 // Serve pre-compressed siblings (scripts/precompress.mjs bakes graph-field.js.br
 // etc. at Docker build time) with ZERO per-request CPU. Brotli preferred, gzip
 // fallback. Falls through to plain express.static when no sibling exists (local
 // dev, or an asset type we don't pre-compress) so behaviour is identical there.
-// Every /field-static URL is `?v=`-busted, so we can cache the bytes immutably.
+// Versioned /field-static URLs are cached immutably; unversioned URLs revalidate.
 app.use("/field-static", (req, res, next) => {
   if (req.method !== "GET") return next();
   const rel = path.normalize(req.path);
@@ -91,7 +99,7 @@ app.use("/field-static", (req, res, next) => {
   res.setHeader("Content-Type", ctype);
   res.setHeader("Content-Encoding", enc);
   res.setHeader("Vary", "Accept-Encoding");
-  res.setHeader("Cache-Control", ASSET_CACHE_CONTROL);
+  res.setHeader("Cache-Control", assetCacheControl(req));
   fs.createReadStream(target).on("error", () => next()).pipe(res);
 });
 
@@ -99,13 +107,12 @@ app.use(
   "/field-static",
   express.static(STATIC_DIR, {
     setHeaders(res, filePath) {
-      // HTML (e.g. brand.html) isn't fingerprinted — must revalidate. Everything
-      // else under /field-static is `?v=`-busted JS/CSS/fonts/images, safe to
-      // long-cache in production (no-cache in dev — see ASSET_CACHE_CONTROL).
+      // HTML (e.g. brand.html) isn't fingerprinted — must revalidate. Other
+      // assets keep the Cache-Control chosen by the middleware above: immutable
+      // only for production requests with a `?v=` cache buster.
       if (/\.html?$/i.test(filePath)) {
-        res.setHeader("Cache-Control", "no-cache");
+        res.setHeader("Cache-Control", REVALIDATE_CACHE_CONTROL);
       } else {
-        res.setHeader("Cache-Control", ASSET_CACHE_CONTROL);
         // Matches the precompress branch's Vary so a shared cache (none today,
         // but if a CDN is ever fronted) can't hand a br client this plain copy.
         if (PRECOMPRESS_TYPE[path.extname(filePath).toLowerCase()]) {
