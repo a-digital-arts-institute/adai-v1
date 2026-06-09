@@ -160,6 +160,10 @@ router.get("/api/graph/stream", (req, res) => {
     "id, name, type, slug, " +
     "json_extract(metadata,'$.image_url') AS image_url, " +
     "json_extract(metadata,'$.cdn_image_url') AS cdn_image_url, " +
+    // tag_origin distinguishes the ~100 fxhash artist-tag concepts (folksonomy)
+    // from the ~8 wikidata-anchored base concepts (the real fields). The field
+    // view colours them differently — see colorForNode() in graph-field.js.
+    "json_extract(metadata,'$.tag_origin') AS tag_origin, " +
     YEAR_SQL_FRAGMENT;
 
   // Node + edge WHERE clauses are PINNED to /api/stats total_nodes /
@@ -241,6 +245,9 @@ router.get("/api/graph/stream", (req, res) => {
           : n.image_url
             ? { image_url: n.image_url }
             : {}),
+        // Only concepts ever carry tag_origin; shipped so the field view can
+        // tell a folksonomy tag-concept from a real field at colour time.
+        ...(n.tag_origin ? { tag_origin: n.tag_origin } : {}),
       },
     });
   }

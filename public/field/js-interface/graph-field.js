@@ -101,6 +101,14 @@
     },
     TYPE_COLOR_FALLBACK: '#E8E6E1',
 
+    // The single `concept` type holds two very different things: the ~8
+    // wikidata-anchored base concepts — the real art-historical *fields*
+    // (generative art, computer art, …) — and the ~100 fxhash artist-tag
+    // concepts (folksonomy: gif, bw, circle, …, marked by metadata.tag_origin).
+    // Fields keep the vivid `concept` olive above; tag-concepts render in this
+    // muted grey-olive so they read as background noise. See colorForNode().
+    CONCEPT_TAG_COLOR: '#6B6F5C',
+
     // Edge types we don't render at zoom views.
     // CLASSIFIED_BY is hidden because there's only one regime today (the
     // seed canon) — every node points to it, so the petal/wedge is noise.
@@ -484,6 +492,20 @@
     return CFG.TYPE_COLORS[type] || CFG.TYPE_COLOR_FALLBACK;
   }
 
+  // Like colorForType, but splits the `concept` type in two: a folksonomy
+  // tag-concept (carries tag_origin, projected onto /api/graph/stream) gets the
+  // muted CONCEPT_TAG_COLOR; a real field (no tag_origin) keeps the vivid
+  // concept olive. Accepts a sim or a raw node — both carry .type/.tag_origin.
+  // Falls back to the plain type colour for everything else (and when missing).
+  function colorForNode(n) {
+    if (n && n.type === 'concept') {
+      return n.tag_origin
+        ? CFG.CONCEPT_TAG_COLOR
+        : (CFG.TYPE_COLORS.concept || CFG.TYPE_COLOR_FALLBACK);
+    }
+    return colorForType(n && n.type);
+  }
+
   let activeFieldColorSetup = null;
 
   function hashStringToUint(value) {
@@ -678,6 +700,9 @@
       p.used = true;
       sim.push({
         id: n.id, name: n.name, type: n.type,
+        // Carried so colorForNode() can split concept→field vs concept→tag at
+        // focus/hover/select time without a graph.byId lookup.
+        tag_origin: n.tag_origin || null,
         bx: p.x, by: p.y, bRad: p.radius,
         x: 0, y: 0,
         _z: zForType(n.type),
@@ -2843,7 +2868,7 @@
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
 
-    drawCentralFocusGlow(ctx, focusPoint, focusRadius * 1.15, colorForType(focusedSim?.type), pulse, revealAlpha);
+    drawCentralFocusGlow(ctx, focusPoint, focusRadius * 1.15, colorForNode(focusedSim), pulse, revealAlpha);
 
     picked.forEach(({ item, point }, index) => {
       const reveal = clamp((elapsed - index * CFG.FIELD_REVEAL_STAGGER_MS) / 360, 0, 1);
@@ -3031,7 +3056,7 @@
     if (hoveredEntry) drawNeighbourDot(hoveredEntry);
 
     const focusPulse = 0.5 + 0.5 * Math.sin(performance.now() / 520);
-    drawCentralFocusGlow(ctx, focusPoint, focusRadius, colorForType(focusedSim?.type), focusPulse, focusAlpha);
+    drawCentralFocusGlow(ctx, focusPoint, focusRadius, colorForNode(focusedSim), focusPulse, focusAlpha);
     // If the focused node is an artwork, show its image as a hero thumbnail
     // inside the glow.
     const focusImg = getImageFor(graph.byId.get(bundle.focusedId));
@@ -3685,7 +3710,7 @@
         if (hovId && !zoomed) {
           const s = bundle.sim.find(x => x.id === hovId);
           if (s) {
-            ctx.fillStyle = colorForType(s.type);
+            ctx.fillStyle = colorForNode(s);
             ctx.globalAlpha = CFG.HOVER_HALO_ALPHA;
             ctx.beginPath();
             ctx.arc(s.x, s.y, s.r * CFG.HALO_RADIUS_MULT * 1.1, 0, Math.PI * 2);
@@ -3713,7 +3738,7 @@
         if (selId && !zoomed) {
           const s = bundle.sim.find(x => x.id === selId);
           if (s) {
-            const col = colorForType(s.type);
+            const col = colorForNode(s);
             ctx.fillStyle = col;
             ctx.globalAlpha = CFG.SELECTED_HALO_ALPHA;
             ctx.beginPath();

@@ -295,6 +295,21 @@ router.post("/api/v1/nodes", requireToken, (req, res) => {
     warnings.push(`unknown node type "${type}" — accepted, but check CLAUDE.md`);
   }
 
+  // Field-status guard (mirrors colorForNode() in graph-field.js): a concept
+  // with NO tag_origin renders as a curated *field* in /field. Only admin-scope
+  // tokens may mint one. A non-admin concept create is stamped with a tag_origin
+  // so it lands as a muted, contributor-origin concept instead of masquerading
+  // as a curated field. (fxhash concepts carry tag_origin:"platform-tags";
+  // contributor concepts get "contributor".) A curator can later promote it by
+  // clearing tag_origin via PATCH — which is itself admin-gated below.
+  let effectiveMetadata: Record<string, any> = metadata ?? {};
+  if (type === "concept" && req.contributor!.scope !== "admin") {
+    effectiveMetadata = { ...effectiveMetadata, tag_origin: "contributor" };
+    warnings.push(
+      "concept created as a contributor-origin tag, not a curated field — an admin/curator can promote it by clearing tag_origin"
+    );
+  }
+
   const slug = typeof providedSlug === "string" && providedSlug.length > 0 ? providedSlug : slugify(name);
   const computedId = composeNodeId(type, slug);
 
@@ -303,7 +318,7 @@ router.post("/api/v1/nodes", requireToken, (req, res) => {
   const signalId = insertSignal(db, {
     contributor: req.contributor!,
     title: `Create node: ${type}:${name}`,
-    content: JSON.stringify({ type, name, slug, metadata: metadata ?? {}, aliases: aliasItems }),
+    content: JSON.stringify({ type, name, slug, metadata: effectiveMetadata, aliases: aliasItems }),
     source_type: "api_node",
     batch_id: batch.value,
   });
@@ -311,7 +326,7 @@ router.post("/api/v1/nodes", requireToken, (req, res) => {
   if (isAutoMerge(req.contributor!.trust_tier)) {
     const { created } = materialiseCreateNode(
       db,
-      { op: "create_node", type, name, slug, metadata: metadata ?? {}, aliases: aliasItems },
+      { op: "create_node", type, name, slug, metadata: effectiveMetadata, aliases: aliasItems },
       { signalId, createdBy: `api-${req.contributor!.name}` }
     );
     // Still write an intake row marked approved for audit symmetry.
@@ -319,7 +334,7 @@ router.post("/api/v1/nodes", requireToken, (req, res) => {
       contributor: req.contributor!,
       signal_id: signalId,
       target_node: computedId,
-      proposed_nodes: [{ op: "create_node", type, name, slug, metadata: metadata ?? {}, aliases: aliasItems }],
+      proposed_nodes: [{ op: "create_node", type, name, slug, metadata: effectiveMetadata, aliases: aliasItems }],
     });
     ensureContributorRow(db, req.contributor!);
     bumpApprovedCount(db, req.contributor!.id);
@@ -342,7 +357,7 @@ router.post("/api/v1/nodes", requireToken, (req, res) => {
     contributor: req.contributor!,
     signal_id: signalId,
     target_node: computedId,
-    proposed_nodes: [{ op: "create_node", type, name, slug, metadata: metadata ?? {}, aliases: aliasItems }],
+    proposed_nodes: [{ op: "create_node", type, name, slug, metadata: effectiveMetadata, aliases: aliasItems }],
   });
   ensureContributorRow(db, req.contributor!);
   res.set(JSON_HEADERS).json({
@@ -374,9 +389,25 @@ router.patch("/api/v1/nodes/:id", requireToken, (req, res) => {
     res.status(400).set(JSON_HEADERS).json({ error: "request body must be a JSON object (merge-patch on metadata)" });
     return;
   }
-  const existing = db.prepare("SELECT id FROM nodes WHERE id = ?").get(nodeId) as any;
+  const existing = db.prepare("SELECT id, type FROM nodes WHERE id = ?").get(nodeId) as any;
   if (!existing) {
     res.status(404).set(JSON_HEADERS).json({ error: "node not found", node_id: nodeId });
+    return;
+  }
+
+  // Field-status guard (mirror of the create-time stamp): only admins may
+  // touch a concept's tag_origin. Clearing it would promote a contributor /
+  // folksonomy concept into a curated field — see colorForNode() in
+  // graph-field.js. Everything else about a concept stays patchable.
+  if (
+    existing.type === "concept" &&
+    req.contributor!.scope !== "admin" &&
+    Object.prototype.hasOwnProperty.call(patch, "tag_origin")
+  ) {
+    res.status(403).set(JSON_HEADERS).json({
+      error: "admin_scope_required",
+      hint: "Only an admin/curator can change a concept's field status (tag_origin).",
+    });
     return;
   }
 
