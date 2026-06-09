@@ -33,6 +33,11 @@
 const IDB_NAME = 'adai-field';
 const IDB_STORE = 'graph';
 const IDB_KEY = 'current';
+// Bump when the stream's per-node/edge PROJECTION changes (new fields like
+// `year` / `tag_origin`). The stamp only tracks row counts, so a projection
+// change alone would otherwise leave returning visitors on cached rows that
+// lack the new fields forever. v2: + node year/int/tag_origin (June 2026).
+const CACHE_SCHEMA = 2;
 
 // ---- IndexedDB (promise wrappers) ---------------------------------------
 // IDB is a best-effort cache only. On Safari, indexedDB.open() intermittently
@@ -87,7 +92,7 @@ async function readCache(stamp) {
     const db = await idbOpen();
     const rec = await idbGet(db, IDB_KEY);
     db.close();
-    if (rec && rec.stamp === stamp && rec.nodes && rec.edges) return rec;
+    if (rec && rec.stamp === stamp && rec.schema === CACHE_SCHEMA && rec.nodes && rec.edges) return rec;
     return null;
   } catch {
     return null;
@@ -97,7 +102,7 @@ async function readCache(stamp) {
 async function writeCache(stamp, nodes, edges) {
   try {
     const db = await idbOpen();
-    await idbPut(db, IDB_KEY, { stamp, nodes, edges, savedAt: Date.now() });
+    await idbPut(db, IDB_KEY, { stamp, schema: CACHE_SCHEMA, nodes, edges, savedAt: Date.now() });
     db.close();
   } catch {
     /* cache is an optimisation; never fatal */

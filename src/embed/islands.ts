@@ -1,11 +1,17 @@
 // Latent "islands" — k-means over the identity vectors.
 //
-// The /field 30k view lays nodes out in field-flow order (type-runs along the
-// Shape of Time). Islands give that layout a SEMANTIC macro-structure: each
-// cluster becomes a contiguous region of the field, so the canon's latent
-// geography (V&A plotter work, the crypto-art scene, the concept archipelago …)
-// reads spatially without a UMAP scatterplot. Computed here from the embeddings
-// we already keep — no 2D projection needed.
+// ⚠️ Currently has NO consumer: /field briefly grouped its 30k layout into
+// island regions (June 2026) but reverted to the artist's structured
+// field-flow after feedback — graph-field.js no longer fetches /api/islands.
+// The computation is kept (cheap, runs inside derive) so a future surface
+// can re-adopt the latent geography without rebuilding it.
+//
+// Original intent: the /field 30k view lays nodes out in field-flow order
+// (type-runs along the Shape of Time). Islands give that layout a SEMANTIC
+// macro-structure: each cluster becomes a contiguous region of the field, so
+// the canon's latent geography (V&A plotter work, the crypto-art scene, the
+// concept archipelago …) reads spatially without a UMAP scatterplot. Computed
+// here from the embeddings we already keep — no 2D projection needed.
 //
 // Runs inside `embed:derive` (nightly on prod + at seed time), writes the
 // local-only `node_islands` table, and is served read-only at GET /api/islands.
