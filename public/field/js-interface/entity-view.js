@@ -496,7 +496,10 @@
       if (!status) return;
       status.className = 'ev-empty adai-embed-retry';
       status.textContent = `${label} — retry`;
-      status.onclick = () => {
+      status.onclick = (e) => {
+        // Belt-and-suspenders with field.js's isUiClick guard: keep the retry
+        // click from bubbling to the document-level zoomTo handler.
+        e.stopPropagation();
         if (STATE.currentId !== node.id) return;
         status.className = 'ev-empty adai-embed-loading';
         status.innerHTML = '<span class="adai-spin"></span>computing cosine neighbours over the embedding space…';

@@ -1960,7 +1960,12 @@
         const slow = err && err.name === 'AbortError';
         el.innerHTML = `<div class="adai-embed-retry" role="button" tabindex="0" title="retry">embedding · ${slow ? 'slow to respond' : 'unavailable'} — retry</div>`;
         const retry = el.querySelector('.adai-embed-retry');
-        if (retry) retry.addEventListener('click', () => {
+        if (retry) retry.addEventListener('click', (e) => {
+          // renderEmbedStrip() re-renders this strip via innerHTML and detaches
+          // the clicked node mid-dispatch; field.js's isUiClick isConnected guard
+          // already catches that, but stopPropagation is the belt-and-suspenders
+          // every chrome chip handler uses so the document-level zoomTo never sees it.
+          e.stopPropagation();
           bundle._embedCache.delete(focusedId);
           renderEmbedStrip(bundle, graph);
         });
