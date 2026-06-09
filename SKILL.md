@@ -167,6 +167,19 @@ profile page `$ADAI_BASE/<type>/<slug>` and the field view zoomed straight
 to the node, `$ADAI_BASE/field?node=<node_id>` (URL-encode the id). The
 second one is the "look at what I added" link.
 
+**Concepts are the field vocabulary — and "field" status is curated.** In
+`/field`, a `concept` with no `tag_origin` reads as a real *field* (the
+art-historical layer: generative art, computer art, …); the ~100 fxhash artist
+tags carry `tag_origin` and read as muted folksonomy. If your token is
+**write-scope**, a concept you create is auto-stamped `tag_origin:
+"contributor"` (you'll see a `warnings` line saying so), so it lands as a
+tagged term, **not** a field. That's intended — create the concept if you need
+it as an `EMBODIES` target, but minting a genuine new field (a movement like
+cyberfeminism or tactical media) is a **curator/admin** call. If something you
+made deserves field status, flag it to a curator; an admin promotes it by
+clearing `tag_origin` (§1.3). **Admin-scope** creates skip the stamp — an
+unmarked concept is a field.
+
 **Common metadata fields by type.** Metadata is free-form, but the UI
 reads these specific keys and renders them everywhere (profile pages,
 graph/field hover, listings). Put structured data
@@ -212,7 +225,9 @@ Use this to **add or correct fields** on a node you didn't create — bios,
 status flags, biographical links, URLs. The body is a JSON merge-patch:
 keys you provide are merged, nested objects deep-merge, `null` deletes a
 key. **You can't change `id` / `type` / `slug` / `name`** — those live in
-columns, not metadata.
+columns, not metadata. And on a `concept`, only an **admin** token may touch
+`tag_origin` (the field-vs-tag switch from §1.2) — a write-scope PATCH that
+includes `tag_origin` gets a `403`; every other concept key stays patchable.
 
 The node id goes in the path, so URL-encode it. Spaces → `%20`, colons
 stay literal (curl handles them fine in unquoted form, but be safe in

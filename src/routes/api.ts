@@ -160,6 +160,10 @@ router.get("/api/graph/stream", (req, res) => {
     "id, name, type, slug, " +
     "json_extract(metadata,'$.image_url') AS image_url, " +
     "json_extract(metadata,'$.cdn_image_url') AS cdn_image_url, " +
+    // tag_origin distinguishes the ~100 fxhash artist-tag concepts (folksonomy)
+    // from the ~8 wikidata-anchored base concepts (the real fields). The field
+    // view colours them differently — see colorForNode() in graph-field.js.
+    "json_extract(metadata,'$.tag_origin') AS tag_origin, " +
     YEAR_SQL_FRAGMENT;
 
   // Node + edge WHERE clauses are PINNED to /api/stats total_nodes /
@@ -180,8 +184,8 @@ router.get("/api/graph/stream", (req, res) => {
     .all() as any[];
 
   // Per-node "intention" = count of distinct curated edge types touching it.
-  // The client's /field layout snaps nodes to brand-dot positions in intention
-  // order, so it needs this BEFORE edges arrive — that's what lets the worker
+  // The client's /field layout orders nodes BEFORE edges arrive (artworks by
+  // `year`, everything else by intention) — that's what lets the worker
   // render the node constellation progressively (nodes first) while the edges
   // (67% of the payload, only needed on zoom) are still streaming.
   const typesByNode = new Map<string, Set<string>>();
@@ -241,6 +245,9 @@ router.get("/api/graph/stream", (req, res) => {
           : n.image_url
             ? { image_url: n.image_url }
             : {}),
+        // Only concepts ever carry tag_origin; shipped so the field view can
+        // tell a folksonomy tag-concept from a real field at colour time.
+        ...(n.tag_origin ? { tag_origin: n.tag_origin } : {}),
       },
     });
   }
@@ -499,12 +506,16 @@ router.post("/api/review/:id/reject", (req, res) => {
   res.set(HTML_HEADERS).send("<div class='msg msg-err'>Rejected.</div>");
 });
 
-// GET /api/islands — latent k-means cluster id per node, for the /field
-// macro-layout. Reads the local node_islands table (rewritten each
-// embed:derive run from the identity vectors — see src/embed/islands.ts).
-// The field groups nodes by island into contiguous regions of the Shape of
-// Time. Returns {} (no `islands`) when derive hasn't run yet, so the field
-// falls back to plain field-flow without erroring.
+// GET /api/islands — latent k-means cluster id per node. Reads the local
+// node_islands table (rewritten each embed:derive run from the identity
+// vectors — see src/embed/islands.ts).
+//
+// ⚠️ Currently UNCONSUMED: /field briefly grouped nodes into contiguous
+// island regions of the Shape of Time (June 2026), but feedback sent the
+// 30k view back to the artist's structured field-flow layout, so
+// graph-field.js no longer fetches this. The endpoint + derive stage are
+// kept so a future surface can re-adopt the latent geography cheaply.
+// Returns {k:0, n:0} when derive hasn't run yet.
 router.get("/api/islands", (_req, res) => {
   const db = getDb();
   let rows: Array<{ node_id: string; island: number }> = [];
