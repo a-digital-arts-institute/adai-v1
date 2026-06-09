@@ -81,6 +81,18 @@ html, body {
   will-change: transform, opacity;
 }
 
+/* Canvas owns its gestures: stop Safari/iPadOS from hijacking one- and
+   two-finger touches as native page pan / pinch-zoom so the field's own
+   drag-pan, pinch-zoom and finger-reveal handlers receive the pointer events.
+   Scoped to the field layers only — chrome panels (search, archivist, entity
+   view) keep default touch-action so their content still scrolls and the page
+   stays accessibility-zoomable everywhere else. */
+#graph-canvas,
+#mopey,
+#field-detail-canvas {
+  touch-action: none;
+}
+
 #field-detail-canvas {
   position: fixed;
   inset: 0;
@@ -462,6 +474,34 @@ body.field-graph-focused #field-detail-canvas {
 /* While drag-panning the zoomed field (field.js sets the class) */
 body.field-panning, body.field-panning * { cursor: grabbing !important; }
 
+/* ---- Embedding-neighbour loading state ----
+   The embed strip / entity-view similarity sections fetch server-computed
+   cosine neighbours. The old "computing…" cue was 9px #555 — invisible, so a
+   slow/stalled fetch looked broken. This is a prominent, animated, Safari-safe
+   (rotate + opacity only) indicator, plus a tap-to-retry on failure/timeout. */
+@keyframes adai-spin-rot { to { transform: rotate(360deg); } }
+@keyframes adai-emb-pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+.adai-spin {
+  display: inline-block;
+  width: 10px; height: 10px;
+  border: 1.5px solid rgba(168, 196, 224, 0.28);
+  border-top-color: #A8C4E0;
+  border-radius: 50%;
+  animation: adai-spin-rot 0.7s linear infinite;
+  flex: 0 0 auto;
+}
+.adai-embed-loading {
+  display: inline-flex; align-items: center; gap: 7px;
+  color: #A8C4E0; font-size: 11px; letter-spacing: 0.07em;
+  animation: adai-emb-pulse 1.2s ease-in-out infinite;
+}
+.adai-embed-retry {
+  display: inline-flex; align-items: center; gap: 5px;
+  color: #c4a944; font-size: 10px; letter-spacing: 0.05em; cursor: pointer;
+}
+.adai-embed-retry:hover { color: #e0c75a; text-decoration: underline; }
+.adai-embed-retry::before { content: '↻'; font-size: 12px; }
+
 /* ---- Responsive ---- */
 @media (max-width: 768px) {
   :root {
@@ -478,6 +518,48 @@ body.field-panning, body.field-panning * { cursor: grabbing !important; }
     height: var(--bottom-control-height);
     padding: 0 12px;
     font-size: 12px;
+  }
+}
+
+/* ---- Touch / coarse-pointer affordances ----
+   On a finger the chrome chips (breadcrumb segments, filter/embed/bookmark
+   chips) and close buttons are inline-styled at ~2px padding / 9–11px — far
+   below a comfortable tap target. Bump the hit area without forcing a fixed
+   height (the strips are width/height-constrained, so we grow padding + a
+   modest min-height and let flex centre the content). `!important` is needed
+   because these elements carry inline styles. Tunable on-device. */
+@media (pointer: coarse) {
+  .room-link {
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+  }
+  .adai-bcrumb-seg,
+  .adai-filter-chip,
+  .adai-embed-chip,
+  .adai-bookmark-chip {
+    min-height: 34px !important;
+    padding-top: 7px !important;
+    padding-bottom: 7px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+  }
+  .adai-bcrumb-seg { font-size: 12px !important; }
+  .adai-filter-chip,
+  .adai-embed-chip,
+  .adai-bookmark-chip { font-size: 11px !important; }
+  /* The little ×/icon buttons need horizontal room to be tappable too. */
+  .adai-close,
+  .adai-intro-close,
+  .adai-bookmark-del,
+  .adai-profile-btn,
+  .adai-bookmark-btn,
+  .adai-share-btn {
+    min-width: 36px !important;
+    min-height: 36px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
 }
 

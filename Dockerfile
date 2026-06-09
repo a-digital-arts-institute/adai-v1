@@ -25,6 +25,11 @@ FROM node:22-slim
 
 WORKDIR /app
 
+# Production mode: enables the immutable long-cache for `?v=`-busted static
+# assets (src/index.ts ASSET_CACHE_CONTROL) and Express's prod defaults. Dev
+# (npm run dev) leaves NODE_ENV unset → no-cache, so edits are picked up live.
+ENV NODE_ENV=production
+
 # curl + ca-certificates at runtime: curl for entrypoint/health warm-ups,
 # ca-certificates for Litestream's HTTPS connection to R2.
 RUN apt-get update \
@@ -50,6 +55,12 @@ COPY --from=builder /app/seed.db ./seed.db
 # is already baked into seed.db's node_embeddings table, and nothing at runtime
 # reads them directly.
 COPY public ./public
+
+# Pre-compress static JS/CSS/SVG into .br/.gz siblings so the server ships them
+# with zero per-request CPU (src/index.ts negotiates Content-Encoding). Stdlib
+# (node:zlib) only — no extra dependency or binary in the runtime image.
+COPY scripts/precompress.mjs ./scripts/precompress.mjs
+RUN node scripts/precompress.mjs public/field
 
 VOLUME ["/data"]
 

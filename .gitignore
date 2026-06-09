@@ -17,6 +17,13 @@ proton-recovery-kit.pdf
 node_modules/
 dist/
 
+# Pre-compressed static siblings — build output (scripts/precompress.mjs, baked
+# in the Dockerfile, served by src/index.ts). Generated, never committed. NB: if
+# you run `npm run precompress` locally the dev server serves these STALE until
+# you re-run or delete them — that's why `npm run dev` skips the step.
+public/field/**/*.br
+public/field/**/*.gz
+
 # SQLite (local dev DB, WAL sidecars)
 *.db
 *.db-shm

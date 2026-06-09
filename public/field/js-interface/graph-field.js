@@ -328,7 +328,7 @@
     let sprite = _thumbSpriteCache.get(key);
     if (sprite) return sprite;
 
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2); // cap: sprite memory + phone fill
     const sizePx = Math.max(2, Math.ceil(2 * rr * dpr));
     const off = document.createElement('canvas');
     off.width = sizePx;
@@ -405,7 +405,10 @@
   }
 
   function sizeCanvas(canvas) {
-    const dpr = window.devicePixelRatio || 1;
+    // Cap at 2×: this full-screen overlay composites every frame on top of the
+    // Shape-of-Time field, so a dpr-3 phone would otherwise pay 9× the fill for
+    // no perceptible gain. (iPad/retina dpr-2 is unchanged — already the cap.)
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const w = window.innerWidth;
     const h = window.innerHeight;
     canvas.width = Math.floor(w * dpr);
@@ -1933,21 +1936,39 @@
       return;
     }
 
-    // Show "computing" placeholder, then fetch.
-    el.innerHTML = '<div style="color:#555;font-size:9px;letter-spacing:0.06em">embedding · computing…</div>';
+    // Prominent animated "computing" cue (the neighbours are computed server
+    // side — cosine over precomputed vectors — so this is a network wait, not
+    // browser work). Timeout the fetch so a stalled connection (Safari on
+    // reload especially) can't leave it spinning forever — fail to a tap-to-retry.
+    el.innerHTML = '<div class="adai-embed-loading"><span class="adai-spin"></span>embedding · computing…</div>';
     const url = `/api/neighbours/${encodeURIComponent(node.type)}/${encodeURIComponent(node.slug)}`;
-    fetch(url, { headers: { 'accept': 'application/json' } })
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 12000);
+    fetch(url, { headers: { 'accept': 'application/json' }, signal: ctrl.signal })
       .then(r => r.ok ? r.json() : Promise.reject(new Error(`status ${r.status}`)))
       .then(payload => {
+        clearTimeout(timer);
         bundle._embedCache.set(focusedId, payload);
         // Bail out if the user has navigated away while we were fetching.
         if (bundle.focusedId !== focusedId) return;
         renderEmbedStripPayload(el, payload, bundle, graph);
       })
       .catch(err => {
+        clearTimeout(timer);
         console.warn('[adai] /api/neighbours fetch failed', err);
         if (bundle.focusedId !== focusedId) return;
-        el.innerHTML = '<div style="color:#555;font-size:9px;letter-spacing:0.06em">embedding · unavailable</div>';
+        const slow = err && err.name === 'AbortError';
+        el.innerHTML = `<div class="adai-embed-retry" role="button" tabindex="0" title="retry">embedding · ${slow ? 'slow to respond' : 'unavailable'} — retry</div>`;
+        const retry = el.querySelector('.adai-embed-retry');
+        if (retry) retry.addEventListener('click', (e) => {
+          // renderEmbedStrip() re-renders this strip via innerHTML and detaches
+          // the clicked node mid-dispatch; field.js's isUiClick isConnected guard
+          // already catches that, but stopPropagation is the belt-and-suspenders
+          // every chrome chip handler uses so the document-level zoomTo never sees it.
+          e.stopPropagation();
+          bundle._embedCache.delete(focusedId);
+          renderEmbedStrip(bundle, graph);
+        });
       });
   }
 
@@ -3332,6 +3353,26 @@
     // dense without flooding the GPU with thousands of text draws. null when
     // the pointer is off-canvas.
     let cursorX = null, cursorY = null;
+    // Touch has no hover, so the colour-reveal (the field's primary discovery
+    // affordance) is driven by the active finger instead: a finger-drag reveals
+    // colour under it, then fades on lift. cursorStrength multiplies the reveal
+    // so the fade is smooth. Mouse hover keeps strength pinned at 1.
+    let cursorStrength = 1;
+    let cursorFadeStart = 0;          // perf.now() when a lifted-finger reveal began fading
+    const TOUCH_REVEAL_FADE_MS = 850;
+    let touchReveal = null;           // {x,y,id,moved} for the active single-finger reveal
+    const activeTouchIds = new Set(); // live touch pointers on the canvas (≥2 ⇒ pinch)
+    let suppressTapZoomUntil = 0;     // expires even if Safari never emits the synthetic click
+    let multiTouchSession = false;    // suppress residual clicks until all pinch fingers lift
+    const TOUCH_REVEAL_THRESHOLD = 8; // px before a touch is a drag-reveal, not a tap
+    const TOUCH_CLICK_SUPPRESS_MS = 500;
+
+    function suppressTapZoomBriefly() {
+      suppressTapZoomUntil = Math.max(
+        suppressTapZoomUntil,
+        performance.now() + TOUCH_CLICK_SUPPRESS_MS
+      );
+    }
 
     function onResize() {
       const next = sizeCanvas(canvas);
@@ -3341,10 +3382,26 @@
     window.addEventListener('resize', onResize, { passive: true });
 
     function handlePointerMove(e) {
+      // During a two-finger pinch (field.js owns the camera) don't let either
+      // finger drag the single-point reveal around — it would flicker between
+      // them. The pinch itself magnifies the field; reveal resumes on lift.
+      if (e.pointerType === 'touch' && activeTouchIds.size >= 2) return;
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
       cursorX = x; cursorY = y;
+      if (e.pointerType === 'touch') {
+        if (touchReveal && e.pointerId === touchReveal.id) {
+          cursorStrength = 1; cursorFadeStart = 0;   // following the finger — full strength
+          if (!touchReveal.moved &&
+              Math.hypot(x - touchReveal.x, y - touchReveal.y) > TOUCH_REVEAL_THRESHOLD) {
+            touchReveal.moved = true;
+          }
+        }
+      } else {
+        // A real mouse cancels any lingering touch-reveal fade — hover is full.
+        cursorStrength = 1; cursorFadeStart = 0;
+      }
       let hit = null;
       if (!bundle.viewLevel || bundle.viewLevel === '30k') {
         hit = nearestSim(bundle, x, y, CFG.CLICK_TOLERANCE);
@@ -3374,6 +3431,58 @@
     // fire the handler twice per move on mouse devices.
     canvas.addEventListener('pointermove', handlePointerMove, { passive: true });
 
+    // ---- Touch reveal (the hover analogue) ----
+    // Mouse hover is handled by pointermove above. Touch fires pointermove only
+    // while a finger is down, so we seed the reveal on pointerdown and decide on
+    // pointerup whether the gesture was a tap (→ let the click zoom) or a
+    // drag-reveal (→ suppress the zoom and fade the colour out).
+    function handlePointerDown(e) {
+      if (e.pointerType !== 'touch') return;
+      activeTouchIds.add(e.pointerId);
+      if (activeTouchIds.size >= 2) {
+        // Second finger ⇒ pinch (field.js drives it). Drop any reveal + hover,
+        // and suppress the tap-zoom around the multi-touch session so a residual
+        // click from lift-off does not zoom.
+        multiTouchSession = true;
+        touchReveal = null;
+        suppressTapZoomBriefly();
+        cursorX = null; cursorY = null; cursorFadeStart = 0; cursorStrength = 1;
+        if (hoveredId) { hoveredId = null; canvas.style.cursor = 'default'; }
+        return;
+      }
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      touchReveal = { x, y, id: e.pointerId, moved: false };
+      cursorX = x; cursorY = y;          // bloom colour under the finger at once
+      cursorStrength = 1; cursorFadeStart = 0;
+      suppressTapZoomUntil = 0;
+      multiTouchSession = false;
+    }
+
+    function handlePointerUp(e) {
+      if (e.pointerType !== 'touch') return;
+      const wasMultiTouch = multiTouchSession || activeTouchIds.size >= 2;
+      activeTouchIds.delete(e.pointerId);
+      if (wasMultiTouch) suppressTapZoomBriefly();
+      if (activeTouchIds.size === 0) multiTouchSession = false;
+      if (touchReveal && e.pointerId === touchReveal.id) {
+        if (touchReveal.moved) {
+          // It was a reveal-drag, not a tap — don't zoom, ease the colour out.
+          suppressTapZoomBriefly();
+          cursorFadeStart = performance.now();
+        } else {
+          // A clean tap — clear reveal and let the click handler zoom.
+          cursorX = null; cursorY = null; cursorFadeStart = 0; cursorStrength = 1;
+        }
+        touchReveal = null;
+      }
+    }
+
+    canvas.addEventListener('pointerdown', handlePointerDown);
+    canvas.addEventListener('pointerup', handlePointerUp);
+    canvas.addEventListener('pointercancel', handlePointerUp);
+
     function handlePointerLeave() {
       cursorX = null; cursorY = null;
       if (hoveredId) {
@@ -3386,6 +3495,13 @@
 
     canvas.addEventListener('click', (e) => {
       e.stopPropagation();
+      // A finger-drag that revealed colour ends in a synthetic click — swallow
+      // it so the field doesn't zoom on what was a "read", not a "tap". (Set by
+      // handlePointerUp; mouse clicks never set it.)
+      if (performance.now() < suppressTapZoomUntil) {
+        suppressTapZoomUntil = 0;
+        return;
+      }
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
@@ -3485,6 +3601,24 @@
       const inPlaceFocus = bundle.viewLevel === 'field-focus';
       const inPlaceReveal = bundle.viewLevel === 'field-reveal';
       const focusedId = bundle.focusedId;
+      // Touch reveal fade: after a finger lifts, ease the colour out over
+      // TOUCH_REVEAL_FADE_MS rather than snapping it off, then release the
+      // cursor. Mouse hover never fades (cursorFadeStart stays 0).
+      if (cursorFadeStart) {
+        cursorStrength = clamp(1 - (performance.now() - cursorFadeStart) / TOUCH_REVEAL_FADE_MS, 0, 1);
+        if (cursorStrength <= 0) {
+          cursorX = null; cursorY = null; cursorFadeStart = 0; cursorStrength = 1;
+        }
+      }
+      // While the field is free-magnified (pinch) at 30k, the camera CSS-scales
+      // the Shape-of-Time bitmap but sim.x/y (tap hit-test + hover label) are
+      // only reprojected on init/resize. Re-sync them so taps land on the dot
+      // actually under the finger. Cheap (one layout read + O(n)) and only while
+      // actively magnified at rest.
+      if (!zoomed && !inPlaceFocus && !inPlaceReveal &&
+          (window.ADAI_FIELD_STUDY?.zoomScale || 1) > 1.01) {
+        reproject(bundle);
+      }
       // ---- 30k hover-reveal colour layer ----
       // The white Shape of Time is the resting base (drawn by sketch-brand.js).
       // Here we only bloom palette colour through the field dots under the
@@ -3521,7 +3655,7 @@
               py = rect.top + dot.y * sy;
               pr = Math.max(0.55, dot.radius * screenScale);
             }
-            const reveal = colorRevealAt(px, py, cursorX, cursorY);
+            const reveal = colorRevealAt(px, py, cursorX, cursorY) * cursorStrength;
             if (reveal <= 0.01) continue;
             // Island layout → tint by the region (nearest anchor) so hovering
             // reveals the local latent territory's hue; else the flat run-banding.

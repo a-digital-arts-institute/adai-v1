@@ -316,7 +316,7 @@
       // position, hijacking the navigation the chip had just performed
       // (click "Artist X" in the embed strip / breadcrumb → land on unrelated Y).
       return !!e.target.closest?.(
-        '#chrome, #graph-canvas, #search-palette, #entity-view, #entity-panel, #chat-narrator, #archivist-bar, #coming-soon, #philosophy, [id^="adai-"], a, button, input, textarea, select, label'
+        '#chrome, #graph-canvas, #search-palette, #entity-view, #entity-panel, #chat-narrator, #archivist-bar, #contribute-panel, #philosophy, [id^="adai-"], a, button, input, textarea, select, label'
       );
     }
 
@@ -798,7 +798,7 @@
     function isUiPointer(e) {
       if (e.target instanceof Node && !e.target.isConnected) return true;
       return !!e.target.closest?.(
-        '#chrome, #search-palette, #entity-view, #entity-panel, #chat-narrator, #archivist-bar, #coming-soon, #philosophy, [id^="adai-"], a, button, input, textarea, select, label'
+        '#chrome, #search-palette, #entity-view, #entity-panel, #chat-narrator, #archivist-bar, #contribute-panel, #philosophy, [id^="adai-"], a, button, input, textarea, select, label'
       );
     }
     document.addEventListener('pointerdown', (e) => {
@@ -852,6 +852,87 @@
         suppressClickUntil = 0;
       }
     }, true);
+
+    // ---- Pinch-to-zoom (touch) ----
+    // Two fingers magnify the field around their midpoint. Unlike drag-pan
+    // (which only pans an already-zoomed field), pinch works from rest, so it's
+    // the primary touch zoom gesture. touch-action:none on the field canvases
+    // (style.css) stops iPadOS from hijacking it as native page zoom. The same
+    // suppressClickUntil gate swallows the click that follows the lift, and the
+    // graph overlay's reveal/hit-test reproject in lockstep (graph-field.js
+    // re-syncs sim positions each frame while camera.scale > 1.01).
+    const pinchPointers = new Map();   // pointerId -> {x, y} (field touches only)
+    let pinch = null;
+    function pinchSpan() {
+      const p = [...pinchPointers.values()];
+      return {
+        dist: Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y),
+        midX: (p[0].x + p[1].x) / 2,
+        midY: (p[0].y + p[1].y) / 2,
+      };
+    }
+    function beginPinch() {
+      const stage = findStage();
+      if (!stage) return;
+      const rect = stage.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      if (animationFrame) { cancelAnimationFrame(animationFrame); animationFrame = 0; }
+      drag = null;                                   // a 2nd finger cancels single-finger pan
+      document.body.classList.remove('field-panning');
+      const screenScale = getStageScreenScale(stage, rect);
+      const span = pinchSpan();
+      const stageX = (span.midX - rect.left) / screenScale;
+      const stageY = (span.midY - rect.top) / screenScale;
+      pinch = {
+        startDist: span.dist || 1,
+        startScale: camera.scale,
+        rect, screenScale,
+        anchorX: (stageX - camera.x) / camera.scale,  // field point under the midpoint
+        anchorY: (stageY - camera.y) / camera.scale,
+        moved: false,
+      };
+    }
+    function updatePinch() {
+      if (!pinch) return;
+      const span = pinchSpan();
+      const ratio = (span.dist || 1) / pinch.startDist;
+      if (!pinch.moved && Math.abs(ratio - 1) > 0.02) pinch.moved = true;
+      const scale = clamp(pinch.startScale * ratio, MIN_ZOOM, MAX_ZOOM);
+      const stageX = (span.midX - pinch.rect.left) / pinch.screenScale;
+      const stageY = (span.midY - pinch.rect.top) / pinch.screenScale;
+      if (scale > 1.01 && !zoomed) {
+        zoomed = true;
+        document.body.classList.add('field-study-zoomed');
+      }
+      applyCamera({
+        scale,
+        x: stageX - pinch.anchorX * scale,
+        y: stageY - pinch.anchorY * scale,
+      }, 'motion');
+    }
+    function endPinchPointer(e) {
+      if (!pinchPointers.has(e.pointerId)) return;
+      pinchPointers.delete(e.pointerId);
+      if (pinch && pinchPointers.size < 2) {
+        const wasPinch = pinch.moved;
+        pinch = null;
+        if (wasPinch) suppressClickUntil = performance.now() + 350;
+        if (camera.scale <= 1.02) reset();           // pinched back to rest → home
+        else applyCamera(camera, 'final');           // settle a crisp frame at the held zoom
+      }
+    }
+    document.addEventListener('pointerdown', (e) => {
+      if (e.pointerType !== 'touch' || isUiPointer(e)) return;
+      pinchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pinchPointers.size === 2) beginPinch();
+    }, true);
+    document.addEventListener('pointermove', (e) => {
+      if (e.pointerType !== 'touch' || !pinchPointers.has(e.pointerId)) return;
+      pinchPointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pinch && pinchPointers.size >= 2) updatePinch();
+    });
+    document.addEventListener('pointerup', endPinchPointer);
+    document.addEventListener('pointercancel', endPinchPointer);
 
     document.addEventListener('click', (e) => {
       if (isUiClick(e)) return;
@@ -922,72 +1003,109 @@
         // close → revert-to-#sense behavior wired even when reached that way.
         watchPanelClose('chat-narrator');
       } else if (href === '#contribute') {
-        openComingSoon();
+        openContribute();
       } else if (href === '#philosophy') {
         openPhilosophy();
       }
-      // #sense and #connect: just swap active state (no surface yet for connect).
+      // #sense: just swap active state (the constellation is already in view).
     });
   });
 
-  // Coming-soon panel for /contribute. The gather/review surface isn't built
-  // yet; this is a placeholder that explains the merge-boundary intent.
-  function ensureComingSoonStyles() {
-    if (document.getElementById('coming-soon-styles')) return;
+  // Contribute panel — reading surface for "An invitation to help write the
+  // digital arts' shared record". Reuses the philosophy panel's shell styles
+  // (.ph-*) and adds contribute-specific step/tag styles (.ct-*).
+  function ensureContributeStyles() {
+    ensurePhilosophyStyles(); // reuse .ph-shell / .ph-body / .ph-line / .ph-sec
+    if (document.getElementById('contribute-styles')) return;
     const s = document.createElement('style');
-    s.id = 'coming-soon-styles';
+    s.id = 'contribute-styles';
     s.textContent = `
-      #coming-soon {
+      #contribute-panel {
         position: fixed; inset: 0; z-index: 1290;
         background: rgba(0,0,0,0.5); backdrop-filter: blur(2px);
         display: none; align-items: flex-start; justify-content: center;
-        padding-top: 14vh;
+        padding-top: 8vh;
       }
-      #coming-soon.is-open { display: flex; }
-      .cs-shell {
-        width: min(560px, 92vw);
-        background: rgba(8, 8, 10, 0.97);
-        border: 1px solid #2a2a2c;
-        box-shadow: 0 24px 48px rgba(0,0,0,0.5);
-        color: var(--text, #E8E6E1);
-        font-family: var(--mono, 'SF Mono', 'Menlo', 'Consolas', monospace);
-        padding: 22px 26px 20px;
+      #contribute-panel.is-open { display: flex; }
+      .ct-step { display: flex; gap: 13px; margin: 0 0 14px; }
+      .ct-step:last-child { margin-bottom: 0; }
+      .ct-num { color: #6a6a6c; flex: none; min-width: 18px; font-size: 13px; line-height: 1.6; }
+      .ct-step-body { color: #c8c6c1; font-size: 13px; line-height: 1.6; }
+      .ct-code {
+        display: block; margin: 9px 0 0; padding: 10px 12px;
+        background: rgba(255,255,255,0.03); border: 1px solid #2a2a2c;
+        color: #d8d6d1; font-size: 12px; line-height: 1.5;
+        white-space: pre-wrap; word-break: break-word;
       }
-      .cs-eyebrow { color: #6a6a6c; font-size: 11px; letter-spacing: 0.08em; text-transform: lowercase; }
-      .cs-title { color: var(--text, #E8E6E1); font-size: 18px; margin: 6px 0 14px; letter-spacing: 0.02em; }
-      .cs-p { color: #b4b4b6; font-size: 13px; line-height: 1.55; margin: 0 0 12px; }
-      .cs-p em { color: var(--text, #E8E6E1); font-style: normal; }
-      .cs-foot {
-        display: flex; justify-content: space-between; align-items: center;
-        margin-top: 10px; padding-top: 12px; border-top: 1px solid #2a2a2c;
-        color: #4a4a4c; font-size: 11px; letter-spacing: 0.04em;
+      .ct-tags { display: flex; flex-wrap: wrap; gap: 7px; margin: 16px 0 0; }
+      .ct-tag {
+        border: 1px solid #2a2a2c; color: #9a9a9c;
+        font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+        padding: 4px 9px;
       }
-      .cs-link {
-        background: transparent; border: 1px solid #2a2a2c; color: #b4b4b6;
-        font-family: inherit; font-size: 11px; letter-spacing: 0.04em;
-        padding: 3px 8px; cursor: pointer; line-height: 1;
+      .ct-guide { margin: 18px 0 0; padding-top: 16px; border-top: 1px solid #2a2a2c; }
+      .ct-guide-btn {
+        display: inline-flex; align-items: center; gap: 8px;
+        border: 1px solid #4169B0; color: #7e9fdc; background: transparent;
+        font-family: inherit; font-size: 11px; letter-spacing: 0.08em;
+        text-transform: uppercase; padding: 9px 14px; text-decoration: none;
+        cursor: pointer; transition: background 120ms ease, color 120ms ease;
       }
-      .cs-link:hover { color: var(--text, #E8E6E1); border-color: #4a4a4c; }
+      .ct-guide-btn:hover { background: rgba(65,105,176,0.14); color: #a8c0ea; }
+      .ct-guide-btn .ct-arrow { color: #4169B0; }
     `;
     document.head.appendChild(s);
   }
 
-  function ensureComingSoonEl() {
-    let el = document.getElementById('coming-soon');
+  function ensureContributeEl() {
+    let el = document.getElementById('contribute-panel');
     if (el) return el;
-    ensureComingSoonStyles();
+    ensureContributeStyles();
     el = document.createElement('div');
-    el.id = 'coming-soon';
+    el.id = 'contribute-panel';
     el.setAttribute('aria-hidden', 'true');
     el.innerHTML = `
-      <div class="cs-shell" role="dialog" aria-labelledby="cs-title">
-        <div class="cs-eyebrow">[contribute]</div>
-        <h2 class="cs-title" id="cs-title">coming soon</h2>
-        <p class="cs-p">If you're already a node on A(DAI) — or want to be — this is where you'll contribute to the graph directly.</p>
-        <p class="cs-p">Access will be through a skill file we send you, paired with a private key.</p>
-        <div class="cs-foot">
+      <div class="ph-shell" role="dialog" aria-labelledby="ct-title">
+        <header class="ph-head">
+          <div class="ph-eyebrow">[contribute]</div>
+          <h2 class="ph-title" id="ct-title">An invitation to help write the digital arts' shared record</h2>
+        </header>
+        <div class="ph-body">
+          <p class="ph-line">Curate A(DAI) in plain language from your own LLM — every edit attributed to you, withdrawable anytime.</p>
+          <section class="ph-sec">
+            <div class="ph-sec-label">How to contribute — from your own LLM, in minutes</div>
+            <p class="ph-line">You don't need our UI. You curate through Claude Cowork (or any assistant with a code sandbox), in plain language.</p>
+            <div class="ct-step">
+              <span class="ct-num">01</span>
+              <div class="ct-step-body">We'll send you a private access token separately — treat it like a password.</div>
+            </div>
+            <div class="ct-step">
+              <span class="ct-num">02</span>
+              <div class="ct-step-body">In Claude Cowork (or other LLM with code sandbox), paste:<code class="ct-code">Read https://adai-basel.fly.dev/skill.md and use this token to contribute to A(DAI) on my behalf: [token]</code></div>
+            </div>
+            <div class="ct-step">
+              <span class="ct-num">03</span>
+              <div class="ct-step-body">Claude confirms it's you, then just talk:<code class="ct-code">Add my new work as a piece I made — generative, 2024 — and connect it to the exhibition where it was shown.</code></div>
+            </div>
+            <div class="ct-step">
+              <span class="ct-num">04</span>
+              <div class="ct-step-body">Every edit lands attributed to you, and you can withdraw or supersede any of it, anytime.</div>
+            </div>
+            <div class="ct-tags">
+              <span class="ct-tag">No deadlines</span>
+              <span class="ct-tag">No lock-in</span>
+              <span class="ct-tag">Attributed to you</span>
+              <span class="ct-tag">Withdraw anytime</span>
+            </div>
+          </section>
+          <p class="ph-line">Some connections only you can see: between your work and what shaped it, where it showed, who it spoke to. Draw one, and the field is truer for it.</p>
+          <div class="ct-guide">
+            <a class="ct-guide-btn" href="/field-static/guide.html" target="_blank" rel="noopener">Starter guide <span class="ct-arrow" aria-hidden="true">→</span></a>
+          </div>
+        </div>
+        <div class="ph-foot">
           <span>esc to close</span>
-          <button type="button" class="cs-link" data-cs-query>open /query →</button>
+          <span>scroll to read · click outside to dismiss</span>
         </div>
       </div>
     `;
@@ -995,42 +1113,34 @@
     return el;
   }
 
-  function openComingSoon() {
-    const el = ensureComingSoonEl();
+  function openContribute() {
+    const el = ensureContributeEl();
     el.classList.add('is-open');
     el.setAttribute('aria-hidden', 'false');
-    watchPanelClose('coming-soon');
+    const body = el.querySelector('.ph-body');
+    if (body) body.scrollTop = 0;
+    watchPanelClose('contribute-panel');
   }
-  function closeComingSoon() {
-    const el = document.getElementById('coming-soon');
+  function closeContribute() {
+    const el = document.getElementById('contribute-panel');
     if (!el) return;
     el.classList.remove('is-open');
     el.setAttribute('aria-hidden', 'true');
   }
 
-  // Esc + outside-click + "open /query" handoff for the coming-soon panel.
+  // Esc + outside-click for the contribute panel.
   document.addEventListener('keydown', (e) => {
-    const el = document.getElementById('coming-soon');
+    const el = document.getElementById('contribute-panel');
     if (!el || !el.classList.contains('is-open')) return;
-    if (e.key === 'Escape') { e.preventDefault(); closeComingSoon(); }
+    if (e.key === 'Escape') { e.preventDefault(); closeContribute(); }
   });
   document.addEventListener('click', (e) => {
-    const el = document.getElementById('coming-soon');
+    const el = document.getElementById('contribute-panel');
     if (!el || !el.classList.contains('is-open')) return;
-    if (e.target.closest?.('[data-cs-query]')) {
-      closeComingSoon();
-      setActiveRoom('#query');
-      requestAnimationFrame(() => {
-        if (window.ADAI_SEARCH?.open) window.ADAI_SEARCH.open();
-        watchPanelClose('search-palette');
-        watchPanelClose('chat-narrator');
-      });
-      return;
-    }
-    if (!e.target.closest?.('.cs-shell')) closeComingSoon();
+    if (!e.target.closest?.('.ph-shell')) closeContribute();
   });
 
-  // Philosophy panel — reading surface for "A protocol for mutual intention".
+  // Philosophy panel — reading surface for "A Digital Arts Institute".
   function ensurePhilosophyStyles() {
     if (document.getElementById('philosophy-styles')) return;
     const s = document.createElement('style');
@@ -1064,6 +1174,17 @@
       .ph-p:last-child { margin-bottom: 0; }
       .ph-p em { color: var(--text, #E8E6E1); font-style: italic; }
       .ph-p strong { color: var(--text, #E8E6E1); font-weight: 700; }
+      .ph-sec { margin: 0 0 22px; }
+      .ph-sec:last-child { margin-bottom: 0; }
+      .ph-sec-label { color: #6a6a6c; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; margin: 0 0 9px; }
+      .ph-line { color: #c8c6c1; font-size: 13px; line-height: 1.6; margin: 0 0 7px; }
+      .ph-line:last-child { margin-bottom: 0; }
+      .ph-line em { color: var(--text, #E8E6E1); font-style: italic; }
+      .ph-line strong { color: var(--text, #E8E6E1); font-weight: 700; }
+      .ph-principles { list-style: none; margin: 13px 0 0; padding: 0; }
+      .ph-principles li { color: #c8c6c1; font-size: 13px; line-height: 1.6; margin: 0 0 6px; display: flex; gap: 11px; }
+      .ph-principles li:last-child { margin-bottom: 0; }
+      .ph-num { color: #6a6a6c; flex: none; }
       .ph-foot {
         display: flex; justify-content: space-between; align-items: center;
         padding: 10px 26px; border-top: 1px solid #2a2a2c;
@@ -1084,19 +1205,43 @@
       <div class="ph-shell" role="dialog" aria-labelledby="ph-title">
         <header class="ph-head">
           <div class="ph-eyebrow">[philosophy]</div>
-          <h2 class="ph-title" id="ph-title">A protocol for mutual intention</h2>
+          <h2 class="ph-title" id="ph-title">A Digital Arts Institute</h2>
         </header>
         <div class="ph-body">
-          <p class="ph-p">A(DAI) started with a seemingly simple question: <em>what is digital art?</em> The answer turned out to be plural — a rich plurality of mediums, movements, and subcultures at the shifting boundary of the human and the machine. Decades of history; a present moving at machine speed. Practitioners carry the knowledge of their scenes — who or what actually influenced whom — but that knowledge lives in people, or scattered across the web, never held in any shared structure. Its art history keeps getting written after the fact.</p>
-          <p class="ph-p">So we began to ask: how can the digital arts collectively tell their story without flattening it? How can any one institute hold all of its tensions? The answer that emerged was not to build one. <strong><em>A</em></strong> digital arts institute, not <strong><em>the</em></strong>. A shared protocol rather than a single organisation.</p>
-          <p class="ph-p">What we are building is a protocol for mutual intention.</p>
-          <p class="ph-p">Not a platform shaped by attention. Platforms measure clicks; they reward volume; they hide the lens through which they see the field. A protocol for mutual intention measures something else — who said it, why it matters, with what evidence. The system draws out <em>why</em>: why something was made, why it was framed that way, why it matters to the person saying so. Knowledge moves through this web as edges between nodes, and edges only mean something when they are shaped by intentionality on both sides — practitioner and system, practitioner and practitioner. This is the inverse of an extractive feed. It is a structure that holds the relations themselves with care.</p>
-          <p class="ph-p">Inside it, plurality is not a value statement but a structural constraint. The system is built so no single definition, practice, or market narrative can dominate. Anyone can fork the protocol. A net-art scene runs one instance; a cyberfeminist collective runs another. Each reads the same field and sees something genuinely different — because where you stand changes what counts as a centre and what counts as margin. Same substrate, different canons. Nobody owns it, including us.</p>
-          <p class="ph-p">Provenance is the ethics that holds the web together. Every claim carries a chain of attribution — who said it, when, with what confidence, through which lens. Source origin is type-tagged: human voice, journalism, AI-assisted synthesis, automated extraction. Trust is not assumed; it is documented. And contradictions, when they appear, are made visible — held open, not resolved by the system itself. The divergence is the intelligence.</p>
-          <p class="ph-p">This is what makes the place legible to the artist. Their practice is not flattened into metadata. Their scene's knowledge is held with its tensions intact. They do not contribute to a feed; they write into a substrate. Their reading becomes an edge type. When a curator contests it, both positions stay visible. When another instance forks, the framing travels with them. Contributing feels like dialogue — confided and listened to with respect.</p>
-          <p class="ph-p">Collectors, curators, and exhibitors can explore not just what a work is, but where it sits in the field, what's forming around it retrospectively and in real time. The field itself gets a map that keeps moving, shaped by the people inside it rather than described from above.</p>
-          <p class="ph-p">The frontier — what cannot yet be classified — is the most important signal. The field's vocabulary is still forming. The institute exists to hold the space where that emergence happens.</p>
-          <p class="ph-p">A canon is situated, partial, provocative, generative. The web is the canon, and the canon is in motion. The digital arts begin to sense themselves — through one another, on the record, with intention.</p>
+          <section class="ph-sec">
+            <div class="ph-sec-label">What</div>
+            <p class="ph-line">A shared protocol for the digital arts to tell its own story — across time, mediums and practices.</p>
+            <p class="ph-line">An open, permissionless commons. Never finished, never flattened.</p>
+            <p class="ph-line">A provocation to begin: a seed canon inviting discovery and participation.</p>
+            <p class="ph-line">Re-weightable, forkable — every fork a legitimate centre.</p>
+          </section>
+          <section class="ph-sec">
+            <div class="ph-sec-label">Why</div>
+            <p class="ph-line">Digital art is the defining art of our time — testing the line between human and machine.</p>
+            <p class="ph-line">Decades of history still unmetabolised, and a scene exploding at machine-speed.</p>
+            <p class="ph-line">Its story lives between practitioners — scattered across feeds, shows and moments.</p>
+            <p class="ph-line">No single institution holds that tension without flattening it. The field needs a native one.</p>
+          </section>
+          <section class="ph-sec">
+            <div class="ph-sec-label">How</div>
+            <p class="ph-line">Speed without intention collapses under its own weight.</p>
+            <p class="ph-line">So we turn the machine on itself — ingesting work, crowdsourcing curation from practitioners.</p>
+            <p class="ph-line">A seed canon and knowledge graph: a commons to surface bias and provoke contribution.</p>
+            <ol class="ph-principles">
+              <li><span class="ph-num">01</span> Plurality as constraint</li>
+              <li><span class="ph-num">02</span> Artists as sovereign</li>
+              <li><span class="ph-num">03</span> Tensions preserved, not resolved</li>
+              <li><span class="ph-num">04</span> Provenance as ethics</li>
+              <li><span class="ph-num">05</span> Intention over attention</li>
+              <li><span class="ph-num">06</span> Commons without enclosure</li>
+              <li><span class="ph-num">07</span> Where language fails</li>
+            </ol>
+          </section>
+          <section class="ph-sec">
+            <div class="ph-sec-label">Next</div>
+            <p class="ph-line">A select cohort of artists, curators and institutions to seed the canon and shape its governance.</p>
+            <p class="ph-line">Each partner owns their assets; every contribution stays attributable.</p>
+          </section>
         </div>
         <div class="ph-foot">
           <span>esc to close</span>

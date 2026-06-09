@@ -2462,7 +2462,13 @@ window.addEventListener("load", function () {
     cycleFieldBackground,
     setFieldBackground
   } = window.ADAI_SYSTEM;
-  const dpr = Math.max(1, Math.min(4, (window.devicePixelRatio || 1) * 2));
+  // Cap the backing store at 2×. The old `min(4, dpr*2)` rendered this
+  // continuously-animated full-screen field at 4× on any retina/tablet display
+  // (dpr 2 → 4) = 16× the pixel fill of a logical canvas, for no visible gain —
+  // the dominant cost that made the field run hot on iPad. Low-DPR displays
+  // still get a 2× supersample for crisp strokes; high-DPR ones are clamped.
+  const rawDpr = window.devicePixelRatio || 1;
+  const dpr = Math.max(1, Math.min(rawDpr <= 1 ? rawDpr * 2 : rawDpr, 2));
   let canvas = null;
   let overlayCanvas = null;
   let ctx = null;
