@@ -52,7 +52,13 @@ const MAX_MESSAGE_CHARS = 4000;
 // prompt up with megabytes of junk.
 const MAX_CONTEXT_ID_LEN = 200;
 const MAX_CONTEXT_TRAIL = 8;
-const ALLOWED_VIEW_LEVELS = new Set(["30k", "10k", "5k", "node", "neighbourhood"]);
+// These MUST track the viewLevel strings the field actually emits
+// (graph-field.js: bundle.viewLevel). Drift here silently drops the
+// zoomed-in signal — sanitiseContext rejects any value not in this set,
+// so a stale list leaves the archivist unable to tell the visitor is on a
+// node. Current field states: '30k' (overview) | 'field-focus' |
+// 'field-reveal'. If the field renames a level, update this in lockstep.
+const ALLOWED_VIEW_LEVELS = new Set(["30k", "field-focus", "field-reveal"]);
 const ALLOWED_FIELD_MODES = new Set(["curatorial", "embeddings"]);
 
 function sanitiseContext(raw: unknown): VisitorContext | undefined {

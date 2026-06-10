@@ -172,6 +172,7 @@
   // view, see what they're looking at, or open the rich profile.
   const HELP_HTML = `
     <div class="arch-help">
+      <div class="arch-commons-framing">A(DAI) is a partial commons of digital art, not a definitive canon. The empty space is the invitation: gaps are where the commons asks for contributions, adding context and layers of nuance over time.</div>
       <div class="arch-help-lead">a server-hosted archivist with read-only access to the A(DAI) graph.</div>
       <div class="arch-help-section">
         <div class="arch-help-h">what to ask</div>
@@ -325,7 +326,12 @@
         : [];
       const ctx = {
         focused_id: typeof field.focusedId === 'string' ? field.focusedId : null,
-        view_level: typeof field.viewLevel === 'string' ? field.viewLevel : null,
+        // Default to '30k' (the overview) when the field hasn't set a level —
+        // at rest bundle.viewLevel is undefined, and we want the server to
+        // always know the visitor is at the overview rather than receive a
+        // null it has to guess about. Must stay within the server's
+        // ALLOWED_VIEW_LEVELS ('30k' | 'field-focus' | 'field-reveal').
+        view_level: typeof field.viewLevel === 'string' ? field.viewLevel : '30k',
         field_mode: typeof field.fieldMode === 'string' ? field.fieldMode : null,
         recent_focus_ids: trail,
       };

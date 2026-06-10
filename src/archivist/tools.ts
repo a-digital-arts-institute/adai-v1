@@ -492,7 +492,7 @@ export const TOOL_DEFINITIONS: ToolDef[] = [
   {
     name: "set_field_mode",
     description:
-      "Toggle the /field view between 'curatorial' (the default — curated edges foregrounded) and 'embeddings' (style-kin / visually-affine edges foregrounded, curated edges dimmed). Use sparingly; only when the user asks to see one or the other.",
+      "Set which edge family the /field view foregrounds ONCE A NODE IS FOCUSED: 'curatorial' (the default — curated edges) or 'embeddings' (style-kin / visually-affine edges, curated edges dimmed). Note: this has NO visible effect at the 30k overview, where no edges are drawn — it only changes what the visitor sees after they (or you) zoom into a node. Use sparingly; only when the user explicitly asks to see one family or the other.",
     input_schema: {
       type: "object",
       properties: {

@@ -239,6 +239,14 @@
 
 /* Help / tips panel — shown when the log is empty or when ? is toggled. */
 .arch-help { color: #8a8a8c; font-size: 12px; line-height: 1.55; padding: 2px 0; }
+.arch-commons-framing {
+  color: #c7c7c9;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #1f1f21;
+}
 .arch-help-lead {
   color: #b4b4b6;
   font-style: italic;
