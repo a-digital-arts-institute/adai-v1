@@ -248,7 +248,7 @@
   function loadViaWorker(stats) {
     const stamp = `${stats.nodes}:${stats.curatedEdges}`;
     try {
-      worker = new Worker('/field-static/js-interface/graph-worker.js?v=20260610a');
+      worker = new Worker('/field-static/js-interface/graph-worker.js?v=20260611a');
     } catch (err) {
       console.warn('[adai] worker spawn failed, falling back:', err.message);
       return loadFallback(stats);
