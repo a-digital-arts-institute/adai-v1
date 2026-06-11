@@ -1,0 +1,75 @@
+name: notify-digest
+
+# Emails a digest of the review queue to the admin notify list, on a schedule.
+#
+# Runs `node /app/dist/cli/notify-digest.js` inside the live Fly machine
+# (against /data/adai.db). The CLI reads pending intake_queue rows, and emails
+# a summary via the Resend HTTP API *only when there is something new* since
+# the last successful send (a marker kept in settings.last_review_digest_at).
+#
+# Sequencing: scheduled at 07:00 UTC, after embed-derive-daily's 04:00 run, so
+# the digest includes that night's fresh AI-attribution proposals.
+#
+# Required GitHub secret:
+#   FLY_API_TOKEN  — org/personal token with deploy+ssh access to adai-basel
+#                    (the same one embed-derive-daily uses).
+#
+# Required Fly secrets (read inside the machine — NOT GitHub secrets):
+#   RESEND_API_KEY       — Resend API key.
+#   ADMIN_NOTIFY_EMAILS  — comma-separated recipient list.
+#   RESEND_FROM          — (optional) verified sender; defaults to Resend's
+#                          shared onboarding@resend.dev test sender, which only
+#                          delivers to the Resend account owner's address.
+# Set them with:
+#   flyctl secrets set RESEND_API_KEY=... ADMIN_NOTIFY_EMAILS=you@example.com --app adai-basel
+
+on:
+  schedule:
+    # Daily at 07:00 UTC — after the 04:00 embed-derive run.
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: notify-digest
+  cancel-in-progress: false
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: install flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: wake the machine
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        # Same wake dance as embed-derive-daily: the app runs
+        # auto_stop_machines='stop' with min_machines_running=0, and `ssh
+        # console` can't connect to a stopped machine (ssh doesn't trip the
+        # proxy's auto_start). Start it, then block on real ssh readiness.
+        run: |
+          for id in $(flyctl machine list --app adai-basel --json | jq -r '.[].id'); do
+            echo "starting machine $id"
+            flyctl machine start "$id" --app adai-basel || true
+          done
+          for i in $(seq 1 30); do
+            if flyctl ssh console --app adai-basel -C "true" 2>/dev/null; then
+              echo "machine reachable over ssh"
+              exit 0
+            fi
+            echo "waiting for ssh... ($i/30)"
+            sleep 5
+          done
+          echo "machine did not become reachable over ssh in time" >&2
+          exit 1
+
+      - name: send review-queue digest
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        # The CLI resolves /data/adai.db automatically via resolveCliDbPath
+        # when run inside the Fly machine (see src/utils/db-path.ts). It exits
+        # 0 when there's nothing new to send.
+        run: |
+          curl -fsSL -o /dev/null https://adai-basel.fly.dev/api/stats
+          flyctl ssh console --app adai-basel -C "node /app/dist/cli/notify-digest.js"
