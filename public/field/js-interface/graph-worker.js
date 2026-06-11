@@ -37,7 +37,8 @@ const IDB_KEY = 'current';
 // `year` / `tag_origin`). The stamp only tracks row counts, so a projection
 // change alone would otherwise leave returning visitors on cached rows that
 // lack the new fields forever. v2: + node year/int/tag_origin (June 2026).
-const CACHE_SCHEMA = 2;
+// v3: + node `source` provenance label (entity-view footer attribution).
+const CACHE_SCHEMA = 3;
 
 // ---- IndexedDB (promise wrappers) ---------------------------------------
 // IDB is a best-effort cache only. On Safari, indexedDB.open() intermittently

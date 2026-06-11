@@ -58,7 +58,7 @@
       lead,
       { label: "Who's the most important practitioner?", q: `Who is the most important practitioner in the seed canon? (This is a wrong-story trap — answer per the Reader's editorial position on contestation, not by ranking.)` },
       { label: "What's missing from the canon?", q: `What's missing from the seed canon? Be specific — name the source-coverage profile, name the underrepresented scenes and geographies, name what the institute has on its agenda but hasn't ingested yet.` },
-      { label: 'How confident is the data?', q: `How confident is the data in the graph? Walk me through the source_origin typing (human_primary vs human_secondary vs ai_assisted vs graph-stub) and what fraction of the seed sits at each level.` },
+      { label: 'How confident is the data?', q: `How confident is the data in the graph? Walk me through the source_origin typing (human_primary vs human_secondary vs ai_assisted) and what fraction of the seed sits at each level — and which platforms and museums the nodes are sourced from.` },
       { label: "I want to contribute my work", q: `I want to contribute my own work to the graph. How do I do that? (Test the contribute redirect — the Reader should hand off to /contribute, not draft on my behalf.)` },
     ];
   }
@@ -102,6 +102,9 @@
       block += `name: ${node.name}\n`;
       block += `type: ${node.type}\n`;
       if (node.slug) block += `slug: ${node.slug}\n`;
+      // Real provenance label shipped on every graph node (sourceLabel() server
+      // side, from metadata.source_url / va_maker_name).
+      if (node.source) block += `source: ${node.source}\n`;
       if (showcase) {
         block += `source_origin: ${showcase.source_origin || 'unknown'}; confidence: ${showcase.confidence || 'unknown'}${showcase.review_pending ? '; review_pending: true' : ''}\n`;
         if (showcase.dates_compact) block += `dates: ${showcase.dates_compact}\n`;
@@ -109,7 +112,7 @@
         if (showcase.bio) block += `\nbio: ${showcase.bio}\n`;
         if (showcase.quote?.text) block += `\nattributed quote: "${showcase.quote.text}" — ${showcase.quote.attribution}\n`;
       } else {
-        block += `source_origin: graph-stub (no curated profile in this snapshot — only the live graph's id/name/type/slug)\n`;
+        block += `note: no curated editorial profile in this snapshot — graph fields only (id/name/type/slug${node.source ? ' + source' : ''})\n`;
       }
 
       // Edges grouped by type

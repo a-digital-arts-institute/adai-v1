@@ -373,11 +373,17 @@
     `;
   }
 
-  function renderProvenance(showcase) {
+  function renderProvenance(node, showcase) {
     if (!showcase) {
+      // No hand-curated showcase, but the node still has a real origin: the
+      // graph stream ships a `source` label (sourceLabel() on the server, read
+      // from metadata.source_url / va_maker_name). State it instead of the old
+      // "graph-stub · awaiting enrichment" placeholder. A label-less node is a
+      // live contributor-API write with no upstream source.
+      const src = (node && node.source) || 'community contribution';
       return `
         <footer class="ev-provenance">
-          <span class="ev-prov-tag">source_origin: graph-stub</span> · <span class="ev-prov-tag">awaiting enrichment — ${CONTRIB_LINK}</span>
+          <span class="ev-prov-tag">source: ${escapeHtml(src)}</span> · <span class="ev-prov-tag">${CONTRIB_LINK}</span>
         </footer>
       `;
     }
@@ -571,7 +577,7 @@
         ${renderListSection('collections', collections, { empty: 'no public collection holdings linked yet — contribute via /contribute skill' })}
         ${renderListSection('exhibitions.selected', exhibitions, { empty: 'no curated exhibition history yet — contribute via /contribute skill' })}
         ${renderListSection('awards', awards, { empty: 'no awards linked yet — contribute via /contribute skill' })}
-        ${renderProvenance(showcase)}
+        ${renderProvenance(node, showcase)}
       </article>
     `;
   }

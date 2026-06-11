@@ -7,6 +7,13 @@ import { approveIntakeItem, rejectIntakeItem } from "../utils/review.js";
 import { buildEmbeddingSections } from "../embed/sections.js";
 import { YEAR_SQL_FRAGMENT, formatArtworkYear } from "../utils/year.js";
 import { NODE_NOT_RETIRED } from "../utils/visibility.js";
+import { sourceLabel } from "../utils/source-label.js";
+
+// SQL fragment that exposes the two metadata keys sourceLabel() reads. Kept
+// next to the helper so the projection and the deriver can't drift.
+const SOURCE_SQL_FRAGMENT =
+  "json_extract(metadata,'$.source_url') AS source_url, " +
+  "json_extract(metadata,'$.va_maker_name') AS va_maker_name";
 
 const router = Router();
 
@@ -85,6 +92,7 @@ router.get("/api/graph", (req, res) => {
     "id, name, type, slug, " +
     "json_extract(metadata,'$.image_url') AS image_url, " +
     "json_extract(metadata,'$.cdn_image_url') AS cdn_image_url, " +
+    SOURCE_SQL_FRAGMENT + ", " +
     YEAR_SQL_FRAGMENT;
 
   let nodeRows: any[];
@@ -119,11 +127,13 @@ router.get("/api/graph", (req, res) => {
   res.set(JSON_HEADERS).json({
     nodes: nodeRows.map((n: any) => {
       const year = n.type === "artwork" ? formatArtworkYear(n) : null;
+      const source = sourceLabel(n);
       return {
         id: n.id,
         name: n.name,
         type: n.type,
         slug: n.slug,
+        ...(source ? { source } : {}),
         ...(year ? { year } : {}),
         ...(n.cdn_image_url ? { cdn_image_url: n.cdn_image_url } : {}),
         ...(n.image_url ? { image_url: n.image_url } : {}),
@@ -164,6 +174,9 @@ router.get("/api/graph/stream", (req, res) => {
     // from the ~8 wikidata-anchored base concepts (the real fields). The field
     // view colours them differently — see colorForNode() in graph-field.js.
     "json_extract(metadata,'$.tag_origin') AS tag_origin, " +
+    // source_url / va_maker_name feed sourceLabel() → the entity-view footer's
+    // real "source: …" attribution (replaces the old graph-stub placeholder).
+    SOURCE_SQL_FRAGMENT + ", " +
     YEAR_SQL_FRAGMENT;
 
   // Node + edge WHERE clauses are PINNED to /api/stats total_nodes /
@@ -229,6 +242,7 @@ router.get("/api/graph/stream", (req, res) => {
   for (const n of nodeRows) {
     const year = n.type === "artwork" ? formatArtworkYear(n) : null;
     const intention = typesByNode.get(n.id)?.size ?? 0;
+    const source = sourceLabel(n);
     push({
       n: {
         id: n.id,
@@ -236,6 +250,7 @@ router.get("/api/graph/stream", (req, res) => {
         type: n.type,
         slug: n.slug,
         int: intention,
+        ...(source ? { source } : {}),
         ...(year ? { year } : {}),
         // Prefer the R2 cdn; only ship the upstream image_url when there's no
         // cdn (the client falls cdn -> image_url, so the upstream is redundant
