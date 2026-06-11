@@ -26,7 +26,7 @@ spelled out, plus verification.
 
 ```bash
 export PATH="$HOME/.fly/bin:$PATH"      # flyctl installs here; may already be on PATH
-flyctl auth whoami                       # must be authed (g@hasten.gg). If not: tell the user to run `flyctl auth login` (interactive browser) — you can't do it headless.
+flyctl auth whoami                       # must be authed. If not: tell the user to run `flyctl auth login` (interactive browser) — you can't do it headless.
 git status --short && git branch --show-current   # what's about to ship (deploy builds from the WORKING TREE, not a branch on origin)
 curl -s https://adai-basel.fly.dev/api/stats; echo   # current LIVE counts — these must be IDENTICAL after the deploy (the volume survives)
 ```
