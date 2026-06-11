@@ -243,6 +243,56 @@
     THUMB_RING_WIDTH: 1,             // subtle white ring around thumbnails for legibility
   };
 
+  // ---- Narrow-viewport tuning — BANDAID -----------------------------------
+  // Gate is width-only: window.innerWidth in CSS px (the viewport meta gives
+  // device-width, so a DPR-3 phone reports ~390). Deliberately NOT device /
+  // orientation / pointer detection — the cramping is a function of available
+  // width, not of "being a phone". So this fires on a phone in PORTRAIT and on
+  // a narrow desktop window alike; a phone in LANDSCAPE reports a wide width
+  // and intentionally keeps the desktop layout (it has the horizontal room).
+  //
+  // The in-place focus view (the "zoom-in" phase) was tuned for desktop: up
+  // to 100 neighbours fanned across a wide ellipse with 178px-wide labels.
+  // Under ~430px that stacks dots on top of one another and collides nearly
+  // every label out — the "cramped nodes and text" the floor reported. Until a
+  // proper mobile layout pass, scale the densest knobs to the live viewport.
+  // Reversible: the render-time knobs (label width, text size, side inset,
+  // anchor separation) are read every frame so re-tuning on resize takes
+  // effect immediately; the neighbour COUNT is read when a node is focused, so
+  // it applies from the next focus (and from first load, since
+  // applyViewportTuning() runs once at init before any focus). The top/bottom
+  // insets are left untouched — they clear the chrome bands (breadcrumb /
+  // bookmarks / archivist), which still exist at any width.
+  const CFG_DESKTOP = {
+    MAX_INPLACE_NEIGHBORS: CFG.MAX_INPLACE_NEIGHBORS,
+    LABEL_MAX_WIDTH: CFG.LABEL_MAX_WIDTH,
+    NAME_TEXT_SIZE: CFG.NAME_TEXT_SIZE,
+    IN_PLACE_TARGET_INSET: CFG.IN_PLACE_TARGET_INSET,
+    IN_PLACE_ANCHOR_MIN_SEP: CFG.IN_PLACE_ANCHOR_MIN_SEP,
+  };
+  function applyViewportTuning() {
+    const w = window.innerWidth || 0;
+    if (w > 0 && w <= 560) {
+      // Narrow width. Show far fewer neighbours so each dot+label gets
+      // room; cap labels to ~46% of the screen (two can't fully overlap) at a
+      // slightly smaller size; reclaim horizontal room with a shallower side
+      // inset; widen the min anchor separation so the smaller set genuinely
+      // spreads instead of stacking. Numbers are eyeball-tunable on-device.
+      CFG.MAX_INPLACE_NEIGHBORS = w <= 430 ? 28 : 40;
+      CFG.LABEL_MAX_WIDTH = Math.max(104, Math.round(w * 0.46));
+      CFG.NAME_TEXT_SIZE = 10;
+      CFG.IN_PLACE_TARGET_INSET = 30;
+      CFG.IN_PLACE_ANCHOR_MIN_SEP = 42;
+    } else {
+      CFG.MAX_INPLACE_NEIGHBORS = CFG_DESKTOP.MAX_INPLACE_NEIGHBORS;
+      CFG.LABEL_MAX_WIDTH = CFG_DESKTOP.LABEL_MAX_WIDTH;
+      CFG.NAME_TEXT_SIZE = CFG_DESKTOP.NAME_TEXT_SIZE;
+      CFG.IN_PLACE_TARGET_INSET = CFG_DESKTOP.IN_PLACE_TARGET_INSET;
+      CFG.IN_PLACE_ANCHOR_MIN_SEP = CFG_DESKTOP.IN_PLACE_ANCHOR_MIN_SEP;
+    }
+  }
+  applyViewportTuning();
+
   let fieldRevealTimer = null;
 
   // Density-aware thumbnail radius. Practitioners like Robert Hodgin have 29
@@ -3279,6 +3329,7 @@
     }
 
     function onResize() {
+      applyViewportTuning();   // re-tune the narrow-viewport bandaid knobs
       const next = sizeCanvas(canvas);
       ctx = next.ctx; w = next.w; h = next.h;
       reproject(bundle);
