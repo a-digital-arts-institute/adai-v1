@@ -455,6 +455,27 @@ body.field-graph-focused #adai-embed-strip {
   opacity: 1;
 }
 
+/* ---- Chrome hide toggle (mobile declutter) ----
+   The #adai-chrome-toggle handle (created in graph-field.js, also bound to the
+   'h' key) flips body.field-chrome-hidden. It collapses the field's info /
+   control overlays so a focused artwork + its relations read clean on a narrow
+   screen: the right-side edge-filter + embedding "squares" and the top
+   breadcrumb / logotype / coordinates. Deliberately KEPT visible: the bottom
+   rooms nav, the archivist bar, the #vitals readout, the canvas content, and
+   the handle itself. One selector per element — trim or extend the list freely
+   (e.g. add #vitals / #adai-bookmarks). !important beats the inline display
+   the JS-created strips set on themselves. */
+body.field-chrome-hidden #adai-edge-filter,
+body.field-chrome-hidden #adai-embed-strip,
+body.field-chrome-hidden #adai-bookmarks,
+body.field-chrome-hidden #adai-breadcrumb,
+body.field-chrome-hidden #logotype,
+body.field-chrome-hidden #coordinates {
+  display: none !important;
+}
+#adai-chrome-toggle:hover { color: #ccc !important; border-color: #45454c !important; }
+#adai-chrome-toggle:active { color: #fff !important; }
+
 body.field-graph-revealing #mopey {
   opacity: 0.32 !important;
 }

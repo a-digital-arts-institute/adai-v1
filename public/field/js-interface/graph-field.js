@@ -1768,6 +1768,84 @@
     }
   }
 
+  // ---- Chrome hide toggle (mobile declutter) ------------------------------
+  // A single tappable handle that collapses the field's info/control overlays
+  // — the right-side edge-filter + embedding strips ("those squares") and the
+  // top breadcrumb / logotype / coordinates — so a focused artwork and its
+  // relations read clean on a narrow screen. Deliberately KEEPS the bottom
+  // rooms nav, the archivist bar, the vitals readout, the canvas content (dots
+  // / thumbnails / relation lines / their on-canvas labels), and the handle
+  // itself. Pure CSS visibility via the body.field-chrome-hidden class (the
+  // hide list lives in style.css — one selector per element, trivial to trim),
+  // so there are zero canvas/render changes; it's fully reversible and the
+  // choice persists in localStorage. Desktop also gets an 'h' hotkey. The id is
+  // adai-* AND a <button>, so field.js's isUiClick / isUiPointer already treat
+  // it as chrome — a tap never zooms or starts a pan.
+  const CHROME_HIDDEN_KEY = 'adai:field-chrome-hidden';
+  let chromeHidden = false;
+  try { chromeHidden = localStorage.getItem(CHROME_HIDDEN_KEY) === '1'; } catch (_) {}
+
+  function applyChromeHidden() {
+    document.body.classList.toggle('field-chrome-hidden', chromeHidden);
+    const btn = document.getElementById('adai-chrome-toggle');
+    if (btn) {
+      btn.textContent = chromeHidden ? 'show' : 'hide';
+      btn.setAttribute('aria-pressed', chromeHidden ? 'true' : 'false');
+      btn.title = chromeHidden ? 'Show panels (h)' : 'Hide panels (h)';
+    }
+    // The cached chrome rects feed on-canvas label placement; invalidate it so
+    // labels reflow into the freed space (or back out) on the next frame
+    // instead of waiting up to 500ms for the cache to expire.
+    chromeRectsCache = { t: 0, rects: [] };
+  }
+
+  function setChromeHidden(next) {
+    chromeHidden = !!next;
+    try { localStorage.setItem(CHROME_HIDDEN_KEY, chromeHidden ? '1' : '0'); } catch (_) {}
+    applyChromeHidden();
+  }
+
+  function setupChromeToggle() {
+    let btn = document.getElementById('adai-chrome-toggle');
+    if (!btn) {
+      btn = document.createElement('button');
+      btn.id = 'adai-chrome-toggle';
+      btn.type = 'button';
+      btn.setAttribute('aria-label', 'Toggle panels');
+      Object.assign(btn.style, {
+        position: 'fixed',
+        top: '50%',
+        right: '6px',
+        transform: 'translateY(-50%)',
+        zIndex: '45',
+        background: 'rgba(10,10,12,0.72)',
+        border: '1px solid #2a2a30',
+        borderRadius: '2px',
+        color: '#888',
+        cursor: 'pointer',
+        fontFamily: "'SF Mono', 'Menlo', monospace",
+        fontSize: '9px',
+        letterSpacing: '0.08em',
+        lineHeight: '1',
+        padding: '8px 7px',
+        pointerEvents: 'auto',
+        userSelect: 'none',
+        backdropFilter: 'blur(4px)',
+        WebkitBackdropFilter: 'blur(4px)',
+        transition: 'color 160ms, border-color 160ms',
+      });
+      // stopPropagation: the handle only flips its own label, so it never
+      // detaches mid-dispatch — but match the other chrome chips' pattern so
+      // the document-level zoomTo in field.js can never see this click.
+      btn.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        setChromeHidden(!chromeHidden);
+      });
+      document.body.appendChild(btn);
+    }
+    applyChromeHidden();
+  }
+
   function syncEmbeddingNeighborsIntoField(payload, bundle, graph) {
     if (bundle.viewLevel !== 'field-focus' || !bundle.focusedId) return;
     const sections = payload?.sections || [];
@@ -2417,7 +2495,7 @@
   const CHROME_RECT_SELECTORS = [
     '#adai-breadcrumb', '#adai-bookmarks', '#adai-edge-filter',
     '#adai-embed-strip', '#logotype', '#coordinates', '#vitals',
-    '#rooms', '#archivist-bar',
+    '#rooms', '#archivist-bar', '#adai-chrome-toggle',
   ];
   let chromeRectsCache = { t: 0, rects: [] };
   function chromeOccupiedRects() {
@@ -3235,6 +3313,7 @@
     };
 
     // ---- chrome ----
+    setupChromeToggle();   // declutter handle — applies the persisted hide state
     renderIntro();
     renderBreadcrumb(bundle, graph);
     renderEdgeFilter(bundle, graph);
@@ -3541,6 +3620,15 @@
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && bundle.viewLevel && bundle.viewLevel !== '30k') {
         zoomBack(graph, bundle, w, h);
+      }
+      // 'h' toggles the chrome-hide (declutter) — the keyboard twin of the
+      // on-screen handle. Ignore while typing (archivist / search) or with a
+      // modifier so it never eats a browser shortcut.
+      if ((e.key === 'h' || e.key === 'H') && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        const t = e.target;
+        if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+        e.preventDefault();
+        setChromeHidden(!chromeHidden);
       }
     });
 
