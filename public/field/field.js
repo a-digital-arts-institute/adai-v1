@@ -1130,7 +1130,7 @@
           <section class="ph-sec">
             <div class="ph-sec-label">What</div>
             <p class="ph-line">A shared protocol for the digital arts to tell its own story — across time, mediums and practices.</p>
-            <p class="ph-line">An open, permissionless commons. Never finished, never flattened.</p>
+            <p class="ph-line">A plural, open commons. Never finished, never flattened.</p>
             <p class="ph-line">A provocation to begin: a seed canon inviting discovery and participation.</p>
             <p class="ph-line">Re-weightable, forkable — every fork a legitimate centre.</p>
           </section>
@@ -1144,7 +1144,7 @@
           <section class="ph-sec">
             <div class="ph-sec-label">How</div>
             <p class="ph-line">Speed without intention collapses under its own weight.</p>
-            <p class="ph-line">So we turn the machine on itself — ingesting work, crowdsourcing curation from practitioners.</p>
+            <p class="ph-line">So we turn the machine on itself — sourcing work openly, inviting practitioners to curate.</p>
             <p class="ph-line">A seed canon and knowledge graph: a commons to surface bias and provoke contribution.</p>
             <ol class="ph-principles">
               <li><span class="ph-num">01</span> Plurality as constraint</li>
