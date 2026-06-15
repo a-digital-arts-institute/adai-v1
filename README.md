@@ -202,7 +202,7 @@ Requires `GEMINI_API_KEY` in `.env` (gitignored). Cost ~$0.03 per full pass.
 FLY_REMOTE_BUILDER_REGION=iad flyctl deploy
 ```
 
-After deploys that touch seed data or schema, nuke the persistent volume so the new baked `seed.db` replaces the stale one — see [`CLAUDE.md` § Deploy gotchas](CLAUDE.md).
+The persistent `/data` volume survives deploys, so code ships without touching live data. **The canon is frozen** — live contributions exist only on the volume, so the volume is **never** wiped in routine operation; reseeding/volume replacement is a disaster-recovery procedure only. See [`CLAUDE.md` § Deploy gotchas](CLAUDE.md).
 
 ---
 
@@ -218,6 +218,18 @@ Human-readable with type prefix: `artwork:fidenza`, `practitioner:casey reas`, `
 - **JB** — market development, artist relations, sensing conversations
 - **Gio** — backend architecture, CR-SQLite, protocol, public layer data collection
 - **Piyush** — frontend, generative landing page, brand system, particle/gravitational visualization
+
+---
+
+## License
+
+A(DAI) is a commons, licensed by layer:
+
+- **Code** — Apache License 2.0 ([`LICENSE`](LICENSE)). The TypeScript server, the Python pipeline (`seed/_build/`), and the schema.
+- **Knowledge graph + documentation** — Creative Commons Attribution-ShareAlike 4.0 ([`LICENSE-DATA`](LICENSE-DATA)). The nodes, edges, concepts, curated descriptions and connections (`seed/*.json`), and the written content. Attribution + share-alike, so forks of the data stay openly licensed — *it cannot be enclosed*.
+- **Mirrored artwork images** — **not licensed here.** Copyright remains with the artists and holding institutions (Victoria & Albert Museum, SuperRare creators, Art Blocks, fxhash, …). Images are mirrored only so the graph stays renderable when upstream URLs rot, with upstream provenance preserved in each node's metadata. Several sources are explicitly **not** CC0. Their presence in this repository is not permission to reuse them.
+
+The *reading* of the field is the commons; the *works* stay with the artists who made them.
 
 ---
 
