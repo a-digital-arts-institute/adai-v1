@@ -11,11 +11,21 @@ that drops newly-minted tokens):
      that left the graph keeps a vector forever. Harmless but cruft.
 
   B. Unreferenced Cloudflare R2 IMAGES — objects under the `images/` prefix in
-     the R2 bucket that no canon image carrier points at. R2 is content-
-     addressed + immutable, so a dropped artwork's image just lingers, paid-for,
-     forever. We reconcile the bucket against the three committed image carriers
-     (nodes.json, image_mirror.json, image_overlay.json — see CLAUDE.md "Image
-     mirror — Cloudflare R2").
+     the R2 bucket that no live reference points at. R2 is content-addressed +
+     immutable, so a dropped artwork's image just lingers, paid-for, forever.
+     We reconcile the bucket against TWO classes of reference, UNIONED:
+       1. the three committed image carriers (nodes.json, image_mirror.json,
+          image_overlay.json — see CLAUDE.md "Image mirror — Cloudflare R2");
+       2. the LIVE DB(s) passed via --db — every `cdn_image_url` in the
+          `nodes` table's metadata, INCLUDING retired nodes.
+
+     Why (2) is not optional under the canon freeze (owner decision 2026-06-06):
+     contributor-API image uploads (POST /api/v1/images) attach cdn_image_url
+     to a node's metadata in the LIVE /data/adai.db ONLY — never into
+     seed/*.json. Reconciling the bucket against canon JSON alone would flag
+     those live images as orphans, and --delete would permanently destroy them.
+     So --delete REFUSES to run without a --db live reference (override with
+     --allow-json-only only if you are certain no live writes exist).
 
 SAFE BY DEFAULT. With no flags this is a pure read: it lists R2, diffs against
 canon, and PRINTS what it WOULD remove. It mutates nothing until you pass an
@@ -32,15 +42,22 @@ Reuses upload_to_r2.py's env-loading + boto3 client construction verbatim, and
 the same content-addressed key scheme (images/<sha[:2]>/<sha>.<ext>).
 
 Usage (from project root):
-    seed/_build/.venv/bin/python3 seed/_build/cull_orphans.py            # dry-run (read-only)
-    seed/_build/.venv/bin/python3 seed/_build/cull_orphans.py --apply    # rewrite embeddings
-    seed/_build/.venv/bin/python3 seed/_build/cull_orphans.py --delete   # delete orphan R2 objects
-    seed/_build/.venv/bin/python3 seed/_build/cull_orphans.py --apply --delete --limit 50
+    seed/_build/.venv/bin/python3 seed/_build/cull_orphans.py                       # dry-run (read-only)
+    seed/_build/.venv/bin/python3 seed/_build/cull_orphans.py --apply               # rewrite embeddings
+    seed/_build/.venv/bin/python3 seed/_build/cull_orphans.py --db ./adai.db        # union live DB refs (dry-run)
+    seed/_build/.venv/bin/python3 seed/_build/cull_orphans.py --db ./adai.db --delete   # delete orphan R2 objects
+    seed/_build/.venv/bin/python3 seed/_build/cull_orphans.py --apply --db ./adai.db --delete --limit 50
+
+To run against PROD (the only place live contributor uploads exist), use the
+justfile recipes, which pull /data/adai.db (+ WAL) off the Fly volume first:
+    just cull-orphans-prod            # dry-run against live refs
+    just cull-orphans-prod-delete     # actually delete orphan R2 objects
 """
 from __future__ import annotations
 
 import argparse
 import json
+import sqlite3
 import struct
 import sys
 import urllib.parse
@@ -193,6 +210,40 @@ def referenced_keys(public_base: str) -> set[str]:
     return keys
 
 
+def db_referenced_keys(db_path: Path, public_base: str) -> set[str]:
+    """Every R2 object key referenced by a node in a LIVE SQLite DB.
+
+    Reads `metadata.cdn_image_url` from EVERY row of the `nodes` table —
+    INCLUDING retired nodes (metadata.retired == 1). A retired node drops out
+    of every listing surface but stays reachable by direct URL (the husk
+    model), so its image is still legitimately referenced and must NOT be
+    culled. Hence no visibility filter here.
+
+    This is the reference class that canon JSON cannot provide: under the canon
+    freeze, contributor-API uploads write cdn_image_url to the live DB only.
+
+    Stock sqlite3 reads the base `nodes` table fine — CR-SQLite's CRR machinery
+    lives in shadow tables and isn't needed for a plain SELECT. Opened
+    read-write (not ro) so a pulled copy's WAL is applied on first read; we
+    never write.
+    """
+    keys: set[str] = set()
+    con = sqlite3.connect(str(db_path))
+    try:
+        try:
+            cur = con.execute("SELECT metadata FROM nodes")
+        except sqlite3.OperationalError as e:
+            sys.exit(f"--db {db_path}: cannot read `nodes` table ({e})")
+        for (md_raw,) in cur:
+            md = _parse_metadata(md_raw)
+            k = cdn_url_to_key(md.get("cdn_image_url"), public_base)
+            if k:
+                keys.add(k)
+    finally:
+        con.close()
+    return keys
+
+
 # ----- A. orphan embeddings ---------------------------------------------
 
 
@@ -302,13 +353,30 @@ def _fmt_bytes(n: int) -> str:
     return f"{n} B"
 
 
-def cull_r2(env: dict, s3, delete: bool, limit: int) -> None:
+def cull_r2(env: dict, s3, delete: bool, limit: int,
+            db_paths: list[Path], allow_json_only: bool) -> None:
     print("\n=== B. ORPHAN R2 IMAGES ===")
     public_base = env["R2_PUBLIC_BASE"]
     bucket = env["R2_BUCKET"]
 
-    refs = referenced_keys(public_base)
-    print(f"referenced keys (nodes.json + image_mirror.json + image_overlay.json): {len(refs)}")
+    refs_json = referenced_keys(public_base)
+    print(f"referenced keys — canon JSON "
+          f"(nodes.json + image_mirror.json + image_overlay.json): {len(refs_json)}")
+
+    refs_db: set[str] = set()
+    for dbp in db_paths:
+        keys_db = db_referenced_keys(dbp, public_base)
+        print(f"referenced keys — live DB {dbp}: {len(keys_db)} "
+              f"({len(keys_db - refs_json)} not in canon JSON)")
+        refs_db |= keys_db
+
+    refs = refs_json | refs_db
+    if db_paths:
+        print(f"referenced keys — UNION: {len(refs)} "
+              f"(canon JSON {len(refs_json)} + live-DB-only {len(refs_db - refs_json)})")
+    else:
+        print("referenced keys — NO live DB supplied (canon JSON only); "
+              "--delete will refuse (see --db / --allow-json-only)")
 
     objects = list_r2_images(s3, bucket)
     print(f"R2 objects under '{IMAGE_PREFIX}': {len(objects)}")
@@ -329,6 +397,23 @@ def cull_r2(env: dict, s3, delete: bool, limit: int) -> None:
     if not orphans:
         print("nothing to delete — bucket untouched")
         return
+
+    # SAFETY GUARD (canon freeze) — refuse to delete using canon-JSON-only
+    # references. Contributor-API uploads since 2026-06-06 reference their R2
+    # image only in the live DB; deleting against JSON alone would destroy
+    # them. Require a --db live reference (or an explicit opt-out).
+    if not db_paths and not allow_json_only:
+        print("\n" + "!" * 70)
+        print("REFUSING TO DELETE: no live DB supplied (--db).")
+        print("Canon JSON does not include contributor-API image uploads made")
+        print("since the canon freeze (2026-06-06) — those cdn_image_urls live")
+        print("only in /data/adai.db. Deleting against JSON-only references would")
+        print("permanently destroy live-referenced images.")
+        print("  → pass --db <path-to-live-adai.db> to union live references")
+        print("    (or use `just cull-orphans-prod-delete`, which pulls it for you)")
+        print("  → or --allow-json-only if you are CERTAIN no live writes exist")
+        print("!" * 70)
+        sys.exit(4)
 
     # SAFETY GUARD — refuse to delete if canon barely resolved any references.
     # A near-empty ref set means nodes.json / the sidecars failed to load, and
@@ -379,26 +464,40 @@ def main() -> int:
                     help="delete orphan objects from the R2 bucket (destructive)")
     ap.add_argument("--limit", type=int, default=0,
                     help="cap the R2 deletion to the first N orphans (for testing)")
+    ap.add_argument("--db", action="append", default=[], metavar="PATH",
+                    help="path to a live adai.db whose node cdn_image_urls are "
+                         "UNIONED into the R2 reference set (repeatable). Required "
+                         "for --delete under the canon freeze — see module docstring.")
+    ap.add_argument("--allow-json-only", action="store_true",
+                    help="permit --delete with no --db (pre-freeze / no live writes only)")
     args = ap.parse_args()
+
+    db_paths = [Path(p) for p in args.db]
+    for dbp in db_paths:
+        if not dbp.exists():
+            sys.exit(f"--db path not found: {dbp}")
 
     canon_ids = canon_node_ids()
     print(f"canon nodes (seed/nodes.json): {len(canon_ids)}")
 
-    # A. Embeddings — purely local files, no creds needed.
+    # A. Embeddings — purely local files, no creds needed. (This reconciles the
+    # committed embeddings sidecar against committed nodes.json; the live DB's
+    # node_embeddings is a separate local-only table and out of scope here.)
     cull_embeddings(canon_ids, args.apply)
 
     # B. R2 — needs creds + a client. The list is read-only; deletion is gated
-    # by --delete and the safety guard.
+    # by --delete, the --db live-reference requirement, and the safety guard.
     env = load_env()
     s3 = make_s3(env)
-    cull_r2(env, s3, args.delete, args.limit)
+    cull_r2(env, s3, args.delete, args.limit, db_paths, args.allow_json_only)
 
     print("\n=== SUMMARY ===")
     if not args.apply and not args.delete:
         print("dry-run only — no files or objects were modified.")
-        print("  --apply   to rewrite embeddings  ·  --delete   to remove R2 orphans")
+        print("  --apply   to rewrite embeddings  ·  --db PATH --delete   to remove R2 orphans")
     else:
-        print(f"apply={args.apply}  delete={args.delete}  (changes above are live)")
+        print(f"apply={args.apply}  delete={args.delete}  db={[str(p) for p in db_paths]}  "
+              f"(changes above are live)")
     return 0
 
 

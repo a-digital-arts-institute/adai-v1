@@ -112,3 +112,34 @@ restore-tokens: warm _check-tokens-file
 restore-tokens-dry: warm _check-tokens-file
     @echo "put {{tokens_file}} /tmp/.adai-tokens.json" | flyctl ssh sftp shell --app {{app}}
     flyctl ssh console --app {{app}} -C "sh -c 'node /app/dist/cli/restore-tokens.js --from /tmp/.adai-tokens.json --dry-run; rc=$?; rm -f /tmp/.adai-tokens.json; exit $rc'"
+
+# --- Fly: R2 image janitor (orphan cull) -------------------------------
+#
+# cull_orphans.py reconciles the R2 bucket against canon references and
+# reports/removes images nothing points at. Under the canon freeze,
+# contributor-API uploads reference cdn_image_url only in the LIVE DB
+# (/data/adai.db), never in seed/*.json — so the bucket MUST be diffed
+# against the live DB, not just the committed canon, or a --delete would
+# destroy live-referenced images. These recipes pull the live DB (incl.
+# its WAL, so recent writes count) to a tmp file, run the cull with --db,
+# then delete the tmp copy. (For a torn-free snapshot you can substitute a
+# `litestream restore`d copy as the --db source.)
+
+# Internal: pull /data/adai.db (+ -wal) off the volume → /tmp/adai-cull.db.
+_pull-live-db: warm
+    @echo "[cull] pulling {{db_path}} (+ WAL) → /tmp/adai-cull.db"
+    @rm -f /tmp/adai-cull.db /tmp/adai-cull.db-wal /tmp/adai-cull.db-shm
+    @echo "get {{db_path}} /tmp/adai-cull.db" | flyctl ssh sftp shell --app {{app}}
+    @echo "get {{db_path}}-wal /tmp/adai-cull.db-wal" | flyctl ssh sftp shell --app {{app}} || echo "[cull] no -wal (checkpointed) — ok"
+
+# Dry-run: report orphan R2 images against LIVE references (reads only).
+[doc("Report orphan R2 images, diffed against the live prod DB (read-only).")]
+cull-orphans-prod: _pull-live-db
+    seed/_build/.venv/bin/python3 seed/_build/cull_orphans.py --db /tmp/adai-cull.db
+    @rm -f /tmp/adai-cull.db /tmp/adai-cull.db-wal /tmp/adai-cull.db-shm
+
+# DESTRUCTIVE: delete orphan R2 images, diffed against the live prod DB.
+[doc("Delete orphan R2 images (diffed against the live prod DB). Destructive.")]
+cull-orphans-prod-delete: _pull-live-db
+    seed/_build/.venv/bin/python3 seed/_build/cull_orphans.py --db /tmp/adai-cull.db --delete
+    @rm -f /tmp/adai-cull.db /tmp/adai-cull.db-wal /tmp/adai-cull.db-shm
