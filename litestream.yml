@@ -35,6 +35,13 @@ dbs:
         bucket: ${R2_BACKUP_BUCKET}
         path: adai.db
         endpoint: ${R2_ENDPOINT}
+        # R2 validates the SigV4 region against its jurisdiction list and rejects
+        # the AWS default ("us-east-1"/"us-west-2") with InvalidRegionName, so it
+        # must be "auto" — matches seed/_build/upload_to_r2.py's working client.
+        # force-path-style keeps the bucket in the path (account-host endpoint),
+        # not as a vhost subdomain.
+        region: auto
+        force-path-style: true
         access-key-id: ${R2_BACKUP_ACCESS_KEY_ID}
         secret-access-key: ${R2_BACKUP_SECRET_ACCESS_KEY}
         # Frugal cadence — R2 bills per Class-A op, so don't hammer it:
