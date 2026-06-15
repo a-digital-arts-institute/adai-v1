@@ -46,6 +46,40 @@
     return escapedText.replace(/contribute via \/contribute skill/g, CONTRIB_LINK);
   }
 
+  // ---------- "Who is this for" toggle (style-kin panel) ----------
+  // A small, non-rotating tab toggle under the style-kin description that
+  // swaps one value line depending on who's reading. Default = Everyone.
+  // Same pattern can extend to the artwork-neighbour panels later.
+  // Node types for which a "// works" section is meaningful, and the cap on
+  // how many embodying artworks a concept/scene lists.
+  const WORKS_TYPES = new Set(['practitioner', 'collective', 'concept', 'scene']);
+  const CONCEPT_WORKS_CAP = 24;
+
+  const AUDIENCE_ORDER = ['everyone', 'curators', 'artists', 'collectors'];
+  const AUDIENCE_LABEL = {
+    everyone: 'Everyone',
+    curators: 'Curators',
+    artists: 'Artists',
+    collectors: 'Collectors',
+  };
+  const AUDIENCE_LINE = {
+    everyone: 'Resemblances to explore: leads to follow, not claims to trust.',
+    curators: 'Threads for a show, and a compass to the gaps worth researching.',
+    artists: 'See who you rhyme with, then claim, correct, or follow it.',
+    collectors: 'Kindred work across platforms, and the tradition a piece sits near.',
+  };
+  function renderAudienceToggle() {
+    const tabs = AUDIENCE_ORDER.map((k, i) =>
+      `<button type="button" class="ev-aud-tab" data-aud="${k}" aria-pressed="${i === 0 ? 'true' : 'false'}">${escapeHtml(AUDIENCE_LABEL[k])}</button>`
+    ).join('');
+    return `
+      <div class="ev-aud" data-aud-current="everyone">
+        <div class="ev-aud-tabs" role="group" aria-label="Who is this for">${tabs}</div>
+        <p class="ev-aud-line" aria-live="polite" title="tap to cycle">${escapeHtml(AUDIENCE_LINE.everyone)}</p>
+      </div>
+    `;
+  }
+
   // ---------- Image helpers (artworks only — practitioners stay text/hatch) ----------
   // Trust any http(s) URL. The R2 cdn is content-addressed and guaranteed
   // image/* at upload (upload_to_r2 refuses non-image content-types), and
@@ -202,22 +236,33 @@
   // optional image). Empty sections never collapse — they invite contribution.
   function gatherWorks(node, showcase) {
     const g = window.ADAI_GRAPH;
-    // Real artworks via CREATED_BY edges (the practitioner is one endpoint).
+    // Which artworks count as this node's "works" depends on its type:
+    //   practitioner / collective → artworks they CREATED_BY
+    //   concept / scene           → artworks that EMBODY it
+    // Concepts can be embodied by a great many artworks (e.g. generative-art),
+    // so cap the concept/scene list to keep the panel scannable.
+    const conceptLike = node && (node.type === 'concept' || node.type === 'scene');
+    const wantType = conceptLike ? 'EMBODIES' : 'CREATED_BY';
     let graphWorks = [];
     if (g && node) {
-      const edges = g.edgesFor(node.id).filter(e => e.type === 'CREATED_BY');
-      graphWorks = edges.map(e => {
+      const edges = g.edgesFor(node.id).filter(e => e.type === wantType);
+      const seen = new Set();
+      for (const e of edges) {
         const otherId = e.source === node.id ? e.target : e.source;
         const aw = g.byId.get(otherId);
-        if (!aw || aw.type !== 'artwork') return null;
-        return {
+        if (!aw || aw.type !== 'artwork' || seen.has(aw.id)) continue;
+        seen.add(aw.id);
+        graphWorks.push({
           slug: aw.slug || aw.id.split(':').slice(1).join(':'),
           title: aw.name,
           graph_id: aw.id,
           // /api/graph projects `year` onto artwork nodes; medium/blurb absent.
           year: aw.year || undefined,
-        };
-      }).filter(Boolean);
+        });
+      }
+      if (conceptLike && graphWorks.length > CONCEPT_WORKS_CAP) {
+        graphWorks = graphWorks.slice(0, CONCEPT_WORKS_CAP);
+      }
     }
     // Real IMAGED graph works win over hand-curated showcase stubs: the canon
     // now carries mirrored artworks for showcased pioneers (e.g. Vera Molnár,
@@ -234,12 +279,23 @@
   }
 
   function renderWorks(node, showcase) {
+    // "Works" only means something for makers (practitioner/collective) and for
+    // concepts/scenes (artworks that embody them). Other types — artwork,
+    // institution, platform … — skip the section rather than show a nonsensical
+    // empty "// works".
+    if (!node || !WORKS_TYPES.has(node.type)) return '';
     const { works, source } = gatherWorks(node, showcase);
     if (!works.length) {
+      const conceptLike = node.type === 'concept' || node.type === 'scene';
+      const noun = escapeHtml(node.type);
+      // A maker's works are created BY them; a concept's works LINK to it.
+      const msg = conceptLike
+        ? `no works have linked this ${noun} yet`
+        : `no works have been linked to this ${noun} yet`;
       return `
         <section class="ev-section">
           <h2 class="ev-h2">// works <span class="ev-h2-count">/00</span></h2>
-          <p class="ev-empty">no works have been linked to this practitioner yet — <em>${CONTRIB_LINK}</em></p>
+          <p class="ev-empty">${msg} — <em>${CONTRIB_LINK}</em></p>
         </section>
       `;
     }
@@ -477,10 +533,13 @@
       const cards = (s.neighbours || []).map(renderEmbeddingNeighbour).join('');
       const blurb = s.blurb ? `<p class="ev-emb-blurb">${escapeHtml(s.blurb)}</p>` : '';
       const keyTag = s.key ? `<span class="ev-emb-key">[${escapeHtml(s.key)}]</span>` : '';
+      // Only the style-kin panel carries the audience toggle for now.
+      const toggle = s.key === 'style_kin' ? renderAudienceToggle() : '';
       return `
         <div class="ev-emb-group" data-key="${escapeHtml(s.key || '')}">
           <h3 class="ev-emb-h3">${escapeHtml(s.title)} ${keyTag} <span class="ev-h3-count">/${String(s.neighbours.length).padStart(2, '0')}</span></h3>
           ${blurb}
+          ${toggle}
           <div class="ev-emb-grid">${cards}</div>
         </div>
       `;
@@ -663,6 +722,32 @@
   // neighbour cards (re-open entity view on the clicked neighbour).
   document.addEventListener('click', (e) => {
     if (!STATE.open) return;
+    // "Who is this for" toggle: tab buttons set the audience; tapping the
+    // value line cycles to the next (the mobile affordance). Handle before
+    // the navigation branch so it never bubbles to the field's zoom handler.
+    const audTab = e.target?.closest?.('.ev-aud-tab');
+    const audLine = e.target?.closest?.('.ev-aud-line');
+    if (audTab || audLine) {
+      e.preventDefault();
+      e.stopPropagation();
+      const wrap = (audTab || audLine).closest('.ev-aud');
+      if (wrap) {
+        let next;
+        if (audTab) {
+          next = audTab.dataset.aud;
+        } else {
+          const cur = wrap.dataset.audCurrent || 'everyone';
+          next = AUDIENCE_ORDER[(AUDIENCE_ORDER.indexOf(cur) + 1) % AUDIENCE_ORDER.length];
+        }
+        wrap.dataset.audCurrent = next;
+        wrap.querySelectorAll('.ev-aud-tab').forEach((b) =>
+          b.setAttribute('aria-pressed', b.dataset.aud === next ? 'true' : 'false')
+        );
+        const line = wrap.querySelector('.ev-aud-line');
+        if (line) line.textContent = AUDIENCE_LINE[next] || '';
+      }
+      return;
+    }
     // Embedding-neighbour cards AND relation rows both navigate (note 6).
     const card = e.target?.closest?.('.ev-emb-card, .ev-rel-row[data-node-id]');
     if (card && card.dataset.nodeId) {
@@ -909,6 +994,24 @@
       color: #6a6a6c; font-weight: 400; padding-left: 6px; font-size: 11px;
     }
     .ev-emb-blurb { font-size: 12px; color: #8a8a8c; margin: 0 0 12px; }
+
+    /* ---- "who is this for" toggle (style-kin panel) ---- */
+    .ev-aud { margin: 0 0 14px; }
+    .ev-aud-tabs { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-bottom: 6px; }
+    .ev-aud-tab {
+      background: transparent; border: 0; padding: 2px 0;
+      font-family: inherit; font-size: 11px; letter-spacing: 0.04em;
+      color: #6a6a6c; cursor: pointer; text-transform: lowercase;
+    }
+    .ev-aud-tab:hover { color: #b4b4b6; }
+    .ev-aud-tab[aria-pressed="true"] {
+      color: var(--text); border-bottom: 1px solid var(--brand-color, #4169B0);
+    }
+    .ev-aud-tab:focus-visible { outline: 1px solid var(--brand-color, #4169B0); outline-offset: 2px; }
+    .ev-aud-line {
+      font-size: 12px; color: #8a8a8c; margin: 0; cursor: pointer;
+      line-height: 1.45;
+    }
     .ev-emb-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));

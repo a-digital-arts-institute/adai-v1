@@ -78,7 +78,7 @@ export function buildEmbeddingSections(
         key: "style_kin",
         title: "Style kin",
         blurb:
-          "Practitioners closest in style-centroid space (cosine over the mean of their attributed artworks).",
+          "Each artist gets a single style signature — the centre of gravity of their work — and those signatures are matched. The model reads what the work looks like and what's said about it, but never who made it or when. That's why a resemblance can leap across decades or link scenes that never met. An aesthetic kinship to explore — not a school, lineage, or influence.",
         neighbours: styleKin,
       });
     }
