@@ -1068,7 +1068,7 @@
       <div class="ph-shell" role="dialog" aria-labelledby="ct-title">
         <header class="ph-head">
           <div class="ph-eyebrow">[contribute]</div>
-          <h2 class="ph-title" id="ct-title">An invitation to help write the digital arts' shared record</h2>
+          <h2 class="ph-title" id="ct-title">An invitation to collectively write the digital arts' shared record</h2>
         </header>
         <div class="ph-body">
           <p class="ph-line">Curate A(DAI) in plain language from your own LLM — every edit attributed to you, withdrawable anytime.</p>
@@ -1185,6 +1185,16 @@
       .ph-principles li { color: #c8c6c1; font-size: 13px; line-height: 1.6; margin: 0 0 6px; display: flex; gap: 11px; }
       .ph-principles li:last-child { margin-bottom: 0; }
       .ph-num { color: #6a6a6c; flex: none; }
+      .ph-cta { margin: 4px 0 0; padding-top: 18px; border-top: 1px solid #2a2a2c; display: flex; flex-wrap: wrap; gap: 10px; }
+      .ph-cta-btn {
+        display: inline-flex; align-items: center; gap: 8px;
+        border: 1px solid #4169B0; color: #7e9fdc; background: transparent;
+        font-family: inherit; font-size: 11px; letter-spacing: 0.08em;
+        text-transform: uppercase; padding: 9px 14px; text-decoration: none;
+        cursor: pointer; transition: background 120ms ease, color 120ms ease;
+      }
+      .ph-cta-btn:hover { background: rgba(65,105,176,0.14); color: #a8c0ea; }
+      .ph-cta-btn .ph-arrow { color: #4169B0; }
       .ph-foot {
         display: flex; justify-content: space-between; align-items: center;
         padding: 10px 26px; border-top: 1px solid #2a2a2c;
@@ -1211,7 +1221,7 @@
           <section class="ph-sec">
             <div class="ph-sec-label">What</div>
             <p class="ph-line">A shared protocol for the digital arts to tell its own story — across time, mediums and practices.</p>
-            <p class="ph-line">An open, permissionless commons. Never finished, never flattened.</p>
+            <p class="ph-line">A plural, open commons. Never finished, never flattened.</p>
             <p class="ph-line">A provocation to begin: a seed canon inviting discovery and participation.</p>
             <p class="ph-line">Re-weightable, forkable — every fork a legitimate centre.</p>
           </section>
@@ -1225,7 +1235,7 @@
           <section class="ph-sec">
             <div class="ph-sec-label">How</div>
             <p class="ph-line">Speed without intention collapses under its own weight.</p>
-            <p class="ph-line">So we turn the machine on itself — ingesting work, crowdsourcing curation from practitioners.</p>
+            <p class="ph-line">So we turn the machine on itself — sourcing work openly, inviting practitioners to curate.</p>
             <p class="ph-line">A seed canon and knowledge graph: a commons to surface bias and provoke contribution.</p>
             <ol class="ph-principles">
               <li><span class="ph-num">01</span> Plurality as constraint</li>
@@ -1242,6 +1252,10 @@
             <p class="ph-line">A select cohort of artists, curators and institutions to seed the canon and shape its governance.</p>
             <p class="ph-line">Each partner owns their assets; every contribution stays attributable.</p>
           </section>
+          <div class="ph-cta">
+            <a class="ph-cta-btn" href="/field-static/seed-thesis.html" target="_blank" rel="noopener">Read the Seed Thesis <span class="ph-arrow" aria-hidden="true">→</span></a>
+            <a class="ph-cta-btn" href="/field-static/co-governance.html" target="_blank" rel="noopener">Co-governance — Pre-seed <span class="ph-arrow" aria-hidden="true">→</span></a>
+          </div>
         </div>
         <div class="ph-foot">
           <span>esc to close</span>
