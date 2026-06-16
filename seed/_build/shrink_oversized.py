@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
-Shrink OVERSIZED R2 images — the third member of the image-janitor family
-(alongside upload_to_r2.py and cull_orphans.py).
+Shrink OVERSIZED R2 images — a live R2 janitor (sibling to cull_orphans.py).
 
 Some canon images are simply too big to serve in a graph view: 24 MiB PNGs and
 animated GIFs straight off fxhash, multi-megapixel V&A IIIF masters. They render
@@ -46,7 +45,8 @@ SAFE BY DEFAULT.
   --apply     download+resize ALL candidates, upload the new objects, write the
               patch JSON (--out). Still does not touch the DB (that's the CLI).
 
-Reuses upload_to_r2.py's env-loading + boto3 client and the same key scheme.
+Self-contained env-loading + boto3 client + the bucket's content-addressed key
+scheme (images/<sha[:2]>/<sha>.<ext>).
 
 Usage (from project root):
     seed/_build/.venv/bin/python3 seed/_build/shrink_oversized.py --db ./adai.db
@@ -126,7 +126,7 @@ EXT_FORMAT = {
 }
 
 
-# ----- env + client (verbatim from upload_to_r2.py / cull_orphans.py) ----
+# ----- env + client (same pattern as cull_orphans.py) ------------------
 
 
 def load_env() -> dict:
@@ -170,7 +170,7 @@ def _fmt_bytes(n: int) -> str:
 
 
 def cdn_url_to_key(cdn_url: str | None, public_base: str) -> str | None:
-    """Inverse of upload_to_r2's `f"{R2_PUBLIC_BASE}/{key}"`. Identical to
+    """Inverse of the uploader's `f"{R2_PUBLIC_BASE}/{key}"`. Identical to
     cull_orphans.cdn_url_to_key so the two janitors agree on what a key is."""
     if not cdn_url:
         return None

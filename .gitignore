@@ -59,39 +59,14 @@ Thumbs.db
 .claude/
 
 # ─────────────────────────────────────────────────────────────────────────────
-# seed/ — committed canon is the source of truth.
-# Ignore intermediate / cache / ephemeral files only.
+# seed/_build — the live R2 janitors only (cull_orphans.py, shrink_oversized.py).
+# The genesis seed pipeline (gatherers, merge, embed, seed/*.json) was retired
+# June 2026 — the live /data DB is the only source of truth. See git history.
 # ─────────────────────────────────────────────────────────────────────────────
-
-# Backup files from older enrichment passes
-seed/*.bak
-seed/*.pre-enrichment.bak
-
-# Per-source HTTP caches (gatherers re-download as needed)
-seed/_build/.cache/
-
-# Image-fetch cache for the multimodal embedder
-seed/_build/.image_cache.sqlite
-seed/_build/.image_cache.sqlite-shm
-seed/_build/.image_cache.sqlite-wal
-
-# Ephemeral diagnostic outputs (regenerable per run)
-seed/_build/image_sanitize_report.json
-concepts_cache.json
 
 # Oversized-image shrinker: the repoint patch is a transient artifact —
 # shrink_oversized.py --apply emits it, apply-image-patch.js consumes it.
 seed/_build/shrink_patch.json
-
-# Per-gatherer run artifacts — staged in runs/<YYYY-MM>/<source>-<ts>.json
-# and folded into canon by merge_batches.py. Ephemeral by design.
-# (Archived outputs from PRIOR runs live in seed/_build/archive/runs/.)
-seed/_build/runs/
-
-# Pre-merge staged batches from older fetcher prototypes
-seed/_build/task3_input.json
-seed/_build/fxhash_new_artworks.json
-seed/_build/moma_new_artworks.json
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Notion / external setup artifacts
@@ -108,11 +83,3 @@ Meeting notes/
 *.pptx
 *.docx
 *.pdf
-
-# ─────────────────────────────────────────────────────────────────────────────
-# NOTE: seed/embeddings.{bin,json} are intentionally NOT ignored
-# (decision May 2026) so the Docker builder bakes them into seed.db. Recreate
-# via:
-#   seed/_build/.venv/bin/python3 seed/_build/embed_nodes.py
-# then commit. Stripping them here silently breaks embeddings on next build.
-# ─────────────────────────────────────────────────────────────────────────────

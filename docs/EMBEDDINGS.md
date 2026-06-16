@@ -4,6 +4,16 @@ Multimodal vector space over the A(DAI) knowledge graph, built on **Google Gemin
 
 This is the canonical reference for the pipeline — design rationale, architecture, operational details. For day-to-day operator notes (counts, commands, deploy gotchas) see [CLAUDE.md § Embedding pipeline](../CLAUDE.md).
 
+> **⚠️ Genesis-bake parts are HISTORICAL (retired June 2026).** The offline
+> batch embed (`seed/_build/embed_nodes.py`), `seed/nodes.json`, the committed
+> `embeddings.{bin,json}` sidecars, and the `COPY seed/` + `seed:consolidated`
+> build step are **gone** — the live `/data/adai.db` is the only source of truth.
+> What's still live and accurate below: the **embed-on-write** path
+> (`src/embed/server.ts`), the nightly **`embed:derive`** (STYLE_KIN /
+> VISUALLY_AFFINE / Tier-2 concept-EMBODIES against the live DB), and the
+> `node_embeddings` table design. Vectors are now produced only by embed-on-write
+> + the nightly `embed-derive-daily` workflow, never by a build-time bake.
+
 ---
 
 ## 1. What and why

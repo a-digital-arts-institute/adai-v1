@@ -9,8 +9,6 @@
   },
   "scripts": {
     "dev": "tsx src/index.ts",
-    "seed": "tsx src/seed.ts",
-    "seed:consolidated": "tsx src/seed-consolidated.ts",
     "embed:derive": "tsx src/embed/cli.ts derive",
     "embed:centroids": "tsx src/embed/cli.ts centroids",
     "embed:calibrate": "tsx src/embed/cli.ts calibrate",

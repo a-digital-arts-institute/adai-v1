@@ -24,10 +24,12 @@ default:
 
 # --- local dev ---------------------------------------------------------
 
-# Re-seed local DB from seed/*.json + start dev server (canonical first-run).
+# Start the dev server against an EXISTING ./adai.db. The genesis seed was
+# retired June 2026 — there is no reseed-from-JSON. To get a local DB, restore
+# the live one from the Litestream replica, or pull a copy off prod:
+#   echo "get //data/adai.db ./adai.db" | flyctl ssh sftp shell --app adai-basel
 dev:
-    rm -f adai.db adai.db-shm adai.db-wal
-    npm run seed:consolidated
+    @test -f adai.db || { echo "no ./adai.db — pull one from prod or restore from Litestream (see recipe comment)"; exit 1; }
     npm run dev
 
 # --- Fly: low-level building blocks ------------------------------------
@@ -53,45 +55,23 @@ wait-healthy:
     done; \
     echo "not healthy after 30s" >&2; exit 1
 
-# --- Fly: deploy / wipe ------------------------------------------------
+# --- Fly: deploy -------------------------------------------------------
 
 # Build + deploy via the IAD remote builder (Depot times out for us).
 # --ha=false: flyctl's HA default silently creates a SECOND machine + volume
 # (= two divergent DBs behind one hostname, observed June 2026). Never omit it.
+#
+# Deploy is CODE-ONLY and never touches data: the /data volume persists across
+# deploys and the live DB is the only source of truth. The genesis seed +
+# volume-wipe ("redeploy-fresh") dance was RETIRED June 2026 — there is no
+# reseed. Disaster recovery is a Litestream restore (entrypoint does it
+# automatically on a fresh host), not a wipe.
 deploy:
     FLY_REMOTE_BUILDER_REGION=iad flyctl deploy --ha=false
 
-# ⚠️ CANON FROZEN (owner decision, 2026-06-06): we do NOT wipe /data anymore.
-# The live DB carries practitioner contributions (aiio's protocol-art session
-# onward) that exist nowhere in seed/*.json — a wipe destroys them for good.
-# Deploy code with `just deploy` only. This recipe is kept strictly for
-# disaster recovery (prefer the Litestream replica even then).
-#
-# DANGER: rm /data/adai.db on prod + restart so entrypoint copies fresh seed.
-# All local-only rows (contributor_tokens, intake_queue, archivist_sessions,
-# rejected_ai_suggestions, …) are lost — follow with `just restore-tokens`.
-# Prompts for 'yes' before doing anything destructive.
-[doc("RETIRED — canon frozen 2026-06-06, live contributions live only on the volume. Disaster recovery only.")]
-nuke-volume: warm
-    @echo "⚠️  CANON FROZEN (2026-06-06): the live DB holds practitioner contributions that exist nowhere else."
-    @echo "    This wipe destroys them permanently. Disaster recovery only — prefer the Litestream replica."
-    @read -p "About to delete {{db_path}} on prod. Type 'yes' to continue: " ans && [ "$ans" = "yes" ] || { echo "aborted"; exit 1; }
-    flyctl ssh console --app {{app}} -C "sh -c 'rm -f {{db_path}} {{db_path}}-shm {{db_path}}-wal && echo wiped'"
-    @just _restart-machine
-
-# Internal: restart the (single) fra machine by ID.
-_restart-machine:
-    @machine=$(flyctl machine list --app {{app}} --json | jq -r '.[0].id'); \
-        echo "restarting machine $machine"; \
-        flyctl machine restart "$machine" --app {{app}}
-
-# Internal: fail fast if .tokens.json is missing.
+# Internal: fail fast if .tokens.json is missing (used by restore-tokens).
 _check-tokens-file:
-    @test -f {{tokens_file}} || { echo "missing {{tokens_file}} — refusing to redeploy without it (would orphan auth). See {{tokens_file}}.example." >&2; exit 1; }
-
-# Full dance: check tokens → deploy → wipe volume → wait → restore tokens.
-# ⚠️ RETIRED with the canon freeze (2026-06-06) — see nuke-volume above.
-redeploy-fresh: _check-tokens-file deploy nuke-volume wait-healthy restore-tokens
+    @test -f {{tokens_file}} || { echo "missing {{tokens_file}} — see {{tokens_file}}.example." >&2; exit 1; }
 
 # --- Fly: tokens -------------------------------------------------------
 
@@ -134,7 +114,9 @@ _pull-live-db: warm
     @echo "get {{db_path}} /tmp/adai-cull.db" | flyctl ssh sftp shell --app {{app}}
     @echo "get {{db_path}}-wal /tmp/adai-cull.db-wal" | flyctl ssh sftp shell --app {{app}} || echo "[cull] no -wal (checkpointed) — ok"
 
-# Dry-run: report orphan R2 images against LIVE references (reads only).
+# Dry-run: report orphan R2 images against the LIVE prod DB (reads only).
+# The running DB is the only source of truth — an object is orphan iff no live
+# node references it (genesis seed retired June 2026; no JSON is consulted).
 [doc("Report orphan R2 images, diffed against the live prod DB (read-only).")]
 cull-orphans-prod: _pull-live-db
     seed/_build/.venv/bin/python3 seed/_build/cull_orphans.py --db /tmp/adai-cull.db
