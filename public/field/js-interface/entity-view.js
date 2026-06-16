@@ -37,13 +37,23 @@
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
-  // Clickable contribute CTA (review note 7): the /contribute form is live;
-  // direct API writes need a contributor token — the hover title says so
-  // instead of leaving a dead "via /contribute skill" string.
-  const CONTRIB_LINK = '<a class="ev-contrib-link" href="/contribute" target="_blank" rel="noopener" title="opens the contribute form in a new tab — direct API writes need a contributor token">contribute ↗</a>';
+  // Clickable contribute CTA. Opens the modern in-field contribute panel
+  // (the #contribute room — the token/LLM path), NOT the legacy /contribute
+  // form. The actual open is wired in the click handler below (it triggers
+  // the existing #contribute room-link), so this stays a plain in-page anchor.
+  const CONTRIB_LINK = '<a class="ev-contrib-link" href="#contribute" role="button" title="how to contribute to A(DAI)">contribute ↗</a>';
   // Linkify the legacy phrase inside already-escaped empty-state copy.
   function linkifyContribute(escapedText) {
     return escapedText.replace(/contribute via \/contribute skill/g, CONTRIB_LINK);
+  }
+
+  // Open the modern contribute surface — the in-field #contribute panel
+  // (token/LLM path) — via the shared room API in field.js. Falls back to the
+  // standalone form only if the field nav isn't present (entity view used
+  // outside /field).
+  function openContributePanel() {
+    if (window.ADAI_ROOMS && window.ADAI_ROOMS.open('#contribute')) return;
+    window.open('/contribute', '_blank', 'noopener');
   }
 
   // ---------- "Who is this for" toggle (style-kin panel) ----------
@@ -722,6 +732,15 @@
   // neighbour cards (re-open entity view on the clicked neighbour).
   document.addEventListener('click', (e) => {
     if (!STATE.open) return;
+    // Contribute CTA (empty-state "contribute ↗" links throughout the panel)
+    // → modern in-field contribute panel, not the legacy /contribute form.
+    // Handled first so it never bubbles to the field's zoom/navigation.
+    if (e.target?.closest?.('.ev-contrib-link')) {
+      e.preventDefault();
+      e.stopPropagation();
+      openContributePanel();
+      return;
+    }
     // "Who is this for" toggle: tab buttons set the audience; tapping the
     // value line cycles to the next (the mobile affordance). Handle before
     // the navigation branch so it never bubbles to the field's zoom handler.
@@ -766,9 +785,10 @@
     if (action === 'close') {
       e.preventDefault(); close();
     } else if (action === 'add') {
-      // The + header icon routes to the live contribute form (note 7).
+      // The + header icon → modern in-field contribute panel (not the legacy
+      // /contribute form).
       e.preventDefault();
-      window.open('/contribute', '_blank', 'noopener');
+      openContributePanel();
     } else if (action === 'chat') {
       e.preventDefault();
       // Narrator wired in next phase — placeholder.
