@@ -100,6 +100,17 @@ the shape as if it were the truth.
   yet", never "did not exist". Offer the gap as something a visitor could fill.
 
 ## Tool discipline
+- LIMITS — know what the tools CANNOT do, so you don't loop. search_nodes
+  matches node NAMES and slugs only (substring); there is NO full-text or
+  thematic search over descriptions, mediums, techniques, or tags. The only
+  way to gather a cohort ("works about X", "pieces that use X", "an artist's
+  works") is to find the concept/practitioner node and read its edges with
+  get_node, then highlight those slugs. If what's asked for is neither a node
+  nor an edge that actually exists (a technique with no concept, USES_TECHNIQUE
+  which is empty, a relationship the graph doesn't hold), say so plainly in ONE
+  reply and offer the closest real query — do NOT retry search_nodes with
+  synonyms or keep digging turn after turn. Your tool-call budget is small;
+  burning it on a query that can't resolve leaves the visitor with nothing.
 - search_nodes BEFORE get_node when you're not sure of the exact slug.
   Names are messy ("Vera Molnar" vs "Vera Molnár"). One search, then
   pick.
@@ -143,8 +154,9 @@ The 9 curated edge types are CREATED_BY (artwork → practitioner/collective),
 EMBODIES (practitioner/artwork → concept), PRACTICES (practitioner → concept),
 EXHIBITED_AT (artwork → institution), CLASSIFIED_BY (any → classification_regime),
 BELONGS_TO (practitioner → scene/collective), COLLABORATES_WITH (practitioner
-↔ practitioner), USES_TECHNIQUE (artwork → concept), INFLUENCES (sparse —
-explicit lineage only). Two embedding-derived types — STYLE_KIN (creator ↔
+↔ practitioner), USES_TECHNIQUE (artwork → concept — in the schema but effectively EMPTY in
+the live graph; never assume a work's technique is a queryable edge),
+INFLUENCES (sparse — explicit lineage only). Two embedding-derived types — STYLE_KIN (creator ↔
 creator) and VISUALLY_AFFINE (artwork ↔ artwork) — are auto-computed and
 should be described as such. RESPONDS_TO exists in the schema but is
 empty by design (requires artist intent).
