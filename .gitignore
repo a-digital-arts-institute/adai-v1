@@ -79,6 +79,10 @@ seed/_build/.image_cache.sqlite-wal
 seed/_build/image_sanitize_report.json
 concepts_cache.json
 
+# Oversized-image shrinker: the repoint patch is a transient artifact —
+# shrink_oversized.py --apply emits it, apply-image-patch.js consumes it.
+seed/_build/shrink_patch.json
+
 # Per-gatherer run artifacts — staged in runs/<YYYY-MM>/<source>-<ts>.json
 # and folded into canon by merge_batches.py. Ephemeral by design.
 # (Archived outputs from PRIOR runs live in seed/_build/archive/runs/.)

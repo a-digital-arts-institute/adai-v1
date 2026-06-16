@@ -126,8 +126,10 @@ restore-tokens-dry: warm _check-tokens-file
 # `litestream restore`d copy as the --db source.)
 
 # Internal: pull /data/adai.db (+ -wal) off the volume → /tmp/adai-cull.db.
+# Shared by the cull-orphans and shrink-oversized recipes (both diff R2 against
+# the LIVE references, which only exist on the volume under the canon freeze).
 _pull-live-db: warm
-    @echo "[cull] pulling {{db_path}} (+ WAL) → /tmp/adai-cull.db"
+    @echo "[pull-live-db] pulling {{db_path}} (+ WAL) → /tmp/adai-cull.db"
     @rm -f /tmp/adai-cull.db /tmp/adai-cull.db-wal /tmp/adai-cull.db-shm
     @echo "get {{db_path}} /tmp/adai-cull.db" | flyctl ssh sftp shell --app {{app}}
     @echo "get {{db_path}}-wal /tmp/adai-cull.db-wal" | flyctl ssh sftp shell --app {{app}} || echo "[cull] no -wal (checkpointed) — ok"
@@ -143,3 +145,43 @@ cull-orphans-prod: _pull-live-db
 cull-orphans-prod-delete: _pull-live-db
     seed/_build/.venv/bin/python3 seed/_build/cull_orphans.py --db /tmp/adai-cull.db --delete
     @rm -f /tmp/adai-cull.db /tmp/adai-cull.db-wal /tmp/adai-cull.db-shm
+
+# --- Fly: R2 oversized-image shrinker ----------------------------------
+#
+# shrink_oversized.py finds R2 images over a size threshold (default 5 MiB)
+# that are still referenced by a LIVE node, downsizes them (longest edge
+# <= 2048px, ANIMATION PRESERVED, format kept) to a NEW content-addressed key,
+# uploads them, and emits a patch repointing each node's cdn_image_url.
+#
+# Because seed/*.json is frozen, the repoint lands in the LIVE prod DB only,
+# via dist/cli/apply-image-patch.js over SSH (the only thing that writes the
+# DB; it never re-embeds — the image is visually identical). The old oversized
+# objects become orphans the instant the DB is repointed — reclaim them with
+# `just cull-orphans-prod-delete` afterwards. Same live-DB-pull discipline as
+# the cull recipes (the references only exist on the volume).
+#
+# ⚠️ The apply path needs dist/cli/apply-image-patch.js ON THE MACHINE — run
+#    `just deploy` first if you've just added or changed that CLI.
+
+# Dry-run: report oversized referenced images (list + DB scan only, no downloads).
+[doc("Report oversized R2 images referenced by the live prod DB (read-only).")]
+shrink-oversized-prod: _pull-live-db
+    seed/_build/.venv/bin/python3 seed/_build/shrink_oversized.py --db /tmp/adai-cull.db
+    @rm -f /tmp/adai-cull.db /tmp/adai-cull.db-wal /tmp/adai-cull.db-shm
+
+# Measure: download+resize a sample, report REAL savings (no upload, no DB write).
+[doc("Measure real savings on a sample of oversized images (no writes).")]
+shrink-oversized-prod-measure: _pull-live-db
+    seed/_build/.venv/bin/python3 seed/_build/shrink_oversized.py --db /tmp/adai-cull.db --measure
+    @rm -f /tmp/adai-cull.db /tmp/adai-cull.db-wal /tmp/adai-cull.db-shm
+
+# DESTRUCTIVE: resize+upload new objects, then repoint cdn_image_url in the live prod DB.
+[doc("Resize oversized images → new R2 keys + repoint cdn_image_url in the live prod DB.")]
+shrink-oversized-prod-apply: _pull-live-db
+    seed/_build/.venv/bin/python3 seed/_build/shrink_oversized.py --db /tmp/adai-cull.db --apply --out /tmp/adai-shrink-patch.json
+    @test -s /tmp/adai-shrink-patch.json || { echo "[shrink] no patch produced — nothing to apply"; rm -f /tmp/adai-cull.db /tmp/adai-cull.db-wal /tmp/adai-cull.db-shm; exit 0; }
+    @echo "[shrink] uploading patch → prod /tmp/.adai-shrink-patch.json"
+    @echo "put /tmp/adai-shrink-patch.json /tmp/.adai-shrink-patch.json" | flyctl ssh sftp shell --app {{app}}
+    flyctl ssh console --app {{app}} -C "sh -c 'node /app/dist/cli/apply-image-patch.js --from /tmp/.adai-shrink-patch.json; rm -f /tmp/.adai-shrink-patch.json'"
+    @rm -f /tmp/adai-cull.db /tmp/adai-cull.db-wal /tmp/adai-cull.db-shm /tmp/adai-shrink-patch.json
+    @echo "[shrink] done — reclaim the now-orphaned originals with: just cull-orphans-prod-delete"
