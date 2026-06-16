@@ -180,7 +180,7 @@
           <li><em>who is Casey Reas?</em> &nbsp;·&nbsp; <em>what's Fidenza?</em> &nbsp;·&nbsp; <em>what concepts live near generative art?</em></li>
           <li><em>tell me about this</em> / <em>what's near it</em> — it sees the node you're focused on in /field</li>
           <li><em>show me X</em> — zooms the field to X &nbsp;·&nbsp; <em>tell me everything about X</em> — opens the full profile panel</li>
-          <li><em>highlight every artwork that uses cellular automata</em> &nbsp;·&nbsp; <em>switch to embeddings view</em> &nbsp;·&nbsp; <em>zoom out</em></li>
+          <li><em>highlight works tagged glitch</em> &nbsp;·&nbsp; <em>switch to embeddings view</em> &nbsp;·&nbsp; <em>zoom out</em></li>
           <li><em>what's missing about X?</em> — it'll point you toward contributing when the canon thins</li>
         </ul>
       </div>
