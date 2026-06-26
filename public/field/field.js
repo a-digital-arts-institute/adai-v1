@@ -1011,48 +1011,74 @@
     });
   });
 
-  // Contribute panel — reading surface for "An invitation to help write the
-  // digital arts' shared record". Reuses the philosophy panel's shell styles
-  // (.ph-*) and adds contribute-specific step/tag styles (.ct-*).
+  // Contribute panel — the "Set up once. Then just talk." walkthrough.
+  // A black-on-white setup guide (7 steps) shown as a white card centred over
+  // the dimmed graph. All styles are scoped under #contribute-panel so the
+  // light theme never leaks into the dark field chrome.
   function ensureContributeStyles() {
-    ensurePhilosophyStyles(); // reuse .ph-shell / .ph-body / .ph-line / .ph-sec
     if (document.getElementById('contribute-styles')) return;
     const s = document.createElement('style');
     s.id = 'contribute-styles';
     s.textContent = `
       #contribute-panel {
+        --bg:#ffffff; --ink:#161513; --dim:#8d8a82; --faint:#d9d6cd; --box:#fbfaf7; --sel:#161513; --sel-ink:#ffffff;
         position: fixed; inset: 0; z-index: 1290;
         background: rgba(0,0,0,0.5); backdrop-filter: blur(2px);
-        display: none; align-items: flex-start; justify-content: center;
-        padding-top: 8vh;
+        display: none; align-items: center; justify-content: center; padding: 22px;
+        font-family: 'SF Mono','SFMono-Regular',Menlo,'DejaVu Sans Mono','Liberation Mono',Consolas,monospace;
       }
       #contribute-panel.is-open { display: flex; }
-      .ct-step { display: flex; gap: 13px; margin: 0 0 14px; }
-      .ct-step:last-child { margin-bottom: 0; }
-      .ct-num { color: #6a6a6c; flex: none; min-width: 18px; font-size: 13px; line-height: 1.6; }
-      .ct-step-body { color: #c8c6c1; font-size: 13px; line-height: 1.6; }
-      .ct-code {
-        display: block; margin: 9px 0 0; padding: 10px 12px;
-        background: rgba(255,255,255,0.03); border: 1px solid #2a2a2c;
-        color: #d8d6d1; font-size: 12px; line-height: 1.5;
-        white-space: pre-wrap; word-break: break-word;
+      #contribute-panel * { box-sizing: border-box; }
+      #contribute-panel .frame {
+        width: min(840px, 92vw); height: min(520px, 86vh);
+        background: var(--bg); border: 1px solid var(--faint); color: var(--ink);
+        display: flex; flex-direction: column; box-shadow: 0 18px 44px rgba(0,0,0,.45);
       }
-      .ct-tags { display: flex; flex-wrap: wrap; gap: 7px; margin: 16px 0 0; }
-      .ct-tag {
-        border: 1px solid #2a2a2c; color: #9a9a9c;
-        font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
-        padding: 4px 9px;
-      }
-      .ct-guide { margin: 18px 0 0; padding-top: 16px; border-top: 1px solid #2a2a2c; }
-      .ct-guide-btn {
+      #contribute-panel .head { padding: 20px 26px 16px; border-bottom: 1px solid var(--faint); }
+      #contribute-panel .kicker { color: var(--dim); font-size: 13px; margin: 0 0 10px; }
+      #contribute-panel h1 { font-size: 21px; font-weight: 700; line-height: 1.3; margin: 0; color: var(--ink); }
+      #contribute-panel .scrollwrap { flex: 1; overflow: auto; padding: 18px 26px 26px; }
+      #contribute-panel p { margin: 0 0 13px; font-size: 14px; line-height: 1.62; }
+      #contribute-panel .label { color: var(--dim); text-transform: uppercase; letter-spacing: .07em; font-size: 12px; margin: 20px 0 11px; }
+      #contribute-panel .step { display: grid; grid-template-columns: 30px 1fr; gap: 4px 13px; margin: 0 0 16px; }
+      #contribute-panel .step .no { color: var(--dim); font-size: 13px; padding-top: 2px; }
+      #contribute-panel .step .b { min-width: 0; }
+      #contribute-panel .step .b p { margin: 0 0 9px; }
+      #contribute-panel b.k { font-weight: 700; }
+      #contribute-panel .paste { border: 1px solid var(--faint); padding: 14px 16px; margin: 6px 0 4px; font-size: 13px; line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
+      #contribute-panel .paste .u { word-break: break-all; }
+      #contribute-panel .paste .muted { color: var(--dim); }
+      #contribute-panel .scr { border: 1px solid var(--faint); background: var(--box); padding: 11px; margin: 8px 0 4px; font-size: 12.5px; }
+      #contribute-panel .scr .tabs { color: var(--dim); padding: 2px 8px 8px; }
+      #contribute-panel .scr .tabs b { color: var(--ink); font-weight: 700; }
+      #contribute-panel .scr .ln { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 5px 8px; color: var(--ink); }
+      #contribute-panel .scr .ln.dim { color: var(--dim); }
+      #contribute-panel .scr .ln.small { font-size: 11.5px; }
+      #contribute-panel .scr .sel { background: var(--sel); color: var(--sel-ink); }
+      #contribute-panel .scr .sel .hint { color: var(--sel-ink); opacity: .62; }
+      #contribute-panel .scr .added { color: var(--dim); }
+      #contribute-panel .scr .rule { border-top: 1px solid var(--faint); margin: 7px 4px; }
+      #contribute-panel .pill-sel { background: var(--sel); color: var(--sel-ink); padding: 2px 9px; white-space: nowrap; }
+      #contribute-panel .caret { display: inline-block; width: 7px; margin-left: 1px; background: var(--ink); color: transparent; animation: adaiblink 1.05s steps(1) infinite; }
+      @keyframes adaiblink { 50% { opacity: 0; } }
+      #contribute-panel .pills { display: flex; flex-wrap: wrap; gap: 9px; margin: 24px 0 8px; }
+      #contribute-panel .pill { border: 1px solid var(--faint); color: var(--dim); text-transform: uppercase; letter-spacing: .08em; font-size: 11px; padding: 7px 11px; }
+      #contribute-panel .off { font-size: 13px; line-height: 1.7; color: var(--ink); margin: 0 0 8px; }
+      #contribute-panel .off .arrow { color: var(--dim); }
+      #contribute-panel .closer { color: var(--dim); font-size: 13px; line-height: 1.7; margin: 18px 0 0; border-top: 1px solid var(--faint); padding-top: 15px; }
+      #contribute-panel .prog { height: 2px; background: var(--faint); }
+      #contribute-panel .prog > i { display: block; height: 100%; width: 0; background: var(--ink); transition: width 80ms linear; }
+      #contribute-panel .foot { display: flex; justify-content: space-between; gap: 14px; color: var(--dim); font-size: 12px; padding: 12px 22px; }
+      #contribute-panel .guide { margin: 16px 0 0; }
+      #contribute-panel .guide a {
         display: inline-flex; align-items: center; gap: 8px;
-        border: 1px solid #4169B0; color: #7e9fdc; background: transparent;
+        border: 1px solid #4169B0; color: #4169B0; background: transparent;
         font-family: inherit; font-size: 11px; letter-spacing: 0.08em;
-        text-transform: uppercase; padding: 9px 14px; text-decoration: none;
-        cursor: pointer; transition: background 120ms ease, color 120ms ease;
+        text-transform: uppercase; padding: 8px 13px; text-decoration: none;
+        cursor: pointer; transition: background 120ms ease;
       }
-      .ct-guide-btn:hover { background: rgba(65,105,176,0.14); color: #a8c0ea; }
-      .ct-guide-btn .ct-arrow { color: #4169B0; }
+      #contribute-panel .guide a:hover { background: rgba(65,105,176,0.10); }
+      #contribute-panel .guide a .garrow { color: #4169B0; }
     `;
     document.head.appendChild(s);
   }
@@ -1065,51 +1091,112 @@
     el.id = 'contribute-panel';
     el.setAttribute('aria-hidden', 'true');
     el.innerHTML = `
-      <div class="ph-shell" role="dialog" aria-labelledby="ct-title">
-        <header class="ph-head">
-          <div class="ph-eyebrow">[contribute]</div>
-          <h2 class="ph-title" id="ct-title">An invitation to collectively write the digital arts' shared record</h2>
-        </header>
-        <div class="ph-body">
-          <p class="ph-line">Curate A(DAI) in plain language from your own LLM — every edit attributed to you, withdrawable anytime.</p>
-          <section class="ph-sec">
-            <div class="ph-sec-label">How to contribute — from your own LLM, in minutes</div>
-            <p class="ph-line">You don't need our UI. You curate through Claude Cowork (or any assistant with a code sandbox), in plain language.</p>
-            <div class="ct-step">
-              <span class="ct-num">01</span>
-              <div class="ct-step-body">We'll send you a private access token separately — treat it like a password.</div>
+      <div class="frame" role="dialog" aria-labelledby="ct-title">
+        <div class="head">
+          <p class="kicker">[contribute · setup]</p>
+          <h1 id="ct-title">Set up once. Then just talk.</h1>
+        </div>
+        <div class="scrollwrap" id="ct-scroll">
+          <p>Curate A(DAI) in plain language from your own assistant — every edit attributed to you, withdrawable anytime.</p>
+          <p class="label">How to set up — about five minutes, just once</p>
+          <p>You don't need our UI. You'll connect Claude (or any assistant that can run shell commands with internet access) to A(DAI), then curate by chatting. Seven steps:</p>
+
+          <div class="step"><div class="no">01</div><div class="b"><p>We'll send you a private access token separately — treat it like a password.</p></div></div>
+
+          <div class="step"><div class="no">02</div><div class="b">
+            <p><b class="k">Download the skill.</b> Open this link and save the file to your computer (Downloads is fine):</p>
+            <div class="paste"><span class="u">https://digitalartsinstitute.io/skill.md</span>
+<span class="muted">right-click  →  "save as…"  →  keep the name  skill.md</span></div>
+          </div></div>
+
+          <div class="step"><div class="no">03</div><div class="b">
+            <p><b class="k">Open Customize.</b> In the Claude app, go to the Cowork tab, then click Customize.</p>
+            <div class="scr">
+              <div class="tabs">chat &nbsp; [<b>cowork</b>] &nbsp; code</div>
+              <div class="ln dim"><span>+&nbsp; new task</span></div>
+              <div class="ln dim"><span>projects</span></div>
+              <div class="ln dim"><span>artifacts</span></div>
+              <div class="ln dim"><span>scheduled</span></div>
+              <div class="ln dim"><span>dispatch &nbsp;(beta)</span></div>
+              <div class="ln sel"><span>customize</span><span class="hint">&larr; click</span></div>
+              <div class="rule"></div>
+              <div class="ln dim small"><span>recents</span></div>
+              <div class="ln dim small"><span>·&nbsp; adai contribution token</span></div>
             </div>
-            <div class="ct-step">
-              <span class="ct-num">02</span>
-              <div class="ct-step-body">In Claude Cowork (or other LLM with code sandbox), paste:<code class="ct-code">Read https://adai-basel.fly.dev/skill.md and use this token to contribute to A(DAI) on my behalf: [token]</code></div>
+          </div></div>
+
+          <div class="step"><div class="no">04</div><div class="b">
+            <p><b class="k">Allow internet access.</b> On the Capabilities page, switch on network egress and set the domain allowlist to All domains. This is what lets the skill reach the site to save your work.</p>
+            <div class="scr">
+              <div class="ln"><span>allow network egress</span><span class="pill-sel">ON&nbsp; &larr;</span></div>
+              <div class="ln"><span>domain allowlist</span><span class="pill-sel">ALL DOMAINS ▾</span></div>
+              <div class="ln dim small"><span>ⓘ&nbsp; claude can access all domains on the internet</span></div>
             </div>
-            <div class="ct-step">
-              <span class="ct-num">03</span>
-              <div class="ct-step-body">Claude confirms it's you, then just talk:<code class="ct-code">Add my new work as a piece I made — generative, 2024 — and connect it to the exhibition where it was shown.</code></div>
+            <p style="color:var(--dim);font-size:13px;margin-top:9px">More cautious? Allow just <b class="k" style="color:var(--ink)">digitalartsinstitute.io</b> — that's the only site the skill needs.</p>
+          </div></div>
+
+          <div class="step"><div class="no">05</div><div class="b">
+            <p><b class="k">Add the skill.</b> On the same page, under Skills, press + and choose the skill.md you saved.</p>
+            <div class="scr">
+              <div class="ln"><span>skills</span><span class="pill-sel">+&nbsp; &larr; press</span></div>
+              <div class="rule"></div>
+              <div class="ln"><span>✓&nbsp; adai-contribute</span><span class="added">added</span></div>
             </div>
-            <div class="ct-step">
-              <span class="ct-num">04</span>
-              <div class="ct-step-body">Every edit lands attributed to you, and you can withdraw or supersede any of it, anytime.</div>
+          </div></div>
+
+          <div class="step"><div class="no">06</div><div class="b">
+            <p><b class="k">Start a task.</b> Back in Cowork, click + New task.</p>
+            <div class="scr">
+              <div class="tabs">chat &nbsp; [<b>cowork</b>] &nbsp; code</div>
+              <div class="ln sel"><span>+&nbsp; new task</span><span class="hint">&larr; click</span></div>
+              <div class="ln dim"><span>projects</span></div>
+              <div class="ln dim"><span>artifacts</span></div>
             </div>
-            <div class="ct-tags">
-              <span class="ct-tag">No deadlines</span>
-              <span class="ct-tag">No lock-in</span>
-              <span class="ct-tag">Attributed to you</span>
-              <span class="ct-tag">Withdraw anytime</span>
+          </div></div>
+
+          <div class="step"><div class="no">07</div><div class="b">
+            <p><b class="k">Run it, then talk.</b> Type /adai-contribute (it autocompletes). Add your token on the same line, or just send it and Claude will ask. Then describe your work in plain language.</p>
+            <div class="scr">
+              <div class="ln"><span>&gt;&nbsp; /adai-contribute<span class="caret">.</span></span></div>
+              <div class="rule"></div>
+              <div class="ln sel"><span>/adai-contribute</span><span class="hint">contribute to the A(DAI) commons</span></div>
             </div>
-          </section>
-          <p class="ph-line">Some connections only you can see: between your work and what shaped it, where it showed, who it spoke to. Draw one, and the field is truer for it.</p>
-          <div class="ct-guide">
-            <a class="ct-guide-btn" href="/field-static/guide.html" target="_blank" rel="noopener">Starter guide <span class="ct-arrow" aria-hidden="true">→</span></a>
+            <div class="paste" style="margin-top:11px">"Add my piece Drift — generative, 2024 — and connect it to the show where it was exhibited."</div>
+          </div></div>
+
+          <div class="pills">
+            <span class="pill">Attributed to you</span>
+            <span class="pill">Withdraw anytime</span>
+            <span class="pill">No lock-in</span>
+            <span class="pill">Reviewed first</span>
           </div>
+
+          <p class="label">If something's off</p>
+          <p class="off"><b class="k">/adai-contribute won't appear</b> <span class="arrow">→</span> redo step 05, and make sure you're inside a Cowork task (not a plain Chat).</p>
+          <p class="off"><b class="k">it can't reach the site / can't save</b> <span class="arrow">→</span> redo step 04 — network egress on, allowlist includes digitalartsinstitute.io.</p>
+          <p class="off"><b class="k">"pending review"</b> <span class="arrow">→</span> normal for new contributors. Your work is saved and credited, just waiting for a curator.</p>
+
+          <p class="closer">Some connections only you can see: between your work and what shaped it, where it showed, who it spoke to. Draw one, and the field is truer for it.</p>
+          <div class="guide"><a href="/field-static/guide.html" target="_blank" rel="noopener">Starter guide <span class="garrow" aria-hidden="true">&rarr;</span></a></div>
         </div>
-        <div class="ph-foot">
-          <span>esc to close</span>
-          <span>scroll to read · click outside to dismiss</span>
-        </div>
+        <div class="prog"><i id="ct-bar"></i></div>
+        <div class="foot"><span>esc to close</span><span>scroll to read · click outside to dismiss</span></div>
       </div>
     `;
     document.body.appendChild(el);
+
+    // Scroll-progress bar.
+    const scroll = el.querySelector('#ct-scroll');
+    const bar = el.querySelector('#ct-bar');
+    if (scroll && bar) {
+      const upd = () => {
+        const m = scroll.scrollHeight - scroll.clientHeight;
+        bar.style.width = (m > 0 ? (scroll.scrollTop / m * 100) : 0).toFixed(2) + '%';
+      };
+      scroll.addEventListener('scroll', upd);
+      window.addEventListener('resize', upd);
+      el._updProg = upd;
+    }
     return el;
   }
 
@@ -1117,8 +1204,9 @@
     const el = ensureContributeEl();
     el.classList.add('is-open');
     el.setAttribute('aria-hidden', 'false');
-    const body = el.querySelector('.ph-body');
-    if (body) body.scrollTop = 0;
+    const scroll = el.querySelector('#ct-scroll');
+    if (scroll) scroll.scrollTop = 0;
+    if (el._updProg) el._updProg();
     watchPanelClose('contribute-panel');
   }
   function closeContribute() {
@@ -1137,7 +1225,7 @@
   document.addEventListener('click', (e) => {
     const el = document.getElementById('contribute-panel');
     if (!el || !el.classList.contains('is-open')) return;
-    if (!e.target.closest?.('.ph-shell')) closeContribute();
+    if (!e.target.closest?.('.frame')) closeContribute();
   });
 
   // Philosophy panel — reading surface for "A Digital Arts Institute".
