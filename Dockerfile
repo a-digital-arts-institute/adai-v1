@@ -7,18 +7,13 @@ RUN npm ci
 
 COPY tsconfig.json db.sql ./
 COPY src/ ./src/
-# seed/ includes the embedding sidecars (embeddings.bin, embeddings.json).
-# They're plain files under seed/ but the glob `seed/*.json` would miss
-# embeddings.bin, so we copy the whole directory. CLAUDE.md documents that the
-# sidecars are committed intentionally; .gitignore carries a warning against
-# re-ignoring them.
-COPY seed/ ./seed/
 
 RUN npm run build
-# seed-consolidated.ts loads nodes/edges/signals AND chains embed:derive at
-# the end (when seed/embeddings.bin is present), producing a fully-populated
-# seed.db with STYLE_KIN + VISUALLY_AFFINE + AI suggestions baked in.
-RUN DB_PATH=/app/seed.db node dist/seed-consolidated.js
+# NOTE: the genesis seed bake was RETIRED in June 2026. The live /data/adai.db
+# (continuously replicated to R2 by Litestream) is the ONLY source of truth —
+# there is no reseed-from-JSON step and the image ships no seed.db. A fresh host
+# recovers the live DB from the Litestream replica (see entrypoint.sh). The old
+# seed/*.json canon + offline pipeline were removed June 2026 (in git history).
 
 # --- runtime image ---
 FROM node:22-slim
@@ -50,10 +45,8 @@ RUN npm ci --omit=dev
 COPY db.sql entrypoint.sh SKILL.md ./
 COPY litestream.yml /etc/litestream.yml
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/seed.db ./seed.db
-# The embedding sidecars (.bin/.json) stay behind in the builder — their content
-# is already baked into seed.db's node_embeddings table, and nothing at runtime
-# reads them directly.
+# No seed.db is shipped — the runtime DB is the live /data volume restored from
+# the Litestream R2 replica on a fresh host (genesis bake retired June 2026).
 COPY public ./public
 
 # Pre-compress static JS/CSS/SVG into .br/.gz siblings so the server ships them

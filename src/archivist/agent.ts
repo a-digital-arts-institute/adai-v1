@@ -43,6 +43,15 @@ export interface UsageReport {
 const MAX_TOOL_ITERATIONS = 8;
 const MAX_TOKENS = 1024;
 
+// Last-resort reply when the model produces no prose at all (a silent
+// end_turn, or the iteration cap reached after the forced synthesis call also
+// came back empty). Better an honest, capability-shaped sentence than the blank
+// the visitor used to get.
+const NO_ANSWER_FALLBACK =
+  "I wasn't able to pull that together from the graph. I can look someone or " +
+  "something up by name, show what's near a node, or highlight a set I can " +
+  "name — give me a practitioner, artwork, or concept and I'll start there.";
+
 function defaultModel(): string {
   return process.env.ARCHIVIST_MODEL || "claude-haiku-4-5-20251001";
 }
@@ -115,6 +124,10 @@ export async function* runArchivist(opts: RunOpts): AsyncGenerator<AgentEvent, v
     cache_write_tokens: 0,
   };
 
+  // Tracks whether the visitor has received ANY prose this run. Used to decide
+  // when to fire the static fallback so an empty reply is never sent.
+  let emittedText = false;
+
   let iterations = 0;
   while (iterations < MAX_TOOL_ITERATIONS) {
     iterations++;
@@ -177,6 +190,7 @@ export async function* runArchivist(opts: RunOpts): AsyncGenerator<AgentEvent, v
             name: evt.content_block.name,
           };
         } else if (evt.type === "content_block_delta" && evt.delta.type === "text_delta") {
+          emittedText = true;
           yield { type: "text_delta", text: evt.delta.text };
         }
       }
@@ -203,7 +217,9 @@ export async function* runArchivist(opts: RunOpts): AsyncGenerator<AgentEvent, v
     }
 
     if (toolCalls.length === 0) {
-      // No tools requested → model is done.
+      // No tools requested → model is done. Guard the rare silent end_turn
+      // (no text, no tools) so the visitor still gets a reply.
+      if (!emittedText) yield { type: "text_delta", text: NO_ANSWER_FALLBACK };
       yield { type: "usage", usage: aggregate };
       yield { type: "stop", reason: final.stop_reason ?? "end_turn" };
       return;
@@ -248,8 +264,44 @@ export async function* runArchivist(opts: RunOpts): AsyncGenerator<AgentEvent, v
     // Loop — next iteration will send the tool_result back into Claude.
   }
 
-  // Hit the iteration cap. Tell the caller — they can render a "the
-  // archivist is taking too long, try again" message.
+  // Hit the iteration cap WITHOUT the model concluding in prose. Returning the
+  // bare stop here is what produced silent empty replies: the model spent every
+  // turn on tool calls — e.g. chasing a relationship the graph doesn't hold —
+  // and never wrote an answer. Force ONE final tools-DISABLED completion
+  // (tool_choice: none) so it must synthesise a prose reply from whatever it
+  // gathered. tools stay attached to keep the cached prefix intact.
+  if (!opts.signal?.aborted) {
+    try {
+      const closing = client.messages.stream({
+        model,
+        max_tokens: MAX_TOKENS,
+        system,
+        tools,
+        tool_choice: { type: "none" },
+        messages,
+      });
+      for await (const evt of closing) {
+        if (opts.signal?.aborted) { closing.controller.abort(); break; }
+        if (evt.type === "content_block_delta" && evt.delta.type === "text_delta") {
+          emittedText = true;
+          yield { type: "text_delta", text: evt.delta.text };
+        }
+      }
+      const closingFinal = await closing.finalMessage();
+      if (closingFinal.usage) {
+        const u = closingFinal.usage as any;
+        aggregate.input_tokens += u.input_tokens ?? 0;
+        aggregate.output_tokens += u.output_tokens ?? 0;
+        aggregate.cache_read_tokens += u.cache_read_input_tokens ?? 0;
+        aggregate.cache_write_tokens += u.cache_creation_input_tokens ?? 0;
+      }
+    } catch {
+      // Closing call failed — fall through to the static fallback so the
+      // visitor never ends on silence.
+    }
+  }
+
+  if (!emittedText) yield { type: "text_delta", text: NO_ANSWER_FALLBACK };
   yield { type: "usage", usage: aggregate };
   yield { type: "stop", reason: "max_tool_iterations" };
 }

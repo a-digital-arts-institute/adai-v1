@@ -8,16 +8,14 @@ description: Deploy A(DAI) to Fly.io (app adai-basel) — build the image, ship 
 Ship the current working tree's code to production (`adai-basel.fly.dev`).
 This is the procedure from `CLAUDE.md` § "Deploying" + "Deploy gotchas", codified.
 
-> **⚠️ CANON FROZEN (owner decision, 2026-06-06). NEVER wipe `/data`.**
-> The live DB carries practitioner contributions made through the contributor
-> API (aiio's protocol-art session onward) that exist **nowhere in
-> `seed/*.json`** — a volume wipe destroys them permanently. A deploy is now a
-> **code-only event**: the image ships the new server + static assets, the
-> volume (and its DB) survives, `entrypoint.sh` never overwrites an existing
-> DB. The old "genesis event" doctrine (wipe → restart → restore tokens) is
-> **retired from routine use** — it survives only as the disaster-recovery
-> appendix at the bottom, and even then the Litestream R2 replica (which has
-> the live writes) is preferred over the baked seed.
+> **⚠️ THE LIVE `/data/adai.db` IS THE ONLY SOURCE OF TRUTH. NEVER wipe it.**
+> The genesis seed pipeline was **RETIRED June 2026** — the image ships **no
+> `seed.db`** and the builder does **no reseed**. A deploy is a **code-only
+> event**: the new server + static assets ship, the `/data` volume (and its DB)
+> survives, `entrypoint.sh` uses the existing DB as-is. There is no
+> `nuke-volume` / `redeploy-fresh` recipe anymore. Disaster recovery is a
+> **Litestream restore** from the private R2 replica (automatic on a fresh host),
+> never a reseed.
 
 The whole thing is `just deploy`. The steps below are the same sequence
 spelled out, plus verification.
@@ -46,10 +44,7 @@ FLY_REMOTE_BUILDER_REGION=iad flyctl deploy --app adai-basel --ha=false
   creates a SECOND machine with its own fresh volume — two divergent DBs behind
   one hostname (observed June 2026: runtime writes round-robin between them and
   token restores only land on one). One machine, one volume, always.
-- Long (~3–6 min): the builder still runs `npm run seed:consolidated` and bakes
-  `/app/seed.db` into the image. **That baked DB is inert on prod** — the
-  entrypoint sees `/data/adai.db` already exists and leaves it alone. It only
-  matters for a from-scratch machine (disaster recovery).
+- Builds the server only (no seed bake, no `seed.db` shipped) — ~2–4 min.
 - Run it backgrounded (`run_in_background`) and monitor; it's slow.
 - The machine restarts on the new image; `/data` (DB, tokens, intake queue)
   carries over untouched.
@@ -64,8 +59,9 @@ done
 ```
 
 - `total_nodes` / `total_edges` must match the **pre-deploy** counts exactly —
-  the volume survived. If counts DROPPED to the baked-seed numbers, something
-  recreated the volume — stop, tell the user, reach for the Litestream replica.
+  the volume survived. If counts DROPPED (or the app 500s on an empty DB),
+  something recreated the volume — stop, tell the user, reach for the Litestream
+  replica (there is no baked seed to fall back to).
 - Spot-check what you shipped: a static-asset change → confirm the new
   cache-bust versions serve (`curl -s https://adai-basel.fly.dev/field | grep 'v='`);
   a server change → hit the endpoint it touched. `/field`, `/graph`, and a
@@ -84,28 +80,26 @@ done
 
 - This does NOT push git. Commit/push separately if intended.
 - Embeddings on prod refresh nightly via the `embed-derive-daily` GitHub
-  Action; a deploy ships whatever sidecars are committed (they bake into the
-  inert seed.db only).
-- Seed-data changes (`seed/*.json`) do NOT reach prod through a deploy
-  anymore. They land in the baked (inert) seed.db only. Until the CRDT-patch
-  transport from the roadmap exists, new canon reaches the live DB through
-  the governed write path (`/api/v1/*`) or an explicitly-approved
-  disaster-recovery reseed (below).
+  Action, against the live DB. A deploy ships no embeddings — there's no seed
+  bake anymore.
+- New data reaches the live DB only through the governed write path
+  (`/api/v1/*`) / curator `/review`. There is no reseed-from-file.
 
 ## Appendix — disaster recovery ONLY (requires explicit owner approval)
 
-Never run any of this as part of a routine deploy. If the live DB is lost or
-corrupted:
+Never run any of this as part of a routine deploy. The genesis seed is gone, so
+the ONLY recovery path is the Litestream replica.
 
-1. **Prefer the Litestream replica** — it has every live write. The R2 backup
-   (`R2_BACKUP_*` secrets, see commit 7d73930) is the source of truth;
-   `entrypoint.sh` restores from it when `/data/adai.db` is missing.
-2. **Only if the replica is also gone**: the old genesis dance re-seeds from
-   the baked image — `just nuke-volume` (interactive confirm) → restart →
-   `just restore-tokens` (re-inserts team bearer tokens from the gitignored
-   `.tokens.json`; idempotent, transactional). This LOSES all live writes
-   since the seed was baked: contributor nodes/edges/signals, intake queue,
-   `rejected_ai_suggestions` — everything local-only or written post-freeze.
-3. If the app has no `data` volume at all (full teardown):
+1. **Litestream replica** — it has every live write and is the only source of
+   truth. The R2 backup (`R2_BACKUP_*` secrets, see commit 7d73930) is what
+   `entrypoint.sh` restores from automatically when `/data/adai.db` is missing.
+   To force a manual restore: SSH in, stop the process, `litestream restore`
+   from `/etc/litestream.yml`, restart. After any volume loss, re-insert the
+   operator tokens with `just restore-tokens` (from the gitignored
+   `.tokens.json`; idempotent, transactional) — those are local-only and not in
+   the replica's CRR tables.
+2. If the app has no `data` volume at all (full teardown):
    `flyctl volumes create data --app adai-basel --region fra --size 1 --yes`,
-   then redeploy from the already-pushed image.
+   then redeploy; the entrypoint restores the live DB from the replica on boot.
+   If the replica is ALSO gone, there is no genesis fallback — the DB is
+   unrecoverable by design (live is the only truth). Escalate to the owner.

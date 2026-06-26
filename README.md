@@ -8,6 +8,19 @@ Field intelligence infrastructure for the digital arts. A knowledge commons and 
 
 ---
 
+> **⚠️ The genesis seed pipeline was RETIRED in June 2026.** The live
+> `/data/adai.db` (Litestream-replicated to R2) is the only source of truth;
+> there is no reseed-from-JSON and the image ships no `seed.db`. The
+> `seed/*.json` canon + the offline `seed/_build` gatherers are gone (in git
+> history) — `seed/` now holds only the live R2 janitors. **Live counts:
+> `GET /api/stats`.** New data enters through the governed write path
+> (`/api/v1/*`) / curator `/review`. The "What's in the graph" and "rebuild
+> journey" notes below are kept as **history** and describe how the seed canon
+> was originally produced; several files they link (`seed/STATS.md`,
+> `seed/_build/PRODUCER_CONTRACT.md`, …) no longer exist in the tree.
+
+---
+
 ## What's in the graph (May 2026 — Seed Canon, curated-platform + V&A pipeline)
 
 **Exact counts: [`seed/STATS.md`](seed/STATS.md)** (generated from the canon, so
@@ -170,39 +183,29 @@ adai-v1/
 
 ## Running locally
 
+The genesis seed is retired — a local run needs an existing `./adai.db`. Pull
+the live one off prod (or restore from the Litestream replica):
+
 ```bash
 npm install
-
-# Canonical path (what production ships): reads seed/*.json + embeddings.bin
-rm -f adai.db && npm run seed:consolidated && npm run dev
-
-# If adai.db already exists
-npm run dev
+echo "get //data/adai.db ./adai.db" | flyctl ssh sftp shell --app adai-basel
+npm run dev          # serves the existing ./adai.db
 ```
 
 Server: http://localhost:8080
-
-`npm run seed:consolidated` loads nodes/edges/signals/embeddings and chains the derive pass — single command produces a fully populated DB including STYLE_KIN + VISUALLY_AFFINE + AI suggestions.
-
-### Re-embedding after seed changes
-
-```bash
-# Idempotent — only re-embeds rows whose content hash changed
-seed/_build/.venv/bin/python3 seed/_build/embed_nodes.py
-git add seed/embeddings.{bin,json}
-```
-
-Requires `GEMINI_API_KEY` in `.env` (gitignored). Cost ~$0.03 per full pass.
 
 ---
 
 ## Deploying
 
 ```bash
-FLY_REMOTE_BUILDER_REGION=iad flyctl deploy
+just deploy          # FLY_REMOTE_BUILDER_REGION=iad flyctl deploy --ha=false
 ```
 
-After deploys that touch seed data or schema, nuke the persistent volume so the new baked `seed.db` replaces the stale one — see [`CLAUDE.md` § Deploy gotchas](CLAUDE.md).
+Deploy is **code-only**: the `/data` volume (and its DB) survives every deploy
+and is **never** wiped — the live DB is the only source of truth. Disaster
+recovery is a Litestream restore (automatic on a fresh host), not a reseed.
+See [`CLAUDE.md` § Deploying](CLAUDE.md).
 
 ---
 
@@ -218,6 +221,18 @@ Human-readable with type prefix: `artwork:fidenza`, `practitioner:casey reas`, `
 - **JB** — market development, artist relations, sensing conversations
 - **Gio** — backend architecture, CR-SQLite, protocol, public layer data collection
 - **Piyush** — frontend, generative landing page, brand system, particle/gravitational visualization
+
+---
+
+## License
+
+A(DAI) is a commons, licensed by layer:
+
+- **Code** — Apache License 2.0 ([`LICENSE`](LICENSE)). The TypeScript server, the Python pipeline (`seed/_build/`), and the schema.
+- **Knowledge graph + documentation** — Creative Commons Attribution-ShareAlike 4.0 ([`LICENSE-DATA`](LICENSE-DATA)). The nodes, edges, concepts, curated descriptions and connections (`seed/*.json`), and the written content. Attribution + share-alike, so forks of the data stay openly licensed — *it cannot be enclosed*.
+- **Mirrored artwork images** — **not licensed here.** Copyright remains with the artists and holding institutions (Victoria & Albert Museum, SuperRare creators, Art Blocks, fxhash, …). Images are mirrored only so the graph stays renderable when upstream URLs rot, with upstream provenance preserved in each node's metadata. Several sources are explicitly **not** CC0. Their presence in this repository is not permission to reuse them.
+
+The *reading* of the field is the commons; the *works* stay with the artists who made them.
 
 ---
 

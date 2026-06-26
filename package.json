@@ -2,14 +2,13 @@
   "name": "adai-v1",
   "version": "1.0.0",
   "description": "A(DAI) — Digital Arts Knowledge Commons",
+  "license": "Apache-2.0",
   "type": "module",
   "engines": {
     "node": ">=22.5.0"
   },
   "scripts": {
     "dev": "tsx src/index.ts",
-    "seed": "tsx src/seed.ts",
-    "seed:consolidated": "tsx src/seed-consolidated.ts",
     "embed:derive": "tsx src/embed/cli.ts derive",
     "embed:centroids": "tsx src/embed/cli.ts centroids",
     "embed:calibrate": "tsx src/embed/cli.ts calibrate",
@@ -19,6 +18,7 @@
     "token:revoke": "tsx src/cli/revoke-token.ts",
     "token:restore": "tsx src/cli/restore-tokens.ts",
     "contributor:rename": "tsx src/cli/rename-contributor.ts",
+    "image:apply-patch": "tsx src/cli/apply-image-patch.ts",
     "notify:digest": "tsx src/cli/notify-digest.ts",
     "build": "tsc",
     "precompress": "node scripts/precompress.mjs public/field",

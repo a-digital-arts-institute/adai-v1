@@ -21,24 +21,25 @@ r2_configured() {
 }
 
 # --- Boot-time DB provisioning -------------------------------------------------
+# The live /data/adai.db is the ONLY source of truth (genesis seed RETIRED
+# June 2026 — there is no baked seed.db to fall back to).
 # Priority: (1) existing DB on the volume (warm restart, same host) — use as-is;
 #           (2) else restore the live DB from the R2 Litestream replica (fresh
-#               volume / new host after a host failure) — recovers runtime writes;
-#           (3) else genesis from the baked seed.db (genuine first boot, empty R2).
+#               volume / new host after a host failure) — recovers runtime writes.
+# If neither exists we FAIL LOUD rather than silently boot an empty database.
 if [ ! -f "$DB_PATH" ]; then
   if r2_configured; then
-    echo "No DB on volume; attempting Litestream restore from R2..."
-    # -if-replica-exists makes this a no-op (exit 0) when nothing's been
-    # replicated yet, so the genesis fallback below can take over.
+    echo "No DB on volume; restoring live DB from the Litestream R2 replica..."
     litestream restore -if-replica-exists -config "$LITESTREAM_CONFIG" "$DB_PATH" || true
   fi
 
   if [ -f "$DB_PATH" ]; then
     echo "Restored live DB from R2 replica."
   else
-    echo "No R2 replica; seeding from baked /app/seed.db (genesis)."
-    cp /app/seed.db "$DB_PATH"
-    echo "Seed copy complete."
+    echo "FATAL: no DB on the volume and no Litestream replica to restore from." >&2
+    echo "       This service has no genesis seed (retired June 2026). Restore a" >&2
+    echo "       known-good /data/adai.db (Litestream backup) before starting." >&2
+    exit 1
   fi
 else
   echo "Existing database found at $DB_PATH."

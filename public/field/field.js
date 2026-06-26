@@ -1011,6 +1011,26 @@
     });
   });
 
+  // Public room API. Other in-field surfaces (entity-view's "contribute ↗"
+  // CTAs, the archivist's contribute prompt) open a room by triggering its nav
+  // chip — reuse that exact path (incl. its stopPropagation guard) rather than
+  // re-implementing panel open/close per caller. Deferred a tick so the click
+  // that called us finishes propagating before the panel's own outside-click
+  // listener arms (otherwise that same click reads as outside → self-closes).
+  window.ADAI_ROOMS = {
+    open(hash) {
+      const link = document.querySelector(`.room-link[href="${hash}"]`);
+      if (!link) return false;
+      setTimeout(() => link.click(), 0);
+      return true;
+    },
+  };
+
+  // Deep-link a room on load: /field#contribute (also #philosophy) opens that
+  // panel straight away, so "Contribute" links from the legacy server pages
+  // land on the modern panel instead of the old form.
+  if (window.location.hash) window.ADAI_ROOMS.open(window.location.hash);
+
   // Contribute panel — the "Set up once. Then just talk." walkthrough.
   // A black-on-white setup guide (7 steps) shown as a white card centred over
   // the dimmed graph. All styles are scoped under #contribute-panel so the
