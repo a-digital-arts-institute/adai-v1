@@ -1152,7 +1152,7 @@
               <div class="ln"><span>domain allowlist</span><span class="pill-sel">ALL DOMAINS ▾</span></div>
               <div class="ln dim small"><span>ⓘ&nbsp; claude can access all domains on the internet</span></div>
             </div>
-            <p style="color:var(--dim);font-size:13px;margin-top:9px">More cautious? Allow just <b class="k" style="color:var(--ink)">digitalartsinstitute.io</b> — that's the only site the skill needs.</p>
+            <p style="color:var(--dim);font-size:13px;margin-top:9px">More cautious? Allow just <b class="k" style="color:var(--ink)">adai-basel.fly.dev</b> — that's the only site the skill needs.</p>
           </div></div>
 
           <div class="step"><div class="no">05</div><div class="b">
@@ -1193,7 +1193,7 @@
 
           <p class="label">If something's off</p>
           <p class="off"><b class="k">/adai-contribute won't appear</b> <span class="arrow">→</span> redo step 05, and make sure you're inside a Cowork task (not a plain Chat).</p>
-          <p class="off"><b class="k">it can't reach the site / can't save</b> <span class="arrow">→</span> redo step 04 — network egress on, allowlist includes digitalartsinstitute.io.</p>
+          <p class="off"><b class="k">it can't reach the site / can't save</b> <span class="arrow">→</span> redo step 04 — network egress on, allowlist includes adai-basel.fly.dev.</p>
           <p class="off"><b class="k">"pending review"</b> <span class="arrow">→</span> normal for new contributors. Your work is saved and credited, just waiting for a curator.</p>
 
           <p class="closer">Some connections only you can see: between your work and what shaped it, where it showed, who it spoke to. Draw one, and the field is truer for it.</p>
