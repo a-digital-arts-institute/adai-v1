@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Commons for the Digital Arts — A(DAI) Whitepaper</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='3' fill='%234169B0'/><text x='12' y='17' font-size='14' font-family='monospace' font-weight='400' fill='%230C0C0E' text-anchor='middle'>()</text></svg>">
+<style>
+  :root{--mono:'SF Mono','Menlo','Consolas',monospace;}
+  *{box-sizing:border-box;}
+  html,body{margin:0;color:#c8c6c1;font-family:var(--mono);}
+  body{min-height:100%;background:#6A6A6E url(img/seed-thesis-bg.jpg) center / cover no-repeat fixed;}
+  .scrim{position:fixed;inset:0;z-index:0;background:rgba(0,0,0,0.4);}
+  .paper{position:relative;z-index:1;max-width:760px;margin:34px auto;background:rgba(8,8,10,0.97);border:1px solid #2a2a2c;box-shadow:0 24px 48px rgba(0,0,0,0.5);}
+  .head{padding:26px 34px 18px;border-bottom:1px solid #2a2a2c;}
+  .eyebrow{color:#6a6a6c;font-size:11px;letter-spacing:.08em;text-transform:lowercase;}
+  h1{color:#E8E6E1;font-size:23px;font-weight:700;letter-spacing:.01em;margin:8px 0 4px;line-height:1.25;}
+  .subtitle{color:#8d8a82;font-size:13px;margin:0;}
+  .body{padding:22px 34px 34px;}
+  .sec-h{color:#E8E6E1;font-size:15px;font-weight:700;margin:30px 0 12px;padding-top:18px;border-top:1px solid #222;letter-spacing:.01em;}
+  .sec-h:first-child{margin-top:0;border-top:0;padding-top:0;}
+  .sub-h{color:#7e9fdc;font-size:11px;letter-spacing:.12em;text-transform:uppercase;margin:20px 0 9px;}
+  p{color:#c8c6c1;font-size:13.5px;line-height:1.72;margin:0 0 13px;}
+  p.hi{color:#E8E6E1;}
+  ul{margin:0 0 14px;padding-left:18px;}
+  li{color:#c8c6c1;font-size:13.5px;line-height:1.66;margin:0 0 6px;}
+  .kv{list-style:none;padding:0;margin:0 0 6px;}
+  .kv li{margin:0 0 5px;}
+  .kv b{color:#E8E6E1;}
+  .callout{border-left:2px solid #4169B0;padding-left:15px;margin:14px 0;}
+  .callout b{color:#E8E6E1;}
+  table{width:100%;border-collapse:collapse;margin:12px 0 16px;font-size:12.5px;}
+  th,td{border:1px solid #2a2a2c;padding:8px 10px;text-align:left;vertical-align:top;color:#c8c6c1;}
+  th{color:#E8E6E1;background:rgba(255,255,255,0.03);font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;}
+  .tablewrap{overflow-x:auto;}
+  .pull{color:#E8E6E1;font-style:italic;font-size:14px;text-align:center;border-top:1px solid #2a2a2c;border-bottom:1px solid #2a2a2c;padding:16px 0;margin:20px 0;}
+  dl{margin:0;}
+  dt{color:#E8E6E1;font-size:13px;margin:12px 0 3px;}
+  dd{margin:0 0 8px;color:#c8c6c1;font-size:13px;line-height:1.6;}
+  .foot{display:flex;justify-content:space-between;padding:12px 34px;border-top:1px solid #2a2a2c;color:#4a4a4c;font-size:11px;}
+</style></head>
+<body>
+<div class="scrim"></div>
+<div class="paper">
+  <div class="head">
+    <div class="eyebrow">[whitepaper]</div>
+    <h1>A Commons for the Digital Arts</h1>
+    <p class="subtitle">A(DAI) Protocol — Version 1.0-beta, July 2026</p>
+  </div>
+  <div class="body">
+
+    <div class="sec-h">Protocol Metadata</div>
+    <ul class="kv">
+      <li><b>Code:</b> Apache 2.0</li>
+      <li><b>Knowledge Graph &amp; Documentation:</b> CC BY-SA 4.0</li>
+      <li><b>Mirrored Images:</b> Rights remain with artists and holding institutions.</li>
+      <li><b>Status:</b> Post-alpha, launched 16 June 2026 at Art Basel. This document accompanies the staged opening of write access.</li>
+    </ul>
+
+    <div class="sec-h">Abstract</div>
+    <p>A(DAI) is building a new institutional form for the digital arts — an open-source institute made for a networked, distributed, agentic age.</p>
+    <p>Every major artistic formation eventually requires conditions in which it can become legible to itself:</p>
+    <ul>
+      <li>Modern art had museums, journals, schools, collections, and critical institutions that gave its practices continuity and public consequence.</li>
+      <li>Cinema had archives, festivals, studios, and distribution systems.</li>
+      <li>Architecture had schools, commissions, biennials, and professional bodies.</li>
+    </ul>
+    <p>Digital art already has galleries, museums, archives, platforms, marketplaces, Discords, festivals, and extraordinary communities doing important work. What it still needs is connective tissue between them: a field-level protocol built for its actual conditions — plural, software-based, networked, fast-moving, and increasingly legible to machines.</p>
+    <p>A Digital Arts Institute is to digital art what MoMA was to modern art, but designed for a networked age: not a single center but a protocol; not one canon but forkable canons; not institutional ownership of meaning but shared custody; not quantified attention but relational density and attributed context.</p>
+    <p>A(DAI) is post-web, agent-native, and human-first. The market gave digital art infrastructure for provenance of ownership. A(DAI) builds the missing layer: provenance of meaning.</p>
+    <p>The graph is live. The beta phase opens the next layer: practitioner testimony, gallery initiation, partner nodes, and first-person relations, moving A(DAI) from a documented graph about the field toward a living graph with the field.</p>
+    <p>It gives:</p>
+    <ul>
+      <li>Artists a governed record of meaning and a clearer sense of their practice in an exponential age.</li>
+      <li>Institutions connective tissue across silos.</li>
+      <li>Curators and researchers a provenance-rich field map.</li>
+      <li>Collectors context and narrative across historical and contemporary practices.</li>
+      <li>Capital actors a way to support field intelligence without defining it.</li>
+      <li>Agents structured cultural data they can read without authoring culture.</li>
+    </ul>
+    <p class="hi">The value increases as richer relations enter the graph. It is a seed canon, not the canon. The indefinite article is load-bearing.</p>
+
+    <div class="sec-h">Why an Institute, Why Now?</div>
+    <p>Every major artistic shift eventually requires a new institutional form. Institutions should not own art history, but a field needs durable conditions in which its practices can become legible, debated, preserved, funded, studied, collected, and renewed.</p>
+    <p>Digital art now requires the same seriousness, but it cannot simply inherit legacy institutional structures. The field is not organized around one medium, movement, geography, or market. It is a plurality of practices and subcultures at the shifting boundary of human and machine:</p>
+    <ul>
+      <li>Computer art &amp; net art</li>
+      <li>Generative systems &amp; software</li>
+      <li>Performance &amp; games</li>
+      <li>Simulation &amp; blockchain-native work</li>
+      <li>Artificial intelligence &amp; interactive media</li>
+      <li>Electronic image-making, and forms that still lack stable names.</li>
+    </ul>
+    <p>Its knowledge often resides in practitioners before it lives in archives. Its meaning often moves through their relations before it becomes scholarship. A(DAI) is designed as a complementary layer for that ecology. It does not replace galleries, museums, archives, platforms, festivals, or communities. It helps them interoperate without flattening their differences.</p>
+
+    <div class="sec-h">The Founding Question</div>
+    <p>A(DAI) began with a question: What is digital art?</p>
+    <p>Much of digital art's meaning is not held in durable public structures. It lives in practitioners, scenes, studios, mailing lists, chat logs, databases, platform histories, exhibition memories, codebases, friendships, disputes, and informal lineages. Traditional art history often arrives after the fact:</p>
+    <ul>
+      <li>The archive keeps the document and loses the conversation.</li>
+      <li>The catalogue keeps the object and loses the conditions that made it matter.</li>
+      <li>The ledger keeps the transaction and loses the reason anyone cared.</li>
+    </ul>
+    <p>The answer cannot be a single institution claiming final authority. It has to be a protocol. That is why A(DAI) is an institute only in the plural, forkable sense: a scaffolding for many readings, not a monument to one.</p>
+
+    <div class="sec-h">An Extitution for a Networked Field</div>
+    <p>A(DAI) is better understood as an extitution than as a traditional institution.</p>
+    <p>While an institution builds confidence through roles, rules, collections, credentials, and fixed authority, an extitution scaffolds live trust — the relationships, scenes, memories, practices, and tacit knowledge held by the people inside the field.</p>
+    <p>Forking is a success condition. The more serious A(DAI) instances there are, the more successful the protocol becomes.</p>
+    <div class="callout"><p style="margin:0 0 8px;"><b>Current Reality Check:</b> Today, A(DAI) runs as one production instance operated by the founding team. It is structurally still a single-instance platform. It becomes a true protocol when at least one independent, serious instance exists.</p>
+    <p style="margin:0;"><b>Success Metric:</b> One independent partner or community instance live within 18 months.</p></div>
+
+    <div class="sec-h">Post-Web, Agent-Native, Human-First</div>
+    <p>We are past the era in which cultural infrastructure can be designed only as webpages for humans to click through. The next layer is agentic: systems that read structured data, reason across it, compare sources, and route attention.</p>
+    <ul class="kv">
+      <li><b>Post-web:</b> The primary object is not a page but a structured field of relations.</li>
+      <li><b>Agent-native:</b> Data is designed for reasoning across sources rather than browsing one record at a time.</li>
+      <li><b>Human-first:</b> Machines may sense patterns but cannot infer intent, influence, response, contestation, or cultural meaning on behalf of practitioners.</li>
+    </ul>
+    <p>A(DAI) does not optimize for clicks, rankings, likes, visibility scores, or market heat. Its core question is: "Why does this matter, who can say so, and what evidence or testimony supports the claim?"</p>
+    <p class="hi">Intention comes before attention.</p>
+
+    <div class="sec-h">Starting Design Principles</div>
+    <p>A(DAI)'s first instantiation is a starting design to be interrogated, refined, forked, and repurposed:</p>
+    <ul class="kv">
+      <li><b>Plurality as Architecture:</b> No single definition, practice, source, institution, geography, or market narrative can dominate by default.</li>
+      <li><b>Artist Sovereignty:</b> Artists carry the highest authority over intent, process, lived context, and first-person lineage. They can claim, correct, export, and withdraw their record.</li>
+      <li><b>Polarity Preservation:</b> Contradictions are made visible and held open. The system does not resolve interpretive tension just to keep the graph clean.</li>
+      <li><b>Provenance as Ethics:</b> Every claim carries attribution, source, origin type, and consent.</li>
+      <li><b>Intention Over Attention:</b> Privileges relational density over quantified engagement metrics.</li>
+      <li><b>Machine Assistance Without Machine Authority:</b> Machine systems may surface patterns or visual affinities, but they may not infer historical meaning.</li>
+      <li><b>The Frontier is Where Language Fails:</b> What cannot yet be classified is not noise — it is often the most important signal.</li>
+    </ul>
+
+    <div class="sec-h">The Artist-First Value Proposition</div>
+    <p>For artists, A(DAI) offers protected leverage: a cultural record that is claimable, correctable, exportable, revocable, and consent-bound. We do not ask artists to maintain a profile, optimize a public persona, or become market signals. We create conditions for practice.</p>
+    <p>Pixel Symphony is our clearest beta example: an artist residency where the A(DAI) front-end itself becomes the work. The artist works directly with an agent-first framework, testing how a cultural graph can be seen, heard, questioned, and re-composed.</p>
+    <div class="sub-h">Beta Deliverables for Artists</div>
+    <div class="tablewrap"><table>
+      <tr><th>Deliverable</th><th>Status / Caveat</th></tr>
+      <tr><td>Personal node audit &amp; contribution receipts</td><td>Shipped</td></tr>
+      <tr><td>Portable export for curatorial/grant contexts</td><td>Shipped</td></tr>
+      <tr><td>Governance standing via approved contributions</td><td>Shipped</td></tr>
+      <tr><td>Compensation pathways (sensing sessions, residencies)</td><td>Incomplete (Compensation schedule pending)</td></tr>
+    </table></div>
+    <p class="hi">Practitioners are not data sources. They are co-authors of field intelligence.</p>
+
+    <div class="sec-h">Who Decides What the Graph Can Say?</div>
+    <div class="sub-h">The Roadmap to Decentralized Governance</div>
+    <ul class="kv">
+      <li><b>Current State:</b> The founding team holds editorial power. The review queue is a curatorial gate. To ensure accountability, every merge parameter is versioned publicly with a clear rationale.</li>
+      <li><b>At 50+ Active Contributors:</b> A documented contestation process begins.</li>
+      <li><b>At 200+ Active Contributors (or 2 Years):</b> A governance transition is triggered to constrain founding-team authority. If the founding team misses this milestone, the community is encouraged to fork, and a full exit snapshot will be published.</li>
+    </ul>
+    <div class="sub-h">Shipped vs. Pending Matrix</div>
+    <div class="tablewrap"><table>
+      <tr><th>Shipped Today</th><th>Designed / Next</th><th>Active Legal Work</th></tr>
+      <tr><td>CRDT graph (single production instance)</td><td>Sovereign practitioner databases</td><td>GDPR processing basis</td></tr>
+      <tr><td>Bi-temporal edges</td><td>Federation sync</td><td>Per-subject encryption</td></tr>
+      <tr><td>Merge boundary &amp; trust tiers</td><td>Public snapshots &amp; anchors</td><td>Erasure workflow</td></tr>
+      <tr><td>Token-gated contributor API</td><td>Tiered hosting interface</td><td>Legal vehicle &amp; controller designation</td></tr>
+      <tr><td>Embedding layer w/ human review</td><td>Opaque-ID migration</td><td>Database-rights enforcement</td></tr>
+      <tr><td>Curator review queue &amp; batch rollback</td><td>Crypto-shredding erasure tooling</td><td>Certification strategy</td></tr>
+    </table></div>
+
+    <div class="sec-h">Consent, Erasure, and Continuity</div>
+    <p>Consent in A(DAI) is rooted in custody, not property. Because the graph is relational, consent is relational too. A claim about one artist may implicate another artist, an estate, or a collaborator. Therefore, the graph does not infer deep relations on behalf of people who have not attested to them.</p>
+    <p><b style="color:#E8E6E1;">GDPR Posture:</b> The system is live, launched in Europe, and currently utilizes human-readable IDs while opaque-ID migration remains in design.</p>
+    <p><b style="color:#E8E6E1;">Data Partitioning:</b> To allow for open distribution without violating privacy, A(DAI) separates data into two zones:</p>
+    <ul class="kv">
+      <li><b>Structural Commons:</b> Public nodes, documented edges, source trails, and classification regimes.</li>
+      <li><b>Consent-Bound Testimony:</b> First-person or sensitive context, excluded from public snapshots by default unless explicitly opted in.</li>
+    </ul>
+
+    <div class="sec-h">Economics Without Capture</div>
+    <p>A(DAI)'s economic principle is simple: the commons must remain a public good, and any commercial activity sits at its edges as additive to the commons rather than enclosing it.</p>
+    <p>The exact capitalisation model will be defined alongside the formal Protocol Stewards. The graph architecture can be copied, but the living trust layer cannot. A scraped graph decays immediately because it lacks tomorrow's testimony, consent relationships, and review contexts.</p>
+
+    <div class="sec-h">Seed Method</div>
+    <p>Every artist, institution, and source traces back to a verified origin. The initial seed was ingested through a bootstrap pipeline with replicable APIs from licensed open sources (V&amp;A, Artblocks, Fxhash, Superrare). All post-launch writes enter strictly as signals.</p>
+    <div class="sub-h">Four Core Source Principles</div>
+    <ul class="kv">
+      <li><b>No hallucination:</b> Strict structural data ingestion.</li>
+      <li><b>Separation:</b> Absolute distinction between the editorial seed and external reconciliation.</li>
+      <li><b>De-skewing:</b> Active adjustments where platform data over-concentrates attention on commercial activity.</li>
+      <li><b>Attestation:</b> Explicitly required for all interpretive claims.</li>
+    </ul>
+
+    <div class="sec-h">Open Boundaries for the Protocol Stewards</div>
+    <p>Several hard questions remain open by design, to be solved by the formal A(DAI) Protocol Stewards:</p>
+    <ul>
+      <li>Semantic disagreement between federated instances.</li>
+      <li>Scalable review of machine proposals.</li>
+      <li>Erasure when graph structure reveals identity.</li>
+      <li>Relational consent for contested claims.</li>
+      <li>Compensation models for testimony and review labor.</li>
+    </ul>
+
+    <div class="sec-h">The Beta Opening</div>
+    <p>The graph can currently answer questions about platform-attested generative art history, the V&amp;A computer-art spine, and documented relationships in the existing record. The reserved edge types RESPONDS_TO, CONTESTS, and TENSION_WITH currently sit at zero because they require first-person testimony.</p>
+
+    <div class="sec-h">Next 3 Months Roadmap</div>
+    <ul>
+      <li>Open practitioner profiles with personal tokens and 1-on-1 onboarding.</li>
+      <li>Bring the first partner galleries and institutions onto nodes.</li>
+      <li>Open rolling curator and artist residencies.</li>
+      <li>Publish the formal Protocol Stewards mandate.</li>
+      <li>Ship the tiered hosting interface and release public snapshots with audit anchors.</li>
+    </ul>
+    <p class="hi">The sequence matters: narrative formation first, market formation second.</p>
+
+    <div class="sec-h">Glossary</div>
+    <dl>
+      <dt>Commons</dt><dd>The openly licensed knowledge layer — nodes, edges, signals, and consent terms.</dd>
+      <dt>Graph</dt><dd>The queryable structure the commons takes: typed, directional, and bi-temporal.</dd>
+      <dt>Signal</dt><dd>Any contribution entering the graph, complete with provenance, origin type, and consent data.</dd>
+      <dt>Edge</dt><dd>A typed relationship between nodes. Edges can be superseded rather than silently erased.</dd>
+      <dt>CRDT (Conflict-free Replicated Data Type)</dt><dd>A data structure that lets independent database copies merge without requiring a central arbiter.</dd>
+      <dt>Merge Boundary</dt><dd>The governed gate where incoming signals become formal graph structures.</dd>
+      <dt>Extitution</dt><dd>A soft institutional scaffold that coordinates and empowers a community without capturing or locking it in.</dd>
+      <dt>Frontier Signal</dt><dd>A contribution that cannot yet be classified by the current vocabulary — indicating where the field is moving ahead of the protocol.</dd>
+    </dl>
+
+  </div>
+  <div class="foot"><a href="https://digitalartsinstitute.io/" style="color:#4a4a4c;text-decoration:none;">A(DAI) · digitalartsinstitute.io</a><span>scroll to read</span></div>
+</div>
+</body></html>

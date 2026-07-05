@@ -1032,16 +1032,16 @@
   if (window.location.hash) window.ADAI_ROOMS.open(window.location.hash);
 
   // Contribute panel — the "Set up once. Then just talk." walkthrough.
-  // A black-on-white setup guide (7 steps) shown as a white card centred over
-  // the dimmed graph. All styles are scoped under #contribute-panel so the
-  // light theme never leaks into the dark field chrome.
+  // A 7-step setup guide shown as a card centred over the dimmed graph, in the
+  // same dark protocol theme as the other panels. Styles are scoped under
+  // #contribute-panel; colours are driven by the CSS vars below.
   function ensureContributeStyles() {
     if (document.getElementById('contribute-styles')) return;
     const s = document.createElement('style');
     s.id = 'contribute-styles';
     s.textContent = `
       #contribute-panel {
-        --bg:#ffffff; --ink:#161513; --dim:#8d8a82; --faint:#d9d6cd; --box:#fbfaf7; --sel:#161513; --sel-ink:#ffffff;
+        --bg:rgba(8,8,10,0.97); --ink:#E8E6E1; --dim:#6a6a6c; --faint:#2a2a2c; --box:rgba(255,255,255,0.02); --sel:rgba(65,105,176,0.22); --sel-ink:#dbe7fb;
         position: fixed; inset: 0; z-index: 1290;
         background: rgba(0,0,0,0.5); backdrop-filter: blur(2px);
         display: none; align-items: center; justify-content: center; padding: 22px;
@@ -1058,14 +1058,15 @@
       #contribute-panel .kicker { color: var(--dim); font-size: 13px; margin: 0 0 10px; }
       #contribute-panel h1 { font-size: 21px; font-weight: 700; line-height: 1.3; margin: 0; color: var(--ink); }
       #contribute-panel .scrollwrap { flex: 1; overflow: auto; padding: 18px 26px 26px; }
-      #contribute-panel p { margin: 0 0 13px; font-size: 14px; line-height: 1.62; }
+      #contribute-panel p { margin: 0 0 13px; font-size: 13px; line-height: 1.62; color: #c8c6c1; }
+      #contribute-panel .lead { color: var(--ink); }
       #contribute-panel .label { color: var(--dim); text-transform: uppercase; letter-spacing: .07em; font-size: 12px; margin: 20px 0 11px; }
       #contribute-panel .step { display: grid; grid-template-columns: 30px 1fr; gap: 4px 13px; margin: 0 0 16px; }
       #contribute-panel .step .no { color: var(--dim); font-size: 13px; padding-top: 2px; }
       #contribute-panel .step .b { min-width: 0; }
       #contribute-panel .step .b p { margin: 0 0 9px; }
       #contribute-panel b.k { font-weight: 700; }
-      #contribute-panel .paste { border: 1px solid var(--faint); padding: 14px 16px; margin: 6px 0 4px; font-size: 13px; line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
+      #contribute-panel .paste { border: 1px solid var(--faint); background: rgba(255,255,255,0.03); color: #d8d6d1; padding: 14px 16px; margin: 6px 0 4px; font-size: 13px; line-height: 1.7; white-space: pre-wrap; word-break: break-word; }
       #contribute-panel .paste .u { word-break: break-all; }
       #contribute-panel .paste .muted { color: var(--dim); }
       #contribute-panel .scr { border: 1px solid var(--faint); background: var(--box); padding: 11px; margin: 8px 0 4px; font-size: 12.5px; }
@@ -1087,17 +1088,17 @@
       #contribute-panel .off .arrow { color: var(--dim); }
       #contribute-panel .closer { color: var(--dim); font-size: 13px; line-height: 1.7; margin: 18px 0 0; border-top: 1px solid var(--faint); padding-top: 15px; }
       #contribute-panel .prog { height: 2px; background: var(--faint); }
-      #contribute-panel .prog > i { display: block; height: 100%; width: 0; background: var(--ink); transition: width 80ms linear; }
+      #contribute-panel .prog > i { display: block; height: 100%; width: 0; background: #7e9fdc; transition: width 80ms linear; }
       #contribute-panel .foot { display: flex; justify-content: space-between; gap: 14px; color: var(--dim); font-size: 12px; padding: 12px 22px; }
       #contribute-panel .guide { margin: 16px 0 0; }
       #contribute-panel .guide a {
         display: inline-flex; align-items: center; gap: 8px;
-        border: 1px solid #4169B0; color: #4169B0; background: transparent;
+        border: 1px solid #4169B0; color: #7e9fdc; background: transparent;
         font-family: inherit; font-size: 11px; letter-spacing: 0.08em;
         text-transform: uppercase; padding: 8px 13px; text-decoration: none;
-        cursor: pointer; transition: background 120ms ease;
+        cursor: pointer; transition: background 120ms ease, color 120ms ease;
       }
-      #contribute-panel .guide a:hover { background: rgba(65,105,176,0.10); }
+      #contribute-panel .guide a:hover { background: rgba(65,105,176,0.14); color: #a8c0ea; }
       #contribute-panel .guide a .garrow { color: #4169B0; }
     `;
     document.head.appendChild(s);
@@ -1117,6 +1118,7 @@
           <h1 id="ct-title">Set up once. Then just talk.</h1>
         </div>
         <div class="scrollwrap" id="ct-scroll">
+          <p class="lead">Contribution is a way to place knowledge into the commons with attribution, consent and the right to withdraw.</p>
           <p>Curate A(DAI) in plain language from your own assistant — every edit attributed to you, withdrawable anytime.</p>
           <p class="label">How to set up — about five minutes, just once</p>
           <p>You don't need our UI. You'll connect Claude (or any assistant that can run shell commands with internet access) to A(DAI), then curate by chatting. Seven steps:</p>
@@ -1328,41 +1330,42 @@
         <div class="ph-body">
           <section class="ph-sec">
             <div class="ph-sec-label">What</div>
-            <p class="ph-line">A shared protocol for the digital arts to tell its own story — across time, mediums and practices.</p>
-            <p class="ph-line">A plural, open commons. Never finished, never flattened.</p>
-            <p class="ph-line">A provocation to begin: a seed canon inviting discovery and participation.</p>
-            <p class="ph-line">Re-weightable, forkable — every fork a legitimate centre.</p>
+            <p class="ph-line">A(DAI) is an open protocol for the digital arts: a shared meaning layer for a networked, agent-readable age.</p>
+            <p class="ph-line">It helps artists, curators, galleries, archives, platforms and researchers connect knowledge across the field while preserving many canons, vocabularies and centres.</p>
           </section>
           <section class="ph-sec">
             <div class="ph-sec-label">Why</div>
-            <p class="ph-line">Digital art is the defining art of our time — testing the line between human and machine.</p>
-            <p class="ph-line">Decades of history still unmetabolised, and a scene exploding at machine-speed.</p>
-            <p class="ph-line">Its story lives between practitioners — scattered across feeds, shows and moments.</p>
-            <p class="ph-line">No single institution holds that tension without flattening it. The field needs a native one.</p>
+            <p class="ph-line">Digital art already has galleries, museums, platforms, festivals, archives and communities doing important work. A(DAI) creates connective tissue between them.</p>
+            <p class="ph-line">As culture becomes machine-readable, the field needs ways to structure its own meaning through context, testimony, provenance and relation.</p>
+            <p class="ph-line">A(DAI) connects the people, places and systems already carrying the field, so knowledge can move between them without losing its tensions.</p>
           </section>
           <section class="ph-sec">
             <div class="ph-sec-label">How</div>
-            <p class="ph-line">Speed without intention collapses under its own weight.</p>
-            <p class="ph-line">So we turn the machine on itself — sourcing work openly, inviting practitioners to curate.</p>
-            <p class="ph-line">A seed canon and knowledge graph: a commons to surface bias and provoke contribution.</p>
+            <p class="ph-line">A(DAI) builds provenance of meaning: who says a work matters, why, from what position, and on what basis.</p>
+            <p class="ph-line">The protocol privileges relational density over quantified attention: interviews, essays, exhibitions, testimony, research, concepts, techniques, scenes and tensions.</p>
+            <p class="ph-line">It is infrastructure for meaning: a commons where context can accumulate, remain attributable and be revised over time.</p>
+          </section>
+          <section class="ph-sec">
+            <div class="ph-sec-label">Principles</div>
             <ol class="ph-principles">
-              <li><span class="ph-num">01</span> Plurality as constraint</li>
+              <li><span class="ph-num">01</span> Plurality as architecture</li>
               <li><span class="ph-num">02</span> Artists as sovereign</li>
-              <li><span class="ph-num">03</span> Tensions preserved, not resolved</li>
+              <li><span class="ph-num">03</span> Tensions held open</li>
               <li><span class="ph-num">04</span> Provenance as ethics</li>
               <li><span class="ph-num">05</span> Intention over attention</li>
-              <li><span class="ph-num">06</span> Commons without enclosure</li>
-              <li><span class="ph-num">07</span> Where language fails</li>
+              <li><span class="ph-num">06</span> Machines assist; humans author meaning</li>
+              <li><span class="ph-num">07</span> Commons without enclosure</li>
+              <li><span class="ph-num">08</span> Where language fails</li>
             </ol>
           </section>
           <section class="ph-sec">
             <div class="ph-sec-label">Next</div>
-            <p class="ph-line">A select cohort of artists, curators and institutions to seed the canon and shape its governance.</p>
-            <p class="ph-line">Each partner owns their assets; every contribution stays attributable.</p>
+            <p class="ph-line">A provisional canon, built to be contested, forked and improved. A select cohort of artists, curators and institutions will help seed the graph and shape protocol stewardship. Each contribution stays attributable, consent-bound and correctable.</p>
           </section>
           <div class="ph-cta">
             <a class="ph-cta-btn" href="/field-static/seed-thesis.html" target="_blank" rel="noopener">Read the Seed Thesis <span class="ph-arrow" aria-hidden="true">→</span></a>
-            <a class="ph-cta-btn" href="/field-static/co-governance.html" target="_blank" rel="noopener">Co-governance — Pre-seed <span class="ph-arrow" aria-hidden="true">→</span></a>
+            <a class="ph-cta-btn" href="/field-static/protocol-stewardship.html" target="_blank" rel="noopener">Protocol Stewardship <span class="ph-arrow" aria-hidden="true">→</span></a>
+            <a class="ph-cta-btn" href="/field-static/whitepaper.html" target="_blank" rel="noopener">Read the Whitepaper <span class="ph-arrow" aria-hidden="true">→</span></a>
           </div>
         </div>
         <div class="ph-foot">
