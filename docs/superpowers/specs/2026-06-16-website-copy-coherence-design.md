@@ -46,7 +46,7 @@ The philosophy panel links out (buttons) to: **Seed Thesis**, **Protocol Steward
 
 ## 5. Philosophy panel rewrite (`public/field/field.js`)
 
-Replace the current WHAT/WHY/HOW/NEXT + 7-principles body with the following. Keep the existing `.ph-*` panel styling, eyebrow `[philosophy]`, title "A Digital Arts Institute", and section-label / line structure. Principles list grows to **8**.
+**Fully replace** the current WHAT/WHY/HOW/NEXT body **and** the current 7-principle list with the copy below — this is a wholesale rewrite of the panel body, not an additive edit. Keep only the panel chrome: `.ph-*` styling, eyebrow `[philosophy]`, title "A Digital Arts Institute", the section-label + `.ph-line` structure, and the button row. The principle list becomes the **8** below; note that `01` rewords the current "Plurality as **constraint**" → "Plurality as **architecture**", and a new `06 Machines assist; humans author meaning` is inserted, pushing "Commons without enclosure" → `07` and "Where language fails" → `08`.
 
 **WHAT**
 > A(DAI) is an open protocol for the digital arts: a shared meaning layer for a networked, agent-readable age.
@@ -57,6 +57,8 @@ Replace the current WHAT/WHY/HOW/NEXT + 7-principles body with the following. Ke
 > Digital art already has galleries, museums, platforms, festivals, archives and communities doing important work. What is missing is connective tissue between them.
 >
 > As culture becomes machine-readable, the field needs to structure its own meaning before machines and markets do it from scraped fragments, transaction data and attention signals.
+>
+> No single institution can hold the whole field alone. A(DAI) is connective tissue between the people, places and systems already doing the work.
 
 **HOW**
 > A(DAI) builds provenance of meaning: who says a work matters, why, from what position, and on what basis.
@@ -82,8 +84,7 @@ Replace the current WHAT/WHY/HOW/NEXT + 7-principles body with the following. Ke
 > A select cohort of artists, curators and institutions will help seed the graph and shape protocol stewardship.
 > Each contribution stays attributable, consent-bound and correctable.
 
-**Required line swap:** the current line "No single institution holds that tension without flattening it. The field needs a native one." must be replaced (it appears in the current WHY section) with:
-> No single institution can hold the whole field alone. A(DAI) is connective tissue between the people, places and systems already doing the work.
+**Note on the old "flattening" line:** the current WHY contains "No single institution holds that tension without flattening it. The field needs a native one." (verbatim in `field.js`). Because the whole body is replaced, that line is simply gone; its replacement idea is carried by the third WHY paragraph above ("No single institution can hold the whole field alone. A(DAI) is connective tissue…"), which must appear verbatim in the new WHY. No separate find-and-replace is needed.
 
 **Buttons (bottom of panel):**
 - Keep **Read the Seed Thesis →** (`/field-static/seed-thesis.html`).
@@ -220,7 +221,7 @@ Apply to the latest text when building `whitepaper.html`:
 
 ## 14. Cache-busting & deploy
 
-- `field.js` is served `immutable, max-age=1yr` via a `?v=` query in `index.html`. Bump `field.js?v=` when the panel copy changes.
+- `field.js` is served `immutable, max-age=1yr` via a `?v=` query in `index.html`. Bump the tag when the panel copy changes: current is `field.js?v=20260616a` → set **`?v=20260616b`** (a plain date bump would collide with today's existing tag and be a no-op).
 - New `.html` pages (whitepaper, protocol-stewardship) are served `no-cache` (revalidate) — no version tag needed; they reach visitors on next load.
 - `co-governance.html` redirect is `no-cache` too — fine.
 - Deploy is manual (`just deploy`); merging to `main` does not deploy.
@@ -231,7 +232,8 @@ Apply to the latest text when building `whitepaper.html`:
 - Each new/edited page opens standalone (relative bg path resolves) and matches the dark shell.
 - Philosophy panel: 3 buttons present and pointing at the right routes; the "connective tissue" line replaced the old one; 8 principles.
 - `co-governance.html` redirects to `protocol-stewardship.html`.
-- Whitepaper page: no numeric stats block; no placeholder text; grammar fixes applied; tables render.
+- Whitepaper page: no numeric stats block; no placeholder text; grammar fixes applied.
+- Whitepaper page: the two tables (Beta Deliverables; Shipped/Pending 3-column) render, and the long-form column width + tables are readable on mobile (tables scroll or reflow; no horizontal page scroll).
 - Contribute modal: framing line present above the walkthrough.
 - Brand page: Pixel Symphony integrated inline (no new card).
 
