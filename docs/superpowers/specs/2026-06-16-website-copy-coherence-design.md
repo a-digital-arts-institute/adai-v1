@@ -95,8 +95,21 @@ The philosophy panel links out (buttons) to: **Seed Thesis**, **Protocol Steward
 
 ## 6. Contribute modal (`public/field/field.js`)
 
-Keep the "Set up once. Then just talk." walkthrough exactly. Prepend one framing line at the very top of the scroll body (before "Curate A(DAI) in plain language…"):
+Two changes:
+
+**(a) Restyle to the dark protocol theme** so it matches every other panel (philosophy, seed thesis, stewardship). The "Set up once. Then just talk." walkthrough keeps all of its content and structure — the 7 steps, the UI/terminal mockups, the paste blocks, the status pills, the "if something's off" section, the closer, the scroll-progress bar, and the Starter guide button — but the light black-on-white palette is dropped for the dark `.ph-*` palette. Colour mapping:
+- panel: `background: rgba(8,8,10,0.97)`, `border: 1px solid #2a2a2c`, text `#E8E6E1`/`#c8c6c1` (was white card)
+- eyebrow `[contribute · setup]` and step numbers: `#6a6a6c`; step lead-ins (`<b>`): `#E8E6E1`
+- paste/code blocks: `background: rgba(255,255,255,0.03)`, `border: #2a2a2c`, text `#d8d6d1`
+- the `.scr` UI mockups: `background: rgba(255,255,255,0.02)`, `border: #2a2a2c`; the "selected" row highlight goes from dark-on-white to a cobalt tint `background: rgba(65,105,176,0.22); color: #dbe7fb`
+- pills: `border: #2a2a2c; color: #9a9a9c`
+- scroll-progress bar: track `#2a2a2c`, fill `#7e9fdc`
+- Starter guide button: unchanged (already cobalt outline)
+
+**(b) Prepend one framing line** at the very top of the scroll body (before "Curate A(DAI) in plain language…"):
 > Contribution is a way to place knowledge into the commons with attribution, consent and the right to withdraw.
+
+**Git note / supersession:** the "Set up once" walkthrough currently exists only on the unmerged branch `claude/contribute-setup-walkthrough` (light theme) — it is NOT on `main` (which still has the older dark "An invitation to collectively write…" contribute panel). This coherence work builds the **dark** walkthrough directly, superseding both. Reconciliation options at implementation time: either (i) close the light-walkthrough PR and let this PR deliver the dark walkthrough, or (ii) merge the light-walkthrough PR first, then this PR restyles it. Option (i) is cleaner (one PR owns the contribute panel). Confirm before building.
 
 ## 7. Seed Thesis page (`public/field/seed-thesis.html`)
 
