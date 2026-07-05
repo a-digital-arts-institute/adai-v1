@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Seed Thesis — A(DAI)</title>
+<title>Protocol Stewardship — A(DAI)</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='3' fill='%234169B0'/><text x='12' y='17' font-size='14' font-family='monospace' font-weight='400' fill='%230C0C0E' text-anchor='middle'>()</text></svg>">
 <style>
   /* Shell styles lifted from the live /field philosophy + contribute panels
-     (.ph-*) so the thesis reads as the same surface as the rest of the site. */
+     (.ph-*) so this reads as the same surface as the rest of the site. */
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
   body {
@@ -30,13 +30,19 @@
   }
   .ph-head { padding: 18px 26px 12px; border-bottom: 1px solid #2a2a2c; }
   .ph-eyebrow { color: #6a6a6c; font-size: 11px; letter-spacing: 0.08em; text-transform: lowercase; }
-  .ph-title { color: #E8E6E1; font-size: 17px; margin: 6px 0 0; letter-spacing: 0.02em; font-weight: 700; }
+  .ph-titlerow { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 6px 0 0; }
+  .ph-title { color: #E8E6E1; font-size: 17px; margin: 0; letter-spacing: 0.02em; font-weight: 700; }
+  .ph-tag {
+    border: 1px solid #4169B0; color: #7e9fdc;
+    font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 2px 7px;
+  }
   .ph-body { padding: 18px 26px 24px; overflow-y: auto; }
   .ph-line { color: #c8c6c1; font-size: 13px; line-height: 1.7; margin: 0 0 14px; }
   .ph-line:last-child { margin-bottom: 0; }
   .ph-line em { color: #E8E6E1; font-style: italic; }
   .ph-line strong { color: #E8E6E1; font-weight: 700; }
-  /* Standfirst — the thesis in one breath, set off by a cobalt rule. */
+  /* Standfirst — the claim in one breath, set off by a cobalt rule. */
   .ph-lead {
     color: #E8E6E1; font-size: 14px; line-height: 1.7; margin: 0 0 14px;
     padding-left: 16px; border-left: 2px solid #4169B0;
@@ -48,12 +54,6 @@
     margin: 0 0 8px; padding-left: 16px; border-left: 2px solid #2a2a2c;
   }
   .ph-list li:last-child { margin-bottom: 0; }
-  /* Pull line — the thesis condensed. */
-  .ph-pull {
-    color: #E8E6E1; font-size: 15px; line-height: 1.55; text-align: center;
-    font-style: italic;
-    margin: 24px 0; padding: 18px 0; border-top: 1px solid #2a2a2c; border-bottom: 1px solid #2a2a2c;
-  }
   .ph-foot {
     display: flex; justify-content: space-between; align-items: center;
     padding: 10px 26px; border-top: 1px solid #2a2a2c;
@@ -65,45 +65,45 @@
 </head>
 <body>
 <div class="scrim"></div>
-<div class="ph-shell" role="article" aria-labelledby="st-title">
+<div class="ph-shell" role="article" aria-labelledby="ps-title">
   <header class="ph-head">
-    <div class="ph-eyebrow">[seed thesis]</div>
-    <h1 class="ph-title" id="st-title">Seed Thesis</h1>
+    <div class="ph-eyebrow">[protocol stewardship]</div>
+    <div class="ph-titlerow">
+      <h1 class="ph-title" id="ps-title">Protocol Stewardship</h1>
+      <span class="ph-tag">pre-seed · provisional</span>
+    </div>
   </header>
   <div class="ph-body">
-    <p class="ph-lead">The seed is a starting map: documented, partial, shaped by what public records make visible, and open to correction.</p>
-    <p class="ph-line">Its purpose is to make the first structure legible enough to contest. A good seed invites disagreement, extension and repair.</p>
+    <p class="ph-lead">A(DAI) begins with a founding architecture, but should not remain governed by founding authority.</p>
+    <p class="ph-line">Protocol stewardship is the process by which artists, curators, researchers, institutions and technical maintainers turn open boundaries into working rules.</p>
 
-    <div class="ph-sec-label">What enters</div>
+    <div class="ph-sec-label">Who stewards</div>
+    <p class="ph-line">Artists, curators, researchers, institutions, technical maintainers and partner communities participate as the contributor base grows.</p>
+
+    <div class="ph-sec-label">What they steward</div>
     <ul class="ph-list">
-      <li>verified artworks, practitioners, exhibitions, concepts, platforms and institutions</li>
-      <li>documented claims with source trails</li>
-      <li>records from licensed / open / replicable sources</li>
-      <li>post-launch contributions as signals with provenance and consent</li>
+      <li>merge rules</li>
+      <li>classification regimes</li>
+      <li>first-person testimony</li>
+      <li>contested claims</li>
+      <li>machine-derived proposals</li>
+      <li>consent and revocation</li>
+      <li>fork and federation norms</li>
+      <li>funding and labor commitments</li>
     </ul>
 
-    <div class="ph-sec-label">What requires attestation</div>
+    <div class="ph-sec-label">What they do not steward</div>
     <ul class="ph-list">
-      <li>influence</li>
-      <li>intent</li>
-      <li>response</li>
-      <li>contestation</li>
-      <li>sensitive context</li>
-      <li>claims grounded in lived experience</li>
+      <li>an artist's intent on behalf of the artist</li>
+      <li>one official canon</li>
+      <li>market rankings</li>
+      <li>machine-inferred influence</li>
+      <li>private extraction of testimony</li>
     </ul>
 
-    <div class="ph-sec-label">What the seed makes visible</div>
-    <ul class="ph-list">
-      <li>where records are dense</li>
-      <li>where histories are missing</li>
-      <li>where vocabulary breaks</li>
-      <li>where practitioner testimony is needed</li>
-      <li>where the field is ahead of the archive</li>
-    </ul>
-
-    <p class="ph-pull">The protocol prefers a visible gap over a fake link.</p>
-
-    <p class="ph-line">The seed is a beginning, not a verdict. It exists to be corrected, extended, forked and argued with.</p>
+    <div class="ph-sec-label">Open boundaries</div>
+    <p class="ph-line">Several hard questions remain open by design: semantic disagreement between instances, scalable review of machine proposals, erasure when graph structure reveals identity, relational consent for contested claims, and fair compensation for testimony and review labor.</p>
+    <p class="ph-line">These are not bugs hidden by the system. They are the first mandate of the Protocol Stewards.</p>
   </div>
   <div class="ph-foot">
     <a href="https://digitalartsinstitute.io/">A(DAI) · digitalartsinstitute.io</a>

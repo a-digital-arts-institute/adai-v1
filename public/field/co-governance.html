@@ -3,102 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Co-governance — A(DAI)</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='3' fill='%234169B0'/><text x='12' y='17' font-size='14' font-family='monospace' font-weight='400' fill='%230C0C0E' text-anchor='middle'>()</text></svg>">
+<title>Protocol Stewardship — A(DAI)</title>
+<!-- co-governance was renamed to Protocol Stewardship; redirect old links. -->
+<meta http-equiv="refresh" content="0; url=/field-static/protocol-stewardship.html">
+<link rel="canonical" href="/field-static/protocol-stewardship.html">
+<script>location.replace('/field-static/protocol-stewardship.html');</script>
 <style>
-  /* Shell styles lifted from the live /field philosophy + contribute panels
-     (.ph-*) so this reads as the same surface as the rest of the site. */
-  * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; }
-  body {
-    background: #6A6A6E url(img/seed-thesis-bg.jpg) center / cover no-repeat fixed;
-    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
-    color: #E8E6E1;
-    display: flex; align-items: flex-start; justify-content: center;
-    padding: 8vh 16px 6vh;
-    min-height: 100%;
-  }
-  .scrim { position: fixed; inset: 0; z-index: 0; background: rgba(0,0,0,0.28); }
-  .ph-shell {
-    position: relative; z-index: 1;
-    width: min(680px, 92vw);
-    max-height: 84vh;
-    display: flex; flex-direction: column;
-    background: rgba(8, 8, 10, 0.97);
-    border: 1px solid #2a2a2c;
-    box-shadow: 0 24px 48px rgba(0,0,0,0.5);
-  }
-  .ph-head { padding: 18px 26px 12px; border-bottom: 1px solid #2a2a2c; }
-  .ph-eyebrow { color: #6a6a6c; font-size: 11px; letter-spacing: 0.08em; text-transform: lowercase; }
-  .ph-titlerow { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin: 6px 0 0; }
-  .ph-title { color: #E8E6E1; font-size: 17px; margin: 0; letter-spacing: 0.02em; font-weight: 700; }
-  .ph-tag {
-    border: 1px solid #4169B0; color: #7e9fdc;
-    font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
-    padding: 2px 7px;
-  }
-  .ph-body { padding: 18px 26px 24px; overflow-y: auto; }
-  .ph-line { color: #c8c6c1; font-size: 13px; line-height: 1.7; margin: 0 0 14px; }
-  .ph-line:last-child { margin-bottom: 0; }
-  .ph-line em { color: #E8E6E1; font-style: italic; }
-  .ph-line strong { color: #E8E6E1; font-weight: 700; }
-  /* Standfirst — the claim in one breath, set off by a cobalt rule. */
-  .ph-lead {
-    color: #E8E6E1; font-size: 14px; line-height: 1.7; margin: 0 0 22px;
-    padding-left: 16px; border-left: 2px solid #4169B0;
-  }
-  /* The three invariants — fixed by design. */
-  .ph-list { list-style: none; margin: 0 0 18px; padding: 0; }
-  .ph-list li {
-    color: #c8c6c1; font-size: 13px; line-height: 1.6;
-    margin: 0 0 10px; padding-left: 16px; border-left: 2px solid #2a2a2c;
-  }
-  .ph-list li:last-child { margin-bottom: 0; }
-  .ph-list li strong { color: #E8E6E1; font-weight: 700; }
-  /* Closing line — quiet emphasis. */
-  .ph-close {
-    color: #E8E6E1; font-size: 13px; line-height: 1.7; font-style: italic;
-    margin: 22px 0 0; padding-top: 18px; border-top: 1px solid #2a2a2c;
-  }
-  .ph-foot {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 10px 26px; border-top: 1px solid #2a2a2c;
-    color: #4a4a4c; font-size: 11px; letter-spacing: 0.04em;
-  }
-  .ph-foot a { color: #4a4a4c; text-decoration: none; }
-  .ph-foot a:hover { color: #7e9fdc; }
+  html,body{margin:0;height:100%;background:#0e0e10;color:#8d8a82;
+    font-family:'SF Mono','Menlo','Consolas',monospace;
+    display:flex;align-items:center;justify-content:center;}
+  a{color:#7e9fdc;text-decoration:none;}
 </style>
 </head>
 <body>
-<div class="scrim"></div>
-<div class="ph-shell" role="article" aria-labelledby="cg-title">
-  <header class="ph-head">
-    <div class="ph-eyebrow">[co-governance]</div>
-    <div class="ph-titlerow">
-      <h1 class="ph-title" id="cg-title">A commons, not a platform</h1>
-      <span class="ph-tag">pre-seed · provisional</span>
-    </div>
-  </header>
-  <div class="ph-body">
-    <p class="ph-lead">A(DAI) is a commons, not a platform. We steward it; we do not own it.</p>
-
-    <p class="ph-line">Three things are fixed by design, and not ours to revoke:</p>
-    <ul class="ph-list">
-      <li>The knowledge layer stays <strong>openly licensed</strong> &mdash; it cannot be enclosed.</li>
-      <li>The commons is <strong>forkable in full</strong> &mdash; every fork a legitimate centre.</li>
-      <li><strong>No steward, including us</strong>, can privatise what is held in common.</li>
-    </ul>
-
-    <p class="ph-line">Everything else is open, and shaped together: how the field is described, how contributions are weighted, how disputes are held, who joins, and how we are held to account.</p>
-
-    <p class="ph-line"><strong>Your work stays yours. The map is held in common.</strong></p>
-
-    <p class="ph-close">We are inviting a founding cohort of artists, curators and institutions to shape this governance &mdash; not to approve it, but to write it. So this page is provisional. It will change as the commons learns to govern itself. That is the point.</p>
-  </div>
-  <div class="ph-foot">
-    <a href="https://digitalartsinstitute.io/">A(DAI) · digitalartsinstitute.io</a>
-    <span>scroll to read</span>
-  </div>
-</div>
+  <p>Moved to <a href="/field-static/protocol-stewardship.html">Protocol Stewardship</a>…</p>
 </body>
 </html>

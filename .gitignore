@@ -83,3 +83,6 @@ Meeting notes/
 *.pptx
 *.docx
 *.pdf
+
+# brainstorming visual-companion scratch
+.superpowers/
