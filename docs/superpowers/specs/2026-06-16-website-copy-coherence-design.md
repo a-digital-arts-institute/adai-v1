@@ -51,27 +51,27 @@ The philosophy panel links out (buttons) to: **Seed Thesis**, **Protocol Steward
 **WHAT**
 > A(DAI) is an open protocol for the digital arts: a shared meaning layer for a networked, agent-readable age.
 >
-> It helps artists, curators, galleries, archives, platforms and researchers connect knowledge across the field without forcing one canon, one vocabulary, or one centre.
+> It helps artists, curators, galleries, archives, platforms and researchers connect knowledge across the field while preserving many canons, vocabularies and centres.
 
 **WHY**
-> Digital art already has galleries, museums, platforms, festivals, archives and communities doing important work. What is missing is connective tissue between them.
+> Digital art already has galleries, museums, platforms, festivals, archives and communities doing important work. A(DAI) creates connective tissue between them.
 >
-> As culture becomes machine-readable, the field needs to structure its own meaning before machines and markets do it from scraped fragments, transaction data and attention signals.
+> As culture becomes machine-readable, the field needs ways to structure its own meaning through context, testimony, provenance and relation.
 >
-> No single institution can hold the whole field alone. A(DAI) is connective tissue between the people, places and systems already doing the work.
+> A(DAI) connects the people, places and systems already carrying the field, so knowledge can move between them without losing its tensions.
 
 **HOW**
 > A(DAI) builds provenance of meaning: who says a work matters, why, from what position, and on what basis.
 >
 > The protocol privileges relational density over quantified attention: interviews, essays, exhibitions, testimony, research, concepts, techniques, scenes and tensions.
 >
-> A(DAI) is not a platform for attention. It is infrastructure for meaning.
+> It is infrastructure for meaning: a commons where context can accumulate, remain attributable and be revised over time.
 
 **PRINCIPLES**
 ```
 01 Plurality as architecture
 02 Artists as sovereign
-03 Tensions preserved, not resolved
+03 Tensions held open
 04 Provenance as ethics
 05 Intention over attention
 06 Machines assist; humans author meaning
@@ -84,7 +84,7 @@ The philosophy panel links out (buttons) to: **Seed Thesis**, **Protocol Steward
 > A select cohort of artists, curators and institutions will help seed the graph and shape protocol stewardship.
 > Each contribution stays attributable, consent-bound and correctable.
 
-**Note on the old "flattening" line:** the current WHY contains "No single institution holds that tension without flattening it. The field needs a native one." (verbatim in `field.js`). Because the whole body is replaced, that line is simply gone; its replacement idea is carried by the third WHY paragraph above ("No single institution can hold the whole field alone. A(DAI) is connective tissue…"), which must appear verbatim in the new WHY. No separate find-and-replace is needed.
+**Note on the old "flattening" line:** the current WHY contains "No single institution holds that tension without flattening it. The field needs a native one." Because the whole body is replaced, that line is simply gone. It is reframed positively by the third WHY paragraph above ("A(DAI) connects the people, places and systems already carrying the field, so knowledge can move between them without losing its tensions."). No separate find-and-replace is needed. Tone note: the whole panel defines A(DAI) by what it *does* (connect, preserve, structure), not by what it refuses.
 
 **Buttons (bottom of panel):**
 - Keep **Read the Seed Thesis →** (`/field-static/seed-thesis.html`).
@@ -96,7 +96,7 @@ The philosophy panel links out (buttons) to: **Seed Thesis**, **Protocol Steward
 ## 6. Contribute modal (`public/field/field.js`)
 
 Keep the "Set up once. Then just talk." walkthrough exactly. Prepend one framing line at the very top of the scroll body (before "Curate A(DAI) in plain language…"):
-> Contribution is not profile maintenance. It is a way to place knowledge into the commons with attribution, consent and the right to withdraw.
+> Contribution is a way to place knowledge into the commons with attribution, consent and the right to withdraw.
 
 ## 7. Seed Thesis page (`public/field/seed-thesis.html`)
 
@@ -105,9 +105,9 @@ Rewrite the body to the following. Keep the dark `.ph-*` page shell, eyebrow `[s
 **Title:** Seed Thesis
 
 **Opening**
-> The seed is not the canon. It is a starting map: documented, partial, biased by what public records make visible, and intentionally open to correction.
+> The seed is a starting map: documented, partial, shaped by what public records make visible, and open to correction.
 >
-> Its purpose is to make the first structure legible enough to contest. A good seed should invite disagreement, not hide it.
+> Its purpose is to make the first structure legible enough to contest. A good seed invites disagreement, extension and repair.
 
 **WHAT ENTERS**
 - verified artworks, practitioners, exhibitions, concepts, platforms and institutions
@@ -115,12 +115,13 @@ Rewrite the body to the following. Keep the dark `.ph-*` page shell, eyebrow `[s
 - records from licensed / open / replicable sources
 - post-launch contributions as signals with provenance and consent
 
-**WHAT DOES NOT ENTER AS FACT**
-- inferred influence
-- machine-guessed intent
-- scraped context without permission
-- market heat as cultural importance
-- visual resemblance treated as history
+**WHAT REQUIRES ATTESTATION**
+- influence
+- intent
+- response
+- contestation
+- sensitive context
+- claims grounded in lived experience
 
 **WHAT THE SEED MAKES VISIBLE**
 - where records are dense
