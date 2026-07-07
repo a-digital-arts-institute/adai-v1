@@ -30,6 +30,7 @@ import {
   type ProposedNodeOp,
 } from "../utils/contribution.js";
 import { uploadImage, isR2Configured } from "../r2.js";
+import { getSkillVersion } from "../utils/skill-version.js";
 import { embedNodeAsync } from "../embed/server.js";
 import { approveIntakeItem, rejectIntakeItem } from "../utils/review.js";
 import {
@@ -99,6 +100,9 @@ router.get("/api/v1/whoami", requireToken, (req, res) => {
     token_prefix: req.contributor!.token_prefix,
     scope: req.contributor!.scope,
     r2_configured: isR2Configured(),
+    // Current canonical skill version; a caller compares this to the version
+    // stamped in its own downloaded SKILL.md to detect a stale copy (§0).
+    skill_version: getSkillVersion(),
   });
 });
 
