@@ -689,6 +689,23 @@ router.use("/api/v1/images", (err: any, _req: any, res: any, next: any) => {
 // to them just like anyone else's, and trust_tier still governs auto-merge
 // vs queue. Scope and trust_tier are deliberately decoupled.
 
+// ---------- GET /api/v1/beta-signups (admin) ------------------------------
+// Read beta-programme email signups captured by the /field "Connect" room
+// (POST /api/connect → local beta_signups table). Newest first. Admin-scope
+// like the rest of the queue/correction surface — visitor emails aren't for
+// write-scope contributors.
+router.get("/api/v1/beta-signups", requireAdmin, (req, res) => {
+  const db = getDb();
+  const limit = Math.min(Number(req.query.limit) || 500, 2000);
+  const items = db
+    .prepare(
+      "SELECT id, email, role, note, source, created_at FROM beta_signups ORDER BY created_at DESC LIMIT ?"
+    )
+    .all(limit);
+  const { total } = db.prepare("SELECT COUNT(*) AS total FROM beta_signups").get() as any;
+  res.set(JSON_HEADERS).json({ total, returned: items.length, items });
+});
+
 router.get("/api/v1/tokens", requireAdmin, (req, res) => {
   const db = getDb();
   const contributorName = typeof req.query.contributor === "string" ? req.query.contributor : null;

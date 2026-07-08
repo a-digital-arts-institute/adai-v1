@@ -191,6 +191,21 @@ CREATE INDEX IF NOT EXISTS idx_contributor_tokens_contributor
 CREATE INDEX IF NOT EXISTS idx_contributor_tokens_prefix
   ON contributor_tokens(token_prefix);
 
+-- Beta-programme email signups from the /field "Connect" room ("Enter the
+-- Beta"). Local-only (NOT a CRR): visitor contact details must never sync into
+-- the public graph. Lives on the /data volume, backed up by Litestream with
+-- the rest of the DB. Read via the admin endpoint GET /api/v1/beta-signups.
+-- UNIQUE(email) makes repeat submits idempotent.
+CREATE TABLE IF NOT EXISTS beta_signups (
+    id          TEXT PRIMARY KEY NOT NULL,
+    email       TEXT NOT NULL UNIQUE,
+    role        TEXT,
+    note        TEXT,
+    source      TEXT,
+    created_at  TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+);
+CREATE INDEX IF NOT EXISTS idx_beta_signups_created ON beta_signups(created_at);
+
 -- Archivist chat sessions. Local-only — anonymous-visitor session cookies
 -- live here so we can rate-limit and audit without sync. NOT a CRR.
 -- Cookie format: <session_id>.<hex(hmac_sha256(session_id, secret))> set as

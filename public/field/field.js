@@ -316,7 +316,7 @@
       // position, hijacking the navigation the chip had just performed
       // (click "Artist X" in the embed strip / breadcrumb → land on unrelated Y).
       return !!e.target.closest?.(
-        '#chrome, #graph-canvas, #search-palette, #entity-view, #entity-panel, #chat-narrator, #archivist-bar, #contribute-panel, #philosophy, [id^="adai-"], a, button, input, textarea, select, label'
+        '#chrome, #graph-canvas, #search-palette, #entity-view, #entity-panel, #chat-narrator, #archivist-bar, #contribute-panel, #connect-panel, #philosophy, [id^="adai-"], a, button, input, textarea, select, label'
       );
     }
 
@@ -798,7 +798,7 @@
     function isUiPointer(e) {
       if (e.target instanceof Node && !e.target.isConnected) return true;
       return !!e.target.closest?.(
-        '#chrome, #search-palette, #entity-view, #entity-panel, #chat-narrator, #archivist-bar, #contribute-panel, #philosophy, [id^="adai-"], a, button, input, textarea, select, label'
+        '#chrome, #search-palette, #entity-view, #entity-panel, #chat-narrator, #archivist-bar, #contribute-panel, #connect-panel, #philosophy, [id^="adai-"], a, button, input, textarea, select, label'
       );
     }
     document.addEventListener('pointerdown', (e) => {
@@ -955,11 +955,12 @@
 
   startStudyZoom();
 
-  // Room navigation. Two rooms (#query, #contribute) are entry points to
-  // global tools rather than separate views — clicking them opens the search
-  // palette / archivist chat. When that surface closes, we revert the active
-  // chip back to #sense so the nav reflects what the reader is actually
-  // looking at (the constellation).
+  // Room navigation. The action rooms (#connect, #contribute, #philosophy) are
+  // entry points to overlay panels rather than separate views — clicking one
+  // opens its panel. When that surface closes, we revert the active chip back
+  // to #sense so the nav reflects what the reader is actually looking at (the
+  // constellation). Discovery/search now lives in the always-on archivist bar,
+  // so there is no #query room.
   function setActiveRoom(hash) {
     document.querySelectorAll('.room-link').forEach(l => l.classList.remove('active'));
     const next = document.querySelector(`.room-link[href="${hash}"]`);
@@ -996,12 +997,8 @@
       // "outside-click closes" listener and immediately undo the open() below.
       e.stopPropagation();
       setActiveRoom(href);
-      if (href === '#query' && window.ADAI_SEARCH) {
-        window.ADAI_SEARCH.open();
-        watchPanelClose('search-palette');
-        // The archivist is reachable from inside the palette — keep its
-        // close → revert-to-#sense behavior wired even when reached that way.
-        watchPanelClose('chat-narrator');
+      if (href === '#connect') {
+        openConnect();
       } else if (href === '#contribute') {
         openContribute();
       } else if (href === '#philosophy') {
@@ -1400,6 +1397,200 @@
     const el = document.getElementById('philosophy');
     if (!el || !el.classList.contains('is-open')) return;
     if (!e.target.closest?.('.ph-shell')) closePhilosophy();
+  });
+
+  // Connect panel — "Enter the Beta". A dark modal (consistent with the field
+  // chrome, mirroring #philosophy) where a visitor leaves their email to be
+  // onboarded. Submits to POST /api/connect (stored in the local beta_signups
+  // table); nothing is emailed — the panel shows an inline success state.
+  function ensureConnectStyles() {
+    if (document.getElementById('connect-styles')) return;
+    const s = document.createElement('style');
+    s.id = 'connect-styles';
+    s.textContent = `
+      #connect-panel {
+        position: fixed; inset: 0; z-index: 1290;
+        background: rgba(0,0,0,0.5); backdrop-filter: blur(2px);
+        display: none; align-items: flex-start; justify-content: center;
+        padding-top: 8vh;
+      }
+      #connect-panel.is-open { display: flex; }
+      .cn-shell {
+        width: min(560px, 92vw); max-height: 84vh;
+        display: flex; flex-direction: column;
+        background: rgba(8, 8, 10, 0.97);
+        border: 1px solid #2a2a2c;
+        box-shadow: 0 24px 48px rgba(0,0,0,0.5);
+        color: var(--text, #E8E6E1);
+        font-family: var(--mono, 'SF Mono', 'Menlo', 'Consolas', monospace);
+      }
+      .cn-head { padding: 18px 26px 12px; border-bottom: 1px solid #2a2a2c; }
+      .cn-eyebrow { color: #6a6a6c; font-size: 11px; letter-spacing: 0.08em; text-transform: lowercase; }
+      .cn-title { color: var(--text, #E8E6E1); font-size: 17px; margin: 6px 0 0; letter-spacing: 0.02em; font-weight: 700; }
+      .cn-body { padding: 18px 26px 22px; overflow-y: auto; }
+      .cn-p { color: #c8c6c1; font-size: 13px; line-height: 1.7; margin: 0 0 14px; }
+      .cn-p:last-child { margin-bottom: 0; }
+      .cn-p strong { color: var(--text, #E8E6E1); font-weight: 700; }
+      .cn-form { margin: 18px 0 0; display: flex; flex-direction: column; gap: 13px; }
+      .cn-label { color: #6a6a6c; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; margin: 0 0 6px; display: block; }
+      .cn-label .opt { text-transform: none; letter-spacing: 0; color: #4a4a4c; }
+      .cn-input, .cn-select, .cn-textarea {
+        width: 100%; box-sizing: border-box;
+        background: rgba(255,255,255,0.03); border: 1px solid #2a2a2c;
+        color: var(--text, #E8E6E1); font-family: inherit; font-size: 13px;
+        padding: 10px 12px;
+      }
+      .cn-input::placeholder, .cn-textarea::placeholder { color: #55555a; }
+      .cn-input:focus, .cn-select:focus, .cn-textarea:focus { outline: none; border-color: #4169B0; }
+      .cn-textarea { resize: vertical; min-height: 58px; }
+      .cn-select { appearance: none; -webkit-appearance: none; cursor: pointer; }
+      .cn-actions { display: flex; align-items: center; gap: 13px; margin-top: 3px; flex-wrap: wrap; }
+      .cn-btn {
+        display: inline-flex; align-items: center; gap: 8px;
+        border: 1px solid #4169B0; color: #7e9fdc; background: transparent;
+        font-family: inherit; font-size: 11px; letter-spacing: 0.08em;
+        text-transform: uppercase; padding: 10px 16px; cursor: pointer;
+        transition: background 120ms ease, color 120ms ease;
+      }
+      .cn-btn:hover:not(:disabled) { background: rgba(65,105,176,0.14); color: #a8c0ea; }
+      .cn-btn:disabled { opacity: 0.5; cursor: default; }
+      .cn-msg { font-size: 12px; line-height: 1.5; margin: 0; color: #6a6a6c; }
+      .cn-msg.err { color: #d98a8a; }
+      .cn-success { color: #7fb08a; font-size: 13.5px; line-height: 1.7; margin: 4px 0 0; }
+      .cn-success .cn-check { margin-right: 7px; }
+      .cn-foot {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 10px 26px; border-top: 1px solid #2a2a2c;
+        color: #4a4a4c; font-size: 11px; letter-spacing: 0.04em;
+      }
+    `;
+    document.head.appendChild(s);
+  }
+
+  function ensureConnectEl() {
+    let el = document.getElementById('connect-panel');
+    if (el) return el;
+    ensureConnectStyles();
+    el = document.createElement('div');
+    el.id = 'connect-panel';
+    el.setAttribute('aria-hidden', 'true');
+    el.innerHTML = `
+      <div class="cn-shell" role="dialog" aria-labelledby="cn-title">
+        <header class="cn-head">
+          <div class="cn-eyebrow">[connect]</div>
+          <h2 class="cn-title" id="cn-title">Enter the Beta</h2>
+        </header>
+        <div class="cn-body">
+          <p class="cn-p">A(DAI) is opening in stages. Artists claim context, curators map relations, institutions connect archives, collectors follow narrative, and builders extend the protocol.</p>
+          <p class="cn-p">Leave your email and we&rsquo;ll bring you in as each stage opens.</p>
+          <form class="cn-form" id="cn-form" novalidate>
+            <div>
+              <label class="cn-label" for="cn-email">Email</label>
+              <input class="cn-input" id="cn-email" type="email" name="email" required autocomplete="email" placeholder="you@studio.com" />
+            </div>
+            <div>
+              <label class="cn-label" for="cn-role">I&rsquo;m a&hellip; <span class="opt">(optional)</span></label>
+              <select class="cn-select" id="cn-role" name="role">
+                <option value="">&mdash;</option>
+                <option value="artist">Artist</option>
+                <option value="curator">Curator</option>
+                <option value="institution">Institution</option>
+                <option value="collector">Collector</option>
+                <option value="builder">Builder</option>
+              </select>
+            </div>
+            <div>
+              <label class="cn-label" for="cn-note">Anything to add? <span class="opt">(optional)</span></label>
+              <textarea class="cn-textarea" id="cn-note" name="note" maxlength="500" placeholder="A line about your practice, or what you'd want from A(DAI)."></textarea>
+            </div>
+            <div class="cn-actions">
+              <button class="cn-btn" id="cn-submit" type="submit">Leave email <span aria-hidden="true">&rarr;</span></button>
+              <p class="cn-msg" id="cn-msg" role="status" aria-live="polite"></p>
+            </div>
+          </form>
+          <div class="cn-success" id="cn-success" hidden></div>
+        </div>
+        <div class="cn-foot">
+          <span>esc to close</span>
+          <span>your email stays private &middot; click outside to dismiss</span>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(el);
+
+    // Wire the form: POST /api/connect, then swap the form for a success note.
+    const form = el.querySelector('#cn-form');
+    const emailEl = el.querySelector('#cn-email');
+    const roleEl = el.querySelector('#cn-role');
+    const noteEl = el.querySelector('#cn-note');
+    const btn = el.querySelector('#cn-submit');
+    const msg = el.querySelector('#cn-msg');
+    const succ = el.querySelector('#cn-success');
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = (emailEl.value || '').trim();
+      if (!EMAIL_RE.test(email)) {
+        msg.textContent = 'That email looks off — mind checking it?';
+        msg.className = 'cn-msg err';
+        emailEl.focus();
+        return;
+      }
+      btn.disabled = true;
+      msg.textContent = 'Saving…';
+      msg.className = 'cn-msg';
+      try {
+        const resp = await fetch('/api/connect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            role: roleEl.value || undefined,
+            note: (noteEl.value || '').trim() || undefined,
+          }),
+        });
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok || !data.ok) throw new Error(data.error || 'failed');
+        form.hidden = true;
+        succ.hidden = false;
+        succ.innerHTML = data.already
+          ? `<span class="cn-check" aria-hidden="true">&check;</span>You&rsquo;re already on the list &mdash; we&rsquo;ll be in touch as the next stage opens.`
+          : `<span class="cn-check" aria-hidden="true">&check;</span>You&rsquo;re on the list. We&rsquo;ll reach out as each stage opens &mdash; welcome.`;
+      } catch (err) {
+        btn.disabled = false;
+        msg.textContent = 'Something went wrong saving that. Try again in a moment?';
+        msg.className = 'cn-msg err';
+      }
+    });
+    return el;
+  }
+
+  function openConnect() {
+    const el = ensureConnectEl();
+    el.classList.add('is-open');
+    el.setAttribute('aria-hidden', 'false');
+    const body = el.querySelector('.cn-body');
+    if (body) body.scrollTop = 0;
+    const emailEl = el.querySelector('#cn-email');
+    if (emailEl && !el.querySelector('#cn-form').hidden) setTimeout(() => emailEl.focus(), 30);
+    watchPanelClose('connect-panel');
+  }
+  function closeConnect() {
+    const el = document.getElementById('connect-panel');
+    if (!el) return;
+    el.classList.remove('is-open');
+    el.setAttribute('aria-hidden', 'true');
+  }
+
+  document.addEventListener('keydown', (e) => {
+    const el = document.getElementById('connect-panel');
+    if (!el || !el.classList.contains('is-open')) return;
+    if (e.key === 'Escape') { e.preventDefault(); closeConnect(); }
+  });
+  document.addEventListener('click', (e) => {
+    const el = document.getElementById('connect-panel');
+    if (!el || !el.classList.contains('is-open')) return;
+    if (!e.target.closest?.('.cn-shell')) closeConnect();
   });
 
 })();

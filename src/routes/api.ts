@@ -491,6 +491,36 @@ router.post("/api/contribute", (req, res) => {
   res.set(HTML_HEADERS).send(responseHtml);
 });
 
+// POST /api/connect — beta-programme email signup from the /field "Connect"
+// room ("Enter the Beta"). Stores {email, role, note} in the local
+// beta_signups table (db.sql). Public + unauthenticated like /api/contribute;
+// visitor-facing, so it returns JSON the panel renders as its success state.
+// Idempotent on email (UNIQUE) — a repeat submit reads back as already-listed.
+const CONNECT_ROLES = new Set(["artist", "curator", "institution", "collector", "builder"]);
+const CONNECT_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+router.post("/api/connect", (req, res) => {
+  const db = getDb();
+  const email = typeof req.body?.email === "string" ? req.body.email.trim().toLowerCase() : "";
+  if (!CONNECT_EMAIL_RE.test(email) || email.length > 254) {
+    res.status(400).set(JSON_HEADERS).json({ ok: false, error: "invalid_email" });
+    return;
+  }
+  const roleRaw = typeof req.body?.role === "string" ? req.body.role.trim().toLowerCase() : "";
+  const role = CONNECT_ROLES.has(roleRaw) ? roleRaw : null;
+  const note = typeof req.body?.note === "string" ? req.body.note.trim().slice(0, 500) || null : null;
+
+  const existing = db.prepare("SELECT id FROM beta_signups WHERE email = ?").get(email) as any;
+  if (existing) {
+    res.set(JSON_HEADERS).json({ ok: true, already: true });
+    return;
+  }
+  const id = `beta-${crypto.randomBytes(8).toString("hex")}`;
+  db.prepare(
+    "INSERT OR IGNORE INTO beta_signups (id, email, role, note, source) VALUES (?, ?, ?, ?, ?)"
+  ).run(id, email, role, note, "field_connect");
+  res.set(JSON_HEADERS).json({ ok: true, already: false });
+});
+
 // POST /api/review/:id/approve — thin HTML wrapper over the shared
 // approve logic in src/utils/review.ts (also used by the admin JSON
 // endpoints in contributor-api.ts).
