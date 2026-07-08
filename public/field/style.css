@@ -379,7 +379,10 @@ html, body {
   align-items: center;
   flex-wrap: nowrap;
   justify-content: flex-end;
-  max-width: 380px;
+  /* Right-anchored pill; with nowrap, a row wider than this cap overflows off
+     the LEFT edge. Sized to hug the label row ("sense connect contribute
+     philosophy brand" ≈ 396px) with headroom — raise it if a room is added. */
+  max-width: 460px;
   height: var(--bottom-control-height);
   row-gap: 6px;
   column-gap: 12px;
@@ -535,7 +538,12 @@ body.field-panning, body.field-panning * { cursor: grabbing !important; }
   #rooms {
     bottom: var(--bottom-control-bottom);
     right: 16px;
-    gap: 12px;
+    /* Compact the label row so all five fit within a phone's width (nowrap,
+       right-anchored → any excess spills off-screen left). Never exceed the
+       viewport. */
+    gap: 10px;
+    letter-spacing: 0.08em;
+    max-width: calc(100vw - 32px);
     height: var(--bottom-control-height);
     padding: 0 12px;
     font-size: 12px;
