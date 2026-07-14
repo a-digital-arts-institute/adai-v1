@@ -99,10 +99,13 @@ R2 backup bucket continuously.
 `project`, `event`, `related`). Cross-source identity merges by node id. Live
 counts: `GET /api/stats`.
 
-**Edge types** — 9 curated + 2 auto-derived. Curated: **CLASSIFIED_BY**,
+**Edge types** — 13 curated + 2 auto-derived. Curated: **CLASSIFIED_BY**,
 **CREATED_BY**, **EXHIBITED_AT**, **EMBODIES** (artwork → concept/tag-concept),
 **PRACTICES**, **BELONGS_TO**, **COLLABORATES_WITH**, **USES_TECHNIQUE**,
-**INFLUENCES**. Auto-derived by `npm run embed:derive`: **STYLE_KIN**
+**INFLUENCES**, plus the show/gallery cluster (a show is a `project` node):
+**PARTICIPATED_IN** (practitioner → project), **PRESENTED_BY** (project →
+institution), **CURATED_BY** (project → practitioner), **REPRESENTS**
+(institution → practitioner). Auto-derived by `npm run embed:derive`: **STYLE_KIN**
 (creator ↔ creator), **VISUALLY_AFFINE** (artwork ↔ artwork), plus Tier-2
 inferred concept-EMBODIES (`created_by='embedding-multimodal-v1'`, dashed in
 `/field`). **RESPONDS_TO** (artwork → artwork) is reserved and intentionally

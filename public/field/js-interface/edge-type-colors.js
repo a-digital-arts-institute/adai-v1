@@ -27,6 +27,10 @@ window.ADAI_EDGE_COLORS = (() => {
     SUGGESTS_CREATED_BY:{ hex: '#C77A4A', name: 'Signal rust' },
     CLOSEST_ARTWORK:    { hex: '#8F8A78', name: 'Warm grey' },
     EMBEDDING_NEAR:     { hex: '#6E7B8D', name: 'Blue grey' },
+    // Show / gallery relations (PARTICIPATED_IN, PRESENTED_BY, CURATED_BY,
+    // REPRESENTS) are curated but have no accent yet: all 9 brand accents in
+    // adai-system.js are taken by the types above, so they fall through to
+    // NEUTRAL for now. Assign accents here in a design pass.
   };
   const NEUTRAL = { hex: '#E8E6E1', name: 'Text' };  // dots with no edges
 

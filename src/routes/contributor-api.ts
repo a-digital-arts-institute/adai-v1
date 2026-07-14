@@ -53,6 +53,11 @@ const KNOWN_NODE_TYPES = new Set([
 const CURATED_EDGE_TYPES = new Set([
   "EMBODIES", "CREATED_BY", "PRACTICES", "EXHIBITED_AT", "CLASSIFIED_BY",
   "BELONGS_TO", "COLLABORATES_WITH", "USES_TECHNIQUE", "INFLUENCES", "RESPONDS_TO",
+  // Show / gallery relations. A show or fair is modelled as a `project` node;
+  // these four connect it to its artists, host, curator, and the gallery's
+  // roster (EXHIBITED_AT only spans artwork → institution, so without these a
+  // show and its gallery are orphans by construction).
+  "PARTICIPATED_IN", "PRESENTED_BY", "CURATED_BY", "REPRESENTS",
 ]);
 
 const upload = multer({
@@ -491,7 +496,7 @@ router.post("/api/v1/edges", requireToken, (req, res) => {
 
   const warnings: string[] = [];
   if (!CURATED_EDGE_TYPES.has(edge_type)) {
-    warnings.push(`uncurated edge type "${edge_type}" — accepted, but prefer one of: EMBODIES, CREATED_BY, PRACTICES, EXHIBITED_AT, CLASSIFIED_BY, BELONGS_TO, COLLABORATES_WITH, USES_TECHNIQUE, INFLUENCES, RESPONDS_TO`);
+    warnings.push(`uncurated edge type "${edge_type}" — accepted, but prefer one of: EMBODIES, CREATED_BY, PRACTICES, EXHIBITED_AT, CLASSIFIED_BY, BELONGS_TO, COLLABORATES_WITH, USES_TECHNIQUE, INFLUENCES, RESPONDS_TO, PARTICIPATED_IN, PRESENTED_BY, CURATED_BY, REPRESENTS`);
   }
   if (edge_type === "INFLUENCES" || edge_type === "RESPONDS_TO") {
     // Soft policy: these require human-attested intent (see CLAUDE.md).

@@ -44,6 +44,10 @@ const EDGE_TYPE_LABEL: Record<string, string> = {
   EXHIBITED_AT: "exhibited at",
   CLASSIFIED_BY: "classified by",
   LEGIBLE_TO: "legible to",
+  PARTICIPATED_IN: "participated in",
+  PRESENTED_BY: "presented by",
+  CURATED_BY: "curated by",
+  REPRESENTS: "represents",
 };
 
 const ALIAS_SOURCE_LABEL: Record<string, string> = {
