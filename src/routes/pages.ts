@@ -576,8 +576,38 @@ router.get("/contribute", (_req, res) => {
     options += `<option value='${htmlEscape(String(p.id))}'>${htmlEscape(String(p.name))}</option>`;
   }
 
-  const formBody = `<h2>Contribute a Signal</h2>
-<p>Submit information about an entity in the graph. Contributions from new contributors go to the review queue.</p>
+  // Styled to read native next to the /field chrome (SF Mono, near-black,
+  // sharp borders, cobalt accent) — this page is the no-JS/fallback human
+  // path; the in-field #contribute panel covers the assistant/token path.
+  // Scoped under #contribute-page so the shared template CSS stays untouched.
+  const formBody = `<style>
+#contribute-page { font-family: 'SF Mono','SFMono-Regular',Menlo,Consolas,'Liberation Mono',monospace; }
+#contribute-page .kicker { color: #6a6a6c; font-size: 12px; letter-spacing: 0.08em; margin-bottom: 10px; }
+#contribute-page h2 { font-size: 19px; color: #e8e6e1; margin: 0 0 8px; letter-spacing: 0.01em; }
+#contribute-page .lede { color: #8a8a8c; font-size: 13px; line-height: 1.65; max-width: 560px; }
+#contribute-page .assist { border: 1px solid #2a2a2c; padding: 12px 14px; margin: 18px 0 4px; font-size: 12px; color: #8a8a8c; line-height: 1.65; max-width: 560px; }
+#contribute-page .assist a { color: #7eb8da; }
+#contribute-page form { max-width: 560px; margin-top: 6px; }
+#contribute-page form label { color: #8a8a8c; text-transform: uppercase; letter-spacing: 0.07em; font-size: 11px; margin: 20px 0 7px; font-family: inherit; }
+#contribute-page form input, #contribute-page form select, #contribute-page form textarea {
+  background: #0f0f10; border: 1px solid #2a2a2c; color: #e8e6e1;
+  border-radius: 0; font-size: 13px; font-family: inherit; padding: 9px 11px;
+}
+#contribute-page form input:focus, #contribute-page form select:focus, #contribute-page form textarea:focus { border-color: #4169B0; }
+#contribute-page form ::placeholder { color: #55555a; }
+#contribute-page .btn {
+  border: 1px solid #4169B0; color: #4169B0; background: transparent; border-radius: 0;
+  text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px; padding: 9px 14px;
+  font-family: inherit; transition: background 120ms ease;
+}
+#contribute-page .btn:hover { background: rgba(65,105,176,0.12); color: #7eb8da; border-color: #4169B0; }
+#contribute-page #result .msg { border-radius: 0; font-size: 13px; }
+</style>
+<div id='contribute-page'>
+<p class='kicker'>[contribute · signal]</p>
+<h2>Contribute a Signal</h2>
+<p class='lede'>Submit information about an entity in the graph. Contributions from new contributors go to the review queue before they merge.</p>
+<div class='assist'>Prefer to contribute through your own AI assistant? The <a href='/field#contribute'>in-field setup guide</a> connects Claude (or any assistant) to the governed write API — every edit attributed, withdrawable anytime.</div>
 <form id='contribute-form'>
 <label>About which entity</label>
 <select name='target_node' required>${options}</select>
@@ -600,9 +630,10 @@ router.get("/contribute", (_req, res) => {
 <option value='anonymous'>anonymous — don't show my name</option>
 <option value='attributed_with_notification'>attributed_with_notification — tell me if I'm quoted</option>
 </select>
-<button type='submit' class='btn' style='margin-top:1rem'>Submit Signal</button>
+<button type='submit' class='btn' style='margin-top:1.4rem'>Submit Signal</button>
 </form>
 <div id='result'></div>
+</div>
 <script>
 document.getElementById('contribute-form').addEventListener('submit',function(e){
 e.preventDefault();
