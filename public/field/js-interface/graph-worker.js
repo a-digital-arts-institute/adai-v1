@@ -38,7 +38,8 @@ const IDB_KEY = 'current';
 // change alone would otherwise leave returning visitors on cached rows that
 // lack the new fields forever. v2: + node year/int/tag_origin (June 2026).
 // v3: + node `source` provenance label (entity-view footer attribution).
-const CACHE_SCHEMA = 3;
+// v4: + node `source_url` (exact upstream page — the footer source link).
+const CACHE_SCHEMA = 4;
 
 // ---- IndexedDB (promise wrappers) ---------------------------------------
 // IDB is a best-effort cache only. On Safari, indexedDB.open() intermittently

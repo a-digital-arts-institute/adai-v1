@@ -447,9 +447,21 @@
       // "graph-stub · awaiting enrichment" placeholder. A label-less node is a
       // live contributor-API write with no upstream source.
       const src = (node && node.source) || 'community contribution';
+      // Link the label to the real upstream page when the stream shipped
+      // `source_url` (http/https only — the field is contributor-supplied).
+      // Cached clients on the old projection won't have it, so fall back to
+      // https://<label> when the label itself is a bare host (e.g. github.com).
+      // Non-host labels with no URL ("community contribution") stay plain.
+      const rawUrl = node && node.source_url;
+      const href = (rawUrl && /^https?:\/\//i.test(rawUrl))
+        ? rawUrl
+        : (/^[a-z0-9-]+(\.[a-z0-9-]+)+$/i.test(src) ? `https://${src}` : null);
+      const srcTag = href
+        ? `<a class="ev-prov-link" href="${escapeHtml(href)}" target="_blank" rel="noopener">source: ${escapeHtml(src)} ↗</a>`
+        : `<span class="ev-prov-tag">source: ${escapeHtml(src)}</span>`;
       return `
         <footer class="ev-provenance">
-          <span class="ev-prov-tag">source: ${escapeHtml(src)}</span> · <span class="ev-prov-tag">${CONTRIB_LINK}</span>
+          ${srcTag} · <span class="ev-prov-tag">${CONTRIB_LINK}</span>
         </footer>
       `;
     }
@@ -1076,6 +1088,10 @@
       font-size: 11px; color: #6a6a6c; letter-spacing: 0.04em;
     }
     .ev-prov-tag { color: #8a8a8c; }
+    .ev-prov-link {
+      color: #8a8a8c; text-decoration: underline dotted; text-underline-offset: 3px;
+    }
+    .ev-prov-link:hover { color: var(--text); }
     .ev-prov-warn { color: #c4a868; }
 
     @media (max-width: 768px) {

@@ -8,6 +8,7 @@ import { topKByNodeId, withMetadata, type Neighbour } from "../embed/neighbours.
 import { buildEmbeddingSections } from "../embed/sections.js";
 import { formatArtworkYearFromMetadata, formatArtworkYear, YEAR_SQL_FRAGMENT } from "../utils/year.js";
 import { NODE_NOT_RETIRED } from "../utils/visibility.js";
+import { sourceLabel } from "../utils/source-label.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.join(__dirname, "..", "..");
@@ -143,6 +144,22 @@ function profileHandler(req: any, res: any) {
 
       if (meta.status) {
         body += `<p class='meta'>Status: <span class='tag'>${htmlEscape(String(meta.status))}</span></p>`;
+      }
+
+      // Upstream provenance — same label the field's entity-view footer shows
+      // (sourceLabel on source_url / va_maker_name), linked to the exact page
+      // when a valid http(s) source_url exists. V&A makers carry a label but
+      // no URL → plain text.
+      {
+        const srcLabelTxt = sourceLabel(meta);
+        if (srcLabelTxt) {
+          const su = typeof meta.source_url === "string" && /^https?:\/\//i.test(meta.source_url)
+            ? meta.source_url
+            : null;
+          body += su
+            ? `<p class='meta'>Source: <a href='${htmlEscape(su)}' target='_blank' rel='noopener'>${htmlEscape(srcLabelTxt)}</a></p>`
+            : `<p class='meta'>Source: ${htmlEscape(srcLabelTxt)}</p>`;
+        }
       }
 
       if (node.type === "classification_regime" && meta.description) {

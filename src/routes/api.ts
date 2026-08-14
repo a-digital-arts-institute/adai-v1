@@ -134,6 +134,9 @@ router.get("/api/graph", (req, res) => {
         type: n.type,
         slug: n.slug,
         ...(source ? { source } : {}),
+        // Exact upstream page for the label — lets the client link "source:
+        // fxhash" to the actual work page, not just https://<host>.
+        ...(source && n.source_url ? { source_url: n.source_url } : {}),
         ...(year ? { year } : {}),
         ...(n.cdn_image_url ? { cdn_image_url: n.cdn_image_url } : {}),
         ...(n.image_url ? { image_url: n.image_url } : {}),
@@ -251,6 +254,10 @@ router.get("/api/graph/stream", (req, res) => {
         slug: n.slug,
         int: intention,
         ...(source ? { source } : {}),
+        // Exact upstream page for the label — the entity-view footer links
+        // "source: fxhash" to the actual work page, not just https://<host>.
+        // Cached clients on the old projection fall back to https://<label>.
+        ...(source && n.source_url ? { source_url: n.source_url } : {}),
         ...(year ? { year } : {}),
         // Prefer the R2 cdn; only ship the upstream image_url when there's no
         // cdn (the client falls cdn -> image_url, so the upstream is redundant
