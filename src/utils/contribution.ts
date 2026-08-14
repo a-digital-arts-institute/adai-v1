@@ -39,6 +39,35 @@ export interface ProposedEdge {
   signal_id?: string | null;
 }
 
+// Sanity-check a contributed source_url before it enters the graph. There is
+// deliberately NO domain allowlist — that would fight the open-contribution
+// model — but the value is later rendered as a link (profile pages, the
+// /field footer, the trust-hover tooltip), so it must at least be an absolute
+// http(s) URL with a plausible host. Empty/absent is fine (the field is
+// optional); anything else malformed is rejected with a reason the caller can
+// surface. Shared by POST /api/contribute and POST /api/v1/signals.
+export function validateSourceUrl(
+  value: unknown
+): { ok: true; value: string | null } | { ok: false; error: string } {
+  if (value === undefined || value === null) return { ok: true, value: null };
+  if (typeof value !== "string") return { ok: false, error: "source_url must be a string" };
+  const trimmed = value.trim();
+  if (!trimmed) return { ok: true, value: null };
+  let parsed: URL;
+  try {
+    parsed = new URL(trimmed);
+  } catch {
+    return { ok: false, error: "source_url must be an absolute URL (https://…)" };
+  }
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    return { ok: false, error: "source_url must use http or https" };
+  }
+  if (!parsed.hostname || !parsed.hostname.includes(".")) {
+    return { ok: false, error: "source_url must have a resolvable host" };
+  }
+  return { ok: true, value: trimmed };
+}
+
 export function ensureContributorRow(db: DatabaseSync, contributor: AuthedContributor): void {
   // Keep `contributions` accurate. The contributor row already exists (we
   // joined to it on auth), so increment unconditionally.

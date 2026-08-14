@@ -8,6 +8,7 @@ import { buildEmbeddingSections } from "../embed/sections.js";
 import { YEAR_SQL_FRAGMENT, formatArtworkYear } from "../utils/year.js";
 import { NODE_NOT_RETIRED } from "../utils/visibility.js";
 import { sourceLabel } from "../utils/source-label.js";
+import { validateSourceUrl } from "../utils/contribution.js";
 
 // SQL fragment that exposes the two metadata keys sourceLabel() reads. Kept
 // next to the helper so the projection and the deriver can't drift.
@@ -506,6 +507,14 @@ router.post("/api/contribute", (req, res) => {
   const db = getDb();
   const { target_node, title, content, source_url, contributor_name, consent_scope, consent_attribution } = req.body;
 
+  // Optional field, but when present it must be a linkable http(s) URL —
+  // it's rendered as an <a href> on profile pages and in the field.
+  const srcUrl = validateSourceUrl(source_url);
+  if (!srcUrl.ok) {
+    res.status(400).set(HTML_HEADERS).send(`<div class='msg msg-err'>${srcUrl.error}</div>`);
+    return;
+  }
+
   const signalId = `signal-${crypto.randomBytes(8).toString("hex")}`;
   const intakeId = `intake-${crypto.randomBytes(8).toString("hex")}`;
 
@@ -521,7 +530,7 @@ router.post("/api/contribute", (req, res) => {
 
   db.prepare(
     "INSERT INTO signals (id, title, source_url, source_type, cla_layer, summary, content, submitted_by, confidence, lived_experience, consent_scope, consent_attribution, source_origin) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-  ).run(signalId, title, source_url || null, "contribution", null, null, content, contributor_name, trustTier, 0, scope, attribution, "human_primary");
+  ).run(signalId, title, srcUrl.value, "contribution", null, null, content, contributor_name, trustTier, 0, scope, attribution, "human_primary");
 
   const intakeStatus = trustTier === "auto" || trustTier === "reviewed" ? "approved" : "pending";
 

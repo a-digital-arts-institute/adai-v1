@@ -19,6 +19,7 @@ import { nodeId as composeNodeId, slugify } from "../utils/slug.js";
 import {
   insertSignal,
   insertIntake,
+  validateSourceUrl,
   ensureContributorRow,
   bumpApprovedCount,
   mergeMetadata,
@@ -238,12 +239,17 @@ router.post("/api/v1/signals", requireToken, (req, res) => {
     res.status(400).set(JSON_HEADERS).json({ error: "target_node does not exist", target_node });
     return;
   }
+  const srcUrl = validateSourceUrl(source_url);
+  if (!srcUrl.ok) {
+    res.status(400).set(JSON_HEADERS).json({ error: srcUrl.error });
+    return;
+  }
 
   const signalId = insertSignal(db, {
     contributor: req.contributor!,
     title,
     content,
-    source_url: source_url ?? null,
+    source_url: srcUrl.value,
     source_type: "contribution",
     consent_scope,
     consent_attribution,
