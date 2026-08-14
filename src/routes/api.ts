@@ -310,6 +310,55 @@ router.get("/api/graph/derived", (_req, res) => {
   });
 });
 
+// GET /api/edge/attribution?source=&target=&type= — trust provenance for ONE
+// live edge, fetched lazily on hover by /field ("attested by … · … · source ↗").
+// Keyed by the (source,target,type) triple because the graph stream ships no
+// edge row ids; resolves to the newest live row. Zero cache-stamp impact — no
+// stream query changes. Consent is honored the same way the profile pages do:
+//   - consent_attribution='anonymous'      → attested_by: "anonymous"
+//   - consent_scope='structural_only'      → basis (signal title) + source_url
+//     suppressed ("only the edge counts, not the content").
+router.get("/api/edge/attribution", (req, res) => {
+  const db = getDb();
+  const source = String(req.query.source || "");
+  const target = String(req.query.target || "");
+  const type = String(req.query.type || "");
+  if (!source || !target || !type) {
+    res.status(400).set(JSON_HEADERS).json({ error: "source, target and type are required" });
+    return;
+  }
+  const row = db
+    .prepare(
+      `SELECT e.edge_type, e.confidence, e.valid_from, e.event_time, e.created_by,
+              s.title, s.submitted_by, s.source_url, s.source_origin,
+              s.consent_scope, s.consent_attribution, s.status AS signal_status
+       FROM edges e
+       LEFT JOIN signals s ON s.id = e.signal_id
+       WHERE e.valid_until IS NULL AND e.source_id = ? AND e.target_id = ? AND e.edge_type = ?
+       ORDER BY e.valid_from DESC LIMIT 1`
+    )
+    .get(source, target, type) as any;
+  if (!row) {
+    res.status(404).set(JSON_HEADERS).json({ error: "no live edge for that triple" });
+    return;
+  }
+  const anonymous = row.consent_attribution === "anonymous";
+  const structuralOnly = row.consent_scope === "structural_only";
+  // No anchoring signal (canon migration rows) → attribute the writer stamp.
+  const attestedBy = row.submitted_by
+    ? (anonymous ? "anonymous" : row.submitted_by)
+    : (row.created_by === "contributor:migration" ? "A(DAI) canon" : row.created_by);
+  res.set(JSON_HEADERS).json({
+    edge_type: row.edge_type,
+    confidence: row.confidence,
+    attested_by: attestedBy,
+    basis: structuralOnly ? null : row.title || null,
+    date: (row.event_time || row.valid_from || "").slice(0, 10) || null,
+    source_url: structuralOnly ? null : row.source_url || null,
+    source_origin: row.source_origin || null,
+  });
+});
+
 // GET /api/graph/:slug/component — full connected component reachable from :slug
 router.get("/api/graph/:slug/component", (req, res) => {
   const db = getDb();

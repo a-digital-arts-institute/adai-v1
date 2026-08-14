@@ -1876,6 +1876,92 @@
     applyChromeHidden();
   }
 
+  // ---- Trust hover (edge attribution tooltip) -----------------------------
+  // Hovering a solid human-attested neighbour in field-focus surfaces the
+  // edge's provenance: `attested by <contributor> · <basis> · <date> · source ↗`.
+  // Lazily fetched from /api/edge/attribution (keyed by the edge triple; the
+  // stream ships no edge ids) after a short dwell, cached per triple. The
+  // tooltip id starts with `adai-` so field.js's isUiClick guard covers the
+  // source link, and pointer-events keep it alive while the cursor is on it
+  // (the canvas stops receiving pointermove, so hoveredId — and the tip — hold).
+  const edgeAttribCache = new Map();
+  let edgeAttribKey = null;
+  let edgeAttribTimer = null;
+
+  function edgeAttribEl() {
+    let el = document.getElementById('adai-edge-attrib');
+    if (el) return el;
+    el = document.createElement('div');
+    el.id = 'adai-edge-attrib';
+    Object.assign(el.style, {
+      position: 'fixed',
+      zIndex: '46',
+      display: 'none',
+      maxWidth: '340px',
+      background: 'rgba(10,10,12,0.94)',
+      border: '1px solid #2a2a2c',
+      padding: '7px 10px',
+      fontFamily: "'SF Mono', 'Menlo', monospace",
+      fontSize: '10px',
+      lineHeight: '1.6',
+      color: '#8a8a8c',
+      letterSpacing: '0.03em',
+      pointerEvents: 'auto',
+    });
+    document.body.appendChild(el);
+    return el;
+  }
+
+  function hideEdgeAttrib() {
+    if (edgeAttribTimer) { clearTimeout(edgeAttribTimer); edgeAttribTimer = null; }
+    edgeAttribKey = null;
+    const el = document.getElementById('adai-edge-attrib');
+    if (el) el.style.display = 'none';
+  }
+
+  function renderEdgeAttrib(data, edgeType, x, y) {
+    const el = edgeAttribEl();
+    const color = colorForEdge(edgeType);
+    const parts = [`attested by <span style="color:#c8c8c8">${escapeForBreadcrumb(data.attested_by || 'unknown')}</span>`];
+    // Mechanical API titles ("Add edge X: a → b") restate the header — skip.
+    if (data.basis && !/^Add (edge|node|signal)\b/.test(data.basis)) parts.push(escapeForBreadcrumb(data.basis));
+    if (data.date) parts.push(escapeForBreadcrumb(data.date));
+    if (data.source_url && /^https?:\/\//i.test(data.source_url)) {
+      parts.push(`<a href="${escapeForBreadcrumb(data.source_url)}" target="_blank" rel="noopener" style="color:#7eb8da;text-decoration:underline dotted;text-underline-offset:2px">source ↗</a>`);
+    }
+    el.innerHTML =
+      `<div style="color:${color};font-size:9px;letter-spacing:0.08em;margin-bottom:2px">${escapeForBreadcrumb(edgeType)}` +
+      (data.source_origin ? ` <span style="color:#55555a">· ${escapeForBreadcrumb(data.source_origin)}</span>` : '') +
+      `</div>${parts.join(' · ')}`;
+    // Place near the pointer, flipped away from the viewport edges.
+    el.style.display = 'block';
+    const pad = 14;
+    const rect = el.getBoundingClientRect();
+    const left = Math.min(x + pad, window.innerWidth - rect.width - 8);
+    const top = Math.min(y + pad, window.innerHeight - rect.height - 8);
+    el.style.left = `${Math.max(8, left)}px`;
+    el.style.top = `${Math.max(8, top)}px`;
+  }
+
+  function scheduleEdgeAttrib(item, x, y) {
+    const e = item && item.edge;
+    // Human-attested threads only — embedding-injected items carry edge:null.
+    if (!e || item.source === 'embedding' || isDerivedEdge(e)) { hideEdgeAttrib(); return; }
+    const key = `${e.source}${e.target}${e.type}`;
+    if (key === edgeAttribKey) return;   // already shown/pending for this edge
+    hideEdgeAttrib();
+    edgeAttribKey = key;
+    edgeAttribTimer = setTimeout(() => {
+      const show = (data) => { if (edgeAttribKey === key) renderEdgeAttrib(data, e.type, x, y); };
+      if (edgeAttribCache.has(key)) { show(edgeAttribCache.get(key)); return; }
+      const qs = `source=${encodeURIComponent(e.source)}&target=${encodeURIComponent(e.target)}&type=${encodeURIComponent(e.type)}`;
+      fetch(`/api/edge/attribution?${qs}`)
+        .then(r => (r.ok ? r.json() : null))
+        .then(data => { if (data) { edgeAttribCache.set(key, data); show(data); } })
+        .catch(() => {});
+    }, 320);
+  }
+
   function syncEmbeddingNeighborsIntoField(payload, bundle, graph) {
     if (bundle.viewLevel !== 'field-focus' || !bundle.focusedId) return;
     // Embedding-sourced threads are embeddings-mode material only. In
@@ -2953,6 +3039,7 @@
     bundle.zoomCenter = null;
     bundle.outgoingNeighbors = [];
     bundle.transitioning = false;
+    hideEdgeAttrib();
     applyDefaultFiltersForMode(bundle);
     bundle.inPlaceNeighbors = buildInPlaceNeighbors(graph, bundle, nodeId);
     bundle.zoomNeighbors = bundle.inPlaceNeighbors;
@@ -3010,6 +3097,7 @@
 
   function clearInPlaceFocus(bundle, graph) {
     clearFieldReveal(bundle);
+    hideEdgeAttrib();
     bundle.fieldFocusBlend = null;
     bundle.viewLevel = '30k';
     bundle.focusedId = null;
@@ -3495,6 +3583,11 @@
         hit = nearestSim(bundle, x, y, CFG.CLICK_TOLERANCE);
       } else if (bundle.viewLevel === 'field-focus') {
         hit = hitInPlaceNode(bundle, x, y, w, h);
+        // Trust hover: surface the hovered edge's attribution after a dwell.
+        // hitInPlaceNode returns a {id, role, item} wrapper — the neighbour
+        // item (with .edge) is under .item; the focus hit has none.
+        if (hit && hit.item) scheduleEdgeAttrib(hit.item, x, y);
+        else hideEdgeAttrib();
       } else {
         // Only dot proximity counts — labels are not clickable.
         const ns = bundle.zoomNeighbors || [];
