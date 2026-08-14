@@ -119,6 +119,9 @@
     const edges = g.edgesFor(id);
     for (const e of edges) {
       if (e.type === 'CLASSIFIED_BY') continue; // hidden in views per memory
+      // Embedding-derived edges (created_by stamp) never belong in the human
+      // relations list — the embeddings section below already covers kin.
+      if (e.created_by === 'embedding-multimodal-v1') continue;
       const otherId = e.source === id ? e.target : e.source;
       const node = g.byId.get(otherId);
       if (!node) continue;
@@ -255,7 +258,10 @@
     const wantType = conceptLike ? 'EMBODIES' : 'CREATED_BY';
     let graphWorks = [];
     if (g && node) {
-      const edges = g.edgesFor(node.id).filter(e => e.type === wantType);
+      // Same derived-edge exclusion as neighborsByEdgeType: Tier-2 inferred
+      // EMBODIES shares its type with curated rows, so filter by provenance.
+      const edges = g.edgesFor(node.id).filter(e =>
+        e.type === wantType && e.created_by !== 'embedding-multimodal-v1');
       const seen = new Set();
       for (const e of edges) {
         const otherId = e.source === node.id ? e.target : e.source;

@@ -27,10 +27,16 @@ window.ADAI_EDGE_COLORS = (() => {
     SUGGESTS_CREATED_BY:{ hex: '#C77A4A', name: 'Signal rust' },
     CLOSEST_ARTWORK:    { hex: '#8F8A78', name: 'Warm grey' },
     EMBEDDING_NEAR:     { hex: '#6E7B8D', name: 'Blue grey' },
-    // Show / gallery relations (PARTICIPATED_IN, PRESENTED_BY, CURATED_BY,
-    // REPRESENTS) are curated but have no accent yet: all 9 brand accents in
-    // adai-system.js are taken by the types above, so they fall through to
-    // NEUTRAL for now. Assign accents here in a design pass.
+    // Show / gallery cluster (archive-intake relations around `project`
+    // nodes). The 9 brand accents above are taken, so these four extend the
+    // family logic into unclaimed hue space — violet/plum for the human
+    // relations, forest/glacier for the structural ones. Without entries here
+    // they all fell through to NEUTRAL (#E8E6E1) and a show-cluster node's
+    // edges rendered as one indistinct off-white. Editorial review pending.
+    PARTICIPATED_IN:    { hex: '#7A5AA8', name: 'Violet' },      // practitioner → project
+    CURATED_BY:         { hex: '#A84A7A', name: 'Plum' },        // project → practitioner
+    PRESENTED_BY:       { hex: '#3F6B35', name: 'Forest' },      // project → institution
+    REPRESENTS:         { hex: '#4A8FA8', name: 'Glacier' },     // institution → practitioner
   };
   const NEUTRAL = { hex: '#E8E6E1', name: 'Text' };  // dots with no edges
 

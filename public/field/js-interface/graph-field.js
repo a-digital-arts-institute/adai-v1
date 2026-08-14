@@ -901,11 +901,16 @@
   function showEntityPanel(panelEl, graph, sim) {
     const node = graph.byId.get(sim.id);
     if (!node) return;
-    const types = graph.edgeTypeCount.get(sim.id);
-    const allEdges = graph.edgesFor(sim.id);
+    // Human-attested edges only: once the derived layer has merged into the
+    // live index (embeddings mode / legacy fallback), edgesFor() and
+    // edgeTypeCount include STYLE_KIN etc. — recount from the filtered list
+    // so "STYLE_KIN 8" never shows in this panel's relation counts.
+    const allEdges = graph.edgesFor(sim.id).filter(e => !isDerivedEdge(e));
     const sampleEdges = allEdges.slice(0, 10);
-    const typesHtml = types
-      ? Array.from(types).sort((a, b) => b[1] - a[1])
+    const typeCounts = new Map();
+    for (const e of allEdges) typeCounts.set(e.type, (typeCounts.get(e.type) || 0) + 1);
+    const typesHtml = typeCounts.size
+      ? Array.from(typeCounts).sort((a, b) => b[1] - a[1])
           .map(([t, n]) => `<span style="color:#7eb8da">${escapeHtml(t)}</span>&nbsp;${n}`).join('&nbsp;·&nbsp;')
       : '<span style="color:#666">none</span>';
     const edgesHtml = sampleEdges.map(e => {
@@ -926,7 +931,7 @@
       <div style="font-size:15px;color:#fff;margin-bottom:4px;line-height:1.25">${escapeHtml(node.name)}</div>
       <div style="color:#555;font-size:10px;margin-bottom:14px;word-break:break-all">${escapeHtml(node.id)}</div>
       <div style="border-top:1px solid #2a2a30;padding-top:12px">
-        <div style="color:#888;margin-bottom:4px">edges <span style="color:#fff">${allEdges.length}</span> &nbsp;·&nbsp; types <span style="color:#fff">${graph.intentionOf(sim.id)}</span></div>
+        <div style="color:#888;margin-bottom:4px">edges <span style="color:#fff">${allEdges.length}</span> &nbsp;·&nbsp; types <span style="color:#fff">${typeCounts.size}</span></div>
         <div style="font-size:10px;margin-bottom:14px">${typesHtml}</div>
         <div style="color:#888;margin-bottom:6px">connections</div>
         ${edgesHtml}
@@ -960,6 +965,21 @@
     // Smoother quartic ease: gentler ramp-in and decel-out than cubic.
     // Name kept for call-site stability; behavior is now in/out quart.
     return t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
+  }
+
+  // Embedding-derived edges (STYLE_KIN / VISUALLY_AFFINE / inferred EMBODIES)
+  // are stamped with this created_by by the derive pipeline. They belong to
+  // the embeddings ('e') layer ONLY — the solid coloured layer, its chips and
+  // its palette are human-attested edges. Type alone can't identify them
+  // (Tier-2 inferred EMBODIES shares its type with curated rows), so filter
+  // by provenance. Curated stream edges omit created_by entirely; the derived
+  // payloads (/api/graph/derived and the legacy /api/graph fallback) ship it.
+  const DERIVED_CREATED_BY = 'embedding-multimodal-v1';
+  function isDerivedEdge(e) {
+    return !!e && e.created_by === DERIVED_CREATED_BY;
+  }
+  function derivedVisible(bundle) {
+    return bundle && bundle.fieldMode === 'embeddings';
   }
 
   // Pull the per-edge accent color from edge-type-colors.js.
@@ -1031,13 +1051,16 @@
   // Group edges by type, dedup by other-node-id, return:
   //   [{ edgeType, items: [{ id, name, type, edgeType, edgeConfidence, edgeColor, edge }] }, ...]
   // sorted by edge type name so the visual ordering is stable.
-  function gatherNeighborsByType(graph, focusedId) {
+  function gatherNeighborsByType(graph, focusedId, includeDerived) {
     const edges = graph.edgesFor(focusedId);
     const seen = new Set();
     const byType = new Map();
     const hiddenTypes = new Set(CFG.HIDDEN_EDGE_TYPES || []);
     for (const e of edges) {
       if (hiddenTypes.has(e.type)) continue;
+      // Derived edges only exist for the embeddings layer — in curatorial
+      // mode they must not shape the layout, the chips, or the palette.
+      if (!includeDerived && isDerivedEdge(e)) continue;
       const otherId = e.source === focusedId ? e.target : e.source;
       if (seen.has(otherId)) continue;
       seen.add(otherId);
@@ -1069,7 +1092,7 @@
   // neighbours of one edge type along the rose curve r = R·cos(k·θ).
   // The shape itself encodes the focused node's intention (edge-type
   // diversity): a high-intention node blooms with many petals.
-  function computeRoseLayout(graph, focusedId, w, h) {
+  function computeRoseLayout(graph, focusedId, w, h, includeDerived) {
     const cx = w / 2, cy = h / 2;
     // Elliptical radii: scale each axis by ITS viewport dimension instead of
     // the old R = min(w,h) — on a wide window the circular layout left the
@@ -1077,7 +1100,7 @@
     // focus. Vertically this matches the old 0.42·min on landscape screens.
     const Rx = w * 0.40;
     const Ry = h * 0.42;
-    const groups = gatherNeighborsByType(graph, focusedId);
+    const groups = gatherNeighborsByType(graph, focusedId, includeDerived);
     const k = groups.length;
     if (k === 0) return { cx, cy, neighbors: [], layout: 'rose', petalCount: 0, Rx, Ry };
 
@@ -1118,13 +1141,13 @@
   // Each edge type gets one angular wedge of equal width (2π/k). Inside
   // each wedge, neighbours pack in a small grid (rows × cols) so dense
   // edge types stay legible.
-  function computeBucketedLayout(graph, focusedId, w, h) {
+  function computeBucketedLayout(graph, focusedId, w, h, includeDerived) {
     const cx = w / 2, cy = h / 2;
     // Elliptical radii — same rationale as computeRoseLayout: use the
     // horizontal space a wide viewport actually has.
     const Rx = w * 0.42;
     const Ry = h * 0.44;
-    const groups = gatherNeighborsByType(graph, focusedId);
+    const groups = gatherNeighborsByType(graph, focusedId, includeDerived);
     const k = groups.length;
     if (k === 0) return { cx, cy, neighbors: [], layout: 'bucketed', wedgeCount: 0, Rx, Ry };
 
@@ -1170,11 +1193,11 @@
   // Pick rose for practitioner+scene (their bloom IS who they are).
   // Pick bucketed wedges for everything else (concepts, artworks,
   // institutions, regimes — high-degree, denser packing needed).
-  function computeLayoutFor(graph, focusedId, w, h) {
+  function computeLayoutFor(graph, focusedId, w, h, includeDerived) {
     const node = graph.byId.get(focusedId);
     const t = node ? node.type : null;
-    if (t === 'practitioner' || t === 'scene') return computeRoseLayout(graph, focusedId, w, h);
-    return computeBucketedLayout(graph, focusedId, w, h);
+    if (t === 'practitioner' || t === 'scene') return computeRoseLayout(graph, focusedId, w, h, includeDerived);
+    return computeBucketedLayout(graph, focusedId, w, h, includeDerived);
   }
 
   // Generic position tween. Mutates targets each frame, calls onDone at end.
@@ -1257,11 +1280,18 @@
   function findEdgeBetween(graph, idA, idB) {
     if (!idA || !idB) return null;
     const edges = graph.edgesFor(idA);
+    // Prefer the human-attested edge: after the derived layer merges, a pair
+    // can be linked by both (e.g. CREATED_BY + STYLE_KIN) and the breadcrumb
+    // hop label should read the curated relation, not the embedding one.
+    let derived = null;
     for (const e of edges) {
       if ((e.source === idA && e.target === idB) ||
-          (e.target === idA && e.source === idB)) return e;
+          (e.target === idA && e.source === idB)) {
+        if (!isDerivedEdge(e)) return e;
+        if (!derived) derived = e;
+      }
     }
-    return null;
+    return derived;
   }
 
   function escapeForBreadcrumb(s) {
@@ -1848,6 +1878,12 @@
 
   function syncEmbeddingNeighborsIntoField(payload, bundle, graph) {
     if (bundle.viewLevel !== 'field-focus' || !bundle.focusedId) return;
+    // Embedding-sourced threads are embeddings-mode material only. In
+    // curatorial mode the strip still LISTS the neighbours (right sidebar),
+    // but they must not be merged into the solid field layer — that's the
+    // STYLE_KIN-in-the-human-chips leak. setMode re-runs this sync from the
+    // payload cache when the user enters embeddings mode.
+    if (!derivedVisible(bundle)) return;
     const sections = payload?.sections || [];
     if (!sections.length) return;
 
@@ -2239,7 +2275,7 @@
   }
 
   function buildInPlaceNeighbors(graph, bundle, focusedId) {
-    const groups = gatherNeighborsByType(graph, focusedId);
+    const groups = gatherNeighborsByType(graph, focusedId, derivedVisible(bundle));
     const out = [];
     for (const group of groups) {
       for (const item of group.items) {
@@ -2279,7 +2315,7 @@
     const neighbors = bundle.inPlaceNeighbors || [];
     if (neighbors.length <= 1) return { neighbors, layout: null, desiredById: new Map() };
 
-    const layout = computeLayoutFor(graph, bundle.focusedId, width, height);
+    const layout = computeLayoutFor(graph, bundle.focusedId, width, height, derivedVisible(bundle));
     const itemById = new Map(neighbors.map(item => [item.id, item]));
     const desiredById = new Map();
     const ordered = [];
@@ -3292,8 +3328,22 @@
     // zoom-to so e.g. set_field_mode('embeddings') followed by
     // focus_node(...) doesn't silently lose the embeddings foregrounding.
     bundle.fieldMode = 'curatorial';
+    // Rebuild the focused node's neighbour set for the current mode: the
+    // builders exclude derived edges in curatorial mode and include them in
+    // embeddings mode, so a mid-focus mode flip must re-derive the list (and
+    // re-merge the embed-strip neighbours from cache when entering
+    // embeddings — renderEmbedStrip re-runs the sync off its payload cache).
+    const rebuildFocusForMode = () => {
+      if (bundle.viewLevel !== 'field-focus' || !bundle.focusedId) return;
+      bundle.inPlaceNeighbors = buildInPlaceNeighbors(graph, bundle, bundle.focusedId);
+      bundle.zoomNeighbors = bundle.inPlaceNeighbors;
+      bundle.inPlaceAnchorKey = null;
+      bundle.inPlaceVisibleNeighbors = [];
+      renderEmbedStrip(bundle, graph);
+    };
     bundle.setMode = (mode) => {
       if (mode !== 'curatorial' && mode !== 'embeddings') return;
+      const changed = bundle.fieldMode !== mode;
       bundle.fieldMode = mode;
       // STYLE_KIN / VISUALLY_AFFINE are excluded from the initial streamed
       // payload (they're ~10k edges only ever shown here) and lazy-loaded the
@@ -3304,10 +3354,14 @@
           && typeof window.ADAI_LOAD_DERIVED === 'function') {
         bundle.derivedRequested = true;
         window.ADAI_LOAD_DERIVED().then(() => {
+          // Still in embeddings mode? Rebuild the focused neighbour set so
+          // the freshly merged derived edges actually appear.
+          if (bundle.fieldMode === 'embeddings') rebuildFocusForMode();
           applyDefaultFiltersForMode(bundle);
           renderEdgeFilter(bundle, graph);
         }).catch(() => {});
       }
+      if (changed) rebuildFocusForMode();
       applyDefaultFiltersForMode(bundle);
       renderEdgeFilter(bundle, graph);
     };
