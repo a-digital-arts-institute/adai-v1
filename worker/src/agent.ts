@@ -7,7 +7,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { CONFIG, estimateUsd } from "./config.js";
 import { TOOLS, runTool, type ToolContext } from "./tools.js";
 import { systemPrompt, initialUserMessage, chatUserMessage, renderPage } from "./prompt.js";
-import { fetchPage, FetchRefused } from "./browser.js";
+import { fetchPage, newPolicy, FetchRefused } from "./browser.js";
 import { heartbeat, addPage, type ClaimedDraft, type Job } from "./client.js";
 
 export interface PassResult {
@@ -50,7 +50,11 @@ export async function runPass(draft: ClaimedDraft, job: Job, deps: AgentDeps = {
 
   const ctx: ToolContext = {
     draftId: draft.id,
-    policy: { rootUrl: draft.source_url, pagesFetched: draft.pages.length, maxPages: Math.min(CONFIG.maxPagesSoft + draft.pages.length, CONFIG.maxPagesHard) },
+    policy: newPolicy(draft.source_url, {
+      pagesFetched: draft.pages.length,
+      maxPages: Math.min(CONFIG.maxPagesSoft + draft.pages.length, CONFIG.maxPagesHard),
+      maxOffsite: CONFIG.maxOffsitePages,
+    }),
   };
 
   // Heartbeat while we work; the claim expires 20 min after the last one.
@@ -64,7 +68,7 @@ export async function runPass(draft: ClaimedDraft, job: Job, deps: AgentDeps = {
       let rootRendered: string;
       try {
         const p = await fetcher(draft.source_url, ctx.policy);
-        ctx.policy.pagesFetched++;
+        ctx.policy.pagesFetched++; // root is always on-site
         rootRendered = renderPage(p);
         await ledger(draft.id, { url: p.url, final_url: p.final_url, title: p.title, status: p.status, chars: p.chars, sha256: p.sha256, via: p.via });
       } catch (e: any) {
@@ -80,7 +84,7 @@ export async function runPass(draft: ClaimedDraft, job: Job, deps: AgentDeps = {
     }
 
     const system: Anthropic.Messages.TextBlockParam[] = [
-      { type: "text", text: systemPrompt().replace("${MAX_PAGES}", String(ctx.policy.maxPages)).replace("${MAX_CALLS}", String(maxCalls)), cache_control: { type: "ephemeral" } } as any,
+      { type: "text", text: systemPrompt().replace("${MAX_PAGES}", String(ctx.policy.maxPages)).replace("${MAX_CALLS}", String(maxCalls)).replace("${MAX_OFFSITE}", String(ctx.policy.maxOffsite)), cache_control: { type: "ephemeral" } } as any,
     ];
     const tools: Anthropic.Messages.Tool[] = TOOLS.map((t, i) => (i === TOOLS.length - 1 ? ({ ...t, cache_control: { type: "ephemeral" } } as any) : t));
     const messages: Anthropic.Messages.MessageParam[] = [{ role: "user", content: first }];

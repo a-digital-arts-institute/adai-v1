@@ -22,6 +22,7 @@ export const CONFIG = {
   maxToolCallsChat: int("INTAKE_MAX_TOOL_CALLS_CHAT", 20),
   maxPagesSoft: int("INTAKE_MAX_PAGES", 30),
   maxPagesHard: 60,
+  maxOffsitePages: int("INTAKE_MAX_OFFSITE_PAGES", 10),
   pollSleepMs: int("INTAKE_POLL_SLEEP_MS", 5000),
   heartbeatMs: 30_000,
   pageTextChars: int("INTAKE_PAGE_TEXT_CHARS", 24_000),

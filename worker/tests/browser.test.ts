@@ -3,7 +3,7 @@
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { isPrivateIp, checkUrl, registrable, sameSite, htmlToText, FetchRefused } from "../src/browser.js";
+import { isPrivateIp, checkUrl, registrable, sameSite, htmlToText, checkPolicy, newPolicy, FetchRefused } from "../src/browser.js";
 
 describe("worker ssrf", () => {
   it("private ranges", () => {
@@ -41,5 +41,22 @@ describe("htmlToText", () => {
     assert.deepEqual(x.links, [{ href: "/works/p4", text: "Process 4" }]);
     assert.equal(x.images.length, 2);
     assert.deepEqual(x.images[0], { src: "/img/p4.jpg", alt: "Process 4", w: 1200, h: 800 });
+  });
+});
+
+describe("fetch policy (no network)", () => {
+  it("same-site always allowed (subdomains too), page cap enforced", () => {
+    const p = newPolicy("https://artist.example/", { maxPages: 2 });
+    assert.deepEqual(checkPolicy(new URL("https://work.artist.example/x"), p), { offsite: false });
+    p.pagesFetched = 2;
+    assert.throws(() => checkPolicy(new URL("https://artist.example/y"), p), (e: any) => e.code === "page_cap");
+  });
+  it("off-site only when the site linked to it, one hop, own cap", () => {
+    const p = newPolicy("https://artist.example/", { maxPages: 10, maxOffsite: 1 });
+    assert.throws(() => checkPolicy(new URL("https://objkt.com/tokens/1"), p), (e: any) => e.code === "off_site");
+    p.offsiteAllowed.add("https://objkt.com/tokens/1");
+    assert.deepEqual(checkPolicy(new URL("https://objkt.com/tokens/1#foo"), p), { offsite: true });
+    p.offsiteFetched = 1;
+    assert.throws(() => checkPolicy(new URL("https://objkt.com/tokens/1"), p), (e: any) => e.code === "offsite_cap");
   });
 });

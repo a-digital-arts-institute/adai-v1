@@ -50,7 +50,7 @@ Rules
 11. Metadata for nodes: keep it to what the page says — year, medium, summary (one sentence, your words), country, and for practitioners a short bio summary. No invented fields.
 12. When you are done, call finish_pass with a plain-language summary for the contributor: what you found (works, shows, people), what A(DAI) already had, what needs an answer, what you could not read. Then stop.
 
-Tool etiquette: use fetch_page for the site (same site only — subdomains count: a work hosted at work.artist.example IS part of artist.example, and such dedicated work pages are the best source for that work's details and image, so fetch them; respects robots.txt, max ${"${MAX_PAGES}"} pages). You have about ${"${MAX_CALLS}"} tool calls this pass; plan for roughly a third reading, a third resolving, a third proposing. Keep tool inputs exact — ids are strings like 'practitioner:casey-reas' or 'cid:c_03' for a node you proposed in this draft.`;
+Tool etiquette: use fetch_page for the site (subdomains count: a work hosted at work.artist.example IS part of artist.example, and such dedicated work pages are the best source for that work's details and image, so fetch them; respects robots.txt, max ${"${MAX_PAGES}"} pages). You MAY follow links the site itself points to off-site — an objkt / fxhash / Art Blocks / Foundation listing for a work, a gallery's exhibition page, a press piece — when they fill a gap the site leaves: an image the site does not expose, a date, a venue, an edition size. Use them to complete what the site already claims, not to discover new claims; prefer the artist's own words when both exist; one hop only (links on a third-party page are not followable) and at most ${"${MAX_OFFSITE}"} such pages. Evidence from a third-party page is fine — quote it and cite its URL like any other. You have about ${"${MAX_CALLS}"} tool calls this pass; plan for roughly a third reading, a third resolving, a third proposing. Keep tool inputs exact — ids are strings like 'practitioner:casey-reas' or 'cid:c_03' for a node you proposed in this draft.`;
 }
 
 export function initialUserMessage(draft: ClaimedDraft, rootPage: string): string {
@@ -82,8 +82,8 @@ The contributor's new message:
 Act on it with the draft tools (update_candidate, remove_candidate, propose_*, ask_contributor, or fetch_page if they point you at a page), then reply to the contributor in ONE short message via finish_pass (its summary is your reply; keep it to a few sentences, plain language). Max 20 tool calls.`;
 }
 
-export function renderPage(p: { final_url: string; status: number; title: string | null; text: string; links: Array<{ href: string; text: string }>; images: Array<{ src: string; alt: string; w: number; h: number }> }): string {
-  const links = p.links.slice(0, 80).map((l) => `- ${l.href}${l.text ? ` — ${l.text}` : ""}`).join("\n");
+export function renderPage(p: { final_url: string; status: number; title: string | null; text: string; links: Array<{ href: string; text: string; offsite?: boolean }>; images: Array<{ src: string; alt: string; w: number; h: number }> }): string {
+  const links = p.links.slice(0, 110).map((l) => `- ${l.href}${l.text ? ` — ${l.text}` : ""}${l.offsite ? " [off-site, followable]" : ""}`).join("\n");
   const images = p.images.slice(0, 40).map((i) => `- ${i.src}${i.alt ? ` — alt: ${i.alt}` : ""}${i.w && i.h ? ` (${i.w}×${i.h})` : ""}`).join("\n");
   return `<page url="${p.final_url}" status="${p.status}" title="${(p.title ?? "").replace(/"/g, "'")}">
 ${p.text}

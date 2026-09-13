@@ -18,7 +18,8 @@ export interface FetchedPage {
   status: number;
   title: string | null;
   text: string;
-  links: Array<{ href: string; text: string }>;
+  /** Same-site links plus, flagged, the off-site links the page points to. */
+  links: Array<{ href: string; text: string; offsite?: boolean }>;
   images: Array<{ src: string; alt: string; w: number; h: number }>;
   via: "browser" | "fetch";
   sha256: string;
@@ -310,12 +311,48 @@ export interface FetchPolicy {
   rootUrl: string;
   pagesFetched: number;
   maxPages: number;
+  /**
+   * Off-site URLs the SITE ITSELF linked to (objkt, fxhash, Art Blocks,
+   * gallery show pages, press). One hop only: links found on an off-site
+   * page never extend this set. Filled by fetchPage from same-site pages.
+   */
+  offsiteAllowed: Set<string>;
+  offsiteFetched: number;
+  maxOffsite: number;
+}
+
+export function newPolicy(rootUrl: string, opts: { pagesFetched?: number; maxPages: number; maxOffsite?: number }): FetchPolicy {
+  return {
+    rootUrl,
+    pagesFetched: opts.pagesFetched ?? 0,
+    maxPages: opts.maxPages,
+    offsiteAllowed: new Set(),
+    offsiteFetched: 0,
+    maxOffsite: opts.maxOffsite ?? 10,
+  };
+}
+
+function normKey(u: string): string {
+  try { const x = new URL(u); x.hash = ""; return x.toString().replace(/\/$/, ""); } catch { return u; }
+}
+
+/** Policy check only — no network. Exported so tests can cover it without Chromium. */
+export function checkPolicy(u: URL, policy: FetchPolicy): { offsite: boolean } {
+  const onSite = sameSite(u.toString(), policy.rootUrl);
+  if (onSite) {
+    if (policy.pagesFetched >= policy.maxPages) throw new FetchRefused(`page cap (${policy.maxPages}) reached`, "page_cap");
+    return { offsite: false };
+  }
+  if (!policy.offsiteAllowed.has(normKey(u.toString()))) {
+    throw new FetchRefused(`off-site: ${u.hostname} is not linked from ${new URL(policy.rootUrl).hostname} — only pages the site itself points to can be read`, "off_site");
+  }
+  if (policy.offsiteFetched >= policy.maxOffsite) throw new FetchRefused(`off-site page cap (${policy.maxOffsite}) reached`, "offsite_cap");
+  return { offsite: true };
 }
 
 export async function fetchPage(rawUrl: string, policy: FetchPolicy): Promise<FetchedPage> {
   const u = checkUrl(rawUrl);
-  if (!sameSite(u.toString(), policy.rootUrl)) throw new FetchRefused(`off-site: ${u.hostname} is not ${new URL(policy.rootUrl).hostname}`, "off_site");
-  if (policy.pagesFetched >= policy.maxPages) throw new FetchRefused(`page cap (${policy.maxPages}) reached`, "page_cap");
+  const { offsite } = checkPolicy(u, policy);
   await assertPublic(u);
   if (await disallowed(u)) throw new FetchRefused("robots.txt disallows this path", "robots");
 
@@ -332,16 +369,28 @@ export async function fetchPage(rawUrl: string, policy: FetchPolicy): Promise<Fe
   const text = core.text.slice(0, CONFIG.pageTextChars);
   const same = (h: string) => sameSite(h, policy.rootUrl);
   const seen = new Set<string>();
-  const links = core.links
-    .filter((l) => /^https?:/i.test(l.href) && same(l.href))
+  const all = core.links
+    .filter((l) => /^https?:/i.test(l.href))
     .map((l) => ({ href: l.href.replace(/#.*$/, ""), text: l.text }))
-    .filter((l) => { if (seen.has(l.href)) return false; seen.add(l.href); return true; })
-    .slice(0, 150);
+    .filter((l) => { if (seen.has(l.href)) return false; seen.add(l.href); return true; });
+  const onsiteLinks = all.filter((l) => same(l.href)).slice(0, 150);
+  // Off-site links are surfaced (flagged) so the model can decide to follow
+  // "view on objkt" / "exhibition page" — and, from a SAME-SITE page only,
+  // they enter the allowlist. Boring hosts are dropped to keep the list useful.
+  const BORING = /(^|\.)(facebook|instagram|twitter|x|linkedin|youtube|vimeo|tiktok|threads|mastodon\.social|bsky\.app|google|apple|spotify|soundcloud|patreon|paypal|substack|medium|discord|t)\.(com|net|org|app|social|me|co|io)$/i;
+  const offsiteLinks = all
+    .filter((l) => !same(l.href))
+    .filter((l) => { try { return !BORING.test(new URL(l.href).hostname); } catch { return false; } })
+    .slice(0, 40)
+    .map((l) => ({ ...l, offsite: true as const }));
+  if (!offsite) for (const l of offsiteLinks) policy.offsiteAllowed.add(normKey(l.href));
+  const links = [...onsiteLinks, ...(offsite ? [] : offsiteLinks)];
   const iseen = new Set<string>();
   const images = core.images
     .filter((i) => /^https?:/i.test(i.src) && !/\.svg(\?|$)/i.test(i.src) && (i.w === 0 || i.w >= 200) && (i.h === 0 || i.h >= 200))
     .filter((i) => { if (iseen.has(i.src)) return false; iseen.add(i.src); return true; })
     .slice(0, 60);
+  if (offsite) policy.offsiteFetched++;
   return {
     url: rawUrl,
     final_url: core.final_url,

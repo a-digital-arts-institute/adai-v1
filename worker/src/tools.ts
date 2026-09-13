@@ -7,7 +7,7 @@
 
 import type Anthropic from "@anthropic-ai/sdk";
 import { graphTool, draftTool, addPage } from "./client.js";
-import { fetchPage, FetchRefused, type FetchPolicy } from "./browser.js";
+import { fetchPage, sameSite, FetchRefused, type FetchPolicy } from "./browser.js";
 import { renderPage } from "./prompt.js";
 
 type Tool = Anthropic.Messages.Tool;
@@ -24,7 +24,7 @@ const evidenceProps = {
 export const TOOLS: Tool[] = [
   {
     name: "fetch_page",
-    description: "Fetch a same-domain page with a headless browser (JS rendered). Returns the readable text, the same-domain links and the images on it. Respects robots.txt and the page cap. Use it for works/portfolio/exhibitions/CV/about/news pages, depth 2 from the root.",
+    description: "Fetch a page with a headless browser (JS rendered). Returns the readable text, its links (same-site, plus off-site ones flagged `offsite`) and the images on it. Same-site pages (subdomains included) are always allowed; an OFF-SITE page is allowed only if a same-site page linked to it (objkt, fxhash, Art Blocks, a gallery's show page, press) — one hop, own cap. Respects robots.txt and the page caps.",
     input_schema: { type: "object", properties: { url: { type: "string" } }, required: ["url"] },
   },
   {
@@ -189,7 +189,9 @@ export async function runTool(ctx: ToolContext, name: string, input: Record<stri
     const url = typeof input.url === "string" ? input.url : "";
     try {
       const p = await fetchPage(url, ctx.policy);
-      ctx.policy.pagesFetched++;
+      // Same-site pages count against the page cap; off-site ones are
+      // counted against their own cap inside fetchPage.
+      if (sameSite(url, ctx.policy.rootUrl)) ctx.policy.pagesFetched++;
       await addPage(ctx.draftId, { url: p.url, final_url: p.final_url, title: p.title, status: p.status, chars: p.chars, sha256: p.sha256, via: p.via });
       return { content: renderPage(p), is_error: false };
     } catch (e: any) {
