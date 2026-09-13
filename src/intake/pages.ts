@@ -59,16 +59,17 @@ const CSS = `
 #intake .card .diff { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 6px; }
 #intake .card .diff div { background: #111; padding: 6px 8px; border-radius: 3px; word-break: break-word; }
 #intake .card .diff .k { color: #666; font-size: 10.5px; }
-#intake .rail { border: 1px solid #1e1e20; border-radius: 3px; padding: 10px 12px; font-size: 12.5px; position: sticky; top: 12px; max-height: calc(100vh - 24px); display: flex; flex-direction: column; }
+#intake .rail { border: 1px solid #1e1e20; border-radius: 3px; padding: 10px 12px; font-size: 12.5px; position: sticky; top: 12px; max-height: calc(100vh - 24px); display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
 #intake .rail h3 { font-size: 12px; color: #9a9a9c; margin: 0 0 8px; letter-spacing: 0.06em; text-transform: uppercase; }
-#intake .rail .log { flex: 1; overflow: auto; min-height: 160px; }
+#intake .rail .log { flex: 1 1 auto; overflow: auto; min-height: 120px; }
 #intake .rail .m { margin-bottom: 8px; white-space: pre-wrap; }
 #intake .rail .m.user { color: #e8e6e1; }
 #intake .rail .m.assistant { color: #b8b6b1; }
 #intake .rail .m .who { color: #666; font-size: 10.5px; }
-#intake .rail form { margin-top: 8px; display: flex; gap: 6px; max-width: none; }
+#intake .rail form { margin-top: 8px; display: flex; gap: 6px; max-width: none; flex: 0 0 auto; }
 #intake .rail form textarea { min-height: 44px; font-family: inherit; font-size: 12px; flex: 1; }
-#intake .rail .summary { color: #9a9a9c; border-bottom: 1px solid #1e1e20; padding-bottom: 8px; margin-bottom: 8px; white-space: pre-wrap; }
+#intake .rail .summary { color: #9a9a9c; border-bottom: 1px solid #1e1e20; padding-bottom: 8px; margin-bottom: 8px; white-space: pre-wrap; flex: 0 1 auto; max-height: 40vh; overflow: auto; }
+#intake .rail h3 { flex: 0 0 auto; }
 #intake .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 50; }
 #intake .modal.open { display: flex; }
 #intake .modal .box { background: #0f0f0f; border: 1px solid #333; padding: 18px 20px; max-width: 460px; font-size: 13px; line-height: 1.6; }
