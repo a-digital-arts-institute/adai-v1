@@ -1,0 +1,210 @@
+// Tool definitions the model sees, and the dispatcher that runs them.
+// Three families:
+//   graph reads  → HTTP proxy to /internal/intake/tool (allowlisted)
+//   draft writes → HTTP to /internal/intake/drafts/:id/candidates (validated)
+//   fetch_page   → local Playwright (worker/src/browser.ts)
+//   finish_pass  → local, ends the loop
+
+import type Anthropic from "@anthropic-ai/sdk";
+import { graphTool, draftTool, addPage } from "./client.js";
+import { fetchPage, FetchRefused, type FetchPolicy } from "./browser.js";
+import { renderPage } from "./prompt.js";
+
+type Tool = Anthropic.Messages.Tool;
+
+const NODE_TYPES = ["practitioner", "artwork", "project", "institution", "collective", "concept", "platform"];
+const EDGE_TYPES = ["CREATED_BY", "EXHIBITED_AT", "PARTICIPATED_IN", "PRESENTED_BY", "CURATED_BY", "REPRESENTS", "USES_TECHNIQUE", "EMBODIES", "BELONGS_TO", "COLLABORATES_WITH"];
+const QUESTION_EDGE_TYPES = [...EDGE_TYPES, "INFLUENCES", "RESPONDS_TO"];
+
+const evidenceProps = {
+  page_url: { type: "string", description: "The page the quote comes from (final URL as fetched)." },
+  quote: { type: "string", description: "Verbatim sentence(s) from the page that support this, <= 300 chars." },
+};
+
+export const TOOLS: Tool[] = [
+  {
+    name: "fetch_page",
+    description: "Fetch a same-domain page with a headless browser (JS rendered). Returns the readable text, the same-domain links and the images on it. Respects robots.txt and the page cap. Use it for works/portfolio/exhibitions/CV/about/news pages, depth 2 from the root.",
+    input_schema: { type: "object", properties: { url: { type: "string" } }, required: ["url"] },
+  },
+  {
+    name: "search_nodes",
+    description: "Substring search over node names/slugs. Cheap first look; resolve_entity is the real dedup gate.",
+    input_schema: { type: "object", properties: { query: { type: "string" }, type: { type: "string" }, limit: { type: "integer" } }, required: ["query"] },
+  },
+  {
+    name: "get_node",
+    description: "Full node: metadata, live edges with peer names, approved signals. Use slug or id.",
+    input_schema: { type: "object", properties: { slug: { type: "string" }, id: { type: "string" } } },
+  },
+  {
+    name: "get_neighbours",
+    description: "Embedding neighbours of a node (style-kin for practitioners, visually-affine for artworks). Sensed, not attested — feeds note_known / ask_contributor only.",
+    input_schema: { type: "object", properties: { slug: { type: "string" }, id: { type: "string" }, kind: { type: "string", enum: ["auto", "style_kin", "visually_affine", "semantic"] }, k: { type: "integer" } } },
+  },
+  {
+    name: "get_component",
+    description: "Everything reachable from a node over live edges (capped). Use on the subject to see its shows, venues, collaborators.",
+    input_schema: { type: "object", properties: { slug: { type: "string" }, max_nodes: { type: "integer" } }, required: ["slug"] },
+  },
+  {
+    name: "resolve_entity",
+    description: "THE dedup gate. Call before proposing any named entity. Returns exact/alias/fuzzy matches (with node ids) and `would_create` — the id a new node would get. Link when a match is right; ask_contributor when two are plausible.",
+    input_schema: {
+      type: "object",
+      properties: {
+        name: { type: "string" },
+        type: { type: "string", enum: NODE_TYPES },
+        hints: { type: "object", properties: { year: { type: "string" }, url: { type: "string" }, country: { type: "string" } } },
+      },
+      required: ["name"],
+    },
+  },
+  {
+    name: "find_path",
+    description: "Shortest path between two existing nodes over live edges (default max 4 hops).",
+    input_schema: { type: "object", properties: { from: { type: "string" }, to: { type: "string" }, max_depth: { type: "integer" } }, required: ["from", "to"] },
+  },
+  {
+    name: "image_neighbours",
+    description: "Visually nearest artworks in A(DAI) for an image URL. Use on up to 10 proposed images to find works A(DAI) may already hold. Sensed only.",
+    input_schema: { type: "object", properties: { image_url: { type: "string" }, k: { type: "integer" } }, required: ["image_url"] },
+  },
+  {
+    name: "set_subject",
+    description: "Declare the subject of this draft: an existing node id, or the cid of a node you proposed.",
+    input_schema: { type: "object", properties: { node_id: { type: "string" }, cid: { type: "string" } } },
+  },
+  {
+    name: "propose_node",
+    description: "Propose a node (work, person, show, venue, collective, concept, platform). Returns a cid usable as 'cid:c_NN' in edges/images. If resolve_entity found the entity, pass resolves_to + resolution so the card links instead of creating.",
+    input_schema: {
+      type: "object",
+      properties: {
+        type: { type: "string", enum: NODE_TYPES },
+        name: { type: "string" },
+        metadata: { type: "object", description: "year, medium, summary, country, bio_summary … only what the page says." },
+        ...evidenceProps,
+        resolves_to: { type: "string", description: "Existing node id this is (from resolve_entity)." },
+        resolution: { type: "string", enum: ["exact", "alias", "fuzzy"] },
+        note: { type: "string", description: "One line for the contributor: why this card exists." },
+      },
+      required: ["type", "name", "page_url", "quote"],
+    },
+  },
+  {
+    name: "propose_edge",
+    description: "Propose a relation within the relation policy, with evidence.",
+    input_schema: {
+      type: "object",
+      properties: {
+        source: { type: "string", description: "node id or cid:c_NN" },
+        target: { type: "string", description: "node id or cid:c_NN" },
+        edge_type: { type: "string", enum: EDGE_TYPES },
+        event_time: { type: "string", description: "YYYY, YYYY-MM or YYYY-MM-DD when the page gives a date." },
+        confidence: { type: "string", enum: ["high", "medium", "low"] },
+        ...evidenceProps,
+        note: { type: "string" },
+      },
+      required: ["source", "target", "edge_type", "confidence", "page_url", "quote"],
+    },
+  },
+  {
+    name: "propose_image",
+    description: "Propose an image from the page for a node (existing id or cid).",
+    input_schema: {
+      type: "object",
+      properties: { for: { type: "string" }, image_url: { type: "string" }, page_url: { type: "string" }, alt: { type: "string" }, note: { type: "string" } },
+      required: ["for", "image_url", "page_url"],
+    },
+  },
+  {
+    name: "propose_patch",
+    description: "The site disagrees with A(DAI) on a metadata fact. Show both values; the contributor decides.",
+    input_schema: {
+      type: "object",
+      properties: { node_id: { type: "string" }, key: { type: "string" }, existing: {}, proposed: {}, ...evidenceProps, note: { type: "string" } },
+      required: ["node_id", "key", "proposed", "page_url", "quote"],
+    },
+  },
+  {
+    name: "note_known",
+    description: "Record that A(DAI) already has this (node, or node+edge+other). Shown as 'Already in A(DAI)'. origin 'graph' for attested facts, 'embedding' for sensed ones.",
+    input_schema: {
+      type: "object",
+      properties: { node_id: { type: "string" }, edge_type: { type: "string" }, other_id: { type: "string" }, summary: { type: "string" }, origin: { type: "string", enum: ["graph", "embedding"] }, note: { type: "string" } },
+      required: ["node_id", "summary"],
+    },
+  },
+  {
+    name: "ask_contributor",
+    description: "Ask the contributor a yes/no question whose 'yes' becomes an edge in their own words (this is the ONLY route for INFLUENCES / RESPONDS_TO, and for ambiguous COLLABORATES_WITH). Max 5 per draft.",
+    input_schema: {
+      type: "object",
+      properties: {
+        text: { type: "string" },
+        if_yes: { type: "object", properties: { source: { type: "string" }, target: { type: "string" }, edge_type: { type: "string", enum: QUESTION_EDGE_TYPES } }, required: ["source", "target", "edge_type"] },
+        note: { type: "string" },
+      },
+      required: ["text", "if_yes"],
+    },
+  },
+  {
+    name: "update_candidate",
+    description: "Merge-patch a candidate you proposed (name, metadata, edge_type, resolves_to, note …). State is the contributor's; you cannot change it.",
+    input_schema: { type: "object", properties: { cid: { type: "string" }, patch: { type: "object" } }, required: ["cid", "patch"] },
+  },
+  {
+    name: "remove_candidate",
+    description: "Remove a candidate you proposed, only if the contributor has not touched it and nothing references it.",
+    input_schema: { type: "object", properties: { cid: { type: "string" } }, required: ["cid"] },
+  },
+  {
+    name: "finish_pass",
+    description: "End this pass with a plain-language summary for the contributor (or, in a chat pass, your reply). Call exactly once, last.",
+    input_schema: { type: "object", properties: { summary: { type: "string" } }, required: ["summary"] },
+  },
+];
+
+const GRAPH_TOOLS = new Set(["search_nodes", "get_node", "get_neighbours", "get_component", "resolve_entity", "find_path", "image_neighbours"]);
+const DRAFT_TOOLS = new Set(["set_subject", "propose_node", "propose_edge", "propose_image", "propose_patch", "note_known", "ask_contributor", "update_candidate", "remove_candidate"]);
+
+export interface ToolContext {
+  draftId: string;
+  policy: FetchPolicy;
+}
+
+export interface ToolOutcome {
+  content: string;
+  is_error: boolean;
+  finished?: string; // summary when finish_pass was called
+}
+
+export async function runTool(ctx: ToolContext, name: string, input: Record<string, unknown>): Promise<ToolOutcome> {
+  if (name === "finish_pass") {
+    const summary = typeof input.summary === "string" ? input.summary.trim() : "";
+    return { content: JSON.stringify({ ok: true }), is_error: false, finished: summary || "(no summary)" };
+  }
+  if (name === "fetch_page") {
+    const url = typeof input.url === "string" ? input.url : "";
+    try {
+      const p = await fetchPage(url, ctx.policy);
+      ctx.policy.pagesFetched++;
+      await addPage(ctx.draftId, { url: p.url, final_url: p.final_url, title: p.title, status: p.status, chars: p.chars, sha256: p.sha256, via: p.via });
+      return { content: renderPage(p), is_error: false };
+    } catch (e: any) {
+      const msg = e instanceof FetchRefused ? `refused (${e.code}): ${e.message}` : `fetch failed: ${e?.message ?? e}`;
+      return { content: JSON.stringify({ error: msg }), is_error: true };
+    }
+  }
+  if (GRAPH_TOOLS.has(name)) {
+    const r = await graphTool(name, input);
+    const isErr = !!(r && typeof r === "object" && "error" in (r as any) && Object.keys(r as any).length <= 2);
+    return { content: JSON.stringify(r), is_error: isErr };
+  }
+  if (DRAFT_TOOLS.has(name)) {
+    const r = await draftTool(ctx.draftId, name, input);
+    return { content: JSON.stringify(r.result), is_error: !r.ok };
+  }
+  return { content: JSON.stringify({ error: `unknown tool ${name}` }), is_error: true };
+}

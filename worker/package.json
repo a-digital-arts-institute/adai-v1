@@ -1,0 +1,23 @@
+{
+  "name": "adai-intake-worker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A(DAI) URL-intake worker: reads a site with Playwright, proposes candidates to a draft over HTTP. Never touches the graph.",
+  "type": "module",
+  "engines": { "node": ">=22.5.0" },
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "build": "tsc",
+    "test": "tsx --test tests/*.test.ts",
+    "playwright:install": "playwright install chromium"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.98.0",
+    "playwright": "^1.55.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.3",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
+}
