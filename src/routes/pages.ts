@@ -565,7 +565,9 @@ function renderNeighbourTable(neighbours: Neighbour[]): string {
 }
 
 // GET /contribute — contribution form
-router.get("/contribute", (_req, res) => {
+// Legacy signal form. The URL intake (src/routes/intake.ts) owns /contribute;
+// this page stays reachable for the token/assistant path described on it.
+router.get("/contribute/signal", (_req, res) => {
   const db = getDb();
   const entities = db
     .prepare(`SELECT id, name, slug FROM nodes WHERE type NOT IN ${ENTITY_TYPES_EXCLUDE} AND ${NODE_NOT_RETIRED} ORDER BY name`)

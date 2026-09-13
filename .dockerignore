@@ -14,3 +14,7 @@ adai-digital-arts-report-research/
 # now holds only the live R2 janitors (cull_orphans.py, shrink_oversized.py),
 # which run from the host venv, never in the image. Ignored from the context.
 seed/
+
+# The intake worker is its own image (worker/Dockerfile); keep its sources and
+# its Playwright node_modules out of the main app build context.
+worker/

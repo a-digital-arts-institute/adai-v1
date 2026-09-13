@@ -31,6 +31,7 @@ import {
   type ProposedNodeOp,
 } from "../utils/contribution.js";
 import { uploadImage, isR2Configured } from "../r2.js";
+import { mirrorImageFromUrl, ImageFetchError } from "../utils/images.js";
 import { getSkillVersion } from "../utils/skill-version.js";
 import { embedNodeAsync } from "../embed/server.js";
 import { approveIntakeItem, rejectIntakeItem } from "../utils/review.js";
@@ -556,7 +557,9 @@ router.post("/api/v1/edges", requireToken, (req, res) => {
 
 // ---------- POST /api/v1/images -------------------------------------------
 // multipart/form-data { image, node_id }   — or
-// application/json    { node_id, image_base64, mime_type }
+// application/json    { node_id, image_base64, mime_type }   — or
+// application/json    { node_id, image_url }  (server-side fetch: SSRF guard,
+//                                              20 MiB cap, magic-byte sniff)
 //
 // Bytes are content-addressed and immutable on R2, so the upload runs even
 // for probationary contributors (cheap, deduped). The metadata patch that
@@ -578,6 +581,7 @@ router.post(
     let mime = "application/octet-stream";
     let nodeId: string | null = null;
     let batchRaw: unknown;
+    let imageUrl: string | null = null;
 
     if (req.file) {
       buf = req.file.buffer;
@@ -593,6 +597,7 @@ router.post(
       mime = typeof body.mime_type === "string" ? body.mime_type : mime;
       nodeId = typeof body.node_id === "string" ? body.node_id : null;
       batchRaw = body.batch_id;
+      if (!b64 && typeof body.image_url === "string") imageUrl = body.image_url;
     }
 
     const batch = parseBatchId(batchRaw);
@@ -601,8 +606,8 @@ router.post(
       return;
     }
 
-    if (!buf || buf.length === 0) {
-      res.status(400).set(JSON_HEADERS).json({ error: "no image bytes — send multipart 'image' field or JSON {image_base64}" });
+    if ((!buf || buf.length === 0) && !imageUrl) {
+      res.status(400).set(JSON_HEADERS).json({ error: "no image bytes — send multipart 'image' field, JSON {image_base64}, or JSON {image_url}" });
       return;
     }
     if (!nodeId) {
@@ -616,17 +621,31 @@ router.post(
     }
 
     let upresult: Awaited<ReturnType<typeof uploadImage>>;
-    try {
-      upresult = await uploadImage(buf, mime);
-    } catch (e: any) {
-      res.status(502).set(JSON_HEADERS).json({ error: "r2_upload_failed", detail: String(e?.message ?? e) });
-      return;
+    if (imageUrl) {
+      try {
+        upresult = (await mirrorImageFromUrl(imageUrl)).upload;
+      } catch (e: any) {
+        if (e instanceof ImageFetchError) {
+          res.status(e.status).set(JSON_HEADERS).json({ error: e.code, detail: e.message });
+          return;
+        }
+        res.status(502).set(JSON_HEADERS).json({ error: "image_fetch_failed", detail: String(e?.message ?? e) });
+        return;
+      }
+    } else {
+      try {
+        upresult = await uploadImage(buf!, mime);
+      } catch (e: any) {
+        res.status(502).set(JSON_HEADERS).json({ error: "r2_upload_failed", detail: String(e?.message ?? e) });
+        return;
+      }
     }
 
     const signalId = insertSignal(db, {
       contributor: req.contributor!,
       title: `Upload image to ${nodeId}`,
-      content: JSON.stringify({ node_id: nodeId, key: upresult.key, sha256: upresult.sha256, bytes: upresult.bytes, content_type: upresult.content_type }),
+      content: JSON.stringify({ node_id: nodeId, key: upresult.key, sha256: upresult.sha256, bytes: upresult.bytes, content_type: upresult.content_type, ...(imageUrl ? { image_url: imageUrl } : {}) }),
+      source_url: imageUrl,
       source_type: "api_image",
       batch_id: batch.value,
     });
@@ -634,7 +653,8 @@ router.post(
     const op: ProposedNodeOp = {
       op: "attach_image",
       node_id: nodeId,
-      image_url: upresult.url,
+      // image_url keeps upstream provenance when the bytes came from a URL.
+      image_url: imageUrl ?? upresult.url,
       cdn_image_url: upresult.url,
       sha256: upresult.sha256,
     };

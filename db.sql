@@ -232,3 +232,88 @@ CREATE TABLE IF NOT EXISTS archivist_usage (
     cache_write_tokens   INTEGER DEFAULT 0,
     est_cost_usd         REAL DEFAULT 0
 );
+
+-- === URL INTAKE (docs/URL-INTAKE-SPEC.md) ===
+-- Everything below is local-only (NOT a CRR). Email addresses, session
+-- material and in-flight drafts must never sync into the public graph.
+
+-- Magic links: single-use, hashed at rest. purpose='login' expires in 15 min;
+-- 'draft_ready' / 'receipt' (the links inside notification emails) in 7 days.
+CREATE TABLE IF NOT EXISTS magic_links (
+    token_hash      TEXT PRIMARY KEY NOT NULL,      -- sha256 of the raw token
+    email           TEXT NOT NULL,
+    purpose         TEXT NOT NULL DEFAULT 'login',  -- login | draft_ready | receipt
+    redirect        TEXT,                           -- path to land on after login
+    created_at      TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+    expires_at      TEXT NOT NULL,
+    used_at         TEXT,
+    ip              TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_magic_links_email ON magic_links(email);
+
+-- Contributor sessions. Cookie format mirrors archivist_sessions:
+-- adai_session=<session_id>.<hex(hmac_sha256(session_id, SESSION_SECRET))>.
+-- 30 days sliding; deleting the row revokes the session.
+CREATE TABLE IF NOT EXISTS contributor_sessions (
+    session_id      TEXT PRIMARY KEY NOT NULL,
+    contributor_id  TEXT NOT NULL,
+    created_at      TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+    expires_at      TEXT NOT NULL,
+    last_seen_at    TEXT,
+    ip              TEXT,
+    user_agent      TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_contributor_sessions_contributor ON contributor_sessions(contributor_id);
+
+-- email -> contributor. `contributors` itself is a CRR and stays untouched;
+-- anything per-contributor the intake needs (the practitioner node they ARE,
+-- the display name they asked for) lives here.
+CREATE TABLE IF NOT EXISTS contributor_emails (
+    email           TEXT PRIMARY KEY NOT NULL,      -- lowercased
+    contributor_id  TEXT NOT NULL,
+    self_node_id    TEXT,                           -- practitioner node the contributor is (from the invite)
+    verified_at     TEXT,
+    created_at      TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+);
+CREATE INDEX IF NOT EXISTS idx_contributor_emails_contributor ON contributor_emails(contributor_id);
+
+-- Drafts double as the job queue: a row with job IS NOT NULL is claimable by
+-- the intake worker; a claim older than 20 min with no heartbeat is
+-- reclaimable. id doubles as batch_id on confirm.
+CREATE TABLE IF NOT EXISTS drafts (
+    id              TEXT PRIMARY KEY NOT NULL,      -- 'drf_' + 16 hex
+    contributor_id  TEXT NOT NULL,
+    source_url      TEXT NOT NULL,
+    source_domain   TEXT NOT NULL,
+    status          TEXT NOT NULL DEFAULT 'queued', -- queued | running | ready | submitted | failed | abandoned
+    job             TEXT,                           -- JSON {kind: 'initial'|'chat', message?, queued_at}
+    claimed_by      TEXT,
+    claimed_at      TEXT,
+    heartbeat_at    TEXT,
+    machine_id      TEXT,
+    subject_node_id TEXT,
+    candidates      TEXT NOT NULL DEFAULT '[]',
+    messages        TEXT NOT NULL DEFAULT '[]',
+    pages           TEXT NOT NULL DEFAULT '[]',
+    summary         TEXT,
+    usage           TEXT,
+    intake_ids      TEXT,
+    error           TEXT,
+    passes          INTEGER NOT NULL DEFAULT 0,
+    notified_ready_at TEXT,
+    created_at      TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+    updated_at      TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+    submitted_at    TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_drafts_contributor ON drafts(contributor_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_drafts_queue ON drafts(status, claimed_at);
+
+-- Daily USD rollup for the intake worker, sibling of archivist_usage.
+CREATE TABLE IF NOT EXISTS intake_usage (
+    date                 TEXT PRIMARY KEY NOT NULL,
+    input_tokens         INTEGER DEFAULT 0,
+    output_tokens        INTEGER DEFAULT 0,
+    cache_read_tokens    INTEGER DEFAULT 0,
+    cache_write_tokens   INTEGER DEFAULT 0,
+    est_cost_usd         REAL DEFAULT 0
+);

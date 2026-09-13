@@ -1,7 +1,7 @@
 ---
 name: adai-contribute
 description: Contribute to the A(DAI) Digital Arts Knowledge Commons graph (https://digitalartsinstitute.io) on behalf of a practitioner using their bearer token in ADAI_TOKEN. Use when the user wants to add a text signal about an existing node, create a node (practitioner, artwork, concept, scene, institution, collective, platform, etc.), add or supersede an edge (CREATED_BY, EMBODIES, PRACTICES, EXHIBITED_AT, CLASSIFIED_BY, BELONGS_TO, COLLABORATES_WITH, USES_TECHNIQUE, INFLUENCES, RESPONDS_TO, PARTICIPATED_IN, PRESENTED_BY, CURATED_BY, REPRESENTS), upload an image and attach it to a node, tag a session of writes with a batch_id, review their contribution history, or — with an admin-scope token — mint/list/revoke tokens, work the curator review queue (approve/reject/bulk), revoke a signal, retire a node, or roll back a contribution batch (provenance-preserving). Talks to /api/v1/* via curl. Respects trust tiers (auto/reviewed go live, probationary queue at /review). Never infer INFLUENCES or RESPONDS_TO from style or visual similarity; both require attested artist intent.
-version: 2026-08-14
+version: 2026-09-13
 ---
 
 # A(DAI) contributor skill — for Claude (and any other AI assistant) writing to the knowledge commons
@@ -400,6 +400,20 @@ curl -s -X POST "$ADAI_BASE/api/v1/images" \
   -d "{\"node_id\":\"practitioner:casey-reas\",\"mime_type\":\"image/jpeg\",\"image_base64\":\"$B64\"}"
 ```
 
+URL transport (the image already lives on the web — the server fetches it,
+through an SSRF guard, 20 MiB cap, and sniffs the bytes to make sure it is
+a JPEG/PNG/GIF/WebP/AVIF; `image_url` is kept as provenance):
+
+```bash
+curl -s -X POST "$ADAI_BASE/api/v1/images" \
+  -H "Authorization: Bearer $ADAI_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"node_id":"artwork:process-4","image_url":"https://reas.com/images/process4.jpg"}'
+```
+
+Errors: `400 private_host|bad_scheme`, `413 too_large`, `415 not_an_image`,
+`502 upstream_status|image_fetch_failed`.
+
 **What gets attached.** On approval, three fields are merged into the
 node's `metadata`:
 - `cdn_image_url` — the R2 URL. **Always overwritten** by each upload.
@@ -478,6 +492,54 @@ curl -s -H "Authorization: Bearer $ADAI_TOKEN" \
 ```
 
 ---
+
+### 1.8 Contributing from a website — the URL intake
+
+When the practitioner says "here is my site / the show page / our roster",
+you have two routes.
+
+**Manual** (you read the site yourself): one `batch_id` for the session
+(§1.7), `resolve before create` (§1.0), then `/api/v1/nodes|edges|images`
+as above. Relation policy for anything sourced from a page, verbatim:
+
+| edge_type | direction | condition |
+|---|---|---|
+| CREATED_BY | artwork -> practitioner/collective | page attributes the work |
+| EXHIBITED_AT | artwork -> institution/project | page lists the show or venue |
+| PARTICIPATED_IN | practitioner -> project | page lists the artist in the show |
+| PRESENTED_BY | project -> institution | page names the venue or organiser |
+| CURATED_BY | project -> practitioner | page names the curator |
+| REPRESENTS | institution -> practitioner | roster page, or "represented by" |
+| USES_TECHNIQUE | artwork/practitioner -> concept | page names the technique |
+| EMBODIES | artwork -> concept | page's own description, low confidence |
+| BELONGS_TO | practitioner -> collective | page states membership |
+| COLLABORATES_WITH | practitioner <-> practitioner | only with a quote naming the other party |
+
+Never from a site: `INFLUENCES`, `RESPONDS_TO`, `CLASSIFIED_BY`. Put the
+supporting sentence from the page in the signal `content` and the page in
+`source_url`; that is the audit trail.
+
+**Delegated** (A(DAI) reads the site, the practitioner confirms):
+
+```bash
+curl -s -X POST "$ADAI_BASE/api/intake/drafts" \
+  -H "Authorization: Bearer $ADAI_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"source_url":"https://example-artist.com"}'
+# → 202 { draft_id, draft_url: "/draft/drf_…" }
+```
+
+A worker crawls the site, resolves every entity against the graph, and
+proposes cards — works, shows, venues, people, relations, images, plus
+"already in A(DAI)" notes and yes/no questions for the relations only the
+artist can attest. **Nothing is written until the practitioner opens
+`/draft/:id` and presses Confirm.** Send them the link (they sign in with
+an emailed magic link). You can poll `GET /api/intake/drafts/:id` with the
+same bearer token to watch progress (`status`, `candidates`, `summary`),
+`PATCH …/candidates/:cid` to pre-accept cards they told you about, and
+`POST …/chat` to ask the worker for changes. The confirmed batch has
+`batch_id = draft_id` and shows up in `GET /api/v1/batches` and on the
+public receipt `/batch/:id` like any other batch.
 
 ## 2 — ID conventions
 
