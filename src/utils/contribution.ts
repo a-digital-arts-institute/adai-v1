@@ -94,6 +94,8 @@ export interface CreateSignalArgs {
   consent_scope?: string;
   consent_attribution?: string;
   batch_id?: string | null;    // caller-supplied session/batch handle (signals.batch_id)
+  source_origin?: string;      // default 'human_primary'; URL intake writes 'url_intake'
+  provenance_chain?: string | null; // JSON: e.g. {draft_id, cid, origin, page_sha256}
 }
 
 export function insertSignal(db: DatabaseSync, args: CreateSignalArgs): string {
@@ -104,7 +106,7 @@ export function insertSignal(db: DatabaseSync, args: CreateSignalArgs): string {
       ? args.consent_attribution
       : "attributed";
   db.prepare(
-    "INSERT INTO signals (id, title, source_url, source_type, cla_layer, summary, content, submitted_by, confidence, lived_experience, consent_scope, consent_attribution, source_origin, batch_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    "INSERT INTO signals (id, title, source_url, source_type, cla_layer, summary, content, submitted_by, confidence, lived_experience, consent_scope, consent_attribution, source_origin, batch_id, provenance_chain) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
   ).run(
     signalId,
     args.title,
@@ -118,8 +120,9 @@ export function insertSignal(db: DatabaseSync, args: CreateSignalArgs): string {
     0,
     scope,
     attribution,
-    "human_primary",
-    args.batch_id ?? null
+    args.source_origin ?? "human_primary",
+    args.batch_id ?? null,
+    args.provenance_chain ?? null
   );
   return signalId;
 }

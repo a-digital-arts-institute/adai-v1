@@ -167,3 +167,50 @@ shrink-oversized-prod-apply: _pull-live-db
     flyctl ssh console --app {{app}} -C "sh -c 'node /app/dist/cli/apply-image-patch.js --from /tmp/.adai-shrink-patch.json; rm -f /tmp/.adai-shrink-patch.json'"
     @rm -f /tmp/adai-cull.db /tmp/adai-cull.db-wal /tmp/adai-cull.db-shm /tmp/adai-shrink-patch.json
     @echo "[shrink] done — reclaim the now-orphaned originals with: just cull-orphans-prod-delete"
+
+# --- URL intake (docs/URL-INTAKE-SPEC.md) ------------------------------
+
+# Main app + intake worker (poll mode) side by side. Needs SESSION_SECRET,
+# WORKER_KEY, ANTHROPIC_API_KEY in .env. Magic links print to the server log.
+[doc("Run the dev server and the intake worker together (local, poll mode).")]
+intake-dev:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    test -f adai.db || { echo "no ./adai.db — pull one from prod first"; exit 1; }
+    grep -q '^SESSION_SECRET=' .env && grep -q '^WORKER_KEY=' .env || { echo "add SESSION_SECRET and WORKER_KEY (>=16 chars) to .env"; exit 1; }
+    test -d worker/node_modules || (cd worker && npm install && npx playwright install chromium)
+    trap 'kill 0' INT TERM EXIT
+    npm run dev &
+    sleep 3
+    ADAI_URL=http://localhost:8080 npm run intake:worker &
+    wait
+
+# Invite a contributor: pre-creates the contributor with the right tier so the
+# first magic-link login lands correctly. Add --send to email the link now.
+[doc("Invite a contributor to the URL intake (local DB): just invite x@y.z 'Name' auto [practitioner:slug]")]
+invite email name tier="probationary" practitioner="":
+    npm run invite -- --email "{{email}}" --name "{{name}}" --tier {{tier}} {{ if practitioner != "" { "--practitioner " + practitioner } else { "" } }}
+
+# Same, on prod.
+[doc("Invite a contributor on prod: just invite-prod x@y.z 'Name' auto [practitioner:slug]")]
+invite-prod email name tier="probationary" practitioner="": warm
+    flyctl ssh console --app {{app}} -C "node /app/dist/cli/invite.js --email '{{email}}' --name '{{name}}' --tier {{tier}} {{ if practitioner != "" { "--practitioner '" + practitioner + "'" } else { "" } }} --send"
+
+# Build + push the worker image (NO machines are created), then point the main
+# app at the new tag. `flyctl apps create adai-intake-worker` once beforehand.
+[doc("Build and push the intake worker image; set WORKER_IMAGE on the main app.")]
+deploy-worker:
+    @test -d worker || { echo "no worker/ dir"; exit 1; }
+    cd worker && FLY_REMOTE_BUILDER_REGION=iad flyctl deploy --config fly.toml --build-only --push --image-label "$(git rev-parse --short HEAD)" 2>&1 | tee /tmp/adai-worker-deploy.log
+    @tag="registry.fly.io/adai-intake-worker:$(git rev-parse --short HEAD)"; echo "[worker] image $tag"; flyctl secrets set WORKER_IMAGE="$tag" -a {{app}}
+
+# One-time: worker app + its secrets (WORKER_KEY must equal the main app's).
+[doc("Create the worker Fly app and set its secrets (run once).")]
+worker-bootstrap key anthropic_key:
+    flyctl apps create adai-intake-worker || true
+    flyctl secrets set WORKER_KEY="{{key}}" ANTHROPIC_API_KEY="{{anthropic_key}}" -a adai-intake-worker
+
+# List live worker machines (should be empty between jobs).
+[doc("List intake worker machines (expect none between jobs).")]
+worker-machines:
+    flyctl machines list -a adai-intake-worker
