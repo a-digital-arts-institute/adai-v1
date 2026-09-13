@@ -131,7 +131,7 @@ function profileHandler(req: any, res: any) {
         const maxW = isPortrait ? "240px" : "480px";
         const altText = htmlEscape(`${node.name} — ${node.type}`);
         body += `<figure style='margin:1rem 0;max-width:${maxW}'>` +
-          `<img src='${htmlEscape(String(imgSrc))}' alt='${altText}' ` +
+          `<img src='${htmlEscape(String(imgSrc))}' alt='${altText}' crossorigin='anonymous' ` +
           `style='width:100%;height:auto;border-radius:6px;display:block' loading='lazy' />`;
         if (meta.image_source || meta.image_license) {
           const parts: string[] = [];
@@ -354,7 +354,7 @@ function renderNeighbourList(neighbours: Neighbour[]): string {
     const nameEsc = htmlEscape(String(n.name ?? n.node_id));
     const typeEsc = htmlEscape(String(n.type ?? "?"));
     const thumb = img
-      ? `<img src='${htmlEscape(String(img))}' alt='${nameEsc}' style='width:96px;height:96px;object-fit:cover;border-radius:4px;display:block' loading='lazy' />`
+      ? `<img src='${htmlEscape(String(img))}' alt='${nameEsc}' crossorigin='anonymous' style='width:96px;height:96px;object-fit:cover;border-radius:4px;display:block' loading='lazy' />`
       : `<div style='width:96px;height:96px;background:#181818;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:#666;text-align:center;padding:0.4rem;box-sizing:border-box'>${nameEsc.slice(0, 40)}</div>`;
     const yearTag = n.year ? ` <span class='meta'>(${htmlEscape(String(n.year))})</span>` : "";
     s += `<a href='${url}' style='display:block;width:108px;text-decoration:none;color:inherit'>
@@ -551,7 +551,7 @@ function renderNeighbourTable(neighbours: Neighbour[]): string {
     const nameEsc = htmlEscape(String(n.name ?? n.node_id));
     const typeEsc = htmlEscape(String(n.type ?? "?"));
     const thumb = img
-      ? `<img src='${htmlEscape(String(img))}' alt='' style='width:72px;height:72px;object-fit:cover;border-radius:3px;display:block' loading='lazy' />`
+      ? `<img src='${htmlEscape(String(img))}' alt='' crossorigin='anonymous' style='width:72px;height:72px;object-fit:cover;border-radius:3px;display:block' loading='lazy' />`
       : `<div style='width:72px;height:72px;background:#181818;border-radius:3px'></div>`;
     s += `<tr style='border-bottom:1px solid #1a1a1a'>
   <td style='padding:0.4rem 0.6rem'>${thumb}</td>
