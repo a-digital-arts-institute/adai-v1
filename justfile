@@ -200,9 +200,16 @@ invite-prod email name tier="probationary" practitioner="": warm
 # app at the new tag. `flyctl apps create adai-intake-worker` once beforehand.
 [doc("Build and push the intake worker image; set WORKER_IMAGE on the main app.")]
 deploy-worker:
-    @test -d worker || { echo "no worker/ dir"; exit 1; }
-    cd worker && FLY_REMOTE_BUILDER_REGION=iad flyctl deploy --config fly.toml --build-only --push --image-label "$(git rev-parse --short HEAD)" 2>&1 | tee /tmp/adai-worker-deploy.log
-    @tag="registry.fly.io/adai-intake-worker:$(git rev-parse --short HEAD)"; echo "[worker] image $tag"; flyctl secrets set WORKER_IMAGE="$tag" -a {{app}}
+    #!/usr/bin/env bash
+    # pipefail: without it `| tee` swallows a failed build and the recipe goes
+    # on to point WORKER_IMAGE at a tag that was never pushed (Sept 2026).
+    set -euo pipefail
+    test -d worker || { echo "no worker/ dir"; exit 1; }
+    tag_short="$(git rev-parse --short HEAD)"
+    (cd worker && FLY_REMOTE_BUILDER_REGION=iad flyctl deploy --config fly.toml --build-only --push --image-label "$tag_short" 2>&1 | tee /tmp/adai-worker-deploy.log)
+    tag="registry.fly.io/adai-intake-worker:$tag_short"
+    echo "[worker] image $tag"
+    flyctl secrets set WORKER_IMAGE="$tag" -a {{app}}
 
 # One-time: worker app + its secrets (WORKER_KEY must equal the main app's).
 [doc("Create the worker Fly app and set its secrets (run once).")]
