@@ -788,7 +788,13 @@ export function runDraftTool(
         const idx = cands.findIndex((c) => c.cid === cid);
         if (idx < 0) throw new CandidateError(`no candidate ${cid}`);
         const cur = cands[idx]!;
+        if (cur.edited || cur.state !== "proposed") {
+          throw new CandidateError(`${cid} was touched by the contributor and cannot be updated`);
+        }
         const patch = isObj(input.patch) ? input.patch : {};
+        if (isObj(patch.question) && ("answer" in patch.question || "answered_yes" in patch.question)) {
+          throw new CandidateError("only the contributor may answer a question");
+        }
         // Merge-patch, but state/edited/cid are the contributor's, not the agent's.
         const merged: any = { ...cur };
         for (const [k, v] of Object.entries(patch)) {
@@ -1036,7 +1042,9 @@ export async function confirmDraft(
 
   tx(db, () => {
     const fresh = mustGetDraft(db, draft.id);
-    if (fresh.status !== "ready" || fresh.job) throw new DraftError("draft changed while confirming", 409, "conflict");
+    if (fresh.status !== "ready" || fresh.job || JSON.stringify(fresh.candidates) !== JSON.stringify(draft.candidates)) {
+      throw new DraftError("draft changed while confirming — review the current cards and confirm again", 409, "conflict");
+    }
 
     // Anchor signal for the whole draft — what the receipt and the review
     // queue point at.
@@ -1143,7 +1151,7 @@ export function batchReceipt(db: DatabaseSync, batchId: string): Record<string, 
   const signals = db
     .prepare("SELECT id, title, source_type, source_url, content, status, created_at, submitted_by, provenance_chain FROM signals WHERE batch_id = ? ORDER BY created_at ASC")
     .all(batchId) as any[];
-  if (!draft && !signals.length) return null;
+  if (draft ? draft.status !== "submitted" : !signals.length) return null;
   const intake = db
     .prepare("SELECT id, status, signal_id, target_node, reviewed_at, rejection_reason FROM intake_queue WHERE signal_id IN (SELECT id FROM signals WHERE batch_id = ?) ORDER BY created_at ASC")
     .all(batchId) as any[];

@@ -170,7 +170,7 @@ export const TOOLS: Tool[] = [
   },
   {
     name: "update_candidate",
-    description: "Merge-patch a candidate you proposed (name, metadata, edge_type, resolves_to, note …). State is the contributor's; you cannot change it.",
+    description: "Merge-patch an untouched proposed candidate (name, metadata, edge_type, resolves_to, note …). Contributor-touched cards are immutable. You cannot set state or question answers; propose a separate correction for review.",
     input_schema: { type: "object", properties: { cid: { type: "string" }, patch: { type: "object" } }, required: ["cid", "patch"] },
   },
   {

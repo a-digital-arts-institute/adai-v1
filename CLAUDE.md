@@ -395,3 +395,15 @@ just wait-healthy  # poll /api/stats until healthy
 reas`, `artwork:fidenza`). The `slug` field is the kebab-case URL-safe form.
 Server-side writes compute `<type>:<slug>`; live contributions may use kebab ids
 (`practitioner:mat-dryhurst`). Cross-source identity merges by node id.
+
+### Intake worker build inputs
+
+The worker uses the canonical `src/utils/ssrf.ts` guard and the master protocol
+plus gatherer context from `claude/skills/`. `worker/scripts/prepare.mjs` generates
+its local TypeScript inputs before build, test and start; do not edit the
+ignored generated files. Build its Dockerfile with the repository root as
+context (`just deploy-worker` does this). CI builds and tests both packages.
+Contributor-touched cards are immutable to the worker. Confirm checks the
+candidate snapshot after image uploads; edits require another confirmation.
+Receipt JSON requires the owner or an admin; public HTML receipts exist only
+after submission.

@@ -4,12 +4,18 @@
   "private": true,
   "description": "A(DAI) URL-intake worker: reads a site with Playwright, proposes candidates to a draft over HTTP. Never touches the graph.",
   "type": "module",
-  "engines": { "node": ">=22.5.0" },
+  "engines": {
+    "node": ">=22.5.0"
+  },
   "scripts": {
     "start": "tsx src/main.ts",
     "build": "tsc",
     "test": "tsx --test tests/*.test.ts",
-    "playwright:install": "playwright install chromium"
+    "playwright:install": "playwright install chromium",
+    "prebuild": "node scripts/prepare.mjs",
+    "pretest": "node scripts/prepare.mjs",
+    "prestart": "node scripts/prepare.mjs",
+    "test:browser": "npm run build && node tests/browser-smoke.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.98.0",

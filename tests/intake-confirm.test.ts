@@ -5,8 +5,9 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { freshDb, insertNode } from "./helpers.js";
-import { createDraft, claimJob, finishPass, getDraft, runDraftTool, contributorPatchCandidate, confirmDraft, batchReceipt, DraftError } from "../src/intake/draft.js";
+import { createDraft, claimJob, finishPass, getDraft, runDraftTool, contributorPatchCandidate, confirmDraft, batchReceipt, enqueueChat, DraftError } from "../src/intake/draft.js";
 import { approveIntakeItem } from "../src/utils/review.js";
+import { revokeSignal } from "../src/utils/admin-actions.js";
 import type { AuthedContributor } from "../src/auth.js";
 
 function contributor(db: ReturnType<typeof freshDb>, tier: string): AuthedContributor {
@@ -126,6 +127,59 @@ describe("confirmDraft", () => {
     const md = JSON.parse((db.prepare("SELECT metadata FROM nodes WHERE id = 'artwork:process-4'").get() as any).metadata);
     assert.equal(md.cdn_image_url, "https://cdn.example/images/ab/abcd.jpg");
     assert.equal(batchReceipt(db, d.id)!.review_state, "live");
+  });
+
+  it("preserves reviewed question provenance and individual revocation", async () => {
+    const db = freshDb();
+    const c = contributor(db, "probationary");
+    const d = buildDraft(db, c);
+    const r = await confirmDraft(db, d, c, { mirror });
+    approveIntakeItem(db, r.intake_ids[0]!);
+    const edge = db.prepare(`SELECT e.signal_id, s.source_type, s.content FROM edges e
+      JOIN signals s ON s.id=e.signal_id WHERE e.edge_type='INFLUENCES'`).get() as any;
+    assert.equal(edge.source_type, "contributor_attested");
+    assert.match(edge.content, /Ben's early sketches/);
+    revokeSignal(db, edge.signal_id, { by: "curator", reason: "correction" });
+    assert.equal(db.prepare("SELECT COUNT(*) AS n FROM edges WHERE edge_type='INFLUENCES' AND valid_until IS NULL").get()!.n, 0);
+    assert.equal(db.prepare("SELECT COUNT(*) AS n FROM edges WHERE valid_until IS NULL").get()!.n, 2);
+  });
+
+  it("rejects a confirmation if a card is rejected during image mirroring", async () => {
+    const db = freshDb();
+    const c = contributor(db, "auto");
+    const d = buildDraft(db, c);
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => { release = resolve; });
+    const pending = confirmDraft(db, d, c, { mirror: async (url) => { await gate; return mirror(url); } });
+    contributorPatchCandidate(db, getDraft(db, d.id)!, "c_03", { state: "rejected" });
+    release();
+    await assert.rejects(pending, (e: any) => e.code === "conflict");
+    assert.equal(db.prepare("SELECT COUNT(*) AS n FROM signals").get()!.n, 0);
+    assert.equal(getDraft(db, d.id)!.status, "ready");
+  });
+
+  it("does not expose a receipt before submission", () => {
+    const db = freshDb();
+    const c = contributor(db, "auto");
+    const d = buildDraft(db, c);
+    assert.equal(batchReceipt(db, d.id), null);
+  });
+
+  it("does not let the worker rewrite an answered question or supply an answer", () => {
+    const db = freshDb();
+    const c = contributor(db, "auto");
+    const d = buildDraft(db, c);
+    enqueueChat(db, d, "Read more");
+    claimJob(db, "w2", d.id);
+    assert.throws(() => runDraftTool(db, d.id, "w2", "update_candidate", {
+      cid: "c_06", patch: { question: { answered_yes: false, answer: "No" } },
+    }), /touched by the contributor/);
+    runDraftTool(db, d.id, "w2", "ask_contributor", { text: "Another question?", if_yes: {
+      source: "practitioner:casey-reas", target: "practitioner:ben-fry", edge_type: "INFLUENCES",
+    } });
+    assert.throws(() => runDraftTool(db, d.id, "w2", "update_candidate", {
+      cid: "c_09", patch: { question: { answered_yes: true, answer: "Yes" } },
+    }), /only the contributor/);
   });
 
   it("rolls back everything when a write throws; draft stays ready", async () => {

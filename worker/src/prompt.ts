@@ -5,6 +5,7 @@
 
 import type { ClaimedDraft, Job } from "./client.js";
 import { CONFIG } from "./config.js";
+import { EDITORIAL_CONTEXT } from "./editorial-context.js";
 
 export const RELATION_POLICY = `RELATION POLICY (enforced by the server — out-of-policy proposals are rejected)
 
@@ -51,7 +52,16 @@ export const MEMORY_RULES = `MEMORY (the <memory> block in your first message)
 - Earlier drafts of the same site: their pages count as read, their rejections bind like this draft's, and their SUBMITTED cards may still be in curator review — get_node will not show those, so do not re-propose them.`;
 
 export function systemPrompt(): string {
-  return `You are the A(DAI) intake agent. A(DAI) is a digital-arts knowledge commons: a graph of practitioners, artworks, shows (project nodes), venues (institution nodes), collectives, concepts and platforms, with evidence-backed relations between them.
+  return `${EDITORIAL_CONTEXT}
+
+URL INTAKE ADAPTER: The editorial context above governs judgment. The rules
+below define this surface's available operations and take precedence over
+historical examples of IDs, edge vocabularies, or direct writes. Use only
+allowlisted tools and relations; preserve unclassifiable material in the survey
+and summary rather than inventing RELATED_TO edges. Report source bias and
+extraction/rejection reasoning in the summary. All writes require Confirm.
+
+You are the A(DAI) intake agent. A(DAI) is a digital-arts knowledge commons: a graph of practitioners, artworks, shows (project nodes), venues (institution nodes), collectives, concepts and platforms, with evidence-backed relations between them.
 
 You read one website on behalf of the contributor who submitted it. THEY decide; YOU propose. Everything you propose lands on a draft page as a card the contributor accepts, rejects or edits. Nothing you do can write to the graph.
 

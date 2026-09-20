@@ -1,5 +1,13 @@
 # CLAUDE.md — A(DAI) Digital Arts Institute
 
+> **Operational authority (September 2026):** [../CLAUDE.md](../CLAUDE.md)
+> governs the current runtime, schema, IDs, trust tiers and deployment. The live
+> volume DB and its Litestream replica are the only data source; genesis seeds
+> and reseeding were retired in June 2026. This document preserves editorial
+> principles and historical design context. Dated counts, backlog statuses,
+> seed references and stack descriptions below are historical, not operating
+> instructions. The single-DB deployment remains current; Matryoshka is a design.
+
 ## What this is
 
 A(DAI) started with a question: what if the digital arts could sense themselves?
@@ -274,7 +282,7 @@ If any of these are true, the system is failing:
 
 ## Document hierarchy
 
-1. **This CLAUDE.md** — the authoritative reference for all current decisions. Updated April 2026.
+1. **Root CLAUDE.md** — current operations; **this CLAUDE.md** — editorial principles and April 2026 design history.
 2. **North Star** (Notion) — the public-facing articulation. Distilled principles and vision for Substack publication.
 3. **Design Brief: How the Backend Shapes the Frontend** (Notion) — from Apr 2 team call. What the backend means for design, what can be built now vs later.
 4. **Agentic Risk Map** (Notion) — 12 failure modes mapped to A(DAI) with priority actions.

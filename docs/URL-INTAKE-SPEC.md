@@ -573,3 +573,27 @@ Tuning that followed: initial pass cap 40 → 80 tool calls (run 1 spent the who
 
 1. `INTAKE_MAX_MACHINES` default 3: enough for the first cohort? It only affects how long a queued draft waits, never whether it runs.
 2. Later, if A(DAI) gets its own domain, switch `INTAKE_FROM` and `RESEND_FROM`; nothing else changes.
+
+## Review hardening (September 2026)
+
+- Worker updates cannot modify contributor-touched cards or populate question
+  answers. Propose a separate correction for the contributor to review.
+- Confirm compares its candidate snapshot after image mirroring; a concurrent
+  edit returns 409 and requires the contributor to review and confirm again.
+- Receipt JSON is owner/admin-only. Public HTML receipts require submission;
+  queued, running, ready, failed and abandoned drafts have no public receipt.
+- Curator approval preserves each proposed edge's evidence signal, including
+  contributor answers and individual-signal revocation.
+- `src/utils/ssrf.ts` is the canonical HTTP guard. The worker prepares a generated
+  copy before build/test/start. DNS addresses are checked and pinned to sockets;
+  all redirects, robots, sitemaps and browser subresources use this transport.
+  Browser service workers and WebSockets are blocked. HTTP redirects are never
+  passed to Chromium: a guarded navigation to the final URL preserves the
+  document origin, relative URLs and redirect cookies.
+- Worker builds also embed the canonical master protocol and gatherer context,
+  with a URL-intake adapter for the current allowlisted vocabulary and Confirm
+  boundary. Build `worker/Dockerfile` from the repository root; its adjacent
+  Docker ignore file limits the context to code and the required editorial files.
+- CI builds/tests both packages and runs the deterministic real-Chromium smoke
+  test. Locally, run `npm --prefix worker run test:browser` after installing its
+  browser binary.

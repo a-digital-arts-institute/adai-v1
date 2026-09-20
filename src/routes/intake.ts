@@ -237,7 +237,12 @@ router.post("/api/intake/drafts/:id/confirm", requireContributor, async (req, re
   }
 });
 
-router.get("/api/intake/batches/:batch_id", (req, res) => {
+router.get("/api/intake/batches/:batch_id", requireContributor, (req, res) => {
+  const d = getDraft(getDb(), String(req.params.batch_id));
+  if (!d || d.status !== "submitted") { res.status(404).set(JSON_HEADERS).json({ error: "not_found" }); return; }
+  if (d.contributor_id !== req.contributor!.id && req.contributor!.scope !== "admin") {
+    res.status(403).set(JSON_HEADERS).json({ error: "forbidden" }); return;
+  }
   const r = batchReceipt(getDb(), String(req.params.batch_id));
   if (!r) { res.status(404).set(JSON_HEADERS).json({ error: "not_found" }); return; }
   res.set(JSON_HEADERS).json(r);

@@ -101,7 +101,9 @@ export function approveIntakeItem(
       let edges: any[] = [];
       try { edges = JSON.parse(item.proposed_edges); } catch { edges = []; }
       for (const e of edges) {
-        materialiseEdge(db, { ...e, signal_id: item.signal_id }, { signalId: item.signal_id, createdBy });
+        // URL-intake batches carry an individual evidence signal for each edge.
+        const signalId = e.signal_id ?? item.signal_id;
+        materialiseEdge(db, { ...e, signal_id: signalId }, { signalId, createdBy });
       }
     }
     // Embed any nodes just materialised. Same fire-and-forget contract as

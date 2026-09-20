@@ -206,7 +206,7 @@ deploy-worker:
     set -euo pipefail
     test -d worker || { echo "no worker/ dir"; exit 1; }
     tag_short="$(git rev-parse --short HEAD)"
-    (cd worker && FLY_REMOTE_BUILDER_REGION=iad flyctl deploy --config fly.toml --build-only --push --image-label "$tag_short" 2>&1 | tee /tmp/adai-worker-deploy.log)
+    (FLY_REMOTE_BUILDER_REGION=iad flyctl deploy --config worker/fly.toml --dockerfile worker/Dockerfile --build-only --push --image-label "$tag_short" 2>&1 | tee /tmp/adai-worker-deploy.log)
     tag="registry.fly.io/adai-intake-worker:$tag_short"
     echo "[worker] image $tag"
     flyctl secrets set WORKER_IMAGE="$tag" -a {{app}}

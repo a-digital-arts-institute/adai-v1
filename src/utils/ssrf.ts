@@ -8,6 +8,9 @@
 
 import dns from "node:dns/promises";
 import net from "node:net";
+import http from "node:http";
+import https from "node:https";
+import { createBrotliDecompress, createGunzip, createInflate } from "node:zlib";
 
 export class SsrfError extends Error {
   constructor(message: string, public readonly code: string) {
@@ -39,11 +42,14 @@ export function isPrivateIp(ip: string): boolean {
   const fam = net.isIP(ip);
   if (fam === 4) return PRIVATE_V4.some((c) => inCidr4(ip, c));
   if (fam === 6) {
-    const low = ip.toLowerCase();
+    const low = new URL(`http://[${ip}]/`).hostname.slice(1, -1);
     if (low === "::" || low === "::1") return true;
-    // IPv4-mapped (::ffff:a.b.c.d)
-    const m = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/.exec(low);
-    if (m) return isPrivateIp(m[1]!);
+    // URL canonicalization also handles expanded and dotted mapped forms.
+    const m = /^::ffff:([0-9a-f]+):([0-9a-f]+)$/.exec(low);
+    if (m) {
+      const n = (parseInt(m[1]!, 16) * 65536 + parseInt(m[2]!, 16)) >>> 0;
+      return isPrivateIp([n >>> 24, (n >>> 16) & 255, (n >>> 8) & 255, n & 255].join("."));
+    }
     if (low.startsWith("fc") || low.startsWith("fd")) return true; // fc00::/7 unique local
     if (low.startsWith("fe8") || low.startsWith("fe9") || low.startsWith("fea") || low.startsWith("feb")) return true; // fe80::/10
     if (low.startsWith("ff")) return true; // multicast
@@ -79,13 +85,13 @@ export function checkUrlSyntax(raw: string): URL {
 /**
  * Resolve the hostname and verify that EVERY address is public. Throws.
  */
-export async function assertPublicHost(u: URL, lookup: typeof dns.lookup = dns.lookup): Promise<void> {
+export async function publicAddresses(u: URL, lookup: typeof dns.lookup = dns.lookup): Promise<Array<{ address: string; family: number }>> {
   const host = u.hostname.replace(/^\[|\]$/g, "");
   if (net.isIP(host)) {
     if (isPrivateIp(host)) throw new SsrfError("private address", "private_host");
-    return;
+    return [{ address: host, family: net.isIP(host) }];
   }
-  let addrs: Array<{ address: string }>;
+  let addrs: Array<{ address: string; family: number }>;
   try {
     addrs = await lookup(host, { all: true });
   } catch {
@@ -95,6 +101,11 @@ export async function assertPublicHost(u: URL, lookup: typeof dns.lookup = dns.l
   for (const a of addrs) {
     if (isPrivateIp(a.address)) throw new SsrfError(`${host} resolves to a private address`, "private_host");
   }
+  return addrs;
+}
+
+export async function assertPublicHost(u: URL, lookup: typeof dns.lookup = dns.lookup): Promise<void> {
+  await publicAddresses(u, lookup);
 }
 
 export interface SafeFetchOptions {
@@ -103,7 +114,11 @@ export interface SafeFetchOptions {
   maxRedirects?: number;  // default 5
   headers?: Record<string, string>;
   lookup?: typeof dns.lookup;
-  method?: "GET" | "HEAD";
+  method?: string;
+  body?: Buffer;
+  // Optional browser cookie jar, kept outside this transport.
+  cookieHeader?: (url: string) => Promise<string>;
+  onResponse?: (url: string, headers: http.IncomingHttpHeaders) => Promise<void>;
 }
 
 export interface SafeFetchResult {
@@ -111,6 +126,7 @@ export interface SafeFetchResult {
   status: number;
   content_type: string | null;
   bytes: Buffer;
+  headers: Record<string, string>;
 }
 
 /**
@@ -125,44 +141,81 @@ export async function safeFetch(raw: string, opts: SafeFetchOptions = {}): Promi
   const timer = setTimeout(() => ctl.abort(), timeoutMs);
   try {
     let current = checkUrlSyntax(raw);
+    let method = opts.method ?? "GET";
+    let body = opts.body;
+    const headers = Object.fromEntries(Object.entries(opts.headers ?? {}).map(([k, v]) => [k.toLowerCase(), v]));
+    delete headers.host;
     for (let hop = 0; hop <= maxRedirects; hop++) {
-      await assertPublicHost(current, opts.lookup);
-      const res = await fetch(current.toString(), {
-        method: opts.method ?? "GET",
-        redirect: "manual",
-        signal: ctl.signal,
-        headers: { "user-agent": "ADAI-intake/1.0 (+https://adai-basel.fly.dev)", ...(opts.headers ?? {}) },
+      const addresses = await publicAddresses(current, opts.lookup);
+      ctl.signal.throwIfAborted();
+      if (opts.cookieHeader) headers.cookie = await opts.cookieHeader(current.toString());
+      // Pin the socket lookup to the checked addresses. The URL hostname
+      // remains intact for Host and TLS verification; no second DNS lookup.
+      const response = await new Promise<http.IncomingMessage>((resolve, reject) => {
+        const request = (current.protocol === "https:" ? https : http).request(current, {
+          method,
+          signal: ctl.signal,
+          agent: false,
+          lookup: (_host, options, callback) => {
+            if (options.all) callback(null, addresses);
+            else callback(null, addresses[0]!.address, addresses[0]!.family);
+          },
+          headers: { "user-agent": "ADAI-intake/1.0 (+https://adai-basel.fly.dev)", ...headers, "accept-encoding": "identity" },
+        }, resolve);
+        request.on("error", reject);
+        request.end(body);
       });
-      if (res.status >= 300 && res.status < 400) {
-        const loc = res.headers.get("location");
+      if (opts.onResponse) {
+        try { await opts.onResponse(current.toString(), response.headers); }
+        catch (e) { response.destroy(); throw e; }
+      }
+      const status = response.statusCode ?? 502;
+      const redirect = [301, 302, 303, 307, 308].includes(status);
+      if (redirect) {
+        response.destroy();
+        const loc = response.headers.location;
         if (!loc) throw new SsrfError("redirect without location", "bad_redirect");
-        // drain
-        try { await res.arrayBuffer(); } catch { /* ignore */ }
-        current = checkUrlSyntax(new URL(loc, current).toString());
+        const next = checkUrlSyntax(new URL(loc, current).toString());
+        if (next.origin !== current.origin) {
+          delete headers.authorization;
+          delete headers.cookie;
+        }
+        if ((status === 303 && method !== "HEAD") || ((status === 301 || status === 302) && method === "POST")) {
+          method = "GET"; body = undefined;
+          delete headers["content-length"];
+          delete headers["content-type"];
+        }
+        current = next;
         continue;
       }
-      const len = parseInt(res.headers.get("content-length") ?? "", 10);
-      if (Number.isFinite(len) && len > maxBytes) throw new SsrfError(`body exceeds ${maxBytes} bytes`, "too_large");
+      const responseHeaders: Record<string, string> = {};
+      for (const [key, value] of Object.entries(response.headers)) {
+        if (value !== undefined) responseHeaders[key] = Array.isArray(value) ? value.join("\n") : value;
+      }
+      const len = Number(response.headers["content-length"]);
+      if (len > maxBytes) { response.destroy(); throw new SsrfError(`body exceeds ${maxBytes} bytes`, "too_large"); }
+      const encoding = response.headers["content-encoding"];
+      const decoder = encoding === "gzip" ? createGunzip() : encoding === "br" ? createBrotliDecompress() : encoding === "deflate" ? createInflate() : null;
+      const stream = decoder ? response.pipe(decoder) : response;
+      if (decoder) response.on("error", (e) => decoder.destroy(e));
       const chunks: Buffer[] = [];
       let total = 0;
-      if (res.body) {
-        const reader = res.body.getReader();
-        for (;;) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          total += value.byteLength;
-          if (total > maxBytes) {
-            try { await reader.cancel(); } catch { /* ignore */ }
-            throw new SsrfError(`body exceeds ${maxBytes} bytes`, "too_large");
-          }
-          chunks.push(Buffer.from(value));
+      try {
+        for await (const chunk of stream) {
+          total += chunk.length;
+          if (total > maxBytes) throw new SsrfError(`body exceeds ${maxBytes} bytes`, "too_large");
+          chunks.push(Buffer.from(chunk));
         }
-      }
+      } finally { stream.destroy(); response.destroy(); }
+      // Bodies are decoded and re-sized; these wire headers no longer apply.
+      if (decoder) delete responseHeaders["content-encoding"];
+      delete responseHeaders["content-length"];
+      delete responseHeaders["transfer-encoding"];
+      delete responseHeaders.connection;
       return {
-        final_url: current.toString(),
-        status: res.status,
-        content_type: res.headers.get("content-type")?.split(";")[0]?.trim().toLowerCase() ?? null,
-        bytes: Buffer.concat(chunks),
+        final_url: current.toString(), status,
+        content_type: response.headers["content-type"]?.split(";")[0]?.trim().toLowerCase() ?? null,
+        bytes: Buffer.concat(chunks), headers: responseHeaders,
       };
     }
     throw new SsrfError("too many redirects", "too_many_redirects");

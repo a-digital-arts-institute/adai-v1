@@ -174,7 +174,7 @@ describe("draft tools", () => {
     assert.equal((p as any).text, undefined);
   });
 
-  it("contributor patches are validated and mark edited; update_candidate keeps state", () => {
+  it("contributor-touched cards cannot be changed or removed by the worker", () => {
     const db = freshDb();
     const d = createDraft(db, CONTRIB, "https://a.example/");
     claimJob(db, "w1");
@@ -185,13 +185,13 @@ describe("draft tools", () => {
     assert.equal(c.state, "accepted");
     assert.equal(c.edited, true);
     assert.equal(c.kind === "node" && c.node.name, "Untitled (Blue)");
-    // agent re-claims for a chat pass and updates metadata — state survives
+    // A new pass must not silently change already approved content.
     enqueueChat(db, getDraft(db, d.id)!, "add the year");
     claimJob(db, "w1");
-    runDraftTool(db, d.id, "w1", "update_candidate", { cid: "c_01", patch: { node: { metadata: { year: "2020" } }, state: "rejected" } });
+    assert.throws(() => runDraftTool(db, d.id, "w1", "update_candidate", { cid: "c_01", patch: { node: { metadata: { year: "2021" } }, state: "rejected" } }), /touched by the contributor/);
     const after = getDraft(db, d.id)!.candidates[0]!;
     assert.equal(after.state, "accepted");
-    assert.equal(after.kind === "node" && after.node.metadata.year, "2020");
+    assert.equal(after.kind === "node" && after.node.metadata.year, undefined);
     // an edited candidate cannot be removed by the agent
     assert.throws(() => runDraftTool(db, d.id, "w1", "remove_candidate", { cid: "c_01" }), /touched by the contributor/);
   });
