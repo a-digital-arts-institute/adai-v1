@@ -17,7 +17,7 @@ function cfg() {
     maxMachines: parseInt(process.env.INTAKE_MAX_MACHINES || "3", 10) || 3,
     adaiUrl: process.env.WORKER_ADAI_URL || "http://adai-basel.flycast",
     model: process.env.INTAKE_MODEL || "claude-sonnet-5",
-    hardTimeoutS: parseInt(process.env.INTAKE_HARD_TIMEOUT_S || "1500", 10) || 1500,
+    hardTimeoutS: parseInt(process.env.INTAKE_HARD_TIMEOUT_S || "2700", 10) || 2700,
   };
 }
 

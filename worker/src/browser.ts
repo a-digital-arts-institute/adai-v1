@@ -112,7 +112,7 @@ async function disallowed(u: URL): Promise<boolean> {
   if (!rules) {
     rules = [];
     try {
-      const res = await fetch(`${origin}/robots.txt`, { signal: AbortSignal.timeout(8000), redirect: "follow" });
+      const res = await fetch(`${origin}/robots.txt`, { signal: AbortSignal.timeout(8000), redirect: "follow", headers: { "user-agent": userAgent, ...NAV_HEADERS } });
       if (res.ok) {
         let applies = false;
         for (const line of (await res.text()).split(/\r?\n/)) {
@@ -129,6 +129,94 @@ async function disallowed(u: URL): Promise<boolean> {
     robotsCache.set(origin, rules);
   }
   return rules.some((p) => u.pathname.startsWith(p));
+}
+
+// ---- site outline (sitemap) ---------------------------------------------------
+//
+// What a person sees in a site's navigation, the sitemap states outright:
+// how many artist pages, how many exhibitions, where the index pages are.
+// Read once per pass by the harness, BEFORE the model spends a call, so a
+// gallery's programme is surveyed instead of discovered link by link. Costs
+// no page-cap budget and a few hundred tokens.
+
+const SITEMAP_MAX_FILES = 14;
+const SITEMAP_MAX_URLS = 6000;
+
+async function robotsSitemaps(origin: string): Promise<string[]> {
+  try {
+    const res = await fetch(`${origin}/robots.txt`, { signal: AbortSignal.timeout(8000), redirect: "follow", headers: { "user-agent": userAgent, ...NAV_HEADERS } });
+    if (!res.ok) return [];
+    return [...(await res.text()).matchAll(/^\s*sitemap:\s*(\S+)/gim)].map((m) => m[1]!);
+  } catch { return []; }
+}
+
+async function sitemapLocs(url: string, rootUrl: string): Promise<string[]> {
+  const u = checkUrl(url);
+  if (!sameSite(u.toString(), rootUrl)) return [];
+  await assertPublic(u);
+  const res = await fetch(u.toString(), { signal: AbortSignal.timeout(12_000), redirect: "follow", headers: { "user-agent": userAgent, ...NAV_HEADERS, accept: "application/xml,text/xml,*/*;q=0.5" } });
+  if (!res.ok) return [];
+  const final = checkUrl(res.url || u.toString());
+  if (!sameSite(final.toString(), rootUrl)) return [];
+  await assertPublic(final);
+  const xml = (await res.text()).slice(0, 5_000_000);
+  return [...xml.matchAll(/<loc>\s*(?:<!\[CDATA\[)?\s*([^<\]\s]+)/gi)].map((m) => m[1]!.replace(/&amp;/g, "&"));
+}
+
+/** Group URLs by first path segment. Pure — exported for tests. */
+export function outlineFromUrls(urls: string[], rootUrl: string): string | null {
+  const sections = new Map<string, string[]>();
+  const top: string[] = [];
+  const seen = new Set<string>();
+  for (const raw of urls) {
+    let u: URL;
+    try { u = new URL(raw); } catch { continue; }
+    if (!sameSite(u.toString(), rootUrl)) continue;
+    const key = u.origin + u.pathname.replace(/\/$/, "");
+    if (seen.has(key)) continue;
+    seen.add(key);
+    const segs = u.pathname.split("/").filter(Boolean);
+    if (segs.length === 0) continue;
+    if (segs.length === 1) { top.push(u.toString()); continue; }
+    const k = `${u.hostname}/${segs[0]}/`;
+    const arr = sections.get(k) ?? [];
+    arr.push(u.toString());
+    sections.set(k, arr);
+  }
+  if (!sections.size && top.length < 3) return null;
+  const lines = [...sections.entries()]
+    .sort((a, b) => b[1].length - a[1].length)
+    .slice(0, 30)
+    .map(([k, list]) => `${k} — ${list.length} pages, e.g. ${list.slice(0, 3).join(" , ")}`);
+  const tops = top.slice(0, 40).join("\n");
+  return `<site_outline source="sitemap" urls="${seen.size}">\nSections (by first path segment):\n${lines.join("\n")}\n\nTop-level pages (index pages live here — roster, exhibitions, archive, about):\n${tops}\n</site_outline>`;
+}
+
+export async function siteOutline(rootUrl: string): Promise<string | null> {
+  try {
+    const root = checkUrl(rootUrl);
+    const declared = await robotsSitemaps(root.origin);
+    const starts = declared.length ? declared : ["/sitemap.xml", "/sitemap_index.xml", "/wp-sitemap.xml"].map((p) => root.origin + p);
+    const urls: string[] = [];
+    let queue = starts.slice(0, 4);
+    let files = 0;
+    while (queue.length && files < SITEMAP_MAX_FILES && urls.length < SITEMAP_MAX_URLS) {
+      const next = queue.shift()!;
+      files++;
+      let locs: string[] = [];
+      try { locs = await sitemapLocs(next, rootUrl); } catch { continue; }
+      for (const l of locs) {
+        if (/\.xml(\.gz)?(\?|$)/i.test(l)) { if (!l.endsWith(".gz")) queue.push(l); }
+        else if (urls.length < SITEMAP_MAX_URLS) urls.push(l);
+      }
+      // Guessing (no Sitemap: line in robots.txt): the first guess that
+      // answers is the sitemap; drop the other guesses.
+      if (!declared.length && locs.length && starts.includes(next)) queue = queue.filter((q) => !starts.includes(q));
+    }
+    return outlineFromUrls(urls, rootUrl);
+  } catch {
+    return null;
+  }
 }
 
 // ---- text extraction (plain fetch fallback) ------------------------------------
@@ -178,11 +266,22 @@ const EXTRACT_SCRIPT = `(() => {
     walk(document);
     return out;
   };
-  const kill = ["script", "style", "noscript", "svg", "nav", "footer", "header", "form", "iframe", "aside"];
-  const root = document.querySelector("main, article, [role=main]") || document.body;
-  const clone = root.cloneNode(true);
-  for (const sel of kill) clone.querySelectorAll(sel).forEach((n) => n.remove());
-  const text = (clone.innerText || clone.textContent || "").replace(/[ \\t]+/g, " ").replace(/\\n\\s*\\n+/g, "\\n\\n").trim();
+  // Site chrome goes; content headers stay. Inside <main>/<article> a
+  // <header> is the entry title block (WordPress, most gallery themes) —
+  // on a roster page it is ALL the text there is.
+  const readable = (root) => {
+    const kill = ["script", "style", "noscript", "svg", "nav", "form", "iframe", "aside"];
+    if (root === document.body) kill.push(":scope > header", ":scope > footer", "[role=banner]", "[role=contentinfo]");
+    const clone = root.cloneNode(true);
+    for (const sel of kill) clone.querySelectorAll(sel).forEach((n) => n.remove());
+    // A detached clone has no layout, so innerText degrades to textContent
+    // and block boundaries vanish; mark them before reading.
+    clone.querySelectorAll("br, p, div, li, h1, h2, h3, h4, h5, h6, tr, section, article, header, footer, figcaption, dt, dd").forEach((n) => n.append("\\n"));
+    return (clone.textContent || "").replace(/[ \\t]+/g, " ").replace(/ ?\\n ?/g, "\\n").replace(/\\n{3,}/g, "\\n\\n").trim();
+  };
+  const main = document.querySelector("main, article, [role=main]");
+  let text = readable(main || document.body);
+  if (main && text.length < 200) { const whole = readable(document.body); if (whole.length > text.length) text = whole; }
   const links = collect("a[href]").map((a) => ({
     href: a.href,
     text: (a.innerText || a.getAttribute("aria-label") || a.getAttribute("title") || "").replace(/\\s+/g, " ").trim().slice(0, 120),
@@ -207,48 +306,138 @@ const EXTRACT_SCRIPT = `(() => {
   return { title: document.title || null, text, links, images };
 })()`;
 
+// We read a site the way the contributor would: as a person's browser.
+// A real Chrome UA for the platform we actually run on (so UA, client hints
+// and navigator agree), new-headless Chromium when the image has it, one
+// context per pass so cookies persist across pages (a JS challenge passed
+// once stays passed), a referer and a human pause between same-host pages.
+// robots.txt, the page caps and the SSRF guard still apply — we browse like
+// a person, we do not crawl like one can't.
 type Browser = import("playwright").Browser;
+type BrowserContext = import("playwright").BrowserContext;
 let browser: Browser | null = null;
+let session: { ctx: BrowserContext; lastUrl: string | null; lastAt: number } | null = null;
+
+const LAUNCH_ARGS = ["--disable-dev-shm-usage", "--no-sandbox", "--disable-blink-features=AutomationControlled"];
+
+export function chromeUa(version: string, platform: string = process.platform): string {
+  const major = /^(\d+)/.exec(version)?.[1] ?? "140";
+  const os = platform === "darwin" ? "Macintosh; Intel Mac OS X 10_15_7" : platform === "win32" ? "Windows NT 10.0; Win64; x64" : "X11; Linux x86_64";
+  return `Mozilla/5.0 (${os}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${major}.0.0.0 Safari/537.36`;
+}
+
+let userAgent = chromeUa("140");
+const NAV_HEADERS = { accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8", "accept-language": "en-US,en;q=0.9" };
 
 async function getBrowser(): Promise<Browser> {
   if (browser) return browser;
   const { chromium } = await import("playwright");
-  browser = await chromium.launch({ headless: true, args: ["--disable-dev-shm-usage", "--no-sandbox"] });
+  try {
+    // The full Chromium build in new-headless mode: same code path as a
+    // headed browser (no "HeadlessChrome" in UA or client hints).
+    browser = await chromium.launch({ headless: true, channel: "chromium", args: LAUNCH_ARGS });
+  } catch {
+    browser = await chromium.launch({ headless: true, args: LAUNCH_ARGS });
+  }
+  userAgent = chromeUa(browser.version());
   return browser;
-}
-
-export async function closeBrowser(): Promise<void> {
-  if (browser) { try { await browser.close(); } catch { /* ignore */ } browser = null; }
 }
 
 const BLOCK_TYPES = new Set(["font", "media", "websocket", "manifest", "texttrack", "eventsource"]);
 const ANALYTICS = /google-analytics|googletagmanager|doubleclick|facebook\.net|hotjar|segment\.io|mixpanel|plausible|matomo|clarity\.ms|sentry/i;
 
-async function withBrowser(u: URL): Promise<Omit<FetchedPage, "via" | "sha256" | "chars" | "url">> {
+async function getSession(): Promise<NonNullable<typeof session>> {
+  if (session) return session;
   const b = await getBrowser();
   const ctx = await b.newContext({
-    userAgent: "Mozilla/5.0 (compatible; ADAI-intake/1.0; +https://adai-basel.fly.dev)",
-    viewport: { width: 1280, height: 900 },
+    userAgent,
+    locale: "en-US",
+    viewport: { width: 1440, height: 900 },
     javaScriptEnabled: true,
     ignoreHTTPSErrors: false,
   });
+  await ctx.route("**/*", (route) => {
+    const req = route.request();
+    const url = req.url();
+    if (!/^https?:/i.test(url)) return route.abort();
+    try {
+      const h = new URL(url).hostname.replace(/^\[|\]$/g, "");
+      if (BLOCKED.has(h) || (net.isIP(h) && isPrivateIp(h)) || /\.(localhost|internal|local)$/.test(h)) return route.abort();
+    } catch { return route.abort(); }
+    if (BLOCK_TYPES.has(req.resourceType()) || ANALYTICS.test(url)) return route.abort();
+    return route.continue();
+  });
+  session = { ctx, lastUrl: null, lastAt: 0 };
+  return session;
+}
+
+/** End the pass's browsing session (cookies, referer chain). The browser stays warm. */
+export async function endSession(): Promise<void> {
+  const s = session;
+  session = null;
+  if (s) await s.ctx.close().catch(() => {});
+}
+
+export async function closeBrowser(): Promise<void> {
+  await endSession();
+  if (browser) { try { await browser.close(); } catch { /* ignore */ } browser = null; }
+}
+
+// ---- blocked pages ----------------------------------------------------------------
+
+const BLOCK_STATUS = new Set([401, 403, 407, 429, 503]);
+const CHALLENGE = /just a moment|checking your browser|verif(y|ying) (that )?you are (a )?human|attention required|access denied|are you a robot|enable javascript and cookies|sgcaptcha|cf-chl|captcha/i;
+
+/** A refusal or an interstitial instead of the page. Exported for tests. */
+export function looksBlocked(status: number, title: string | null, text: string): boolean {
+  if (BLOCK_STATUS.has(status)) return true;
+  return text.length < 1500 && CHALLENGE.test(`${title ?? ""}\n${text}`);
+}
+
+class Blocked extends Error {
+  constructor(public readonly status: number, public readonly title: string | null) {
+    super(`blocked (HTTP ${status}${title ? `, "${title}"` : ""})`);
+    this.name = "Blocked";
+  }
+}
+
+function blockedRefusal(u: URL, status: number, title: string | null): FetchRefused {
+  const why = status === 401 || status === 407
+    ? "it is behind a login"
+    : status === 429
+      ? "the site is rate-limiting us"
+      : "the site's bot protection refused us, even reading as a regular browser";
+  return new FetchRefused(`${u.hostname} would not serve this page (HTTP ${status}${title ? `, "${title}"` : ""}): ${why}. It cannot be read from here.`, "blocked");
+}
+
+async function withBrowser(u: URL): Promise<Omit<FetchedPage, "via" | "sha256" | "chars" | "url">> {
+  const s = await getSession();
+  // A person does not open the next page of the same site within
+  // milliseconds; neither do we.
+  const sameHostAsLast = !!s.lastUrl && new URL(s.lastUrl).hostname === u.hostname;
+  if (sameHostAsLast) {
+    const wait = 500 + Math.random() * 1000 - (Date.now() - s.lastAt);
+    if (wait > 0) await new Promise((r) => setTimeout(r, wait));
+  }
+  const page = await s.ctx.newPage();
   try {
-    await ctx.route("**/*", (route) => {
-      const req = route.request();
-      const url = req.url();
-      if (!/^https?:/i.test(url)) return route.abort();
-      try {
-        const h = new URL(url).hostname.replace(/^\[|\]$/g, "");
-        if (BLOCKED.has(h) || (net.isIP(h) && isPrivateIp(h)) || /\.(localhost|internal|local)$/.test(h)) return route.abort();
-      } catch { return route.abort(); }
-      if (BLOCK_TYPES.has(req.resourceType()) || ANALYTICS.test(url)) return route.abort();
-      return route.continue();
-    });
-    const page = await ctx.newPage();
     let status = 0;
-    let resp = await page.goto(u.toString(), { waitUntil: "domcontentloaded", timeout: 20_000 });
-    status = resp?.status() ?? 0;
+    page.on("response", (r) => {
+      if (r.request().isNavigationRequest() && r.frame() === page.mainFrame()) status = r.status();
+    });
+    const referer = s.lastUrl && sameSite(s.lastUrl, u.toString()) ? s.lastUrl : undefined;
+    const resp = await page.goto(u.toString(), { waitUntil: "domcontentloaded", timeout: 20_000, referer });
+    status = status || (resp?.status() ?? 0);
     try { await page.waitForLoadState("networkidle", { timeout: 8_000 }); } catch { /* keep going */ }
+    // A JS challenge (Cloudflare, SiteGround …) clears itself in a real
+    // browser and reloads the page; give it a few beats before giving up.
+    const peek = () => page.evaluate("({ title: document.title || null, text: (document.body && document.body.innerText || '').slice(0, 2000) })") as Promise<{ title: string | null; text: string }>;
+    let seen = await peek().catch(() => ({ title: null, text: "" }));
+    for (let i = 0; i < 4 && looksBlocked(status, seen.title, seen.text); i++) {
+      await page.waitForTimeout(3_000);
+      seen = await peek().catch(() => seen);
+    }
+    if (looksBlocked(status, seen.title, seen.text)) throw new Blocked(status, seen.title);
     // Scroll the whole page (capped) so IntersectionObserver-driven lazy
     // loaders (Cargo, Squarespace, most galleries) swap their 1×1
     // placeholders for real URLs, then give them a moment to settle.
@@ -278,9 +467,11 @@ async function withBrowser(u: URL): Promise<Omit<FetchedPage, "via" | "sha256" |
       links: Array<{ href: string; text: string }>;
       images: Array<{ src: string; alt: string; w: number; h: number }>;
     };
+    s.lastUrl = finalUrl;
     return { final_url: finalUrl, status, title: extracted.title, text: extracted.text, links: extracted.links, images: extracted.images };
   } finally {
-    await ctx.close().catch(() => {});
+    s.lastAt = Date.now();
+    await page.close().catch(() => {});
   }
 }
 
@@ -288,7 +479,7 @@ async function withFetch(u: URL): Promise<Omit<FetchedPage, "via" | "sha256" | "
   const res = await fetch(u.toString(), {
     redirect: "follow",
     signal: AbortSignal.timeout(20_000),
-    headers: { "user-agent": "Mozilla/5.0 (compatible; ADAI-intake/1.0; +https://adai-basel.fly.dev)", accept: "text/html,*/*;q=0.5" },
+    headers: { "user-agent": userAgent, ...NAV_HEADERS },
   });
   const final = checkUrl(res.url || u.toString());
   await assertPublic(final);
@@ -364,8 +555,15 @@ export async function fetchPage(rawUrl: string, policy: FetchPolicy): Promise<Fe
     if (e instanceof FetchRefused) throw e;
     console.warn(`[worker] browser failed for ${u} (${e?.message ?? e}); falling back to fetch`);
     via = "fetch";
-    core = await withFetch(u);
+    try {
+      core = await withFetch(u);
+    } catch (e2) {
+      if (e instanceof Blocked && !(e2 instanceof FetchRefused)) throw blockedRefusal(u, e.status, e.title);
+      throw e2;
+    }
   }
+  // A refusal page is not evidence; never hand it to the model as content.
+  if (looksBlocked(core.status, core.title, core.text)) throw blockedRefusal(u, core.status, core.title);
   const text = core.text.slice(0, CONFIG.pageTextChars);
   const same = (h: string) => sameSite(h, policy.rootUrl);
   const seen = new Set<string>();

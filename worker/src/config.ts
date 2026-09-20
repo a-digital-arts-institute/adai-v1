@@ -16,13 +16,20 @@ export const CONFIG = {
   model: process.env.INTAKE_MODEL || "claude-sonnet-5",
   draftId: process.env.DRAFT_ID || null,
   jobKind: process.env.JOB_KIND || null,
-  maxUsdPerDraft: num("INTAKE_MAX_USD_PER_DRAFT", 3),
-  hardTimeoutS: int("INTAKE_HARD_TIMEOUT_S", 1500),
-  maxToolCallsInitial: int("INTAKE_MAX_TOOL_CALLS", 80),
-  maxToolCallsChat: int("INTAKE_MAX_TOOL_CALLS_CHAT", 20),
-  maxPagesSoft: int("INTAKE_MAX_PAGES", 30),
-  maxPagesHard: 60,
-  maxOffsitePages: int("INTAKE_MAX_OFFSITE_PAGES", 10),
+  // Beta defaults (Sept 2026). The old 80-call cap was the real page limit:
+  // ~7 calls per page (fetch + resolves + proposals) ended a gallery pass at
+  // 12 of 30 pages. The USD cap is the safety rail; the call cap only stops
+  // a loop that has lost the plot. The USD cap is checked per PASS.
+  maxUsdPerDraft: num("INTAKE_MAX_USD_PER_DRAFT", 6),
+  hardTimeoutS: int("INTAKE_HARD_TIMEOUT_S", 2700),
+  maxToolCallsInitial: int("INTAKE_MAX_TOOL_CALLS", 240),
+  maxToolCallsContinue: int("INTAKE_MAX_TOOL_CALLS_CONTINUE", 200),
+  maxToolCallsChat: int("INTAKE_MAX_TOOL_CALLS_CHAT", 40),
+  maxPagesSoft: int("INTAKE_MAX_PAGES", 60),
+  maxPagesHard: 240,
+  maxOffsitePages: int("INTAKE_MAX_OFFSITE_PAGES", 20),
+  apiRetries: int("INTAKE_API_RETRIES", 4),
+  apiRetryBaseMs: int("INTAKE_API_RETRY_BASE_MS", 2000),
   pollSleepMs: int("INTAKE_POLL_SLEEP_MS", 5000),
   heartbeatMs: 30_000,
   pageTextChars: int("INTAKE_PAGE_TEXT_CHARS", 24_000),

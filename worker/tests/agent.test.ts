@@ -72,6 +72,8 @@ describe("runPass", () => {
     ]);
     const r = await runPass(draft as any, { kind: "initial", queued_at: "x" }, {
       client: client as any,
+      siteOutline: async () => null,
+      heartbeat: async () => "ok" as const,
       fetchPage: async () => page,
       addPage: async () => {},
       runTool: async (_ctx, name, input) => {
@@ -104,6 +106,8 @@ describe("runPass", () => {
     const client = fakeClient([{ text: "unused" }]);
     const r = await runPass(draft as any, { kind: "initial", queued_at: "x" }, {
       client: client as any,
+      siteOutline: async () => null,
+      heartbeat: async () => "ok" as const,
       fetchPage: async () => { throw new Error("ECONNREFUSED"); },
       addPage: async () => {},
       runTool: async () => ({ content: "", is_error: false }),
@@ -120,6 +124,8 @@ describe("runPass", () => {
     ]);
     const r = await runPass(draft as any, { kind: "chat", message: "hi", queued_at: "x" }, {
       client: client as any,
+      siteOutline: async () => null,
+      heartbeat: async () => "ok" as const,
       runTool: async (_c, name, input) => (name === "finish_pass" ? { content: "{}", is_error: false, finished: String(input.summary) } : { content: "{}", is_error: false }),
     });
     assert.equal(r.summary, "done");
@@ -135,10 +141,96 @@ describe("runPass", () => {
     const d = { ...draft, candidates: [{ cid: "c_01", kind: "node", state: "proposed" }], messages: [{ role: "user", text: "fix the year", at: "x" }] };
     const r = await runPass(d as any, { kind: "chat", message: "fix the year", queued_at: "x" }, {
       client: client as any,
+      siteOutline: async () => null,
+      heartbeat: async () => "ok" as const,
       runTool: async () => ({ content: "{}", is_error: false }),
     });
     assert.equal(r.summary, "Updated the year to 2005.");
     assert.match(textOf(client.seen[0].messages[0]), /fix the year/);
     assert.match(textOf(client.seen[0].messages[0]), /c_01/);
+  });
+
+  it("initial pass: the sitemap outline rides in the first message", async () => {
+    const client = fakeClient([{ tools: [{ name: "finish_pass", input: { summary: "ok" } }] }]);
+    await runPass(draft as any, { kind: "initial", queued_at: "x" }, {
+      client: client as any,
+      heartbeat: async () => "ok" as const,
+      siteOutline: async () => '<site_outline source="sitemap" urls="54">gallery.example/artist/ — 34 pages</site_outline>',
+      fetchPage: async () => page,
+      addPage: async () => {},
+      runTool: async (_c, name, input) => ({ content: "{}", is_error: false, ...(name === "finish_pass" ? { finished: String(input.summary) } : {}) }),
+    });
+    const first = textOf(client.seen[0].messages[0]);
+    assert.match(first, /artist\/ — 34 pages/);
+    assert.match(first, /SURVEY the site/);
+    assert.match(client.seen[0].system[0].text, /SURVEY FIRST/);
+  });
+
+  it("continue pass: no root fetch; memory carries pages read, the survey, rejections and earlier drafts", async () => {
+    const client = fakeClient([{ tools: [{ name: "finish_pass", input: { summary: "added 3 shows" } }] }]);
+    let fetched = 0;
+    const d = {
+      ...draft,
+      passes: 1,
+      subject_node_id: "institution:gallery",
+      pages: [{ url: "https://artist.example/artists", final_url: "https://artist.example/artists", title: "Artists", status: 200 }],
+      survey: { site_kind: "gallery", inventory: [{ label: "artists", count: 34 }], remaining: "exhibitions before 2021" },
+      candidates: [
+        { cid: "c_01", kind: "node", state: "accepted", edited: false, node: { type: "practitioner", name: "Auriea Harvey" }, resolves_to: null },
+        { cid: "c_02", kind: "edge", state: "rejected", edited: false, edge: { source: "cid:c_01", target: "concept:net-art", edge_type: "EMBODIES" } },
+      ],
+      prior: { drafts: 1, pages: ["https://artist.example/about"], rejected: ['institution "Some Fair"'], submitted: ['practitioner "Vera Molnar"'] },
+    };
+    const r = await runPass(d as any, { kind: "continue", message: "the 2019–2021 exhibitions", queued_at: "x" }, {
+      client: client as any,
+      heartbeat: async () => "ok" as const,
+      siteOutline: async () => null,
+      fetchPage: async () => { fetched++; return page; },
+      runTool: async (_c, name, input) => ({ content: "{}", is_error: false, ...(name === "finish_pass" ? { finished: String(input.summary) } : {}) }),
+    });
+    assert.equal(r.summary, "added 3 shows");
+    assert.equal(fetched, 0);
+    const first = textOf(client.seen[0].messages[0]);
+    assert.match(first, /CONTINUE pass 2/);
+    assert.match(first, /the 2019–2021 exhibitions/);
+    assert.match(first, /Pages already read in this draft \(1\)/);
+    assert.match(first, /exhibitions before 2021/);
+    assert.match(first, /\[rejected\] c_02: cid:c_01 \(practitioner "Auriea Harvey"\) EMBODIES concept:net-art/);
+    assert.match(first, /c_01 \[accepted\] practitioner "Auriea Harvey" \(new\)/);
+    assert.match(first, /Some Fair/);
+    assert.match(first, /possibly still in review/);
+  });
+
+  it("a dropped connection mid-pass is retried, not fatal; a 400 is not retried", async () => {
+    CONFIG.apiRetryBaseMs = 1;
+    const ok = fakeClient([{ tools: [{ name: "finish_pass", input: { summary: "survived" } }] }]);
+    let n = 0;
+    const flaky = { stream(params: any) { if (n++ < 2) return { finalMessage: async () => { throw new Error("Connection error."); } }; return ok.stream(params); } };
+    const run = (client: any) => runPass(draft as any, { kind: "chat", message: "hi", queued_at: "x" }, {
+      client, heartbeat: async () => "ok" as const, siteOutline: async () => null,
+      runTool: async (_c, name, input) => ({ content: "{}", is_error: false, ...(name === "finish_pass" ? { finished: String(input.summary) } : {}) }),
+    });
+    const r = await run(flaky);
+    assert.equal(r.error, null);
+    assert.equal(r.summary, "survived");
+    assert.equal(n, 3);
+    let bad = 0;
+    const r2 = await run({ stream() { bad++; return { finalMessage: async () => { throw Object.assign(new Error("invalid request"), { status: 400 }); } }; } });
+    assert.match(r2.error!, /invalid request/);
+    assert.equal(bad, 1);
+  });
+
+  it("a lost claim (draft abandoned mid-pass) stops the loop", async () => {
+    CONFIG.heartbeatMs = 5;
+    const client = fakeClient([{ tools: [{ name: "get_node", input: {} }] }]);
+    const r = await runPass(draft as any, { kind: "chat", message: "hi", queued_at: "x" }, {
+      client: client as any,
+      heartbeat: async () => "lost" as const,
+      siteOutline: async () => null,
+      runTool: async () => { await new Promise((res) => setTimeout(res, 20)); return { content: "{}", is_error: false }; },
+    });
+    CONFIG.heartbeatMs = 60_000;
+    assert.match(r.error!, /claim lost/);
+    assert.ok(client.seen.length <= 2);
   });
 });

@@ -33,6 +33,7 @@ import {
   toOwnerJson,
   enqueueChat,
   abandonDraft,
+  enqueueContinue,
   contributorPatchCandidate,
   confirmDraft,
   batchReceipt,
@@ -180,6 +181,18 @@ router.post("/api/intake/drafts/:id/chat", requireContributor, (req, res) => {
   if (!d) return;
   try {
     const next = enqueueChat(getDb(), d, req.body?.message);
+    spawnAsync(getDb(), next);
+    res.status(202).set(JSON_HEADERS).json({ ok: true, draft: toOwnerJson(next) });
+  } catch (e) {
+    fail(res, e);
+  }
+});
+
+router.post("/api/intake/drafts/:id/continue", requireContributor, (req, res) => {
+  const d = ownDraft(req, res);
+  if (!d) return;
+  try {
+    const next = enqueueContinue(getDb(), d, req.body?.focus);
     spawnAsync(getDb(), next);
     res.status(202).set(JSON_HEADERS).json({ ok: true, draft: toOwnerJson(next) });
   } catch (e) {

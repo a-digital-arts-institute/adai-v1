@@ -48,7 +48,7 @@ import {
 // ---- types ---------------------------------------------------------------
 
 export type DraftStatus = "queued" | "running" | "ready" | "submitted" | "failed" | "abandoned";
-export type JobKind = "initial" | "chat";
+export type JobKind = "initial" | "chat" | "continue";
 
 export interface Job {
   kind: JobKind;
@@ -71,6 +71,22 @@ export interface Message {
   role: "user" | "assistant";
   text: string;
   at: string;
+}
+
+/**
+ * The agent's survey of the site, written before deep extraction and
+ * updated at the end of each pass: what the site holds (inventory), how
+ * the pass spreads over it (plan), what was covered and what was not.
+ * It is what makes a partial draft honest about being partial, and what a
+ * later pass reads instead of starting from scratch.
+ */
+export interface Survey {
+  site_kind: "artist" | "gallery" | "platform" | "institution" | "publication" | "other";
+  inventory: Array<{ label: string; count: number | null; url?: string }>;
+  plan?: string;
+  covered?: string;
+  remaining?: string;
+  updated_at: string;
 }
 
 export interface Usage {
@@ -99,6 +115,7 @@ export interface Draft {
   messages: Message[];
   pages: PageEntry[];
   summary: string | null;
+  survey: Survey | null;
   usage: Usage | null;
   intake_ids: string[] | null;
   error: string | null;
@@ -128,10 +145,12 @@ function envFloat(name: string, def: number): number {
 }
 
 export const CLAIM_TTL_MS = 20 * 60_000;
-const MAX_ACTIVE_DRAFTS = () => envInt("INTAKE_MAX_ACTIVE_DRAFTS", 3);
-const MAX_DRAFTS_PER_DAY = () => envInt("INTAKE_MAX_DRAFTS_PER_DAY", 10);
-const MAX_PASSES = () => envInt("INTAKE_MAX_PASSES", 6);
-const DAILY_BUDGET_USD = () => envFloat("INTAKE_DAILY_BUDGET_USD", 20);
+// Beta defaults (Sept 2026): generous on purpose — galleries need several
+// passes over a large programme. Tighten via env, not by editing these.
+const MAX_ACTIVE_DRAFTS = () => envInt("INTAKE_MAX_ACTIVE_DRAFTS", 6);
+const MAX_DRAFTS_PER_DAY = () => envInt("INTAKE_MAX_DRAFTS_PER_DAY", 30);
+const MAX_PASSES = () => envInt("INTAKE_MAX_PASSES", 16);
+const DAILY_BUDGET_USD = () => envFloat("INTAKE_DAILY_BUDGET_USD", 60);
 const MAX_MESSAGES = 200;
 const MAX_MESSAGE_CHARS = 4000;
 
@@ -159,6 +178,7 @@ function rowToDraft(row: any): Draft {
     messages: parseJson<Message[]>(row.messages, []),
     pages: parseJson<PageEntry[]>(row.pages, []),
     summary: row.summary ?? null,
+    survey: parseJson<Survey | null>(row.survey, null),
     usage: parseJson<Usage | null>(row.usage, null),
     intake_ids: parseJson<string[] | null>(row.intake_ids, null),
     error: row.error ?? null,
@@ -325,6 +345,30 @@ export function enqueueChat(db: DatabaseSync, draft: Draft, messageRaw: unknown)
   return getDraft(db, draft.id)!;
 }
 
+/**
+ * Another full reading pass over the same site: the agent gets its survey,
+ * the page ledger and the contributor's decisions so far, and reads what
+ * the earlier passes did not. `focus` is an optional steer ("the 2019–2021
+ * exhibitions", "Auriea Harvey").
+ */
+export function enqueueContinue(db: DatabaseSync, draft: Draft, focusRaw?: unknown): Draft {
+  if (draft.job) throw new DraftError("the agent is still working on this draft", 409, "job_pending");
+  if (draft.status !== "ready" && draft.status !== "failed") {
+    throw new DraftError(`draft is ${draft.status}; it can be continued once it is ready`, 409, "not_ready");
+  }
+  if (draft.passes >= MAX_PASSES()) throw new DraftError("this draft has used all its passes", 429, "pass_limit");
+  const budget = checkDailyBudget(db);
+  if (!budget.ok) throw new DraftError("the intake is resting for today (budget reached)", 503, "budget_exceeded");
+  const focus = typeof focusRaw === "string" && focusRaw.trim() ? focusRaw.trim().slice(0, MAX_MESSAGE_CHARS) : undefined;
+  const sets: Record<string, unknown> = { status: "queued", error: null };
+  if (focus) {
+    sets.messages = JSON.stringify([...draft.messages, { role: "user" as const, text: `Read more of the site: ${focus}`, at: nowIso() }].slice(-MAX_MESSAGES));
+  }
+  const job: Job = { kind: "continue", queued_at: nowIso(), ...(focus ? { message: focus } : {}) };
+  touch(db, draft.id, { ...sets, job: JSON.stringify(job) });
+  return getDraft(db, draft.id)!;
+}
+
 export function abandonDraft(db: DatabaseSync, draft: Draft): Draft {
   if (draft.status === "submitted") throw new DraftError("already submitted", 409, "submitted");
   touch(db, draft.id, { status: "abandoned", job: null });
@@ -354,6 +398,125 @@ export function contributorPatchCandidate(
     touch(db, draft.id, { candidates: JSON.stringify(fresh.candidates) });
     return checked;
   });
+}
+
+// ---- memory across passes and drafts ------------------------------------------------
+
+/** One line a later pass can read: what a card was about, names not cids. */
+export function candidateLabel(c: Candidate, all: Candidate[]): string {
+  const name = (ref: string): string => {
+    if (!isCidRef(ref)) return ref;
+    const n = all.find((x) => x.cid === ref.slice(4));
+    return n && n.kind === "node" ? `${n.node.type}:${n.node.name}` : ref;
+  };
+  switch (c.kind) {
+    case "node": return `${c.node.type} "${c.node.name}"${c.resolves_to ? ` (= ${c.resolves_to})` : ""}`;
+    case "edge": return `${name(c.edge.source)} ${c.edge.edge_type} ${name(c.edge.target)}`;
+    case "image": return `image for ${name(c.image.for)}`;
+    case "patch": return `correction ${c.patch.node_id}.${c.patch.key}`;
+    case "question": return `question: ${c.question.text.slice(0, 160)}`;
+    case "known": return `known: ${c.known.summary.slice(0, 160)}`;
+  }
+}
+
+export interface PriorContext {
+  drafts: number;
+  pages: string[];
+  rejected: string[];
+  submitted: string[];
+}
+
+/**
+ * What this contributor's EARLIER drafts of the same site already did:
+ * pages read, cards they rejected, cards they submitted (which for a
+ * probationary contributor are in review, not yet in the graph — the agent
+ * cannot see them through get_node). Scoped to the contributor: one
+ * person's "no" is not another's.
+ */
+export function priorContext(db: DatabaseSync, draft: Draft): PriorContext {
+  // gallery.example and www.gallery.example are one site.
+  const bare = draft.source_domain.replace(/^www\./, "");
+  const rows = db
+    .prepare(`${SELECT} WHERE contributor_id = ? AND source_domain IN (?, ?) AND id != ? ORDER BY created_at DESC LIMIT 10`)
+    .all(draft.contributor_id, bare, `www.${bare}`, draft.id) as any[];
+  const pages = new Set<string>();
+  const rejected = new Set<string>();
+  const submitted = new Set<string>();
+  for (const d of rows.map(rowToDraft)) {
+    for (const p of d.pages) pages.add(p.final_url || p.url);
+    for (const c of d.candidates) {
+      if (c.kind === "image" || c.kind === "known") continue;
+      if (c.state === "rejected" || c.state === "context_only") rejected.add(candidateLabel(c, d.candidates));
+      else if (d.status === "submitted" && c.state === "accepted") submitted.add(candidateLabel(c, d.candidates));
+    }
+  }
+  return { drafts: rows.length, pages: [...pages].slice(0, 200), rejected: [...rejected].slice(0, 150), submitted: [...submitted].slice(0, 150) };
+}
+
+/**
+ * The contributor's "no" binds the agent: a proposal equal to a card they
+ * rejected (or set aside as context) is refused here, so a prompt slip
+ * cannot resurrect it. Unresolved artworks are exempt — two works can
+ * share a title.
+ */
+function refusedByContributor(next: Candidate, cands: Candidate[]): Candidate | null {
+  for (const c of cands) {
+    if (c.state !== "rejected" && c.state !== "context_only") continue;
+    if (c.kind === "edge" && next.kind === "edge") {
+      if (c.edge.edge_type === next.edge.edge_type && c.edge.source === next.edge.source && c.edge.target === next.edge.target) return c;
+    } else if (c.kind === "image" && next.kind === "image") {
+      if (c.image.for === next.image.for && c.image.image_url === next.image.image_url) return c;
+    } else if (c.kind === "node" && next.kind === "node") {
+      if (c.resolves_to && c.resolves_to === next.resolves_to) return c;
+      if (!c.resolves_to && !next.resolves_to && c.node.type !== "artwork" && c.node.type === next.node.type && slugify(c.node.name) === slugify(next.node.name)) return c;
+    }
+  }
+  return null;
+}
+
+/**
+ * A name on a page attests that the name is on the page — not that the
+ * gallery REPRESENTS the artist. First gallery run (interfacegallery.io, a
+ * self-described "project-based gallery, private art dealership"): the
+ * agent proposed REPRESENTS for David Hockney, Lucio Fontana and Ellsworth
+ * Kelly off a roster headed "Artists (project)", quoting only their names.
+ * So the agent's REPRESENTS quote must carry representation language beyond
+ * the artist's name. Agent path only: a contributor who edits an edge to
+ * REPRESENTS is attesting it themselves.
+ */
+function representsNeedsMoreThanAName(c: Candidate, cands: Candidate[]): void {
+  if (c.kind !== "edge" || c.edge.edge_type !== "REPRESENTS" || c.origin !== "site") return;
+  const t = c.edge.target;
+  const node = isCidRef(t) ? cands.find((x) => x.cid === t.slice(4)) : null;
+  const name = node && node.kind === "node" ? node.node.name : t.slice(t.indexOf(":") + 1).replace(/-/g, " ");
+  const norm = (x: string) => x.toLowerCase().normalize("NFKD").replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+  let rest = ` ${norm(c.evidence?.quote ?? "")} `;
+  for (const w of norm(name).split(" ")) if (w) rest = rest.split(` ${w} `).join(" ");
+  if (rest.replace(/ /g, "").length < 8) {
+    throw new CandidateError(
+      "REPRESENTS needs a quote in which the site says it represents the artist (\"represented artists\", \"our artists\", \"X is represented by …\") — a bare name on a roster is not that. If the site only shows, sells or has worked with the artist, connect them through the show (PARTICIPATED_IN) or the works instead, or leave the relation out.",
+      "evidence.quote"
+    );
+  }
+}
+
+const SITE_KINDS: ReadonlySet<string> = new Set(["artist", "gallery", "platform", "institution", "publication", "other"]);
+
+function mergeSurvey(prev: Survey | null, input: Record<string, unknown>): Survey {
+  const kind = typeof input.site_kind === "string" ? input.site_kind : prev?.site_kind;
+  if (!kind || !SITE_KINDS.has(kind)) throw new CandidateError(`site_kind must be one of ${[...SITE_KINDS].join(", ")}`, "site_kind");
+  let inventory = prev?.inventory ?? [];
+  if (input.inventory !== undefined) {
+    if (!Array.isArray(input.inventory) || input.inventory.length > 16) throw new CandidateError("inventory must be an array of at most 16 entries", "inventory");
+    inventory = input.inventory.map((raw) => {
+      if (!isObj(raw) || typeof raw.label !== "string" || !raw.label.trim()) throw new CandidateError("each inventory entry needs a label", "inventory");
+      const count = typeof raw.count === "number" && Number.isFinite(raw.count) && raw.count >= 0 ? Math.floor(raw.count) : null;
+      return { label: raw.label.trim().slice(0, 80), count, ...(typeof raw.url === "string" && raw.url ? { url: raw.url.slice(0, 2048) } : {}) };
+    });
+  }
+  const text = (k: "plan" | "covered" | "remaining"): string | undefined =>
+    typeof input[k] === "string" ? (input[k] as string).trim().slice(0, 800) || undefined : prev?.[k];
+  return { site_kind: kind as Survey["site_kind"], inventory, plan: text("plan"), covered: text("covered"), remaining: text("remaining"), updated_at: nowIso() };
 }
 
 // ---- worker side: queue ------------------------------------------------------------
@@ -483,6 +646,7 @@ export function pendingJobs(db: DatabaseSync): Draft[] {
 
 export type DraftToolName =
   | "set_subject"
+  | "note_survey"
   | "propose_node"
   | "propose_edge"
   | "propose_image"
@@ -493,7 +657,7 @@ export type DraftToolName =
   | "remove_candidate";
 
 export const DRAFT_TOOL_NAMES: ReadonlySet<string> = new Set<DraftToolName>([
-  "set_subject", "propose_node", "propose_edge", "propose_image", "propose_patch",
+  "set_subject", "note_survey", "propose_node", "propose_edge", "propose_image", "propose_patch",
   "note_known", "ask_contributor", "update_candidate", "remove_candidate",
 ]);
 
@@ -529,6 +693,9 @@ export function runDraftTool(
     const add = (raw: Record<string, unknown>): Candidate => {
       if (cands.length >= MAX_CANDIDATES) throw new CandidateError(`draft already has ${MAX_CANDIDATES} candidates — prefer fewer, stronger ones`);
       const c = validateCandidate({ ...raw, cid: nextCid(cands), state: "proposed", edited: false }, cands, ctx);
+      representsNeedsMoreThanAName(c, cands);
+      const no = refusedByContributor(c, cands);
+      if (no) throw new CandidateError(`the contributor already said no to this (${no.cid}, ${no.state}) — do not propose it again`);
       cands.push(c);
       return c;
     };
@@ -545,6 +712,11 @@ export function runDraftTool(
         }
         touch(db, draftId, { subject_node_id: ref });
         return { ok: true, subject: ref };
+      }
+      case "note_survey": {
+        const survey = mergeSurvey(d.survey, input);
+        touch(db, draftId, { survey: JSON.stringify(survey) });
+        return { ok: true, survey };
       }
       case "propose_node": {
         const c = add({

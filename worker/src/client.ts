@@ -34,6 +34,9 @@ export interface ClaimedDraft {
   messages: Array<{ role: "user" | "assistant"; text: string; at: string }>;
   pages: any[];
   summary: string | null;
+  survey?: { site_kind: string; inventory: Array<{ label: string; count: number | null; url?: string }>; plan?: string; covered?: string; remaining?: string } | null;
+  /** The same contributor's earlier drafts of this site. */
+  prior?: { drafts: number; pages: string[]; rejected: string[]; submitted: string[] } | null;
   passes: number;
   contributor_id: string;
   contributor_name: string;
@@ -41,7 +44,7 @@ export interface ClaimedDraft {
 }
 
 export interface Job {
-  kind: "initial" | "chat";
+  kind: "initial" | "chat" | "continue";
   message?: string;
   queued_at: string;
 }
@@ -59,12 +62,13 @@ export async function claim(draftId?: string | null): Promise<{ draft: ClaimedDr
   }
 }
 
-export async function heartbeat(draftId: string): Promise<boolean> {
+/** "lost" = the claim is gone (draft abandoned or reclaimed); "error" = transient. */
+export async function heartbeat(draftId: string): Promise<"ok" | "lost" | "error"> {
   try {
     const r = await call<{ ok: boolean }>("POST", `/internal/intake/drafts/${draftId}/heartbeat`, { worker_id: CONFIG.workerId });
-    return !!r.json?.ok;
-  } catch {
-    return false;
+    return r.json?.ok ? "ok" : "lost";
+  } catch (e) {
+    return e instanceof ApiError && e.status === 409 ? "lost" : "error";
   }
 }
 

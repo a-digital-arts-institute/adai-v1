@@ -3,7 +3,7 @@
 
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { isPrivateIp, checkUrl, registrable, sameSite, htmlToText, checkPolicy, newPolicy, FetchRefused } from "../src/browser.js";
+import { isPrivateIp, checkUrl, registrable, sameSite, htmlToText, checkPolicy, newPolicy, FetchRefused, chromeUa, looksBlocked, outlineFromUrls } from "../src/browser.js";
 
 describe("worker ssrf", () => {
   it("private ranges", () => {
@@ -58,5 +58,49 @@ describe("fetch policy (no network)", () => {
     assert.deepEqual(checkPolicy(new URL("https://objkt.com/tokens/1#foo"), p), { offsite: true });
     p.offsiteFetched = 1;
     assert.throws(() => checkPolicy(new URL("https://objkt.com/tokens/1"), p), (e: any) => e.code === "offsite_cap");
+  });
+});
+
+describe("reading as a browser", () => {
+  it("the UA is a plain Chrome for the platform we run on — no bot token, no HeadlessChrome", () => {
+    const ua = chromeUa("153.0.8010.12", "linux");
+    assert.equal(ua, "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36");
+    assert.match(chromeUa("153.0.1.2", "darwin"), /Macintosh/);
+    assert.doesNotMatch(ua, /headless|adai|bot|compatible/i);
+  });
+  it("a refusal or an interstitial is never page content", () => {
+    assert.equal(looksBlocked(403, "403 - Forbidden", "Access to this page is forbidden."), true);
+    assert.equal(looksBlocked(429, null, ""), true);
+    assert.equal(looksBlocked(200, "Just a moment...", "Checking your browser before accessing the site."), true);
+    assert.equal(looksBlocked(200, "Artists", "Harm van den Dorpel\nVera Molnar"), false);
+    assert.equal(looksBlocked(404, "Not found", "Nothing here."), false);
+    // a long real page that merely mentions a captcha is content
+    assert.equal(looksBlocked(200, "Essay", "captcha ".padEnd(4000, "x")), false);
+  });
+});
+
+describe("site outline", () => {
+  it("groups sitemap URLs by section, keeps top-level index pages, drops other sites", () => {
+    const root = "https://interfacegallery.io/";
+    const urls = [
+      ...Array.from({ length: 20 }, (_, i) => `https://www.interfacegallery.io/artist/a-${i}/`),
+      ...Array.from({ length: 6 }, (_, i) => `https://www.interfacegallery.io/exposition/e-${i}/`),
+      "https://www.interfacegallery.io/artists/",
+      "https://www.interfacegallery.io/expositions/",
+      "https://www.interfacegallery.io/about/",
+      "https://www.interfacegallery.io/artists", // duplicate of /artists/
+      "https://elsewhere.example/artist/x/",
+    ];
+    const o = outlineFromUrls(urls, root)!;
+    assert.match(o, /urls="29"/);
+    assert.match(o, /www\.interfacegallery\.io\/artist\/ — 20 pages/);
+    assert.match(o, /www\.interfacegallery\.io\/exposition\/ — 6 pages/);
+    assert.match(o, /https:\/\/www\.interfacegallery\.io\/expositions\//);
+    assert.doesNotMatch(o, /elsewhere/);
+    assert.ok(o.indexOf("/artist/ —") < o.indexOf("/exposition/ —"));
+  });
+  it("nothing useful → null", () => {
+    assert.equal(outlineFromUrls([], "https://a.example/"), null);
+    assert.equal(outlineFromUrls(["https://a.example/", "https://a.example/about"], "https://a.example/"), null);
   });
 });

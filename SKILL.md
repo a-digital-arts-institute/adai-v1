@@ -1,7 +1,7 @@
 ---
 name: adai-contribute
 description: Contribute to the A(DAI) Digital Arts Knowledge Commons graph (https://digitalartsinstitute.io) on behalf of a practitioner using their bearer token in ADAI_TOKEN. Use when the user wants to add a text signal about an existing node, create a node (practitioner, artwork, concept, scene, institution, collective, platform, etc.), add or supersede an edge (CREATED_BY, EMBODIES, PRACTICES, EXHIBITED_AT, CLASSIFIED_BY, BELONGS_TO, COLLABORATES_WITH, USES_TECHNIQUE, INFLUENCES, RESPONDS_TO, PARTICIPATED_IN, PRESENTED_BY, CURATED_BY, REPRESENTS), upload an image and attach it to a node, tag a session of writes with a batch_id, review their contribution history, or — with an admin-scope token — mint/list/revoke tokens, work the curator review queue (approve/reject/bulk), revoke a signal, retire a node, or roll back a contribution batch (provenance-preserving). Talks to /api/v1/* via curl. Respects trust tiers (auto/reviewed go live, probationary queue at /review). Never infer INFLUENCES or RESPONDS_TO from style or visual similarity; both require attested artist intent.
-version: 2026-09-13
+version: 2026-09-20
 ---
 
 # A(DAI) contributor skill — for Claude (and any other AI assistant) writing to the knowledge commons
@@ -537,7 +537,10 @@ artist can attest. **Nothing is written until the practitioner opens
 an emailed magic link). You can poll `GET /api/intake/drafts/:id` with the
 same bearer token to watch progress (`status`, `candidates`, `summary`),
 `PATCH …/candidates/:cid` to pre-accept cards they told you about, and
-`POST …/chat` to ask the worker for changes. The confirmed batch has
+`POST …/chat` to ask the worker for changes, and `POST …/continue`
+(optional `{"focus":"…"}`) for another full reading pass — it builds on the
+survey, the pages already read and the cards they rejected; the draft's
+`survey.remaining` says what is not covered yet. The confirmed batch has
 `batch_id = draft_id` and shows up in `GET /api/v1/batches` and on the
 public receipt `/batch/:id` like any other batch.
 

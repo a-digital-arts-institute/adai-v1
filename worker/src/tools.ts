@@ -24,7 +24,7 @@ const evidenceProps = {
 export const TOOLS: Tool[] = [
   {
     name: "fetch_page",
-    description: "Fetch a page with a headless browser (JS rendered). Returns the readable text, its links (same-site, plus off-site ones flagged `offsite`) and the images on it. Same-site pages (subdomains included) are always allowed; an OFF-SITE page is allowed only if a same-site page linked to it (objkt, fxhash, Art Blocks, a gallery's show page, press) — one hop, own cap. Respects robots.txt and the page caps.",
+    description: "Open a page in the browser (JS rendered). Returns the readable text, its links (same-site, plus off-site ones flagged `offsite`) and the images on it. Same-site pages (subdomains included) are always allowed; an OFF-SITE page is allowed only if a same-site page linked to it (objkt, fxhash, Art Blocks, a gallery's show page, press) — one hop, own cap. Respects robots.txt and the page caps.",
     input_schema: { type: "object", properties: { url: { type: "string" } }, required: ["url"] },
   },
   {
@@ -74,6 +74,25 @@ export const TOOLS: Tool[] = [
     name: "set_subject",
     description: "Declare the subject of this draft: an existing node id, or the cid of a node you proposed.",
     input_schema: { type: "object", properties: { node_id: { type: "string" }, cid: { type: "string" } } },
+  },
+  {
+    name: "note_survey",
+    description: "Record your survey of the site: what kind of site it is, what it holds (inventory: artists, exhibitions, works, editions … with counts and the index page for each), and how you will spread this pass over it. Call it once BEFORE deep extraction, and again before finish_pass with `covered` and `remaining` filled in. Fields merge; the contributor sees it, and later passes read it instead of re-surveying.",
+    input_schema: {
+      type: "object",
+      properties: {
+        site_kind: { type: "string", enum: ["artist", "gallery", "platform", "institution", "publication", "other"] },
+        inventory: {
+          type: "array",
+          description: "One entry per kind of thing the site holds, at most 16.",
+          items: { type: "object", properties: { label: { type: "string", description: "e.g. 'artists', 'exhibitions 2019–2026', 'editions'" }, count: { type: "integer" }, url: { type: "string", description: "The index page that lists them." } }, required: ["label"] },
+        },
+        plan: { type: "string", description: "How this pass spreads over the inventory, and why." },
+        covered: { type: "string", description: "What the draft now covers, in the contributor's terms (e.g. 'full roster; 8 of 52 exhibitions: …')." },
+        remaining: { type: "string", description: "What is NOT covered yet — named, so the contributor can ask for it." },
+      },
+      required: ["site_kind"],
+    },
   },
   {
     name: "propose_node",
@@ -167,7 +186,7 @@ export const TOOLS: Tool[] = [
 ];
 
 const GRAPH_TOOLS = new Set(["search_nodes", "get_node", "get_neighbours", "get_component", "resolve_entity", "find_path", "image_neighbours"]);
-const DRAFT_TOOLS = new Set(["set_subject", "propose_node", "propose_edge", "propose_image", "propose_patch", "note_known", "ask_contributor", "update_candidate", "remove_candidate"]);
+const DRAFT_TOOLS = new Set(["set_subject", "note_survey", "propose_node", "propose_edge", "propose_image", "propose_patch", "note_known", "ask_contributor", "update_candidate", "remove_candidate"]);
 
 export interface ToolContext {
   draftId: string;

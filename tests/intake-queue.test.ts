@@ -10,6 +10,8 @@ import {
   heartbeat,
   finishPass,
   enqueueChat,
+  enqueueContinue,
+  priorContext,
   getDraft,
   runDraftTool,
   workerAddPage,
@@ -162,7 +164,7 @@ describe("draft tools", () => {
     assert.equal(getDraft(db, d.id)!.subject_node_id, "practitioner:casey-reas");
   });
 
-  it("page ledger stores hashes only and caps at 60", () => {
+  it("page ledger stores hashes only", () => {
     const db = freshDb();
     const d = createDraft(db, CONTRIB, "https://a.example/");
     claimJob(db, "w1");
@@ -201,5 +203,121 @@ describe("draft tools", () => {
     assert.equal(a.status, "abandoned");
     assert.equal(a.job, null);
     assert.equal(claimJob(db, "w1"), null);
+  });
+});
+
+describe("passes that build on each other", () => {
+  const evid = { page_url: "https://gallery.example/artists", quote: "Auriea Harvey" };
+
+  it("abandoning a running draft takes the claim away from the worker", () => {
+    const db = freshDb();
+    const d = createDraft(db, CONTRIB, "https://gallery.example/");
+    claimJob(db, "w1");
+    abandonDraft(db, getDraft(db, d.id)!);
+    assert.equal(heartbeat(db, d.id, "w1"), false);
+    assert.throws(() => runDraftTool(db, d.id, "w1", "propose_node", { type: "practitioner", name: "X", ...evid }), (e: any) => e.code === "not_claimed");
+    assert.throws(() => finishPass(db, d.id, "w1", { summary: "late" }), (e: any) => e.code === "not_claimed");
+    assert.equal(getDraft(db, d.id)!.status, "abandoned");
+    // and it no longer counts as active
+    process.env.INTAKE_MAX_ACTIVE_DRAFTS = "1";
+    createDraft(db, CONTRIB, "https://other.example/");
+    delete process.env.INTAKE_MAX_ACTIVE_DRAFTS;
+  });
+
+  it("note_survey merges; the owner sees it", () => {
+    const db = freshDb();
+    const d = createDraft(db, CONTRIB, "https://gallery.example/");
+    claimJob(db, "w1");
+    assert.throws(() => runDraftTool(db, d.id, "w1", "note_survey", { site_kind: "shop" }), CandidateError);
+    runDraftTool(db, d.id, "w1", "note_survey", { site_kind: "gallery", inventory: [{ label: "artists", count: 34, url: "https://gallery.example/artists" }, { label: "exhibitions", count: 52 }], plan: "roster first, then 3 shows per year" });
+    runDraftTool(db, d.id, "w1", "note_survey", { covered: "roster 34 of 34; exhibitions 9 of 52", remaining: "exhibitions before 2021" });
+    const sv = getDraft(db, d.id)!.survey!;
+    assert.equal(sv.site_kind, "gallery");
+    assert.equal(sv.inventory.length, 2);
+    assert.equal(sv.inventory[0]!.count, 34);
+    assert.match(sv.plan!, /roster first/);
+    assert.match(sv.remaining!, /before 2021/);
+  });
+
+  it("continue: queued as its own job kind, with the contributor's steer; same gates as chat", () => {
+    const db = freshDb();
+    const d = createDraft(db, CONTRIB, "https://gallery.example/");
+    assert.throws(() => enqueueContinue(db, d), (e: any) => e.code === "job_pending");
+    claimJob(db, "w1");
+    finishPass(db, d.id, "w1", { summary: "x" });
+    const q = enqueueContinue(db, getDraft(db, d.id)!, "  Auriea Harvey  ");
+    assert.equal(q.status, "queued");
+    assert.deepEqual({ kind: q.job?.kind, message: q.job?.message }, { kind: "continue", message: "Auriea Harvey" });
+    assert.match(q.messages.at(-1)!.text, /Auriea Harvey/);
+    const c = claimJob(db, "w2");
+    assert.equal(c?.job.kind, "continue");
+    // a continue pass never re-sends the "draft ready" email
+    db.prepare("UPDATE drafts SET notified_ready_at = 'x' WHERE id = ?").run(d.id);
+    assert.equal(finishPass(db, d.id, "w2", { summary: "more" }).notify, null);
+    process.env.INTAKE_MAX_PASSES = "2";
+    assert.throws(() => enqueueContinue(db, getDraft(db, d.id)!), (e: any) => e.code === "pass_limit");
+    delete process.env.INTAKE_MAX_PASSES;
+  });
+
+  it("a rejected card cannot be proposed again; same-titled artworks still can", () => {
+    const db = freshDb();
+    insertNode(db, "institution:gallery", "institution", "Gallery");
+    const d = createDraft(db, CONTRIB, "https://gallery.example/");
+    claimJob(db, "w1");
+    runDraftTool(db, d.id, "w1", "propose_node", { type: "practitioner", name: "Auriea Harvey", ...evid }); // c_01
+    runDraftTool(db, d.id, "w1", "propose_edge", { source: "institution:gallery", target: "cid:c_01", edge_type: "REPRESENTS", confidence: "high", page_url: evid.page_url, quote: "Represented artists: Auriea Harvey" }); // c_02
+    runDraftTool(db, d.id, "w1", "propose_node", { type: "institution", name: "Some Fair", ...evid }); // c_03
+    runDraftTool(db, d.id, "w1", "propose_node", { type: "artwork", name: "Untitled", ...evid }); // c_04
+    finishPass(db, d.id, "w1", { summary: "x" });
+    for (const cid of ["c_02", "c_03", "c_04"]) contributorPatchCandidate(db, getDraft(db, d.id)!, cid, { state: "rejected" });
+    enqueueContinue(db, getDraft(db, d.id)!);
+    claimJob(db, "w1");
+    assert.throws(() => runDraftTool(db, d.id, "w1", "propose_edge", { source: "institution:gallery", target: "cid:c_01", edge_type: "REPRESENTS", confidence: "medium", page_url: "https://gallery.example/about", quote: "we represent Auriea Harvey" }), /already said no/);
+    assert.throws(() => runDraftTool(db, d.id, "w1", "propose_node", { type: "institution", name: "some  fair", ...evid }), /already said no/);
+    // another work that happens to share the title is a different work
+    const again = runDraftTool(db, d.id, "w1", "propose_node", { type: "artwork", name: "Untitled", ...evid }) as any;
+    assert.equal(again.cid, "c_05");
+  });
+
+  it("REPRESENTS from the agent needs representation language, not a bare name on a roster", () => {
+    const db = freshDb();
+    insertNode(db, "institution:gallery", "institution", "Gallery");
+    insertNode(db, "practitioner:lucio-fontana", "practitioner", "Lucio Fontana");
+    const d = createDraft(db, CONTRIB, "https://gallery.example/");
+    claimJob(db, "w1");
+    runDraftTool(db, d.id, "w1", "propose_node", { type: "practitioner", name: "Auriea Harvey", ...evid }); // c_01
+    const rep = (target: string, quote: string) => runDraftTool(db, d.id, "w1", "propose_edge", { source: "institution:gallery", target, edge_type: "REPRESENTS", confidence: "medium", page_url: evid.page_url, quote });
+    assert.throws(() => rep("cid:c_01", "Auriea Harvey"), /bare name on a roster/);
+    assert.throws(() => rep("practitioner:lucio-fontana", "Lucio Fontana"), /bare name on a roster/);
+    assert.throws(() => rep("practitioner:lucio-fontana", "— Lucio FONTANA."), /bare name on a roster/);
+    assert.equal((rep("cid:c_01", "Gallery represents Auriea Harvey worldwide.") as any).cid, "c_02");
+    // other relations may quote the name as listed (a show's artist list)
+    insertNode(db, "project:some-show", "project", "Some Show");
+    runDraftTool(db, d.id, "w1", "propose_edge", { source: "practitioner:lucio-fontana", target: "project:some-show", edge_type: "PARTICIPATED_IN", confidence: "high", page_url: evid.page_url, quote: "Lucio Fontana" });
+    // the contributor may attest it themselves by editing the edge type
+    finishPass(db, d.id, "w1", { summary: "x" });
+    const edited = contributorPatchCandidate(db, getDraft(db, d.id)!, "c_03", { patch: { edge_type: "PARTICIPATED_IN" } });
+    assert.equal(edited.edited, true);
+  });
+
+  it("priorContext: the same contributor's earlier drafts of the site, nobody else's", () => {
+    const db = freshDb();
+    const first = createDraft(db, CONTRIB, "https://gallery.example/");
+    claimJob(db, "w1");
+    workerAddPage(db, first.id, "w1", { url: "https://gallery.example/artists", final_url: "https://gallery.example/artists", title: "Artists", status: 200, chars: 10, sha256: "ab".repeat(32), via: "browser" });
+    runDraftTool(db, first.id, "w1", "propose_node", { type: "practitioner", name: "Auriea Harvey", ...evid });
+    runDraftTool(db, first.id, "w1", "propose_node", { type: "institution", name: "Some Fair", ...evid });
+    finishPass(db, first.id, "w1", { summary: "x" });
+    contributorPatchCandidate(db, getDraft(db, first.id)!, "c_01", { state: "accepted" });
+    contributorPatchCandidate(db, getDraft(db, first.id)!, "c_02", { state: "rejected" });
+    db.prepare("UPDATE drafts SET status = 'submitted' WHERE id = ?").run(first.id);
+    const other = createDraft(db, "contributor:someone-else", "https://gallery.example/");
+    const second = createDraft(db, CONTRIB, "https://www.gallery.example/exhibitions");
+    const pc = priorContext(db, getDraft(db, second.id)!);
+    assert.equal(pc.drafts, 1);
+    assert.deepEqual(pc.pages, ["https://gallery.example/artists"]);
+    assert.deepEqual(pc.rejected, ['institution "Some Fair"']);
+    assert.deepEqual(pc.submitted, ['practitioner "Auriea Harvey"']);
+    assert.equal(priorContext(db, getDraft(db, other.id)!).drafts, 0);
   });
 });

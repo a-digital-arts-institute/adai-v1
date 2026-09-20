@@ -154,7 +154,7 @@ CREATE TABLE IF NOT EXISTS drafts (
     source_domain   TEXT NOT NULL,
     status          TEXT NOT NULL DEFAULT 'queued',
         -- queued | running | ready | submitted | failed | abandoned
-    job             TEXT,                           -- JSON pending job: {kind: 'initial' | 'chat', message?, queued_at}
+    job             TEXT,                           -- JSON pending job: {kind: 'initial' | 'chat' | 'continue', message?, queued_at}
     claimed_by      TEXT,                           -- worker instance id while running
     claimed_at      TEXT,
     machine_id      TEXT,                           -- Fly machine spawned for the current job, for the reaper
@@ -163,6 +163,7 @@ CREATE TABLE IF NOT EXISTS drafts (
     messages        TEXT NOT NULL DEFAULT '[]',     -- JSON chat transcript
     pages           TEXT NOT NULL DEFAULT '[]',     -- JSON page ledger
     summary         TEXT,                           -- agent's last plain-language summary
+    survey          TEXT,                           -- JSON Survey (note_survey): site_kind, inventory, plan, covered, remaining (§6.2b)
     usage           TEXT,                           -- JSON {input_tokens, output_tokens, est_cost_usd, passes}
     intake_ids      TEXT,                           -- JSON string[] after submit
     error           TEXT,
@@ -259,7 +260,7 @@ Validator rules:
 
 `worker/` in this repo: own `package.json`, `tsconfig.json`, `Dockerfile` from `mcr.microsoft.com/playwright:v1.x-noble`, `fly.toml` (`adai-intake-worker`, fra, 1 GB, no public services, no `[http_service]`, no autoscaling; the app exists only to own the image and the machines the main app spawns). Shares nothing with `src/` except a copied `candidate.ts` type file (or a tiny `shared/` folder both compile; pick whichever keeps the two builds independent).
 
-Env: `ADAI_URL`, `WORKER_KEY`, `ANTHROPIC_API_KEY`, `INTAKE_MODEL` (default `claude-sonnet-5`; adaptive thinking, no prefill), `INTAKE_MAX_USD_PER_DRAFT` (3), `DRAFT_ID` + `JOB_KIND` (one-shot mode, set by the spawner), `INTAKE_HARD_TIMEOUT_S` (1500, the worker exits with `finish {error}` if a pass runs past it).
+Env: `ADAI_URL`, `WORKER_KEY`, `ANTHROPIC_API_KEY`, `INTAKE_MODEL` (default `claude-sonnet-5`; adaptive thinking, no prefill), `INTAKE_MAX_USD_PER_DRAFT` (6, checked per pass), `DRAFT_ID` + `JOB_KIND` (one-shot mode, set by the spawner), `INTAKE_HARD_TIMEOUT_S` (2700, the worker exits with `finish {error}` if a pass runs past it).
 
 ### 6.1 Loop
 
@@ -281,10 +282,22 @@ poll (DRAFT_ID unset, local dev):
 
 ### 6.2 Passes
 
-- **Initial** (kind `initial`): fetch root, follow same-domain links that look like works, portfolio, exhibitions, CV, about, news, depth 2, cap 30 pages (60 hard). Resolve and `set_subject`. `get_node` + `get_component` on the subject before proposing. Propose with evidence. Run the discovery routine (section 8). `finish_pass` with a summary.
-- **Chat** (kind `chat`, `job.message`): the transcript plus the current candidates are in context; the agent edits with the draft tools and answers in one short message. Max 20 tool calls.
+- **Initial** (kind `initial`): fetch root; the harness also reads the site's sitemap into a `<site_outline>` (sections + sizes + top-level index pages — no model call, no page budget). **Survey first** (§6.2b): find the index pages, `note_survey`, then breadth before depth. Cap 60 pages per pass (240 hard). Resolve and `set_subject`. `get_node` + `get_component` on the subject before proposing. Propose with evidence. Run the discovery routine (section 8). `finish_pass` with a summary.
+- **Chat** (kind `chat`, `job.message`): the transcript, the current candidates and the memory block are in context; the agent edits with the draft tools and answers in one short message. Max 40 tool calls.
+- **Continue** (kind `continue`, optional `job.message` = the contributor's steer): "Read more of the site". A full reading pass that starts from the stored survey, the page ledger and the contributor's decisions instead of from scratch. `POST /api/intake/drafts/:id/continue {focus?}`; same gates as chat (ready/failed, no pending job, pass limit, daily budget).
 
-Limits: 80 tool calls per initial pass (`INTAKE_MAX_TOOL_CALLS`; the first live run on reas.com showed 40 is spent on reading + resolving before anything is proposed), 20 per chat pass, page text capped at 24k chars (`INTAKE_PAGE_TEXT_CHARS`), 6 passes per draft, per-draft USD cap. All env-tunable. The prompt says "propose as you go" — after each page, before the next fetch.
+Limits (beta defaults, Sept 2026 — all env-tunable): 240 tool calls per initial pass (`INTAKE_MAX_TOOL_CALLS`), 200 per continue pass (`INTAKE_MAX_TOOL_CALLS_CONTINUE`), 40 per chat pass, page text capped at 24k chars (`INTAKE_PAGE_TEXT_CHARS`), 16 passes per draft, USD cap per pass, 6 active drafts and 30 a day per contributor, $60 daily budget. Why the jump: the old 80-call cap was the *real* page limit — about 7 calls per page (fetch + resolves + proposals) ended a gallery pass at 12 of 30 permitted pages, with the selection decided by whichever pages came first. The USD cap is the safety rail; the call cap only stops a loop that has lost the plot. The prompt says "propose as you go" — after each page, before the next fetch — but only once the survey is noted.
+
+### 6.2b Survey first, and memory across passes
+
+Feedback from the first gallery test (Verse): 12 pages read, good cards, but the selection followed the homepage's links and the first releases hit; core artists were absent, so the draft was accurate about what it held and misleading about the programme. A gallery or platform has already curated — its roster and programme ARE the curation — so:
+
+1. **Outline for free**: `siteOutline()` reads `robots.txt` `Sitemap:` lines (else `/sitemap.xml`, `/sitemap_index.xml`, `/wp-sitemap.xml`), one level of child sitemaps, same-site only, SSRF-guarded; groups URLs by first path segment. Untrusted content, structure only.
+2. **`note_survey`** (draft tool, stored in `drafts.survey`): `site_kind`, `inventory[{label, count, url}]`, `plan`, and at the end of each pass `covered` / `remaining`. Merge-upsert. Shown to the contributor on `/draft/:id`; read by later passes.
+3. **Breadth before depth** for multi-artist sources: the whole roster from the roster page (with the relation the site actually supports — REPRESENTS only for represented artists), the programme from the exhibitions index, then deep pages *spread* across years and artists.
+4. **Coverage honesty**: the summary opens with coverage in numbers and names what is not covered.
+
+Memory (`memoryBlock` in `worker/src/prompt.ts`, in every pass's first message): pages already read, the survey, the cards the contributor rejected / set aside in this draft, and — from `priorContext()` on the claim payload — the same contributor's earlier drafts of the same site (pages, rejections, and *submitted* cards, which for a probationary contributor sit in review where `get_node` cannot see them). Accepted cards need no memory: they are in the graph, and the agent checks the graph. The contributor's "no" is also **enforced**: `runDraftTool` refuses a proposal equal to a rejected / context-only card (same edge triple, same image, same resolved node, same-named unresolved non-artwork node; same-titled artworks stay legal). Scope is per contributor: one person's rejection does not bind another.
 
 ### 6.3 Tools
 
@@ -309,7 +322,7 @@ Draft write tools, HTTP to `/internal/intake/drafts/:id/candidates` and friends,
 
 Local tool, runs in the worker:
 
-- `fetch_page({url})` via Playwright: fresh context, block fonts, media, analytics; `goto` networkidle 20 s; scroll once for lazy galleries; return `{final_url, status, title, text (<= 40k, readability pass on innerText), links[{href, text}], images[{src, alt, w, h}]}`. Same-**site** (registrable domain, subdomains included) plus **one hop off-site to pages the site itself links to** (objkt / fxhash / Art Blocks listings, a gallery's show page, press) with their own cap (`INTAKE_MAX_OFFSITE_PAGES`, 10) — links found on an off-site page never extend the allowlist. The agent uses them to complete what the site claims (image, date, venue, edition), not to discover new claims. http(s) only, DNS resolved and checked against private, loopback, link-local and metadata ranges, redirects re-checked, `robots.txt` disallow honoured, page cap. Falls back to plain `fetch` + text extraction if the browser fails. Reports the page to the ledger through `POST /internal/intake/drafts/:id/pages`.
+- `fetch_page({url})` via Playwright, **reading as a person's browser** (the original intent of this section: the contributor asked us to read a public page on their behalf): a plain Chrome UA for the platform the worker runs on (so UA, client hints and `navigator` agree; never a bot token, never `HeadlessChrome`), new-headless Chromium (`channel: 'chromium'`) when the image has it, `AutomationControlled` off, **one browser context per pass** so cookies persist (a JS challenge passed once stays passed), same-site referer, a 0.5–1.5 s human pause between same-host pages. A refusal (401/403/407/429/503) or an interstitial ("Just a moment…", captcha) gets ~12 s to clear itself, then the plain-fetch fallback, then a `blocked` refusal with a plain-language reason — **a refusal page is never handed to the model as content**. We do not solve captchas. `robots.txt`, the page caps and the SSRF guard are unchanged. The worker image tag must match the `playwright` version in `worker/package-lock.json` (a mismatch makes every launch fail and silently degrades all reads to the fetch fallback). Block fonts, media, analytics; `goto` networkidle 20 s; scroll once for lazy galleries; return `{final_url, status, title, text (<= 40k, readability pass on innerText), links[{href, text}], images[{src, alt, w, h}]}`. Same-**site** (registrable domain, subdomains included) plus **one hop off-site to pages the site itself links to** (objkt / fxhash / Art Blocks listings, a gallery's show page, press) with their own cap (`INTAKE_MAX_OFFSITE_PAGES`, 10) — links found on an off-site page never extend the allowlist. The agent uses them to complete what the site claims (image, date, venue, edition), not to discover new claims. http(s) only, DNS resolved and checked against private, loopback, link-local and metadata ranges, redirects re-checked, `robots.txt` disallow honoured, page cap. Falls back to plain `fetch` + text extraction if the browser fails. Reports the page to the ledger through `POST /internal/intake/drafts/:id/pages`.
 
 The `/internal/intake/tool` allowlist is the enforcement of trust promise 1: there is no internal endpoint that reaches `materialise*`, `insertSignal` or R2. Add an import-level test that `src/routes/internal.ts` does not import them.
 
@@ -328,7 +341,7 @@ The `/internal/intake/tool` allowlist is the enforcement of trust promise 1: the
 
 ### 6.5 Spawner (`src/intake/spawn.ts`, main app)
 
-Called on every enqueue (`POST /api/intake/drafts`, `POST .../chat`) and by a 1-minute interval that re-checks for queued jobs with no live machine.
+Called on every enqueue (`POST /api/intake/drafts`, `POST .../chat`, `POST .../continue`) and by a 1-minute interval that re-checks for queued jobs with no live machine.
 
 ```
 spawn(draft_id, job_kind):
@@ -392,13 +405,14 @@ After the site pass, before `finish_pass`:
 | GET | `/auth/:token` | consume magic link, set cookie, redirect |
 | POST | `/api/intake/logout` | |
 | GET | `/api/intake/me` | `{contributor_id, name, email, trust_tier}` |
-| POST | `/api/intake/drafts` | `{source_url}` -> `202 {draft_id}`. Validates URL (http(s), public host). Creates row with `job = {kind: 'initial'}`, wakes the worker. Limits: 3 active drafts per contributor, 10 per day. |
+| POST | `/api/intake/drafts` | `{source_url}` -> `202 {draft_id}`. Validates URL (http(s), public host). Creates row with `job = {kind: 'initial'}`, wakes the worker. Limits: 6 active drafts per contributor, 30 per day (beta). |
 | GET | `/api/intake/drafts` | own drafts |
 | GET | `/api/intake/drafts/:id` | full draft JSON. The page polls this every 3 s while `status = 'running'` or `job` is set. |
 | POST | `/api/intake/drafts/:id/chat` | `{message}` appends to transcript, sets `job = {kind: 'chat', message}`, wakes worker. 409 if a job is already pending. |
 | PATCH | `/api/intake/drafts/:id/candidates/:cid` | `{state?, patch?, answer?, answered_yes?}`. Sets `edited: true`. |
 | POST | `/api/intake/drafts/:id/confirm` | section 10. 409 unless `status = 'ready'` and no job pending. |
-| POST | `/api/intake/drafts/:id/abandon` | |
+| POST | `/api/intake/drafts/:id/continue` | `{focus?}` sets `job = {kind: 'continue', message?}`, wakes worker. Same gates as chat. §6.2b. |
+| POST | `/api/intake/drafts/:id/abandon` | Any status but `submitted`. Clears the job; a worker mid-pass loses its claim (heartbeat → 409) and stops at its next turn. |
 | GET | `/api/intake/batches/:batch_id` | receipt JSON, owner or admin |
 
 Pages: `GET /contribute` (email form, or list of own drafts + URL form when logged in), `GET /contribute/url` (alias), `GET /draft/:id`, `GET /batch/:batch_id` (public receipt).
@@ -493,7 +507,7 @@ WORKER_KEY=dev ADAI_URL=http://localhost:8080 npm run intake:worker   # in worke
 - Sessions: HMAC cookie like the archivist, 30 days sliding, one row per session, revocable by deleting the row.
 - Magic links: 15 min for login, 7 days for notifications, single use, hashed at rest.
 - Fetching (worker `fetch_page`, `image_url` transport, `image_neighbours`) shares one SSRF guard: http(s) only, DNS resolved and checked against private ranges, redirects re-checked, 20 MiB cap, 20 s timeout.
-- Budget: reuse the daily USD gate logic from `ratelimit.ts` against a sibling `intake_usage` table (same shape as `archivist_usage`, PK `date`); no migration of the archivist table. Per-draft cap `INTAKE_MAX_USD_PER_DRAFT`. Per contributor 10 drafts a day, 3 active.
+- Budget: reuse the daily USD gate logic from `ratelimit.ts` against a sibling `intake_usage` table (same shape as `archivist_usage`, PK `date`); no migration of the archivist table. Per-pass cap `INTAKE_MAX_USD_PER_DRAFT`. Per contributor 30 drafts a day, 6 active (beta defaults).
 - Nothing from a page is written to the graph without a quote attached to a signal. That is the audit trail.
 
 ## 16. Tests

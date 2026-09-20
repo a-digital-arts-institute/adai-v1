@@ -19,6 +19,7 @@ import {
   markNotified,
   mustGetDraft,
   getDraft,
+  priorContext,
   DRAFT_TOOL_NAMES,
   DraftError,
 } from "../intake/draft.js";
@@ -90,6 +91,8 @@ router.post("/internal/intake/claim", (req, res) => {
         messages: draft.messages,
         pages: draft.pages,
         summary: draft.summary,
+        survey: draft.survey,
+        prior: priorContext(db, draft),
         passes: draft.passes,
         contributor_id: draft.contributor_id,
         self_node_id: selfNode(draft.contributor_id),
@@ -187,7 +190,7 @@ router.post("/internal/intake/drafts/:id/messages", (req, res) => {
 router.get("/internal/intake/drafts/:id", (req, res) => {
   try {
     const d = mustGetDraft(getDb(), String(req.params.id));
-    res.set(JSON_HEADERS).json({ draft: { id: d.id, status: d.status, subject_node_id: d.subject_node_id, candidates: d.candidates, messages: d.messages, pages: d.pages, summary: d.summary } });
+    res.set(JSON_HEADERS).json({ draft: { id: d.id, status: d.status, subject_node_id: d.subject_node_id, candidates: d.candidates, messages: d.messages, pages: d.pages, summary: d.summary, survey: d.survey } });
   } catch (e) {
     sendError(res, e);
   }

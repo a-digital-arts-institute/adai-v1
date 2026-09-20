@@ -70,6 +70,9 @@ const CSS = `
 #intake .rail form textarea { min-height: 44px; font-family: inherit; font-size: 12px; flex: 1; }
 #intake .rail .summary { color: #9a9a9c; border-bottom: 1px solid #1e1e20; padding-bottom: 8px; margin-bottom: 8px; white-space: pre-wrap; flex: 0 1 auto; max-height: 40vh; overflow: auto; }
 #intake .rail h3 { flex: 0 0 auto; }
+#intake .rail .survey { color: #9a9a9c; border-bottom: 1px solid #1e1e20; padding-bottom: 8px; margin-bottom: 8px; flex: 0 1 auto; max-height: 24vh; overflow: auto; }
+#intake .rail .survey .who { color: #666; font-size: 10.5px; }
+#intake .modal .box textarea { width: 100%; min-height: 64px; margin-top: 8px; font-family: inherit; font-size: 12.5px; }
 #intake .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 50; }
 #intake .modal.open { display: flex; }
 #intake .modal .box { background: #0f0f0f; border: 1px solid #333; padding: 18px 20px; max-width: 460px; font-size: 13px; line-height: 1.6; }
@@ -128,7 +131,7 @@ function nameForm(me) {
 }
 async function urlForm(me) {
   const drafts = await api('GET', '/api/intake/drafts');
-  const list = (drafts.json && drafts.json.drafts) || [];
+  const list = ((drafts.json && drafts.json.drafts) || []).filter(d => d.status !== 'abandoned');
   app.innerHTML = '<form id="u"><label>website, portfolio, exhibition or programme URL</label><div class="row"><input type="url" name="source_url" required placeholder="https://" autocomplete="off"><button class="btn primary" type="submit">Go</button></div>' +
     '<p class="lede" style="margin-top:10px">Signed in as ' + esc(me.name) + ' &lt;' + esc(me.email) + '&gt; · tier ' + esc(me.trust_tier) + ' · <a href="#" id="out">sign out</a></p></form>' +
     (list.length ? '<ul class="drafts">' + list.map(d => '<li><span class="dom"><a href="/draft/' + esc(d.id) + '">' + esc(d.source_url) + '</a></span>' + pill(d.job_pending ? 'running' : d.status) + '<span>' + d.candidate_count + ' cards</span>' + (d.status === 'submitted' ? '<a href="/batch/' + esc(d.id) + '">receipt</a>' : '') + '</li>').join('') + '</ul>' : '');
@@ -291,15 +294,42 @@ function renderHead() {
   $('#dhead').innerHTML = '<span class="src">' + esc(D.source_url) + '</span>' +
     '<span>subject: ' + (D.subject_node_id ? refLink(D.subject_node_id) : '<span class="meta">none yet</span>') + '</span>' +
     pill(D.job_pending ? 'running' : D.status) + '<span>' + D.pages.length + ' pages</span><span class="spacer"></span>' +
-    (D.status === 'ready' ? '<button class="btn primary" id="confirm"' + (acc ? '' : ' disabled') + '>Confirm ' + acc + ' items</button><button class="btn" id="abandon">Abandon</button>' : '') +
+    (D.status === 'ready' ? '<button class="btn primary" id="confirm"' + (acc ? '' : ' disabled') + '>Confirm ' + acc + ' items</button>' : '') +
+    ((D.status === 'ready' || D.status === 'failed') && !D.job_pending ? '<button class="btn" id="more">Read more of the site</button>' : '') +
+    (D.status !== 'submitted' && D.status !== 'abandoned' ? '<button class="btn" id="abandon">Abandon</button>' : '') +
     (D.status === 'submitted' ? '<a class="btn" href="/batch/' + esc(D.id) + '">Receipt</a>' : '');
   const cb = $('#confirm'); if (cb) cb.onclick = confirmModal;
-  const ab = $('#abandon'); if (ab) ab.onclick = async () => { if (!confirm('Abandon this draft?')) return; await api('POST', '/api/intake/drafts/' + ID + '/abandon'); location.href = '/contribute'; };
+  const mb = $('#more'); if (mb) mb.onclick = moreModal;
+  const ab = $('#abandon'); if (ab) ab.onclick = abandonModal;
+}
+// In-page modals, never window.confirm(): in-app browsers (and Chrome after
+// "prevent this page from creating additional dialogs") answer it 'no'
+// without showing anything, which reads as a dead button.
+function openModal(html) { $('#modalbox').innerHTML = html; $('#modal').classList.add('open'); $('#cancel').onclick = () => $('#modal').classList.remove('open'); }
+function modalError(r) { const m = $('#modalerr'); if (m) m.innerHTML = '<div class="msg msg-err">' + esc(r.json && (r.json.message || r.json.error) || ('error ' + r.status)) + '</div>'; }
+function abandonModal() {
+  openModal('<div class="kicker">ABANDON</div><p>Drop this draft' + (D.job_pending ? ' and stop the agent' : '') + '? Nothing from it enters A(DAI). This cannot be undone.</p><div id="modalerr"></div>' +
+    '<div class="actions"><button class="btn primary" id="go">Abandon draft</button> <button class="btn" id="cancel">Back</button></div>');
+  $('#go').onclick = async () => { $('#go').disabled = true; const r = await api('POST', '/api/intake/drafts/' + ID + '/abandon'); if (r.ok) location.href = '/contribute'; else { modalError(r); $('#go').disabled = false; } };
+}
+function moreModal() {
+  const S = D.survey;
+  openModal('<div class="kicker">READ MORE OF THE SITE</div><p>The agent reads pages it has not read yet, knowing what it already proposed and what you rejected.' + (S && S.remaining ? ' Not covered so far: ' + esc(S.remaining) : '') + '</p>' +
+    '<textarea id="focus" placeholder="Optional: where to look — e.g. the 2019–2021 exhibitions; Auriea Harvey; the editions archive"></textarea><div id="modalerr"></div>' +
+    '<div class="actions"><button class="btn primary" id="go">Start</button> <button class="btn" id="cancel">Back</button></div>');
+  $('#go').onclick = async () => { $('#go').disabled = true; const r = await api('POST', '/api/intake/drafts/' + ID + '/continue', { focus: $('#focus').value }); if (r.ok) { $('#modal').classList.remove('open'); await load(); } else { modalError(r); $('#go').disabled = false; } };
+}
+function surveyBlock() {
+  const S = D.survey; if (!S) return '';
+  const inv = (S.inventory || []).map(i => esc(i.label) + (i.count != null ? ' · ' + i.count : '')).join('<br>');
+  return '<div class="survey"><div class="who">what the site holds (' + esc(S.site_kind) + ')</div>' + inv +
+    (S.covered ? '<div class="who" style="margin-top:8px">covered</div>' + esc(S.covered) : '') +
+    (S.remaining ? '<div class="who" style="margin-top:8px">not covered yet</div>' + esc(S.remaining) : '') + '</div>';
 }
 function renderRail() {
   const rail = $('#rail');
   const msgs = D.messages || [];
-  rail.innerHTML = '<h3>Ask the agent</h3>' + (D.summary ? '<div class="summary">' + esc(D.summary) + '</div>' : '') +
+  rail.innerHTML = '<h3>Ask the agent</h3>' + (D.summary ? '<div class="summary">' + esc(D.summary) + '</div>' : '') + surveyBlock() +
     '<div class="log">' + msgs.map(m => '<div class="m ' + esc(m.role) + '"><div class="who">' + (m.role === 'user' ? 'you' : 'agent') + '</div>' + esc(m.text) + '</div>').join('') + (D.job_pending ? '<div class="m assistant"><div class="who">agent</div>thinking…</div>' : '') + '</div>' +
     (D.status === 'ready' || D.status === 'failed' ? '<form id="chat"><textarea name="message" placeholder="e.g. the 2021 show was at a different gallery; or: add my collaborator X"></textarea><button class="btn" type="submit">Send</button></form>' : '');
   const f = $('#chat'); if (f) f.onsubmit = async (e) => { e.preventDefault(); const t = f.message.value.trim(); if (!t) return; f.querySelector('button').disabled = true; const r = await api('POST', '/api/intake/drafts/' + ID + '/chat', { message: t }); if (!r.ok) { alert(r.json && r.json.message || 'error'); f.querySelector('button').disabled = false; return; } await load(); };

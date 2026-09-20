@@ -103,7 +103,7 @@ export type Candidate =
   | KnownCandidate;
 
 export const MAX_CANDIDATES = 300;
-export const MAX_PAGES = 60;
+export const MAX_PAGES = 240;
 export const MAX_QUESTIONS = 5;
 export const MAX_QUOTE_CHARS = 300;
 export const MAX_NOTE_CHARS = 400;

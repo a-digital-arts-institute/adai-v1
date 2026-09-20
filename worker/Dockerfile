@@ -1,7 +1,11 @@
 # A(DAI) intake worker — Playwright + Chromium image. Built and pushed with
 # `just deploy-worker` (flyctl deploy --build-only --push); the main app
 # spawns one machine per job from this image. No long-lived machines.
-FROM mcr.microsoft.com/playwright:v1.55.0-noble
+# The image tag MUST match the playwright version in package-lock.json: the
+# image ships the browser builds for exactly that release, and a newer npm
+# playwright looks for a build that is not there (launch fails, every page
+# silently degrades to the plain-fetch fallback — no JS, no lazy images).
+FROM mcr.microsoft.com/playwright:v1.63.0-noble
 
 WORKDIR /app
 ENV NODE_ENV=production

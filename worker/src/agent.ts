@@ -6,8 +6,8 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { CONFIG, estimateUsd } from "./config.js";
 import { TOOLS, runTool, type ToolContext } from "./tools.js";
-import { systemPrompt, initialUserMessage, chatUserMessage, renderPage } from "./prompt.js";
-import { fetchPage, newPolicy, FetchRefused } from "./browser.js";
+import { systemPrompt, initialUserMessage, continueUserMessage, chatUserMessage, renderPage } from "./prompt.js";
+import { fetchPage, newPolicy, FetchRefused, siteOutline, endSession } from "./browser.js";
 import { heartbeat, addPage, type ClaimedDraft, type Job } from "./client.js";
 
 export interface PassResult {
@@ -21,6 +21,8 @@ export interface AgentDeps {
   runTool?: typeof runTool;
   fetchPage?: typeof fetchPage;
   addPage?: typeof addPage;
+  siteOutline?: typeof siteOutline;
+  heartbeat?: typeof heartbeat;
   now?: () => number;
 }
 
@@ -37,6 +39,13 @@ function withMovingBreakpoint(messages: Anthropic.Messages.MessageParam[]): Anth
   return out;
 }
 
+/** Dropped connections, timeouts, 408/409/429 and 5xx (incl. 529 overloaded). Not 4xx request errors. */
+export function isTransient(e: any): boolean {
+  const status = typeof e?.status === "number" ? e.status : null;
+  if (status !== null) return status === 408 || status === 409 || status === 429 || status >= 500;
+  return /connection|network|timeout|timed out|socket|ECONNRESET|ETIMEDOUT|EAI_AGAIN|terminated|overloaded|fetch failed/i.test(String(e?.name ?? "") + " " + String(e?.message ?? e));
+}
+
 export async function runPass(draft: ClaimedDraft, job: Job, deps: AgentDeps = {}): Promise<PassResult> {
   const anthropic = deps.client ?? new Anthropic({ apiKey: CONFIG.anthropicKey }).messages;
   const exec = deps.runTool ?? runTool;
@@ -45,7 +54,9 @@ export async function runPass(draft: ClaimedDraft, job: Job, deps: AgentDeps = {
   const now = deps.now ?? Date.now;
   const started = now();
   const model = CONFIG.model;
-  const maxCalls = job.kind === "initial" ? CONFIG.maxToolCallsInitial : CONFIG.maxToolCallsChat;
+  const outlineOf = deps.siteOutline ?? siteOutline;
+  const beat = deps.heartbeat ?? heartbeat;
+  const maxCalls = job.kind === "initial" ? CONFIG.maxToolCallsInitial : job.kind === "continue" ? CONFIG.maxToolCallsContinue : CONFIG.maxToolCallsChat;
   const usage = { input_tokens: 0, output_tokens: 0, cache_read_tokens: 0, cache_write_tokens: 0, est_cost_usd: 0, model, tool_calls: 0 };
 
   const ctx: ToolContext = {
@@ -58,7 +69,11 @@ export async function runPass(draft: ClaimedDraft, job: Job, deps: AgentDeps = {
   };
 
   // Heartbeat while we work; the claim expires 20 min after the last one.
-  const hb = setInterval(() => { heartbeat(draft.id).catch(() => {}); }, CONFIG.heartbeatMs);
+  // A "lost" claim means the contributor abandoned the draft (or it was
+  // reclaimed): stop at the next turn instead of burning the budget on
+  // tool calls the server will refuse.
+  let lost = false;
+  const hb = setInterval(() => { beat(draft.id).then((r) => { if (r === "lost") lost = true; }).catch(() => {}); }, CONFIG.heartbeatMs);
   hb.unref();
 
   try {
@@ -78,7 +93,9 @@ export async function runPass(draft: ClaimedDraft, job: Job, deps: AgentDeps = {
         }
         rootRendered = `<page url="${draft.source_url}" status="0">(root fetch failed this pass: ${msg})</page>`;
       }
-      first = initialUserMessage(draft, rootRendered);
+      first = initialUserMessage(draft, rootRendered, await outlineOf(draft.source_url).catch(() => null));
+    } else if (job.kind === "continue") {
+      first = continueUserMessage(draft, job, await outlineOf(draft.source_url).catch(() => null));
     } else {
       first = chatUserMessage(draft, job);
     }
@@ -93,6 +110,7 @@ export async function runPass(draft: ClaimedDraft, job: Job, deps: AgentDeps = {
     let stopReason = "";
     for (let turn = 0; turn < maxCalls + 2 && finished === null; turn++) {
       if (now() - started > CONFIG.hardTimeoutS * 1000) return { summary: null, error: "hard timeout", usage };
+      if (lost) return { summary: null, error: "claim lost (draft abandoned or reclaimed)", usage };
       if (usage.est_cost_usd > CONFIG.maxUsdPerDraft) {
         stopReason = "budget";
         break;
@@ -104,15 +122,29 @@ export async function runPass(draft: ClaimedDraft, job: Job, deps: AgentDeps = {
       // prefix (pages read, tool results) is then served from cache on the
       // next turn instead of being re-billed at full input price. 3
       // breakpoints total (system, tools, here) — the API allows 4.
-      const stream = anthropic.stream({
-        model,
-        max_tokens: 8000,
-        thinking: { type: "adaptive" } as any,
-        system,
-        tools,
-        messages: withMovingBreakpoint(messages),
-      });
-      const final = await stream.finalMessage();
+      // A long pass makes hundreds of API calls; one dropped connection or
+      // overloaded/5xx reply must not end it. `messages` is only appended
+      // after a turn completes, so re-sending the same turn is safe (and
+      // the prefix is served from cache).
+      let final: Anthropic.Messages.Message | undefined;
+      for (let attempt = 0; ; attempt++) {
+        try {
+          final = await anthropic.stream({
+            model,
+            max_tokens: 8000,
+            thinking: { type: "adaptive" } as any,
+            system,
+            tools,
+            messages: withMovingBreakpoint(messages),
+          }).finalMessage();
+          break;
+        } catch (e: any) {
+          if (attempt >= CONFIG.apiRetries || !isTransient(e)) throw e;
+          const waitMs = CONFIG.apiRetryBaseMs * 2 ** attempt;
+          console.warn(`[worker] model call failed (${e?.message ?? e}); retry ${attempt + 1}/${CONFIG.apiRetries} in ${waitMs}ms`);
+          await new Promise((r) => setTimeout(r, waitMs));
+        }
+      }
       const u = final.usage as any;
       usage.input_tokens += u?.input_tokens ?? 0;
       usage.output_tokens += u?.output_tokens ?? 0;
@@ -152,5 +184,6 @@ export async function runPass(draft: ClaimedDraft, job: Job, deps: AgentDeps = {
     return { summary: null, error: `pass failed: ${e?.message ?? e}`, usage };
   } finally {
     clearInterval(hb);
+    await endSession();
   }
 }

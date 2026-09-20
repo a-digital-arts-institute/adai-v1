@@ -286,7 +286,7 @@ CREATE TABLE IF NOT EXISTS drafts (
     source_url      TEXT NOT NULL,
     source_domain   TEXT NOT NULL,
     status          TEXT NOT NULL DEFAULT 'queued', -- queued | running | ready | submitted | failed | abandoned
-    job             TEXT,                           -- JSON {kind: 'initial'|'chat', message?, queued_at}
+    job             TEXT,                           -- JSON {kind: 'initial'|'chat'|'continue', message?, queued_at}
     claimed_by      TEXT,
     claimed_at      TEXT,
     heartbeat_at    TEXT,
@@ -296,6 +296,7 @@ CREATE TABLE IF NOT EXISTS drafts (
     messages        TEXT NOT NULL DEFAULT '[]',
     pages           TEXT NOT NULL DEFAULT '[]',
     summary         TEXT,
+    survey          TEXT,                           -- JSON: the agent's site survey + coverage (note_survey)
     usage           TEXT,
     intake_ids      TEXT,
     error           TEXT,

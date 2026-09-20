@@ -10,7 +10,7 @@
 
 import "./env.js";
 import { CONFIG } from "./config.js";
-import { claim, finish } from "./client.js";
+import { claim, finish, ApiError } from "./client.js";
 import { runPass } from "./agent.js";
 import { closeBrowser } from "./browser.js";
 
@@ -25,7 +25,13 @@ async function handle(draftId?: string | null): Promise<boolean> {
   log(`claimed ${draft.id} (${job.kind}) ${draft.source_url}`);
   const r = await runPass(draft, job);
   log(`pass done ${draft.id}: ${r.error ? `ERROR ${r.error}` : "ok"} · $${r.usage.est_cost_usd.toFixed(4)} · ${r.usage.tool_calls} tool calls`);
-  await finish(draft.id, { summary: r.summary, usage: r.usage, error: r.error });
+  try {
+    await finish(draft.id, { summary: r.summary, usage: r.usage, error: r.error });
+  } catch (e: any) {
+    // 409 = the claim is gone (abandoned mid-pass); nothing to report to.
+    if (!(e instanceof ApiError && e.status === 409)) throw e;
+    log(`finish skipped for ${draft.id}: claim gone`);
+  }
   return true;
 }
 
