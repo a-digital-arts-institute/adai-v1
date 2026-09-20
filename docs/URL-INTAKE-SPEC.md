@@ -355,7 +355,7 @@ spawn(draft_id, job_kind):
         auto_destroy: true,
         restart: { policy: "no" },
         guest: { cpu_kind: "shared", cpus: 1, memory_mb: 1024 },
-        env: { DRAFT_ID, JOB_KIND, ADAI_URL: "http://adai-basel.flycast", INTAKE_MODEL },
+        env: { DRAFT_ID, JOB_KIND, ADAI_URL: "https://adai-basel.fly.dev" /* not Flycast — see §14 */, INTAKE_MODEL },
         // NOT adai-basel.internal: 6PN DNS bypasses fly-proxy and cannot wake a stopped machine
         // WORKER_KEY and ANTHROPIC_API_KEY come from the worker app's own Fly secrets, not from env here
       }
@@ -496,9 +496,12 @@ WORKER_KEY=dev ADAI_URL=http://localhost:8080 npm run intake:worker   # in worke
 
 ## 14. Deploy
 
-- Main app: `just deploy` as today, plus secrets `WORKER_KEY`, `WORKER_IMAGE`, `SESSION_SECRET`, and a verified `RESEND_FROM` (`RESEND_API_KEY` and `FLY_API_TOKEN` already exist).
-- Worker: `just deploy-worker` builds and pushes the image, prints the tag, updates `WORKER_IMAGE` on the main app. Worker app secrets, set once: `WORKER_KEY`, `ANTHROPIC_API_KEY`. `flyctl apps create adai-intake-worker` the first time. Never `flyctl deploy` the worker app without `--build-only`; it must own zero long-lived machines.
-- The main app's `auto_stop` is unaffected **only because the worker talks to `adai-basel.flycast`**, which goes through fly-proxy and auto-starts the machine. `.internal` addresses bypass the proxy and fail while the app is stopped.
+- Main app: `just deploy`, plus Fly secrets `SESSION_SECRET`, `WORKER_KEY`, `FLY_API_TOKEN`, `ADAI_BASE_URL` (the public site, used in emailed links), `WORKER_IMAGE` (set by `just deploy-worker`). `RESEND_API_KEY` / `RESEND_FROM` already exist. **Never copy `MAIL_TRANSPORT=stdout` or `ADAI_BASE_URL=http://localhost:8080` from a dev `.env`** — `.env` is not in the image; on Fly only `flyctl secrets` count.
+- `FLY_API_TOKEN` on the main app is a **deploy token scoped to the worker app only** (`flyctl tokens create deploy -a adai-intake-worker`): all the spawner does is create machines there. It is not the GitHub Actions secret of the same name.
+- Worker, first time: `flyctl apps create adai-intake-worker`, then its secrets `WORKER_KEY` (equal to the main app's) and `ANTHROPIC_API_KEY` (they show as "Staged" — the app has no long-lived machines; spawned machines still receive them). Then `just deploy-worker`: builds and pushes the image, and only if the build succeeded points `WORKER_IMAGE` at the new tag. Never `flyctl deploy` the worker app without `--build-only`; it must own zero long-lived machines.
+- The worker image is a two-stage build (`worker/Dockerfile`): dev deps + `tsc` in the build stage, production deps + `dist/` in the runtime stage. Its base image tag must equal the `playwright` version in `worker/package-lock.json`.
+- **The worker reaches the main app over the public HTTPS URL** (`WORKER_ADAI_URL`, default `https://adai-basel.fly.dev`), not Flycast: `force_https = true` in `fly.toml` also applies on the private Flycast address, so `http://adai-basel.flycast` is redirected to an HTTPS endpoint that has no certificate. `/internal/*` is `WORKER_KEY`-guarded and served by the same public service either way; going through fly-proxy keeps the main app awake for the length of a pass, which a `.internal` address would not.
+- First production bring-up (2026-09-20) hit, in order: no worker app; the old single-stage Dockerfile shipping no `dist/` (`NODE_ENV=production` before `npm i typescript`, failure hidden by `|| true`); the Flycast redirect. All three are fixed above.
 
 ## 15. Security and limits
 

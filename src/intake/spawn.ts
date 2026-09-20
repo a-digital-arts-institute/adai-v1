@@ -15,7 +15,14 @@ function cfg() {
     token: process.env.FLY_API_TOKEN || null,
     region: process.env.WORKER_REGION || "fra",
     maxMachines: parseInt(process.env.INTAKE_MAX_MACHINES || "3", 10) || 3,
-    adaiUrl: process.env.WORKER_ADAI_URL || "http://adai-basel.flycast",
+    // The public HTTPS URL, NOT http://adai-basel.flycast: fly.toml has
+    // force_https = true, which also applies on the private Flycast address
+    // — the worker's plain-HTTP call is redirected to https://…flycast:443,
+    // where no certificate exists (ECONNRESET; first prod spawn, Sept 2026).
+    // /internal/* is served by the same public service anyway and is
+    // WORKER_KEY-guarded; going through fly-proxy also keeps the main app
+    // awake for the length of a pass (a .internal address would not).
+    adaiUrl: process.env.WORKER_ADAI_URL || "https://adai-basel.fly.dev",
     model: process.env.INTAKE_MODEL || "claude-sonnet-5",
     hardTimeoutS: parseInt(process.env.INTAKE_HARD_TIMEOUT_S || "2700", 10) || 2700,
   };

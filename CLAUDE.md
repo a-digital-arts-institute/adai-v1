@@ -224,7 +224,9 @@ an external assistant can drive drafts. Secrets: `SESSION_SECRET`,
 (spawner), `INTAKE_FROM` (optional). Locally: `just intake-dev`; invites:
 `npm run invite` / `just invite-prod`. Worker image: `just deploy-worker`
 (build-only + push; the main app spawns one ephemeral machine per job via
-the Machines API, over `adai-basel.flycast` so a stopped app wakes).
+the Machines API; the worker calls back over the public HTTPS URL
+(`WORKER_ADAI_URL`) — NOT Flycast, which `force_https` breaks; first-time Fly
+setup is in `docs/URL-INTAKE-SPEC.md` §14).
 
 ### Contributor API (`/api/v1/*`) — bearer-token, AI-driven
 
