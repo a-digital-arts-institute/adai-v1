@@ -213,6 +213,13 @@ onto the draft, the contributor reviews them on `/draft/:id` and presses
 reviewed) or one pending `intake_queue` row (probationary). Receipt at
 `/batch/:id`.
 
+A read is a **dated snapshot**: signals carry the page's read date and hash;
+a later read of the same site is an update (unchanged pages skipped), and a
+present-tense relation the site no longer shows (REPRESENTS) comes back as an
+`ended` card that closes the edge bi-temporally (spec §6.2c). Institution
+pages lead with an artists roster derived at read time (`src/utils/roster.ts`);
+`metadata.kind` on an institution is a list from `src/utils/org-kinds.ts`.
+
 Two promises enforced in code: (1) the worker has **no graph write path** —
 `/internal/intake/tool` is an allowlist of read tools, the draft endpoints
 touch only `drafts` (`tests/intake-imports.test.ts`); (2) nothing leaves a

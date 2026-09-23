@@ -6,9 +6,10 @@
 //   finish_pass  → local, ends the loop
 
 import type Anthropic from "@anthropic-ai/sdk";
-import { graphTool, draftTool, addPage } from "./client.js";
+import { graphTool, draftTool, addPage, getDraft } from "./client.js";
 import { fetchPage, sameSite, FetchRefused, type FetchPolicy } from "./browser.js";
-import { renderPage } from "./prompt.js";
+import { renderPage, type PriorRead } from "./prompt.js";
+import { ORG_KINDS } from "./org-kinds.js";
 
 type Tool = Anthropic.Messages.Tool;
 
@@ -102,7 +103,7 @@ export const TOOLS: Tool[] = [
       properties: {
         type: { type: "string", enum: NODE_TYPES },
         name: { type: "string" },
-        metadata: { type: "object", description: "year, medium, summary, country, bio_summary … only what the page says." },
+        metadata: { type: "object", description: `year, medium, summary, country, bio_summary … only what the page says. For an institution: kind — a list from ${ORG_KINDS.join(", ")} (several allowed), with kind_source {page_url, quote}: how the organisation describes itself on its own site.` },
         ...evidenceProps,
         resolves_to: { type: "string", description: "Existing node id this is (from resolve_entity)." },
         resolution: { type: "string", enum: ["exact", "alias", "fuzzy"] },
@@ -157,7 +158,7 @@ export const TOOLS: Tool[] = [
   },
   {
     name: "ask_contributor",
-    description: "Ask the contributor a yes/no question whose 'yes' becomes an edge in their own words (this is the ONLY route for INFLUENCES / RESPONDS_TO, and for ambiguous COLLABORATES_WITH). Max 5 per draft.",
+    description: "Ask the contributor a yes/no question whose 'yes' becomes an edge in their own words (this is the ONLY route for INFLUENCES / RESPONDS_TO, and for ambiguous COLLABORATES_WITH). For COLLABORATES_WITH the buttons read 'Worked together' / 'Only shown together' — phrase the text to match (\"Did X and Y work together, or only show together — in A and B?\"). Max 10 per draft.",
     input_schema: {
       type: "object",
       properties: {
@@ -166,6 +167,25 @@ export const TOOLS: Tool[] = [
         note: { type: "string" },
       },
       required: ["text", "if_yes"],
+    },
+  },
+  {
+    name: "site_claims",
+    description: "Present-tense relations (REPRESENTS) that pages of this site attested on earlier reads and that are still live in A(DAI), with edge ids. Call it on an UPDATE read (the <memory> block shows earlier reads), then re-check each against the page as it reads now.",
+    input_schema: { type: "object", properties: { domain: { type: "string", description: "The site's domain, e.g. interfacegallery.io" } }, required: ["domain"] },
+  },
+  {
+    name: "propose_ended",
+    description: "A present-tense relation from site_claims that the site NO LONGER shows (an artist gone from the represented-artists page). The card asks the contributor to end it; accepted, the edge becomes historical — nothing is deleted. Evidence: the current page (the roster as it reads now). Never for shows or works: those stay true. Never because a page failed to load.",
+    input_schema: {
+      type: "object",
+      properties: {
+        edge_id: { type: "string", description: "From site_claims." },
+        summary: { type: "string", description: "One line for the contributor, e.g. 'Ashley Zelinskie is no longer on the represented-artists page.'" },
+        ...evidenceProps,
+        note: { type: "string" },
+      },
+      required: ["edge_id", "summary", "page_url", "quote"],
     },
   },
   {
@@ -185,12 +205,43 @@ export const TOOLS: Tool[] = [
   },
 ];
 
-const GRAPH_TOOLS = new Set(["search_nodes", "get_node", "get_neighbours", "get_component", "resolve_entity", "find_path", "image_neighbours"]);
-const DRAFT_TOOLS = new Set(["set_subject", "note_survey", "propose_node", "propose_edge", "propose_image", "propose_patch", "note_known", "ask_contributor", "update_candidate", "remove_candidate"]);
+const GRAPH_TOOLS = new Set(["search_nodes", "get_node", "get_neighbours", "get_component", "resolve_entity", "find_path", "image_neighbours", "site_claims"]);
+const DRAFT_TOOLS = new Set(["set_subject", "note_survey", "propose_node", "propose_edge", "propose_image", "propose_patch", "note_known", "ask_contributor", "propose_ended", "update_candidate", "remove_candidate"]);
 
 export interface ToolContext {
   draftId: string;
   policy: FetchPolicy;
+  /** Earlier reads of this site, by URL — marks each fetched page changed / unchanged. */
+  prior?: Map<string, PriorRead>;
+  /** Reading passes (initial / continue) must leave the subject connected; chat passes are exempt. */
+  checkSubject?: boolean;
+  subjectChecked?: boolean;
+  getDraft?: typeof getDraft;
+}
+
+/**
+ * How many live cards connect the draft's subject: edges (not rejected)
+ * touching the subject, directly or through a node card that resolves to it,
+ * and questions about it. 0 means the site's own subject would enter the
+ * graph linked to nothing — the verse.works failure.
+ */
+export function subjectLinks(d: { subject_node_id: string | null; candidates: any[] }): number {
+  const subject = d.subject_node_id;
+  if (!subject) return 0;
+  const refs = new Set<string>([subject]);
+  for (const c of d.candidates) {
+    if (c.kind !== "node") continue;
+    if (c.resolves_to && refs.has(c.resolves_to)) refs.add(`cid:${c.cid}`);
+    if (subject === `cid:${c.cid}` && c.resolves_to) refs.add(c.resolves_to);
+  }
+  const live = (c: any) => c.state !== "rejected" && c.state !== "context_only";
+  let n = 0;
+  for (const c of d.candidates) {
+    if (!live(c)) continue;
+    if (c.kind === "edge" && (refs.has(c.edge.source) || refs.has(c.edge.target))) n++;
+    if (c.kind === "question" && (refs.has(c.question.if_yes.source) || refs.has(c.question.if_yes.target))) n++;
+  }
+  return n;
 }
 
 export interface ToolOutcome {
@@ -201,6 +252,24 @@ export interface ToolOutcome {
 
 export async function runTool(ctx: ToolContext, name: string, input: Record<string, unknown>): Promise<ToolOutcome> {
   if (name === "finish_pass") {
+    // Once per pass: a reading pass that leaves the site's subject linked to
+    // nothing is sent back to connect it, or to say in the summary why not.
+    if (ctx.checkSubject && !ctx.subjectChecked) {
+      ctx.subjectChecked = true;
+      const d = await (ctx.getDraft ?? getDraft)(ctx.draftId).catch(() => null);
+      if (d && subjectLinks(d) === 0) {
+        const why = d.subject_node_id
+          ? `The subject ${d.subject_node_id} has no relation in this draft.`
+          : "No subject was set (set_subject).";
+        return {
+          content: JSON.stringify({
+            error: "subject_unconnected",
+            message: `${why} The site's own subject must end up connected: the shows it presents (PRESENTED_BY the subject), the works shown on it (EXHIBITED_AT the subject), its roster. Propose those with quotes now; if the site truly evidences no relation to its subject, call finish_pass again and say so plainly at the top of the summary.`,
+          }),
+          is_error: true,
+        };
+      }
+    }
     const summary = typeof input.summary === "string" ? input.summary.trim() : "";
     return { content: JSON.stringify({ ok: true }), is_error: false, finished: summary || "(no summary)" };
   }
@@ -212,7 +281,7 @@ export async function runTool(ctx: ToolContext, name: string, input: Record<stri
       // counted against their own cap inside fetchPage.
       if (sameSite(url, ctx.policy.rootUrl)) ctx.policy.pagesFetched++;
       await addPage(ctx.draftId, { url: p.url, final_url: p.final_url, title: p.title, status: p.status, chars: p.chars, sha256: p.sha256, via: p.via });
-      return { content: renderPage(p), is_error: false };
+      return { content: renderPage(p, ctx.prior?.get(p.final_url) ?? ctx.prior?.get(p.url)), is_error: false };
     } catch (e: any) {
       const msg = e instanceof FetchRefused ? `refused (${e.code}): ${e.message}` : `fetch failed: ${e?.message ?? e}`;
       return { content: JSON.stringify({ error: msg }), is_error: true };

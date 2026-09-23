@@ -9,6 +9,7 @@ import { buildEmbeddingSections } from "../embed/sections.js";
 import { formatArtworkYearFromMetadata, formatArtworkYear, YEAR_SQL_FRAGMENT } from "../utils/year.js";
 import { NODE_NOT_RETIRED } from "../utils/visibility.js";
 import { sourceLabel } from "../utils/source-label.js";
+import { rosterFor } from "../utils/roster.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.join(__dirname, "..", "..");
@@ -146,6 +147,18 @@ function profileHandler(req: any, res: any) {
         body += `<p class='meta'>Status: <span class='tag'>${htmlEscape(String(meta.status))}</span></p>`;
       }
 
+      // What the organisation says it is (src/utils/org-kinds.ts): several
+      // kinds from a fixed list, with its own words when we have them. A
+      // legacy free-text kind is shown as the description it is.
+      if (node.type === "institution" && meta.kind) {
+        const src = meta.kind_source && typeof meta.kind_source === "object" ? meta.kind_source : null;
+        const kinds = Array.isArray(meta.kind) ? meta.kind.map(String) : null;
+        body += `<p class='meta'>` +
+          (kinds ? kinds.map((k: string) => `<span class='tag'>${htmlEscape(k)}</span>`).join(" ") : `“${htmlEscape(String(meta.kind))}”`) +
+          (src?.quote ? ` <span class='meta'>— “${htmlEscape(String(src.quote))}”${typeof src.page_url === "string" && /^https?:\/\//i.test(src.page_url) ? ` <a href='${htmlEscape(src.page_url)}' target='_blank' rel='noopener'>source</a>` : ""}</span>` : "") +
+          `</p>`;
+      }
+
       // Upstream provenance — same label the field's entity-view footer shows
       // (sourceLabel on source_url / va_maker_name), linked to the exact page
       // when a valid http(s) source_url exists. V&A makers carry a label but
@@ -211,6 +224,26 @@ function profileHandler(req: any, res: any) {
       }
     } catch {
       // metadata not valid JSON, skip
+    }
+  }
+
+  // A gallery / venue / platform page leads with its artists. Derived from
+  // live edges at read time (src/utils/roster.ts) — never stored as edges.
+  if (node.type === "institution" || node.type === "platform") {
+    const roster = rosterFor(db, node.id);
+    if (roster.length) {
+      const LIMIT = 300;
+      body += `<h3>artists (${roster.length})</h3><p class='meta'>Read off this graph: represented here, in shows presented here, or with works shown here.</p><ul class='edge-list'>`;
+      for (const a of roster.slice(0, LIMIT)) {
+        const why = [
+          a.represented ? "represented" : "",
+          a.shows ? `${a.shows} show${a.shows === 1 ? "" : "s"}` : "",
+          a.works ? `${a.works} work${a.works === 1 ? "" : "s"}` : "",
+        ].filter(Boolean).join(" · ");
+        body += `<li><a href='/${htmlEscape(a.type)}/${encodeURIComponent(a.slug)}'>${htmlEscape(a.name)}</a> <span class='meta'>${htmlEscape(why)}</span></li>`;
+      }
+      if (roster.length > LIMIT) body += `<li class='meta'>and ${roster.length - LIMIT} more</li>`;
+      body += `</ul>`;
     }
   }
 
@@ -759,6 +792,8 @@ router.get("/review", (req, res) => {
               body += `<li>patch metadata of <code>${htmlEscape(String(op.node_id))}</code> — keys: ${htmlEscape(keys)}</li>`;
             } else if (op?.op === "attach_image") {
               body += `<li>attach image to <code>${htmlEscape(String(op.node_id))}</code> — <a href='${htmlEscape(String(op.cdn_image_url))}' target='_blank'>preview</a> (sha256: <code>${htmlEscape(String(op.sha256).slice(0, 12))}…</code>)</li>`;
+            } else if (op?.op === "end_edge") {
+              body += `<li>end relation <code>${htmlEscape(String(op.edge_id))}</code> — the source no longer shows it (nothing is deleted; the edge becomes historical)</li>`;
             } else {
               body += `<li>${htmlEscape(JSON.stringify(op))}</li>`;
             }

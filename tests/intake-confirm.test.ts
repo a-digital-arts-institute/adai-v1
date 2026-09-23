@@ -5,7 +5,8 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { freshDb, insertNode } from "./helpers.js";
-import { createDraft, claimJob, finishPass, getDraft, runDraftTool, contributorPatchCandidate, confirmDraft, batchReceipt, enqueueChat, DraftError } from "../src/intake/draft.js";
+import { createDraft, claimJob, finishPass, getDraft, runDraftTool, contributorPatchCandidate, confirmDraft, batchReceipt, enqueueChat, workerAddPage, DraftError } from "../src/intake/draft.js";
+import { site_claims } from "../src/intake/tools.js";
 import { approveIntakeItem } from "../src/utils/review.js";
 import { revokeSignal } from "../src/utils/admin-actions.js";
 import type { AuthedContributor } from "../src/auth.js";
@@ -219,5 +220,90 @@ describe("confirmDraft", () => {
     finishPass(db, d.id, "w1", { summary: "s" });
     contributorPatchCandidate(db, getDraft(db, d.id)!, "c_02", { state: "accepted" }); // edge accepted, node not
     await assert.rejects(confirmDraft(db, getDraft(db, d.id)!, c, { mirror }), (e: any) => e.code === "nothing_to_submit" && /not accepted/.test(e.message));
+  });
+
+  it("signals carry the date the page was read, not only the date of submission", async () => {
+    const db = freshDb();
+    const c = contributor(db, "auto");
+    insertNode(db, "institution:bitforms", "institution", "bitforms gallery");
+    const d = createDraft(db, c.id, "https://reas.example/");
+    claimJob(db, "w1");
+    workerAddPage(db, d.id, "w1", { url: "https://reas.example/works", final_url: "https://reas.example/works", title: "Works", status: 200, chars: 10, sha256: "cd".repeat(32), via: "browser" });
+    db.prepare("UPDATE drafts SET pages = json_set(pages, '$[0].fetched_at', '2026-09-12T10:00:00Z') WHERE id = ?").run(d.id);
+    runDraftTool(db, d.id, "w1", "propose_node", { type: "artwork", name: "Process 4", page_url: "https://reas.example/works", quote: "Process 4 was shown at bitforms." });
+    runDraftTool(db, d.id, "w1", "propose_edge", { source: "cid:c_01", target: "institution:bitforms", edge_type: "EXHIBITED_AT", confidence: "high", page_url: "https://reas.example/works", quote: "Process 4 was shown at bitforms." });
+    finishPass(db, d.id, "w1", { summary: "s" });
+    for (const cid of ["c_01", "c_02"]) contributorPatchCandidate(db, getDraft(db, d.id)!, cid, { state: "accepted" });
+    await confirmDraft(db, getDraft(db, d.id)!, c, { mirror });
+    const provs = (db.prepare("SELECT provenance_chain FROM signals WHERE batch_id = ? AND title LIKE 'Add edge%'").all(d.id) as any[]).map((r) => JSON.parse(r.provenance_chain));
+    assert.equal(provs[0].page_fetched_at, "2026-09-12T10:00:00Z");
+    assert.equal(provs[0].page_sha256, "cd".repeat(32));
+    const anchor = db.prepare("SELECT content FROM signals WHERE batch_id = ? AND title LIKE 'URL intake:%'").get(d.id) as any;
+    assert.equal(JSON.parse(anchor.content).pages[0].fetched_at, "2026-09-12T10:00:00Z");
+  });
+
+  // A gallery said it represents Ashley Zelinskie; a later read of the same
+  // site no longer lists her. The second read proposes ending the relation;
+  // confirming makes it historical — it is never deleted.
+  async function representedThenGone(tier: string) {
+    const db = freshDb();
+    const c = contributor(db, tier);
+    const auto = tier === "auto" ? c : contributor(db, "auto");
+    insertNode(db, "institution:gallery", "institution", "Gallery");
+    insertNode(db, "practitioner:ashley-zelinskie", "practitioner", "Ashley Zelinskie");
+    insertNode(db, "artwork:w", "artwork", "W");
+    const first = createDraft(db, auto.id, "https://gallery.example/");
+    claimJob(db, "w1");
+    const roster = { page_url: "https://gallery.example/artists", quote: "Our represented artists: Ashley Zelinskie" };
+    runDraftTool(db, first.id, "w1", "propose_edge", { source: "institution:gallery", target: "practitioner:ashley-zelinskie", edge_type: "REPRESENTS", confidence: "high", ...roster });
+    runDraftTool(db, first.id, "w1", "propose_edge", { source: "artwork:w", target: "institution:gallery", edge_type: "EXHIBITED_AT", confidence: "high", ...roster });
+    finishPass(db, first.id, "w1", { summary: "s" });
+    for (const cid of ["c_01", "c_02"]) contributorPatchCandidate(db, getDraft(db, first.id)!, cid, { state: "accepted" });
+    await confirmDraft(db, getDraft(db, first.id)!, auto, { mirror });
+
+    const claims = site_claims(db, { domain: "www.gallery.example" }) as any;
+    assert.equal(claims.claims.length, 1, "only the present-tense relation is listed; the show stays true");
+    const rep = claims.claims[0];
+    assert.equal(rep.edge_type, "REPRESENTS");
+
+    const second = createDraft(db, c.id, "https://gallery.example/");
+    claimJob(db, "w1");
+    const now = { page_url: "https://gallery.example/artists", quote: "Our represented artists: Rafaël Rozendaal" };
+    // events cannot end, and another site cannot end what this one said
+    const exhibited = (db.prepare("SELECT id FROM edges WHERE edge_type = 'EXHIBITED_AT'").get() as any).id;
+    assert.throws(() => runDraftTool(db, second.id, "w1", "propose_ended", { edge_id: exhibited, summary: "x", ...now }), /event and stays true/);
+    assert.throws(() => runDraftTool(db, second.id, "w1", "propose_ended", { edge_id: rep.edge_id, summary: "x", page_url: "https://elsewhere.example/", quote: "q" }), /this site's own page/);
+    runDraftTool(db, second.id, "w1", "propose_ended", { edge_id: rep.edge_id, summary: "Ashley Zelinskie is no longer on the represented-artists page.", ...now }); // c_01
+    const other = createDraft(db, c.id, "https://elsewhere.example/");
+    claimJob(db, "w1", other.id);
+    assert.throws(() => runDraftTool(db, other.id, "w1", "propose_ended", { edge_id: rep.edge_id, summary: "x", page_url: "https://elsewhere.example/", quote: "q" }), /not attested by elsewhere.example/);
+    finishPass(db, second.id, "w1", { summary: "s" });
+    contributorPatchCandidate(db, getDraft(db, second.id)!, "c_01", { state: "accepted" });
+    const r = await confirmDraft(db, getDraft(db, second.id)!, c, { mirror });
+    return { db, r, rep, second };
+  }
+
+  it("ended (auto): a represented artist the site no longer lists becomes historical, never deleted", async () => {
+    const { db, r, rep, second } = await representedThenGone("auto");
+    assert.deepEqual(r.ended, [rep.edge_id]);
+    const e = db.prepare("SELECT valid_until, invalidated_by FROM edges WHERE id = ?").get(rep.edge_id) as any;
+    assert.ok(e.valid_until, "edge ended");
+    const sig = db.prepare("SELECT title, batch_id FROM signals WHERE id = ?").get(e.invalidated_by) as any;
+    assert.match(sig.title, /^End edge REPRESENTS/);
+    assert.equal(sig.batch_id, second.id);
+    assert.equal((db.prepare("SELECT COUNT(*) AS n FROM edges WHERE edge_type = 'EXHIBITED_AT' AND valid_until IS NULL").get() as any).n, 1);
+    assert.equal(((site_claims(db, { domain: "gallery.example" }) as any).claims).length, 0);
+    const receipt = batchReceipt(db, second.id) as any;
+    assert.equal(receipt.ended.length, 1);
+  });
+
+  it("ended (probationary): queued, and approval replays it", async () => {
+    const { db, r, rep } = await representedThenGone("probationary");
+    assert.equal(r.status, "review");
+    assert.equal((db.prepare("SELECT valid_until FROM edges WHERE id = ?").get(rep.edge_id) as any).valid_until, null);
+    approveIntakeItem(db, r.intake_ids[0]!, "curator");
+    const e = db.prepare("SELECT valid_until, invalidated_by FROM edges WHERE id = ?").get(rep.edge_id) as any;
+    assert.ok(e.valid_until);
+    assert.match((db.prepare("SELECT title FROM signals WHERE id = ?").get(e.invalidated_by) as any).title, /^End edge REPRESENTS/);
   });
 });

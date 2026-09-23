@@ -297,7 +297,16 @@ Feedback from the first gallery test (Verse): 12 pages read, good cards, but the
 3. **Breadth before depth** for multi-artist sources: the whole roster from the roster page (with the relation the site actually supports — REPRESENTS only for represented artists), the programme from the exhibitions index, then deep pages *spread* across years and artists.
 4. **Coverage honesty**: the summary opens with coverage in numbers and names what is not covered.
 
-Memory (`memoryBlock` in `worker/src/prompt.ts`, in every pass's first message): pages already read, the survey, the cards the contributor rejected / set aside in this draft, and — from `priorContext()` on the claim payload — the same contributor's earlier drafts of the same site (pages, rejections, and *submitted* cards, which for a probationary contributor sit in review where `get_node` cannot see them). Accepted cards need no memory: they are in the graph, and the agent checks the graph. The contributor's "no" is also **enforced**: `runDraftTool` refuses a proposal equal to a rejected / context-only card (same edge triple, same image, same resolved node, same-named unresolved non-artwork node; same-titled artworks stay legal). Scope is per contributor: one person's rejection does not bind another.
+Memory (`memoryBlock` in `worker/src/prompt.ts`, in every pass's first message): pages already read, the survey, the cards the contributor rejected / set aside in this draft, and — from `priorContext()` on the claim payload — earlier reads of the same site: a dated page ledger (`{url, fetched_at, sha256}`, newest read per URL, from this contributor's drafts and from every *submitted* draft of the site) plus this contributor's own rejections and *submitted* cards (which for a probationary contributor sit in review where `get_node` cannot see them). See §6.2c. Accepted cards need no memory: they are in the graph, and the agent checks the graph. The contributor's "no" is also **enforced**: `runDraftTool` refuses a proposal equal to a rejected / context-only card (same edge triple, same image, same resolved node, same-named unresolved non-artwork node; same-titled artworks stay legal). Scope is per contributor: one person's rejection does not bind another.
+
+### 6.2c Snapshots and update reads (September 2026)
+
+A read is a **dated snapshot** of what a site said — a citation "accessed on", not a sync. Events (a show, a work exhibited, 2021) stay true after the site moves on; present-tense claims (REPRESENTS) can lapse.
+
+1. **The date travels with the claim.** Every page in the ledger has `fetched_at` + `sha256`; confirm writes both into each signal's `provenance_chain` (`page_sha256`, `page_fetched_at`) and into the anchor signal's page list. The receipt shows "Site read <date>" and a read date per page.
+2. **A later read is an update.** When `priorContext` has earlier reads, the first message says so and the memory lists each page with its read date. Each re-fetched page renders with `previously_read="<date>" changed="no|yes"` (same hash = unchanged). The agent re-fetches the index pages first, skips unchanged ones, proposes only what is new on changed ones, and opens the summary with the delta ("since 2026-09-12: 2 new shows, 14 pages unchanged").
+3. **Things that end.** `site_claims` lists the live REPRESENTS edges this domain attested. One the site no longer shows becomes an `ended` card (`propose_ended`), evidence = the page as it reads now. Server checks: the edge exists, is live, is present-tense (`PRESENT_TENSE_EDGE_TYPES`), and its evidence signal cites this same domain — a site can withdraw what it said, not what others said. Accepted, confirm emits an `end_edge` op (`valid_until = now`, `invalidated_by` = the card's signal); probationary drafts queue it and `approveIntakeItem` replays it. Never automatic, never a delete, never excluded by "Accept all".
+4. **The page ledger is shared, decisions are not.** Page hashes and dates come from every submitted read of the domain; rejections bind only the contributor who made them.
 
 ### 6.3 Tools
 
@@ -305,6 +314,7 @@ Graph read tools, thin HTTP proxies to `POST /internal/intake/tool {name, input}
 
 - `resolve_entity({name, type?, hints?: {year?, url?, country?}})`: exact name NOCASE + type, then `node_aliases` `source='web'` on a normalised URL, then slug LIKE, then text-embedding top-5 over identity vectors filtered by type prefix. Returns `{id, name, type, slug, resolution, similarity?}[]`. This is the dedup gate.
 - `find_path({from, to, max_depth: 4})`: BFS shortest path over live edges with edge types.
+- `site_claims({domain})`: live present-tense relations (REPRESENTS) whose evidence signal cites a page of that domain, with edge ids — what an update read re-checks (§6.2c).
 - `image_neighbours({image_url, k})`: main app fetches the image (SSRF guard, 10 MiB), embeds with the multimodal Gemini path already in `src/embed/server.ts` (`embedOnce` is module-private today; export it), returns top-k `artwork:` neighbours via `topKByVector`. Vector not persisted.
 
 Draft write tools, HTTP to `/internal/intake/drafts/:id/candidates` and friends, each validated by the main app:
@@ -315,7 +325,8 @@ Draft write tools, HTTP to `/internal/intake/drafts/:id/candidates` and friends,
 - `propose_image({for, image_url, page_url, alt?})`
 - `propose_patch({node_id, key, existing, proposed, page_url, quote})`
 - `note_known({node_id, edge_type?, other_id?, summary})`
-- `ask_contributor({text, if_yes: {source, target, edge_type}})` (max 5 per draft)
+- `ask_contributor({text, if_yes: {source, target, edge_type}})` (max 10 per draft)
+- `propose_ended({edge_id, summary, page_url, quote})` — a present-tense relation (REPRESENTS) this site attested before and no longer shows; §6.2c
 - `update_candidate({cid, patch})` merge-patch, keeps `state`
 - `remove_candidate({cid})` only if `edited === false && state === 'proposed'`
 - `finish_pass({summary})`
@@ -374,9 +385,9 @@ Suggestable from a web page, with the page as evidence:
 | edge_type | direction | condition |
 |---|---|---|
 | CREATED_BY | artwork -> practitioner/collective | page attributes the work |
-| EXHIBITED_AT | artwork -> institution/project | page lists the show or venue |
+| EXHIBITED_AT | artwork -> institution/project/platform | page lists the show, venue or platform |
 | PARTICIPATED_IN | practitioner -> project | page lists the artist in the show |
-| PRESENTED_BY | project -> institution | page names the venue or organiser |
+| PRESENTED_BY | project -> institution/platform | page names the venue, organiser or host platform |
 | CURATED_BY | project -> practitioner | page names the curator |
 | REPRESENTS | institution -> practitioner | roster page, or "represented by" |
 | USES_TECHNIQUE | artwork/practitioner -> concept | page names the technique |
@@ -391,7 +402,7 @@ Never from a site: `INFLUENCES`, `RESPONDS_TO`, `STYLE_KIN`, `VISUALLY_AFFINE`, 
 After the site pass, before `finish_pass`:
 
 1. **Already known**: for every resolved candidate, check whether the edge exists. If yes, convert to `known` ("A(DAI) has this, your site confirms it"). If the site disagrees on a fact, emit a `patch` with both values.
-2. **Indirect**: for each resolved show and institution, look at who else is connected. Shared show or gallery with another practitioner in the graph becomes a `known` ("You and X were both in Y, 2021") and, at most 5 per draft, an `ask_contributor` offering COLLABORATES_WITH.
+2. **Shown together is not worked together — ask.** Pairs of artists who share shows, from this draft's own shows and from the graph; pairs sharing two or more shows first, then pairs already in A(DAI). Up to 10 `ask_contributor` per draft with `if_yes` COLLABORATES_WITH and a text naming the shows ("Did Molnár and Nake work together, or only show together — in 'A Legacy' and 'From Dots to Pixels'?"). The card's buttons read **Worked together** / **Only shown together** / **Don't know**; only the first creates an edge (the shared show is already PARTICIPATED_IN). Other shared shows become `known`. The summary lists the questions, or says why there are none.
 3. **Sensed**: `get_neighbours` on the subject, `image_neighbours` on up to 10 proposed images. Close matches become `known`, or, if probably the same work, a `node` candidate with `resolves_to` and `resolution: 'fuzzy'` so the card asks "is this the same work?".
 4. Sensed things never become edge candidates. Only `known` or `question`.
 
@@ -441,7 +452,7 @@ Pages: `GET /contribute` (email form, or list of own drafts + URL form when logg
 
 1. Collect `accepted` candidates and `answered` questions with `answered_yes`. Ignore the rest.
 2. Order: nodes (topological), images, patches, edges, question edges. Resolve `cid:` refs. Node ids are deterministic (`<type>:<slug>`), so refs resolve before materialisation, which is what makes the probationary path possible.
-3. Per op, one signal via `insertSignal`: `source_type = 'api_url_intake'`, `source_url = evidence.page_url`, `content = evidence.quote` (or the contributor's answer, `source_type = 'contributor_attested'`), `batch_id = draft.id`, `source_origin = 'url_intake'`, and `provenance_chain = JSON {draft_id, cid, origin, page_sha256}`. `insertSignal` currently hardcodes `source_origin='human_primary'` and has no `provenance_chain` arg; extend `CreateSignalArgs` with both as optionals (defaults unchanged). `signals` has no metadata column.
+3. Per op, one signal via `insertSignal`: `source_type = 'api_url_intake'`, `source_url = evidence.page_url`, `content = evidence.quote` (or the contributor's answer, `source_type = 'contributor_attested'`), `batch_id = draft.id`, `source_origin = 'url_intake'`, and `provenance_chain = JSON {draft_id, cid, origin, page_sha256, page_fetched_at}`. Accepted `ended` cards become `end_edge` ops (§6.2c). `insertSignal` currently hardcodes `source_origin='human_primary'` and has no `provenance_chain` arg; extend `CreateSignalArgs` with both as optionals (defaults unchanged). `signals` has no metadata column.
 4. Trust tier: `auto` / `reviewed` -> `insertIntake` approved + `materialise*` per op + `embedNodeAsync`. `probationary` -> one `intake_queue` row for the whole draft with `proposed_nodes[]` and `proposed_edges[]`, `kind='human_signal'`, `status='pending'`; `approveIntakeItem` already replays that shape. `attach_image` ops require `cdn_image_url` + `sha256` *before* they are queued and `approveIntakeItem` never touches R2, so confirm uploads to R2 for **both** tiers and stores the resulting `cdn_image_url` in the op. A rejected probationary draft leaves R2 objects behind; `cull_orphans.py` reaps them.
 5. Images through `src/utils/images.ts`.
 6. Set `intake_ids`, `submitted_at`, `status = 'submitted'`. Send the receipt email. Any throw rolls back and leaves the draft `ready` with `error`.
@@ -573,6 +584,15 @@ Tuning that followed: initial pass cap 40 → 80 tool calls (run 1 spent the who
 
 1. `INTAKE_MAX_MACHINES` default 3: enough for the first cohort? It only affects how long a queued draft waits, never whether it runs.
 2. Later, if A(DAI) gets its own domain, switch `INTAKE_FROM` and `RESEND_FROM`; nothing else changes.
+
+## Feedback round (Sept 23, 2026): Verse and Interface
+
+- **The subject must end up connected.** A multi-artist site's own shows are PRESENTED_BY the subject and its works EXHIBITED_AT it (platform included, §7); a platform-hosted series can be PRESENTED_BY both the organiser and the platform. `finish_pass` on a reading pass is sent back once (`subject_unconnected`) when no live card touches the subject; the second call stands, and the summary must say why.
+- **No image cap.** One image per proposed work (plus portraits), works by artists A(DAI) already has first; the summary reports "images: n of m works".
+- **Questions** — §8.2, cap 10.
+- **Gallery pages lead with their artists.** `src/utils/roster.ts` derives the roster of an institution or platform at read time from live edges: represented (REPRESENTS), in shows it presented (PARTICIPATED_IN → PRESENTED_BY), with works shown there (EXHIBITED_AT, directly or in its shows). Never written back as edges.
+- **Organisation kinds.** `institution` stays one node type; `metadata.kind` is a list from `src/utils/org-kinds.ts` (museum, art centre, gallery, dealership, advisory, fair, festival, venue, auction house, archive, residency, lab, foundation, biennial, prize), with `metadata.kind_source {page_url, quote}` in the organisation's own words. Enforced in the candidate validator (node + `kind` patches) and on `/api/v1/nodes` POST/PATCH. A legacy free-text kind (the V&A's) is shown as a quote until corrected through the governed path.
+- **Snapshots** — §6.2c.
 
 ## Review hardening (September 2026)
 

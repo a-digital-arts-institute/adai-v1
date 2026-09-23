@@ -186,6 +186,7 @@ function refLink(ref) {
 }
 function groupOf(c) {
   if (c.kind === 'known') return 'Already in A(DAI)';
+  if (c.kind === 'ended') return 'No longer listed';
   if (c.kind === 'question') return 'Questions';
   if (c.kind === 'patch') return 'Corrections';
   if (c.kind === 'image') return 'Images';
@@ -194,7 +195,7 @@ function groupOf(c) {
   if (c.node.type === 'project' || c.node.type === 'institution') return 'Shows and venues';
   return 'People and organisations';
 }
-const ORDER = ['Works','Shows and venues','People and organisations','Relations','Images','Corrections','Questions','Already in A(DAI)'];
+const ORDER = ['Questions','Works','Shows and venues','People and organisations','Relations','Images','Corrections','No longer listed','Already in A(DAI)'];
 function evidence(c) {
   if (!c.evidence) return '';
   return '<div class="quote">“' + esc(c.evidence.quote) + '”<a href="' + esc(c.evidence.page_url) + '" target="_blank" rel="noopener">source ↗</a></div>';
@@ -204,6 +205,7 @@ function cardBody(c) {
   if (c.kind === 'node') {
     return '<div class="title">' + esc(c.node.name) + '<span class="badge">' + esc(c.node.type) + '</span>' + originBadge(c) + '</div>' +
       (c.resolves_to ? '<div class="link">links to existing: ' + refLink(c.resolves_to) + ' <span class="meta">(' + esc(c.resolution) + ')</span></div>' : '<div class="link">new ' + esc(c.node.type) + '</div>') +
+      (c.node.metadata && Array.isArray(c.node.metadata.kind) ? '<div class="link">' + c.node.metadata.kind.map(k => '<span class="badge">' + esc(k) + '</span>').join(' ') + (c.node.metadata.kind_source ? ' <span class="meta">“' + esc(c.node.metadata.kind_source.quote) + '”</span>' : '') + '</div>' : '') +
       (c.node.metadata && (c.node.metadata.year || c.node.metadata.summary || c.node.metadata.description) ? '<div class="note">' + esc([c.node.metadata.year, c.node.metadata.summary || c.node.metadata.description].filter(Boolean).join(' · ')).slice(0, 300) + '</div>' : '') +
       (c.note ? '<div class="note">' + esc(c.note) + '</div>' : '') + evidence(c);
   }
@@ -222,7 +224,13 @@ function cardBody(c) {
   if (c.kind === 'question') {
     const e = c.question.if_yes;
     return '<div class="title">' + esc(c.question.text) + '</div><div class="link">if yes: ' + refLink(e.source) + ' ' + esc(VERBS[e.edge_type] || e.edge_type) + ' ' + refLink(e.target) + '</div>' + (c.note ? '<div class="note">' + esc(c.note) + '</div>' : '') +
-      (c.question.answered_yes !== undefined ? '<div class="note">you said ' + (c.question.answered_yes ? 'yes' : 'no') + (c.question.answer ? ': ' + esc(c.question.answer) : '') + '</div>' : '');
+      (c.question.answered_yes !== undefined ? '<div class="note">you said ' + (e.edge_type === 'COLLABORATES_WITH' ? (c.question.answered_yes ? 'they worked together' : 'only shown together') : (c.question.answered_yes ? 'yes' : 'no')) + (c.question.answer ? ': ' + esc(c.question.answer) : '') + '</div>' : c.state === 'context_only' ? '<div class="note">you don\'t know — left out</div>' : '');
+  }
+  if (c.kind === 'ended') {
+    const e = c.ended;
+    return '<div class="title">' + refLink(e.source_id) + ' ' + esc(VERBS[e.edge_type] || e.edge_type.toLowerCase()) + ' ' + refLink(e.target_id) + '<span class="badge">' + esc(e.edge_type) + '</span></div>' +
+      '<div class="link">the site no longer shows this' + (e.last_seen ? ' (attested ' + esc(e.last_seen) + ')' : '') + ' — accepting makes it historical; nothing is deleted</div>' +
+      '<div class="note">' + esc(e.summary) + '</div>' + (c.note ? '<div class="note">' + esc(c.note) + '</div>' : '') + evidence(c);
   }
   if (c.kind === 'known') {
     return '<div class="title">' + esc(c.known.summary) + originBadge(c) + '</div><div class="link">' + refLink(c.known.node_id) + (c.known.other_id ? ' · ' + esc(c.known.edge_type || '') + ' · ' + refLink(c.known.other_id) : '') + '</div>' + (c.note ? '<div class="note">' + esc(c.note) + '</div>' : '');
@@ -233,7 +241,10 @@ function actions(c) {
   if (D.status !== 'ready') return '';
   if (c.kind === 'known') return '';
   if (c.kind === 'question') {
-    return '<div class="actions"><button class="btn ' + (c.question.answered_yes === true ? 'on' : '') + '" data-a="yes">Yes</button><button class="btn ' + (c.question.answered_yes === false ? 'off' : '') + '" data-a="no">No</button><button class="btn" data-a="edit">Add a note</button></div>' +
+    // "Did they work together, or show together?" — a shared show is already
+    // in the graph (PARTICIPATED_IN); only "worked together" adds a relation.
+    const collab = c.question.if_yes.edge_type === 'COLLABORATES_WITH';
+    return '<div class="actions"><button class="btn ' + (c.question.answered_yes === true ? 'on' : '') + '" data-a="yes">' + (collab ? 'Worked together' : 'Yes') + '</button><button class="btn ' + (c.question.answered_yes === false ? 'off' : '') + '" data-a="no">' + (collab ? 'Only shown together' : 'No') + '</button><button class="btn" data-a="skip">Don\'t know</button><button class="btn" data-a="edit">Add a note</button></div>' +
       '<div class="edit"><textarea data-f="answer" placeholder="In your own words — this becomes the record.">' + esc(c.question.answer || '') + '</textarea><button class="btn" data-a="save">Save note</button></div>';
   }
   const s = c.state;
@@ -269,6 +280,7 @@ async function act(card, a) {
   if (a === 'edit') { card.querySelector('.edit').classList.toggle('open'); return; }
   if (a === 'accepted' || a === 'rejected' || a === 'context_only') { if (await patch(cid, { state: c.state === a ? 'proposed' : a })) renderAll(); return; }
   if (a === 'yes' || a === 'no') { if (await patch(cid, { answered_yes: a === 'yes' })) renderAll(); return; }
+  if (a === 'skip') { if (await patch(cid, { state: 'context_only' })) renderAll(); return; }
   if (a === 'unlink') { if (await patch(cid, { patch: { resolves_to: null } })) renderAll(); return; }
   if (a === 'save') {
     const ed = card.querySelector('.edit'); const f = (n) => { const x = ed.querySelector('[data-f="' + n + '"]'); return x ? x.value : undefined; };
@@ -283,7 +295,8 @@ async function act(card, a) {
 }
 async function acceptAll() {
   for (const c of D.candidates) {
-    if (c.origin !== 'site' || c.kind === 'question' || c.kind === 'known' || c.state !== 'proposed') continue;
+    // Ending a relation is always a deliberate, one-by-one decision.
+    if (c.origin !== 'site' || c.kind === 'question' || c.kind === 'known' || c.kind === 'ended' || c.state !== 'proposed') continue;
     if (c.kind === 'edge' && c.edge.confidence === 'low') continue;
     await patch(c.cid, { state: 'accepted' });
   }
@@ -339,7 +352,7 @@ function renderAll() { renderHead(); renderCards(); renderRail(); }
 function confirmModal() {
   const acc = D.candidates.filter(c => c.state === 'accepted'), yes = D.candidates.filter(c => c.kind === 'question' && c.question.answered_yes === true);
   const n = (k) => acc.filter(c => c.kind === k).length;
-  $('#modalbox').innerHTML = '<div class="kicker">CONFIRM</div><p>' + n('node') + ' nodes · ' + n('edge') + ' relations · ' + n('image') + ' images · ' + n('patch') + ' corrections · ' + yes.length + ' attested answers</p>' +
+  $('#modalbox').innerHTML = '<div class="kicker">CONFIRM</div><p>' + n('node') + ' nodes · ' + n('edge') + ' relations · ' + n('image') + ' images · ' + n('patch') + ' corrections · ' + (n('ended') ? n('ended') + ' ended · ' : '') + yes.length + ' attested answers</p>' +
     '<p>' + (D.trust_tier === 'auto' || D.trust_tier === 'reviewed' ? 'Goes live now, attributed to you as one batch.' : 'Enters curator review as one batch; you get a receipt either way.') + '</p>' +
     '<div class="actions"><button class="btn primary" id="go">Confirm</button> <button class="btn" id="cancel">Back</button></div>';
   $('#modal').classList.add('open');
@@ -372,18 +385,24 @@ export function batchPage(receipt: Record<string, any>, isOwner: boolean, adminE
   const nodeSigs = sigs.filter((s) => (s.title || "").startsWith("Create node:"));
   const imgSigs = sigs.filter((s) => (s.title || "").startsWith("Upload image"));
   const patchSigs = sigs.filter((s) => (s.title || "").startsWith("Patch "));
+  // The snapshot date: when the pages were read, which is what the claims describe.
+  const reads = ((receipt.pages as any[]) ?? []).map((p) => String(p.fetched_at ?? "").slice(0, 10)).filter(Boolean).sort();
+  const readRange = reads.length ? (reads[0] === reads[reads.length - 1] ? reads[0]! : `${reads[0]} – ${reads[reads.length - 1]}`) : "";
+  const endSigs = sigs.filter((s) => (s.title || "").startsWith("End edge "));
+  const endedEdges = (receipt.ended as any[] | undefined) ?? [];
   const edges = receipt.edges as any[];
   const mailto = `mailto:${encodeURIComponent(adminEmails.join(","))}?subject=${encodeURIComponent(`Retire batch ${receipt.batch_id}`)}&body=${encodeURIComponent(`Please retire batch ${receipt.batch_id} (${receipt.source_domain ?? ""}).\n\nReason: `)}`;
   const body = `
 <div class="kicker">RECEIPT · ${htmlEscape(String(receipt.batch_id))}</div>
 <h2>${htmlEscape(String(receipt.contributor ?? "A contributor"))} · ${htmlEscape(String(receipt.source_domain ?? ""))}</h2>
-<p class="lede">Submitted ${htmlEscape(String(receipt.submitted_at ?? ""))} · state <span class="pill ${htmlEscape(String(receipt.review_state).replace(/ /g, "-"))}">${htmlEscape(String(receipt.review_state))}</span>${receipt.source_url ? ` · <a href="${htmlEscape(String(receipt.source_url))}" rel="noopener" target="_blank">source ↗</a>` : ""}${receipt.subject_node_id && !String(receipt.subject_node_id).startsWith("cid:") ? ` · subject ${link(String(receipt.subject_node_id))}` : ""}</p>
+<p class="lede">${readRange ? `Site read ${htmlEscape(readRange)} · ` : ""}Submitted ${htmlEscape(String(receipt.submitted_at ?? ""))} · state <span class="pill ${htmlEscape(String(receipt.review_state).replace(/ /g, "-"))}">${htmlEscape(String(receipt.review_state))}</span>${receipt.source_url ? ` · <a href="${htmlEscape(String(receipt.source_url))}" rel="noopener" target="_blank">source ↗</a>` : ""}${receipt.subject_node_id && !String(receipt.subject_node_id).startsWith("cid:") ? ` · subject ${link(String(receipt.subject_node_id))}` : ""}</p>
 ${nodeSigs.length ? `<div class="group"><h3>Nodes · ${nodeSigs.length}</h3>${nodeSigs.map((s) => `<div class="card"><div class="title">${htmlEscape(String(s.title).replace(/^Create node: /, ""))}${s.status === "revoked" ? '<span class="badge">retired</span>' : ""}</div>${s.content ? `<div class="quote">“${htmlEscape(String(s.content).slice(0, 300))}”${s.source_url ? `<a href="${htmlEscape(String(s.source_url))}" target="_blank" rel="noopener">source ↗</a>` : ""}</div>` : ""}</div>`).join("")}</div>` : ""}
 ${edges.length ? `<div class="group"><h3>Relations · ${edges.length}</h3>${edges.map((e) => `<div class="card"><div class="title">${link(e.source_id)} ${htmlEscape(VERBS[e.edge_type] ?? e.edge_type)} ${link(e.target_id)}<span class="badge">${htmlEscape(e.edge_type)}</span>${e.live ? "" : '<span class="badge">superseded</span>'}</div></div>`).join("")}</div>` : ""}
 ${imgSigs.length ? `<div class="group"><h3>Images · ${imgSigs.length}</h3>${imgSigs.map((s) => { let c: any = {}; try { c = JSON.parse(s.content); } catch { /* */ } return `<div class="card"><div class="title">${c.node_id ? link(c.node_id) : ""}</div>${c.key ? `<img class="thumb" loading="lazy" crossorigin="anonymous" src="${htmlEscape(`${process.env.R2_PUBLIC_BASE ?? ""}/${c.key}`)}" alt="">` : ""}</div>`; }).join("")}</div>` : ""}
 ${patchSigs.length ? `<div class="group"><h3>Corrections · ${patchSigs.length}</h3>${patchSigs.map((s) => `<div class="card"><div class="title">${htmlEscape(String(s.title))}</div>${s.content ? `<div class="quote">“${htmlEscape(String(s.content).slice(0, 300))}”</div>` : ""}</div>`).join("")}</div>` : ""}
+${endSigs.length ? `<div class="group"><h3>No longer listed · ${endSigs.length}</h3>${endSigs.map((s) => `<div class="card"><div class="title">${htmlEscape(String(s.title).replace(/^End edge /, ""))}</div>${s.content ? `<div class="quote">${htmlEscape(String(s.content).slice(0, 400))}${s.source_url ? `<a href="${htmlEscape(String(s.source_url))}" target="_blank" rel="noopener">source ↗</a>` : ""}</div>` : ""}</div>`).join("")}${endedEdges.length ? `<p class="lede">${endedEdges.length} relation(s) now historical — kept, with the date they ended.</p>` : ""}</div>` : ""}
 ${(receipt.intake as any[]).some((i) => i.status !== "approved") ? `<div class="group"><h3>Review</h3>${(receipt.intake as any[]).map((i) => `<div class="card"><div class="title">${htmlEscape(i.status)}${i.reviewed_at ? ` · ${htmlEscape(i.reviewed_at)}` : ""}</div>${i.rejection_reason ? `<div class="note">${htmlEscape(i.rejection_reason)}</div>` : ""}</div>`).join("")}</div>` : ""}
-${isOwner ? `<div class="group"><h3>Source material</h3><ul class="ledger">${(receipt.pages as any[]).map((p) => `<li>${htmlEscape(p.final_url)} · ${htmlEscape(String(p.status))} · ${p.chars} chars · ${htmlEscape(String(p.sha256).slice(0, 12))}</li>`).join("") || "<li>none recorded</li>"}</ul>
+${isOwner ? `<div class="group"><h3>Source material</h3><ul class="ledger">${(receipt.pages as any[]).map((p) => `<li>${htmlEscape(p.final_url)} · read ${htmlEscape(String(p.fetched_at ?? "").slice(0, 16).replace("T", " "))} · ${htmlEscape(String(p.status))} · ${p.chars} chars · ${htmlEscape(String(p.sha256).slice(0, 12))}</li>`).join("") || "<li>none recorded</li>"}</ul>
 <p class="lede" style="margin-top:14px">Something wrong? <a href="${mailto}">Ask a curator to retire this batch</a>. Corrections stay bi-temporal: nothing is deleted.</p></div>` : ""}`;
   return shell("Receipt", body);
 }

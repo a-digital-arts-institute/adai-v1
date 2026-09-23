@@ -9,6 +9,8 @@
 // the prompt. worker/src/candidate.ts is a types-only copy; keep the two in
 // step when a field changes.
 
+import { normaliseOrgKinds, orgKindsError } from "../utils/org-kinds.js";
+
 export type Ref = string; // existing node id, or 'cid:c_03' for a node candidate in this draft
 
 export interface Evidence {
@@ -37,6 +39,12 @@ export const SUGGESTABLE_EDGE_TYPES = [
 ] as const;
 export type SuggestableEdgeType = (typeof SUGGESTABLE_EDGE_TYPES)[number];
 export const QUESTION_EDGE_TYPES = [...SUGGESTABLE_EDGE_TYPES, "INFLUENCES", "RESPONDS_TO"] as const;
+
+// Relations that describe the present ("represents"), as opposed to events
+// ("was shown at", 2021). An event stays true after the site moves on; a
+// present-tense claim can lapse, so a later read of the same site may
+// propose ending it — an `ended` card, never an automatic supersession.
+export const PRESENT_TENSE_EDGE_TYPES = ["REPRESENTS"] as const;
 
 export type Confidence = "high" | "medium" | "low";
 
@@ -94,17 +102,28 @@ export interface KnownCandidate extends CandidateBase {
   known: { node_id: string; edge_type?: string; other_id?: string; summary: string };
 }
 
+/**
+ * A present-tense relation this site attested on an earlier read and no
+ * longer shows. Accepting it ends the edge (valid_until) — it never deletes
+ * it. Evidence is the page as it reads now.
+ */
+export interface EndedCandidate extends CandidateBase {
+  kind: "ended";
+  ended: { edge_id: string; edge_type: string; source_id: string; target_id: string; last_seen?: string; summary: string };
+}
+
 export type Candidate =
   | NodeCandidate
   | EdgeCandidate
   | ImageCandidate
   | PatchCandidate
   | QuestionCandidate
-  | KnownCandidate;
+  | KnownCandidate
+  | EndedCandidate;
 
 export const MAX_CANDIDATES = 300;
 export const MAX_PAGES = 240;
-export const MAX_QUESTIONS = 5;
+export const MAX_QUESTIONS = 10;
 export const MAX_QUOTE_CHARS = 300;
 export const MAX_NOTE_CHARS = 400;
 export const MAX_NAME_CHARS = 200;
@@ -205,6 +224,24 @@ function checkEdgeSpec(v: unknown, field: string, allowed: readonly string[]): E
   return out;
 }
 
+/**
+ * `metadata.kind` on an institution: values from the fixed list (normalised
+ * in place to an array), and — when the agent proposes it from a page — the
+ * organisation's own words for it in `metadata.kind_source` {page_url, quote}.
+ */
+function checkOrgKinds(metadata: Record<string, unknown>, origin: Origin): void {
+  if (metadata.kind === undefined || metadata.kind === null) return;
+  const k = normaliseOrgKinds(metadata.kind);
+  if (!k.ok) throw new CandidateError(orgKindsError(k.unknown), "node.metadata.kind");
+  metadata.kind = k.kinds;
+  if (origin === "site") {
+    if (metadata.kind_source === undefined) {
+      throw new CandidateError("metadata.kind needs metadata.kind_source {page_url, quote}: how the organisation describes itself on its own site", "node.metadata.kind_source");
+    }
+    metadata.kind_source = checkEvidence(metadata.kind_source, "node.metadata.kind_source");
+  }
+}
+
 // ---- the validator -----------------------------------------------------
 
 /**
@@ -262,8 +299,9 @@ export function validateCandidate(
         throw new CandidateError(`node.type '${type}' not allowed; use ${CANDIDATE_NODE_TYPES.join(", ")}`, "node.type");
       }
       const name = str(raw.node.name, "node.name", MAX_NAME_CHARS, { required: true })!;
-      const metadata = isObj(raw.node.metadata) ? raw.node.metadata : {};
+      const metadata = isObj(raw.node.metadata) ? { ...raw.node.metadata } : {};
       if (JSON.stringify(metadata).length > 20_000) throw new CandidateError("node.metadata too large", "node.metadata");
+      if (type === "institution") checkOrgKinds(metadata, origin);
       const aliasesRaw = Array.isArray(raw.node.aliases) ? raw.node.aliases : [];
       const aliases: NodeCandidate["node"]["aliases"] = [];
       for (const a of aliasesRaw) {
@@ -341,11 +379,17 @@ export function validateCandidate(
       const key = str(raw.patch.key, "patch.key", 80, { required: true })!;
       if (!/^[a-z0-9_]+$/i.test(key)) throw new CandidateError("patch.key must be a metadata key", "patch.key");
       if (raw.patch.proposed === undefined) throw new CandidateError("patch.proposed is required", "patch.proposed");
+      let proposed = raw.patch.proposed;
+      if (key === "kind" && node_id.startsWith("institution:")) {
+        const k = normaliseOrgKinds(proposed);
+        if (!k.ok) throw new CandidateError(orgKindsError(k.unknown), "patch.proposed");
+        proposed = k.kinds;
+      }
       if (origin === "site" && !base.evidence) throw new CandidateError("patch with origin 'site' needs evidence {page_url, quote}", "evidence");
       return {
         ...base,
         kind: "patch",
-        patch: { node_id, key, existing: raw.patch.existing ?? null, proposed: raw.patch.proposed },
+        patch: { node_id, key, existing: raw.patch.existing ?? null, proposed },
       };
     }
 
@@ -378,6 +422,25 @@ export function validateCandidate(
       if (edge_type) known.edge_type = edge_type;
       if (other_id) known.other_id = other_id;
       return { ...base, kind: "known", known };
+    }
+
+    case "ended": {
+      if (!isObj(raw.ended)) throw new CandidateError("ended is required", "ended");
+      const edge_id = str(raw.ended.edge_id, "ended.edge_id", 600, { required: true })!;
+      const edge_type = str(raw.ended.edge_type, "ended.edge_type", 40, { required: true })!;
+      if (!(PRESENT_TENSE_EDGE_TYPES as readonly string[]).includes(edge_type)) {
+        throw new CandidateError(`only present-tense relations (${PRESENT_TENSE_EDGE_TYPES.join(", ")}) can end; '${edge_type}' is an event and stays true`, "ended.edge_type");
+      }
+      const source_id = checkRef(raw.ended.source_id, "ended.source_id");
+      const target_id = checkRef(raw.ended.target_id, "ended.target_id");
+      if (isCidRef(source_id) || isCidRef(target_id)) throw new CandidateError("ended refers to an edge in the graph, not to draft cards", "ended");
+      const summary = str(raw.ended.summary, "ended.summary", 400, { required: true })!;
+      const last_seen = str(raw.ended.last_seen, "ended.last_seen", 32);
+      if (!base.evidence) throw new CandidateError("ended needs evidence {page_url, quote}: the page as it reads now", "evidence");
+      if (origin !== "site") throw new CandidateError("ended cards come from reading the site (origin 'site')", "origin");
+      const ended: EndedCandidate["ended"] = { edge_id, edge_type, source_id, target_id, summary };
+      if (last_seen) ended.last_seen = last_seen;
+      return { ...base, kind: "ended", ended };
     }
 
     default:

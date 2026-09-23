@@ -300,7 +300,7 @@ describe("passes that build on each other", () => {
     assert.equal(edited.edited, true);
   });
 
-  it("priorContext: the same contributor's earlier drafts of the site, nobody else's", () => {
+  it("priorContext: a dated page ledger from every submitted read; decisions stay the contributor's own", () => {
     const db = freshDb();
     const first = createDraft(db, CONTRIB, "https://gallery.example/");
     claimJob(db, "w1");
@@ -314,10 +314,20 @@ describe("passes that build on each other", () => {
     const other = createDraft(db, "contributor:someone-else", "https://gallery.example/");
     const second = createDraft(db, CONTRIB, "https://www.gallery.example/exhibitions");
     const pc = priorContext(db, getDraft(db, second.id)!);
-    assert.equal(pc.drafts, 1);
-    assert.deepEqual(pc.pages, ["https://gallery.example/artists"]);
+    assert.equal(pc.drafts, 1); // the other contributor's draft is neither ours nor submitted
+    assert.deepEqual(pc.pages.map((p) => [p.url, p.sha256]), [["https://gallery.example/artists", "ab".repeat(32)]]);
+    assert.match(pc.pages[0]!.fetched_at, /^\d{4}-\d{2}-\d{2}T/);
+    assert.equal(pc.last_read, pc.pages[0]!.fetched_at);
     assert.deepEqual(pc.rejected, ['institution "Some Fair"']);
     assert.deepEqual(pc.submitted, ['practitioner "Auriea Harvey"']);
-    assert.equal(priorContext(db, getDraft(db, other.id)!).drafts, 0);
+    // Someone else reading the same site sees WHEN it was read and what the
+    // pages hashed to — but none of the first contributor's decisions.
+    const theirs = priorContext(db, getDraft(db, other.id)!);
+    assert.equal(theirs.pages.length, 1);
+    assert.deepEqual(theirs.rejected, []);
+    assert.deepEqual(theirs.submitted, []);
+    // A fresh site has no history.
+    const fresh = createDraft(db, CONTRIB, "https://elsewhere.example/");
+    assert.equal(priorContext(db, getDraft(db, fresh.id)!).last_read, null);
   });
 });

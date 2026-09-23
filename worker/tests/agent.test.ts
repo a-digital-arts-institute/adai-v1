@@ -179,7 +179,7 @@ describe("runPass", () => {
         { cid: "c_01", kind: "node", state: "accepted", edited: false, node: { type: "practitioner", name: "Auriea Harvey" }, resolves_to: null },
         { cid: "c_02", kind: "edge", state: "rejected", edited: false, edge: { source: "cid:c_01", target: "concept:net-art", edge_type: "EMBODIES" } },
       ],
-      prior: { drafts: 1, pages: ["https://artist.example/about"], rejected: ['institution "Some Fair"'], submitted: ['practitioner "Vera Molnar"'] },
+      prior: { drafts: 1, pages: [{ url: "https://artist.example/about", fetched_at: "2026-09-12T10:00:00Z", sha256: "x" }], last_read: "2026-09-12T10:00:00Z", rejected: ['institution "Some Fair"'], submitted: ['practitioner "Vera Molnar"'] },
     };
     const r = await runPass(d as any, { kind: "continue", message: "the 2019–2021 exhibitions", queued_at: "x" }, {
       client: client as any,
@@ -199,6 +199,7 @@ describe("runPass", () => {
     assert.match(first, /c_01 \[accepted\] practitioner "Auriea Harvey" \(new\)/);
     assert.match(first, /Some Fair/);
     assert.match(first, /possibly still in review/);
+    assert.match(first, /https:\/\/artist\.example\/about \(read 2026-09-12\)/);
   });
 
   it("a dropped connection mid-pass is retried, not fatal; a 400 is not retried", async () => {

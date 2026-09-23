@@ -19,4 +19,5 @@ export interface ImageCandidate extends CandidateBase { kind: "image"; image: { 
 export interface PatchCandidate extends CandidateBase { kind: "patch"; patch: { node_id: string; key: string; existing: unknown; proposed: unknown } }
 export interface QuestionCandidate extends CandidateBase { kind: "question"; question: { text: string; if_yes: EdgeSpec; answer?: string; answered_yes?: boolean } }
 export interface KnownCandidate extends CandidateBase { kind: "known"; known: { node_id: string; edge_type?: string; other_id?: string; summary: string } }
-export type Candidate = NodeCandidate | EdgeCandidate | ImageCandidate | PatchCandidate | QuestionCandidate | KnownCandidate;
+export interface EndedCandidate extends CandidateBase { kind: "ended"; ended: { edge_id: string; edge_type: string; source_id: string; target_id: string; last_seen?: string; summary: string } }
+export type Candidate = NodeCandidate | EdgeCandidate | ImageCandidate | PatchCandidate | QuestionCandidate | KnownCandidate | EndedCandidate;

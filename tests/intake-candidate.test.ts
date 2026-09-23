@@ -98,12 +98,39 @@ describe("candidate validator", () => {
     assert.equal(linked.kind === "node" && linked.resolves_to, "practitioner:casey-reas");
   });
 
-  it("caps questions at 5 per draft", () => {
+  it("caps questions at 10 per draft", () => {
     const qs: Candidate[] = [];
-    for (let i = 1; i <= 5; i++) {
-      qs.push(validateCandidate({ cid: `c_0${i}`, kind: "question", origin: "graph", question: { text: "?", if_yes: { source: "practitioner:a", target: "practitioner:b", edge_type: "COLLABORATES_WITH" } } }, qs));
-    }
-    assert.throws(() => validateCandidate({ cid: "c_06", kind: "question", origin: "graph", question: { text: "?", if_yes: { source: "practitioner:a", target: "practitioner:b", edge_type: "COLLABORATES_WITH" } } }, qs), /at most 5/);
+    const q = (i: number) => ({ cid: `c_${String(i).padStart(2, "0")}`, kind: "question", origin: "graph", question: { text: "?", if_yes: { source: "practitioner:a", target: "practitioner:b", edge_type: "COLLABORATES_WITH" } } });
+    for (let i = 1; i <= 10; i++) qs.push(validateCandidate(q(i), qs));
+    assert.throws(() => validateCandidate(q(11), qs), /at most 10/);
+  });
+
+  it("institution kinds: fixed list, several allowed, normalised, and the organisation's own words when from a site", () => {
+    const node = (metadata: Record<string, unknown>, origin = "site") =>
+      validateCandidate({ cid: "c_01", kind: "node", origin, evidence: ev, node: { type: "institution", name: "Interface", metadata } }, []);
+    const n = node({ kind: ["Gallery", "art-dealership", "advisory"], kind_source: { page_url: "https://interface.example/about", quote: "a project-based gallery, private art dealership and advisory" } });
+    assert.deepEqual(n.kind === "node" && n.node.metadata.kind, ["gallery", "dealership", "advisory"]);
+    assert.deepEqual((node({ kind: "Art Center", kind_source: ev }) as any).node.metadata.kind, ["art centre"]);
+    assert.throws(() => node({ kind: ["gallery", "shop"], kind_source: ev }), /shop not in the list/);
+    assert.throws(() => node({ kind: ["publication"], kind_source: ev }), /not in the list/);
+    assert.throws(() => node({ kind: ["gallery"] }), /kind_source/);
+    // a contributor-origin card needs no quote: the contributor attests it
+    assert.doesNotThrow(() => node({ kind: ["museum"] }, "contributor"));
+    // kind on other node types is not ours to police
+    assert.doesNotThrow(() => validateCandidate({ cid: "c_01", kind: "node", origin: "site", evidence: ev, node: { type: "artwork", name: "X", metadata: { kind: "print" } } }, []));
+    // a correction to an existing institution's kind is checked too
+    const p = validateCandidate({ cid: "c_02", kind: "patch", origin: "site", evidence: ev, patch: { node_id: "institution:v-a", key: "kind", proposed: "Museum" } }, []);
+    assert.deepEqual(p.kind === "patch" && p.patch.proposed, ["museum"]);
+    assert.throws(() => validateCandidate({ cid: "c_02", kind: "patch", origin: "site", evidence: ev, patch: { node_id: "institution:v-a", key: "kind", proposed: "national museum of art and design" } }, []), /not in the list/);
+  });
+
+  it("ended: present-tense relations only, from the site, with the page as it reads now", () => {
+    const ended = (over: Record<string, unknown> = {}) =>
+      validateCandidate({ cid: "c_01", kind: "ended", origin: "site", evidence: ev, ended: { edge_id: "e1", edge_type: "REPRESENTS", source_id: "institution:g", target_id: "practitioner:a", summary: "no longer on the roster" }, ...over }, []);
+    assert.equal(ended().kind, "ended");
+    assert.throws(() => ended({ ended: { edge_id: "e1", edge_type: "EXHIBITED_AT", source_id: "artwork:w", target_id: "institution:g", summary: "x" } }), /event and stays true/);
+    assert.throws(() => ended({ evidence: undefined }), /evidence/);
+    assert.throws(() => ended({ origin: "graph" }), /origin 'site'/);
   });
 
   it("contributor edits stay inside the policy and mark edited", () => {

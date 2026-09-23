@@ -20,6 +20,7 @@ import {
   materialiseCreateNode,
   materialisePatchNode,
   materialiseAttachImage,
+  materialiseEndEdge,
   materialiseEdge,
 } from "./contribution.js";
 import { embedNodeAsync } from "../embed/server.js";
@@ -94,6 +95,8 @@ export function approveIntakeItem(
         } else if (op?.op === "attach_image") {
           materialiseAttachImage(db, op, { createdBy });
           if (op.node_id) touchedNodes.add(op.node_id);
+        } else if (op?.op === "end_edge" && op.edge_id) {
+          materialiseEndEdge(db, op, { signalId: op.signal_id ?? item.signal_id });
         }
       }
     }

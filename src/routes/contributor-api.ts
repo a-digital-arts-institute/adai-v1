@@ -34,6 +34,7 @@ import { uploadImage, isR2Configured } from "../r2.js";
 import { mirrorImageFromUrl, ImageFetchError } from "../utils/images.js";
 import { getSkillVersion } from "../utils/skill-version.js";
 import { embedNodeAsync } from "../embed/server.js";
+import { normaliseOrgKinds, orgKindsError, ORG_KINDS } from "../utils/org-kinds.js";
 import { approveIntakeItem, rejectIntakeItem } from "../utils/review.js";
 import {
   AdminActionError,
@@ -326,6 +327,16 @@ router.post("/api/v1/nodes", requireToken, (req, res) => {
     );
   }
 
+  // What an organisation says it is: values from the fixed list, several allowed.
+  if (type === "institution" && effectiveMetadata.kind !== undefined && effectiveMetadata.kind !== null) {
+    const k = normaliseOrgKinds(effectiveMetadata.kind);
+    if (!k.ok) {
+      res.status(400).set(JSON_HEADERS).json({ error: "invalid_kind", message: orgKindsError(k.unknown), allowed: ORG_KINDS });
+      return;
+    }
+    effectiveMetadata = { ...effectiveMetadata, kind: k.kinds };
+  }
+
   const slug = typeof providedSlug === "string" && providedSlug.length > 0 ? providedSlug : slugify(name);
   const computedId = composeNodeId(type, slug);
 
@@ -425,6 +436,15 @@ router.patch("/api/v1/nodes/:id", requireToken, (req, res) => {
       hint: "Only an admin/curator can change a concept's field status (tag_origin).",
     });
     return;
+  }
+
+  if (existing.type === "institution" && patch.kind !== undefined && patch.kind !== null) {
+    const k = normaliseOrgKinds(patch.kind);
+    if (!k.ok) {
+      res.status(400).set(JSON_HEADERS).json({ error: "invalid_kind", message: orgKindsError(k.unknown), allowed: ORG_KINDS });
+      return;
+    }
+    patch.kind = k.kinds;
   }
 
   const signalId = insertSignal(db, {

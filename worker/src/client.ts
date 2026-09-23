@@ -35,8 +35,8 @@ export interface ClaimedDraft {
   pages: any[];
   summary: string | null;
   survey?: { site_kind: string; inventory: Array<{ label: string; count: number | null; url?: string }>; plan?: string; covered?: string; remaining?: string } | null;
-  /** The same contributor's earlier drafts of this site. */
-  prior?: { drafts: number; pages: string[]; rejected: string[]; submitted: string[] } | null;
+  /** Earlier reads of this site: the dated page ledger, and this contributor's decisions. */
+  prior?: { drafts: number; pages: Array<{ url: string; fetched_at: string; sha256: string }>; last_read: string | null; rejected: string[]; submitted: string[] } | null;
   passes: number;
   contributor_id: string;
   contributor_name: string;

@@ -27,6 +27,7 @@ import {
   materialisePatchNode,
   materialiseAttachImage,
   materialiseEdge,
+  materialiseEndEdge,
   type ProposedNodeOp,
   type ProposedEdge,
 } from "../utils/contribution.js";
@@ -40,6 +41,7 @@ import {
   CandidateError,
   MAX_CANDIDATES,
   MAX_PAGES,
+  PRESENT_TENSE_EDGE_TYPES,
   type Candidate,
   type NodeCandidate,
   type EdgeSpec,
@@ -416,41 +418,99 @@ export function candidateLabel(c: Candidate, all: Candidate[]): string {
     case "patch": return `correction ${c.patch.node_id}.${c.patch.key}`;
     case "question": return `question: ${c.question.text.slice(0, 160)}`;
     case "known": return `known: ${c.known.summary.slice(0, 160)}`;
+    case "ended": return `ended ${c.ended.edge_type} ${c.ended.source_id} → ${c.ended.target_id}`;
   }
+}
+
+/** One page of an earlier read: when, and what it hashed to then. */
+export interface PriorPage {
+  url: string;
+  fetched_at: string;
+  sha256: string;
 }
 
 export interface PriorContext {
   drafts: number;
-  pages: string[];
+  /** Most recent earlier read of each page (newest first). */
+  pages: PriorPage[];
+  /** When the site was last read before this draft, or null. */
+  last_read: string | null;
   rejected: string[];
   submitted: string[];
 }
 
+const bareHost = (h: string) => h.toLowerCase().replace(/^www\./, "");
+
 /**
- * What this contributor's EARLIER drafts of the same site already did:
- * pages read, cards they rejected, cards they submitted (which for a
- * probationary contributor are in review, not yet in the graph — the agent
- * cannot see them through get_node). Scoped to the contributor: one
- * person's "no" is not another's.
+ * What earlier reads of the same site already did. A read is a dated
+ * snapshot, so a later draft is an UPDATE: the page ledger (URL, date,
+ * content hash) lets the worker tell a changed page from an unchanged one.
+ *
+ * The ledger spans this contributor's drafts AND every submitted draft of
+ * the site — page hashes are not personal. Decisions are: the rejected and
+ * submitted cards come from this contributor's drafts only (one person's
+ * "no" is not another's).
  */
 export function priorContext(db: DatabaseSync, draft: Draft): PriorContext {
   // gallery.example and www.gallery.example are one site.
-  const bare = draft.source_domain.replace(/^www\./, "");
+  const bare = bareHost(draft.source_domain);
   const rows = db
-    .prepare(`${SELECT} WHERE contributor_id = ? AND source_domain IN (?, ?) AND id != ? ORDER BY created_at DESC LIMIT 10`)
-    .all(draft.contributor_id, bare, `www.${bare}`, draft.id) as any[];
-  const pages = new Set<string>();
+    .prepare(
+      `${SELECT} WHERE source_domain IN (?, ?) AND id != ? AND (contributor_id = ? OR status = 'submitted')
+       ORDER BY created_at DESC LIMIT 20`
+    )
+    .all(bare, `www.${bare}`, draft.id, draft.contributor_id) as any[];
+  const pages = new Map<string, PriorPage>();
   const rejected = new Set<string>();
   const submitted = new Set<string>();
+  let own = 0;
   for (const d of rows.map(rowToDraft)) {
-    for (const p of d.pages) pages.add(p.final_url || p.url);
+    for (const p of d.pages) {
+      const url = p.final_url || p.url;
+      const prev = pages.get(url);
+      if (p.sha256 && (!prev || p.fetched_at > prev.fetched_at)) pages.set(url, { url, fetched_at: p.fetched_at, sha256: p.sha256 });
+    }
+    if (d.contributor_id !== draft.contributor_id) continue;
+    own++;
     for (const c of d.candidates) {
       if (c.kind === "image" || c.kind === "known") continue;
       if (c.state === "rejected" || c.state === "context_only") rejected.add(candidateLabel(c, d.candidates));
       else if (d.status === "submitted" && c.state === "accepted") submitted.add(candidateLabel(c, d.candidates));
     }
   }
-  return { drafts: rows.length, pages: [...pages].slice(0, 200), rejected: [...rejected].slice(0, 150), submitted: [...submitted].slice(0, 150) };
+  const sorted = [...pages.values()].sort((a, b) => (a.fetched_at < b.fetched_at ? 1 : -1));
+  return {
+    drafts: rows.length,
+    pages: sorted.slice(0, 200),
+    last_read: sorted[0]?.fetched_at ?? null,
+    rejected: own ? [...rejected].slice(0, 150) : [],
+    submitted: own ? [...submitted].slice(0, 150) : [],
+  };
+}
+
+/**
+ * The live edge an `ended` card would close — only a present-tense
+ * relation that THIS site attested (its evidence signal cites a page on the
+ * same domain). A site can withdraw what it said, not what others said.
+ */
+function endableEdge(db: DatabaseSync, draft: Draft, edgeId: string): { edge_type: string; source_id: string; target_id: string; attested_at: string | null } {
+  const e = db
+    .prepare(
+      `SELECT e.edge_type, e.source_id, e.target_id, e.valid_until, s.source_url, s.created_at
+         FROM edges e LEFT JOIN signals s ON s.id = e.signal_id WHERE e.id = ?`
+    )
+    .get(edgeId) as any;
+  if (!e) throw new CandidateError(`no edge '${edgeId}' — take ids from site_claims`, "ended.edge_id");
+  if (e.valid_until) throw new CandidateError(`edge '${edgeId}' already ended ${e.valid_until}`, "ended.edge_id");
+  if (!(PRESENT_TENSE_EDGE_TYPES as readonly string[]).includes(e.edge_type)) {
+    throw new CandidateError(`${e.edge_type} is an event and stays true; only ${PRESENT_TENSE_EDGE_TYPES.join(", ")} can end`, "ended.edge_id");
+  }
+  let host = "";
+  try { host = bareHost(new URL(String(e.source_url ?? "")).hostname); } catch { /* no source */ }
+  if (!host || host !== bareHost(draft.source_domain)) {
+    throw new CandidateError(`edge '${edgeId}' was not attested by ${draft.source_domain}; this site cannot end it`, "ended.edge_id");
+  }
+  return { edge_type: e.edge_type, source_id: e.source_id, target_id: e.target_id, attested_at: e.created_at ?? null };
 }
 
 /**
@@ -466,6 +526,8 @@ function refusedByContributor(next: Candidate, cands: Candidate[]): Candidate | 
       if (c.edge.edge_type === next.edge.edge_type && c.edge.source === next.edge.source && c.edge.target === next.edge.target) return c;
     } else if (c.kind === "image" && next.kind === "image") {
       if (c.image.for === next.image.for && c.image.image_url === next.image.image_url) return c;
+    } else if (c.kind === "ended" && next.kind === "ended") {
+      if (c.ended.edge_id === next.ended.edge_id) return c;
     } else if (c.kind === "node" && next.kind === "node") {
       if (c.resolves_to && c.resolves_to === next.resolves_to) return c;
       if (!c.resolves_to && !next.resolves_to && c.node.type !== "artwork" && c.node.type === next.node.type && slugify(c.node.name) === slugify(next.node.name)) return c;
@@ -653,12 +715,13 @@ export type DraftToolName =
   | "propose_patch"
   | "note_known"
   | "ask_contributor"
+  | "propose_ended"
   | "update_candidate"
   | "remove_candidate";
 
 export const DRAFT_TOOL_NAMES: ReadonlySet<string> = new Set<DraftToolName>([
   "set_subject", "note_survey", "propose_node", "propose_edge", "propose_image", "propose_patch",
-  "note_known", "ask_contributor", "update_candidate", "remove_candidate",
+  "note_known", "ask_contributor", "propose_ended", "update_candidate", "remove_candidate",
 ]);
 
 function isObj(v: unknown): v is Record<string, unknown> {
@@ -783,6 +846,25 @@ export function runDraftTool(
         touch(db, draftId, { candidates: JSON.stringify(cands) });
         return { ok: true, cid: c.cid };
       }
+      case "propose_ended": {
+        const edgeId = typeof input.edge_id === "string" ? input.edge_id : "";
+        const e = endableEdge(db, d, edgeId);
+        const ev = evidenceFrom(input);
+        if (ev && typeof ev.page_url === "string") {
+          let host = "";
+          try { host = bareHost(new URL(ev.page_url).hostname); } catch { /* checked by the validator */ }
+          if (host && host !== bareHost(d.source_domain)) throw new CandidateError("ended: the evidence must be this site's own page as it reads now", "page_url");
+        }
+        const c = add({
+          kind: "ended",
+          origin: "site",
+          note: input.note,
+          evidence: ev,
+          ended: { edge_id: edgeId, edge_type: e.edge_type, source_id: e.source_id, target_id: e.target_id, last_seen: e.attested_at?.slice(0, 10), summary: input.summary },
+        });
+        touch(db, draftId, { candidates: JSON.stringify(cands) });
+        return { ok: true, cid: c.cid };
+      }
       case "update_candidate": {
         const cid = typeof input.cid === "string" ? input.cid : "";
         const idx = cands.findIndex((c) => c.cid === cid);
@@ -874,6 +956,7 @@ export interface ConfirmResult {
   patched_nodes: string[];
   edges: Array<{ source_id: string; target_id: string; edge_type: string }>;
   images: Array<{ node_id: string; cdn_image_url: string }>;
+  ended: string[];
   skipped: Array<{ cid: string; reason: string }>;
 }
 
@@ -930,8 +1013,13 @@ export async function confirmDraft(
     if (!id) skipped.push({ cid, reason: `depends on ${ref}, which was not accepted` });
     return id ?? null;
   };
-  const prov = (c: Candidate) =>
-    JSON.stringify({ draft_id: draft.id, cid: c.cid, origin: c.origin, page_sha256: pageHash(draft, c.evidence?.page_url) });
+  // A read is a dated snapshot: every signal says which page it quotes, what
+  // that page hashed to, and WHEN it was read — not only when it was submitted.
+  const prov = (c: Candidate) => {
+    const url = c.kind === "image" ? c.image.page_url : c.evidence?.page_url;
+    const page = pageEntry(draft, url);
+    return JSON.stringify({ draft_id: draft.id, cid: c.cid, origin: c.origin, page_sha256: page?.sha256 ?? null, page_fetched_at: page?.fetched_at ?? null });
+  };
 
   const ops: PlannedOp[] = [];
 
@@ -1032,6 +1120,25 @@ export async function confirmDraft(
     });
   }
 
+  // 2e. present-tense relations the site no longer shows
+  const endedResults: string[] = [];
+  for (const c of accepted) {
+    if (c.kind !== "ended") continue;
+    ops.push({
+      cid: c.cid,
+      origin: c.origin,
+      target_node: c.ended.source_id,
+      signal: {
+        title: `End edge ${c.ended.edge_type}: ${c.ended.source_id} → ${c.ended.target_id}`,
+        content: `${c.ended.summary}${c.evidence ? ` — the page now reads: “${c.evidence.quote}”` : ""}`,
+        source_url: c.evidence?.page_url ?? draft.source_url,
+        source_type: "api_url_intake",
+      },
+      node_op: { op: "end_edge", edge_id: c.ended.edge_id },
+    });
+    endedResults.push(c.ended.edge_id);
+  }
+
   if (!ops.length) throw new DraftError("nothing could be submitted: " + skipped.map((s) => s.reason).join("; "), 400, "nothing_to_submit");
 
   // 3. The transaction.
@@ -1051,7 +1158,7 @@ export async function confirmDraft(
     const anchorId = insertSignal(db, {
       contributor,
       title: `URL intake: ${draft.source_domain}`,
-      content: JSON.stringify({ draft_id: draft.id, source_url: draft.source_url, pages: draft.pages.map((p) => ({ url: p.final_url, sha256: p.sha256 })), ops: ops.length }),
+      content: JSON.stringify({ draft_id: draft.id, source_url: draft.source_url, pages: draft.pages.map((p) => ({ url: p.final_url, sha256: p.sha256, fetched_at: p.fetched_at })), ops: ops.length }),
       source_url: draft.source_url,
       source_type: "api_url_intake",
       batch_id: draft.id,
@@ -1082,6 +1189,8 @@ export async function confirmDraft(
           } else if (op.node_op.op === "patch_node") {
             materialisePatchNode(db, op.node_op, { createdBy });
             touched.add(op.node_op.node_id);
+          } else if (op.node_op.op === "end_edge") {
+            materialiseEndEdge(db, op.node_op, { signalId });
           } else {
             materialiseAttachImage(db, op.node_op, { createdBy });
             touched.add(op.node_op.node_id);
@@ -1097,7 +1206,8 @@ export async function confirmDraft(
         });
         intakeIds.push(intake_id);
       } else {
-        if (op.node_op) queuedNodes.push(op.node_op);
+        // An end_edge carries its own evidence signal, like queued edges do.
+        if (op.node_op) queuedNodes.push(op.node_op.op === "end_edge" ? { ...op.node_op, signal_id: signalId } : op.node_op);
         if (op.edge) queuedEdges.push({ ...op.edge, signal_id: signalId });
       }
     }
@@ -1135,14 +1245,14 @@ export async function confirmDraft(
     patched_nodes: [...new Set(patched)],
     edges: edgeResults,
     images: imageResults,
+    ended: endedResults,
     skipped,
   };
 }
 
-function pageHash(draft: Draft, url: string | undefined): string | null {
+function pageEntry(draft: Draft, url: string | undefined): PageEntry | null {
   if (!url) return null;
-  const p = draft.pages.find((x) => x.url === url || x.final_url === url);
-  return p?.sha256 ?? null;
+  return draft.pages.find((x) => x.url === url || x.final_url === url) ?? null;
 }
 
 /** Receipt view: everything the batch produced, by batch_id. */
@@ -1157,6 +1267,13 @@ export function batchReceipt(db: DatabaseSync, batchId: string): Record<string, 
     .all(batchId) as any[];
   const edges = db
     .prepare("SELECT id, source_id, target_id, edge_type, valid_until FROM edges WHERE signal_id IN (SELECT id FROM signals WHERE batch_id = ?)")
+    .all(batchId) as any[];
+  // Relations this batch ended (a roster the site no longer shows).
+  const ended = db
+    .prepare(
+      `SELECT e.source_id, e.target_id, e.edge_type, e.valid_until FROM edges e
+        WHERE e.invalidated_by IN (SELECT id FROM signals WHERE batch_id = ?)`
+    )
     .all(batchId) as any[];
   const statuses = new Set(intake.map((i) => i.status));
   let review_state: string;
@@ -1177,6 +1294,7 @@ export function batchReceipt(db: DatabaseSync, batchId: string): Record<string, 
     signals: signals.map((s) => ({ id: s.id, title: s.title, source_type: s.source_type, source_url: s.source_url, status: s.status, content: s.source_type === "api_url_intake" && s.title.startsWith("URL intake:") ? null : s.content })),
     intake: intake.map((i) => ({ id: i.id, status: i.status, target_node: i.target_node, reviewed_at: i.reviewed_at, rejection_reason: i.rejection_reason })),
     edges: edges.map((e) => ({ source_id: e.source_id, target_id: e.target_id, edge_type: e.edge_type, live: e.valid_until === null })),
+    ended: ended.map((e) => ({ source_id: e.source_id, target_id: e.target_id, edge_type: e.edge_type, ended_at: e.valid_until })),
     pages: draft?.pages ?? [],
   };
 }

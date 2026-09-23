@@ -304,7 +304,7 @@ The graph is mostly edges. Use the curated edge types:
 | `BELONGS_TO` | practitioner → collective / scene | membership |
 | `EXHIBITED_AT` | artwork → institution / platform | where it showed |
 | `PARTICIPATED_IN` | practitioner → project | artist took part in a show / fair |
-| `PRESENTED_BY` | project → institution | gallery / host that presented the show |
+| `PRESENTED_BY` | project → institution / platform | gallery / host that presented the show (a platform-hosted series can have both) |
 | `CURATED_BY` | project → practitioner | the show's curator (where named) |
 | `REPRESENTS` | institution → practitioner | a gallery's core roster |
 | `CLASSIFIED_BY` | any node → classification_regime | who positioned it |
@@ -319,6 +319,18 @@ with `CURATED_BY`. A gallery's standing roster of artists is `REPRESENTS`, from
 the `institution` to each `practitioner`. Without these, a show and its gallery
 have nothing to connect to and float as orphans, so add them in the same session
 you create the show.
+
+**What an organisation is.** Galleries, museums, art centres, fairs, dealers
+and advisories are all `institution` nodes — in the graph they do the same
+thing. What the organisation says it is goes in `metadata.kind`: a list, since
+one organisation can be several things, from this fixed set — `museum`,
+`art centre`, `gallery`, `dealership`, `advisory`, `fair`, `festival`,
+`venue`, `auction house`, `archive`, `residency`, `lab`, `foundation`,
+`biennial`, `prize`. Take it from how the organisation describes itself on
+its own site and keep its words in `metadata.kind_source` `{page_url, quote}`:
+`{"kind": ["gallery", "dealership", "advisory"], "kind_source": {"page_url": "https://www.interfacegallery.io/about", "quote": "a project-based gallery, private art dealership and advisory"}}`.
+Values outside the set are refused with `400 invalid_kind`. Publications,
+platforms and collectives are node types, not kinds.
 
 **Hard rule — do not infer `INFLUENCES` or `RESPONDS_TO` from style /
 visual / thematic similarity.** These require an attested statement
@@ -505,9 +517,9 @@ as above. Relation policy for anything sourced from a page, verbatim:
 | edge_type | direction | condition |
 |---|---|---|
 | CREATED_BY | artwork -> practitioner/collective | page attributes the work |
-| EXHIBITED_AT | artwork -> institution/project | page lists the show or venue |
+| EXHIBITED_AT | artwork -> institution/project/platform | page lists the show, venue or platform |
 | PARTICIPATED_IN | practitioner -> project | page lists the artist in the show |
-| PRESENTED_BY | project -> institution | page names the venue or organiser |
+| PRESENTED_BY | project -> institution/platform | page names the venue, organiser or host platform |
 | CURATED_BY | project -> practitioner | page names the curator |
 | REPRESENTS | institution -> practitioner | roster page, or "represented by" |
 | USES_TECHNIQUE | artwork/practitioner -> concept | page names the technique |

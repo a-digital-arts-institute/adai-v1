@@ -14,6 +14,7 @@ import { embedOnce, TASK_PREFIX } from "../embed/server.js";
 import { l2normalise } from "../embed/vectors.js";
 import { topKByVector, withMetadata } from "../embed/neighbours.js";
 import { safeFetch, sniffImageMime, SsrfError } from "../utils/ssrf.js";
+import { PRESENT_TENSE_EDGE_TYPES } from "./candidate.js";
 
 type AsyncHandler = (db: DatabaseSync, input: Record<string, unknown>) => Promise<unknown> | unknown;
 
@@ -218,6 +219,51 @@ export async function image_neighbours(db: DatabaseSync, input: Record<string, u
   };
 }
 
+// ---- site_claims ---------------------------------------------------------------------
+
+/**
+ * Present-tense relations (REPRESENTS …) that pages of one site attested
+ * and that are still live — what a later read must re-check. A relation the
+ * site no longer shows becomes an `ended` card (propose_ended), never an
+ * automatic change. Events (shows, works) are not listed: they stay true.
+ */
+export function site_claims(db: DatabaseSync, input: Record<string, unknown>): unknown {
+  const raw = asString(input.domain);
+  if (!raw) return { error: "domain is required (e.g. interfacegallery.io)" };
+  const bare = raw.toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "").replace(/^www\./, "");
+  if (!/^[a-z0-9.-]+$/.test(bare)) return { error: "domain must be a host name" };
+  const pats: string[] = [];
+  for (const scheme of ["http", "https"]) for (const host of [bare, `www.${bare}`]) pats.push(`${scheme}://${host}/%`, `${scheme}://${host}`);
+  const types = PRESENT_TENSE_EDGE_TYPES as readonly string[];
+  const rows = db
+    .prepare(
+      `SELECT e.id, e.edge_type, e.source_id, e.target_id, e.event_time, s.source_url, s.created_at AS attested_at,
+              n1.name AS source_name, n2.name AS target_name
+         FROM edges e
+         JOIN signals s ON s.id = e.signal_id
+         LEFT JOIN nodes n1 ON n1.id = e.source_id
+         LEFT JOIN nodes n2 ON n2.id = e.target_id
+        WHERE e.valid_until IS NULL
+          AND e.edge_type IN (${types.map(() => "?").join(",")})
+          AND (${pats.map(() => "s.source_url LIKE ?").join(" OR ")})
+        ORDER BY s.created_at DESC
+        LIMIT 300`
+    )
+    .all(...types, ...pats) as any[];
+  return {
+    domain: bare,
+    claims: rows.map((r) => ({
+      edge_id: r.id,
+      edge_type: r.edge_type,
+      source: { id: r.source_id, name: r.source_name },
+      target: { id: r.target_id, name: r.target_name },
+      page_url: r.source_url,
+      attested_at: r.attested_at,
+    })),
+    note: "Live present-tense relations this site attested. Re-check each against the page as it reads now; if the site no longer shows it, propose_ended with the current page as evidence.",
+  };
+}
+
 // ---- registry -------------------------------------------------------------------------
 
 const ARCHIVIST_READ_TOOLS = ["search_nodes", "get_node", "get_neighbours", "get_component"] as const;
@@ -227,6 +273,7 @@ export const INTAKE_TOOL_HANDLERS: Record<string, AsyncHandler> = {
   resolve_entity,
   find_path,
   image_neighbours,
+  site_claims,
 };
 
 export function isIntakeTool(name: string): boolean {

@@ -66,6 +66,8 @@ export async function runPass(draft: ClaimedDraft, job: Job, deps: AgentDeps = {
       maxPages: Math.min(CONFIG.maxPagesSoft + draft.pages.length, CONFIG.maxPagesHard),
       maxOffsite: CONFIG.maxOffsitePages,
     }),
+    prior: new Map((draft.prior?.pages ?? []).map((p) => [p.url, p])),
+    checkSubject: job.kind !== "chat",
   };
 
   // Heartbeat while we work; the claim expires 20 min after the last one.
@@ -84,7 +86,7 @@ export async function runPass(draft: ClaimedDraft, job: Job, deps: AgentDeps = {
       try {
         const p = await fetcher(draft.source_url, ctx.policy);
         ctx.policy.pagesFetched++; // root is always on-site
-        rootRendered = renderPage(p);
+        rootRendered = renderPage(p, ctx.prior?.get(p.final_url) ?? ctx.prior?.get(p.url));
         await ledger(draft.id, { url: p.url, final_url: p.final_url, title: p.title, status: p.status, chars: p.chars, sha256: p.sha256, via: p.via });
       } catch (e: any) {
         const msg = e instanceof FetchRefused ? `refused (${e.code}): ${e.message}` : `${e?.message ?? e}`;
