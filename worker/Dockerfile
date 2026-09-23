@@ -8,7 +8,7 @@ RUN npm ci --no-audit --no-fund
 COPY worker/tsconfig.json ./
 COPY worker/scripts ./scripts
 COPY worker/src ./src
-COPY src/utils/ssrf.ts /repo/src/utils/ssrf.ts
+COPY src/utils/ssrf.ts src/utils/org-kinds.ts /repo/src/utils/
 COPY claude/skills/relational-intelligence-protocol.md claude/skills/gatherer.md /repo/claude/skills/
 RUN npm run build && test -f dist/main.js
 
