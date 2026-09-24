@@ -202,9 +202,9 @@ function get_node(db: DatabaseSync, input: Record<string, unknown>): unknown {
     ...(edges.length >= 80 ? { edges_truncated: true, edge_total: (db.prepare("SELECT COUNT(*) AS n FROM (SELECT 1 FROM edges WHERE valid_until IS NULL AND (source_id = ? OR target_id = ?) GROUP BY source_id, target_id, edge_type)").get(node.id, node.id) as any).n } : {}),
     ...(roster
       ? {
-          roster: roster.slice(0, 100).map((a) => ({ id: a.id, name: a.name, slug: a.slug, represented: a.represented, shows: a.shows, works: a.works })),
+          roster: roster.slice(0, 100).map((a) => ({ id: a.id, name: a.name, slug: a.slug, represented: a.represented, shows: a.shows, works: a.works, ...(a.estate ? { estate: true } : {}) })),
           roster_count: roster.length,
-          roster_note: "The artists of this organisation, derived from live edges: represented here, in shows it presented, or with works shown here. Only 'represented' means REPRESENTS.",
+          roster_note: "The artists of this organisation, derived from live edges: represented here, in shows it presented, or with works shown here. Only 'represented' means REPRESENTS. 'estate: true' means the site names the artist's estate, not the artist.",
         }
       : {}),
     signals,

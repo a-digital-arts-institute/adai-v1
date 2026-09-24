@@ -287,16 +287,20 @@ describe("passes that build on each other", () => {
     claimJob(db, "w1");
     runDraftTool(db, d.id, "w1", "propose_node", { type: "practitioner", name: "Auriea Harvey", ...evid }); // c_01
     const rep = (target: string, quote: string) => runDraftTool(db, d.id, "w1", "propose_edge", { source: "institution:gallery", target, edge_type: "REPRESENTS", confidence: "medium", page_url: evid.page_url, quote });
-    assert.throws(() => rep("cid:c_01", "Auriea Harvey"), /bare name on a roster/);
-    assert.throws(() => rep("practitioner:lucio-fontana", "Lucio Fontana"), /bare name on a roster/);
-    assert.throws(() => rep("practitioner:lucio-fontana", "— Lucio FONTANA."), /bare name on a roster/);
+    assert.throws(() => rep("cid:c_01", "Auriea Harvey"), /evidence of representation/);
+    assert.throws(() => rep("practitioner:lucio-fontana", "Lucio Fontana"), /evidence of representation/);
+    assert.throws(() => rep("practitioner:lucio-fontana", "— Lucio FONTANA."), /evidence of representation/);
+    // a bio proves the name is on the page, not representation (Fellowship run 3)
+    assert.throws(() => rep("practitioner:lucio-fontana", "Lucio Fontana is an Argentine-Italian artist, founder of Spatialism."), /A bio or a bare name/);
     assert.equal((rep("cid:c_01", "Gallery represents Auriea Harvey worldwide.") as any).cid, "c_02");
+    // the section heading the artist is listed under
+    assert.equal((rep("practitioner:lucio-fontana", "Gallery Artists › Lucio Fontana") as any).ok, true);
     // other relations may quote the name as listed (a show's artist list)
     insertNode(db, "project:some-show", "project", "Some Show");
     runDraftTool(db, d.id, "w1", "propose_edge", { source: "practitioner:lucio-fontana", target: "project:some-show", edge_type: "PARTICIPATED_IN", confidence: "high", page_url: evid.page_url, quote: "Lucio Fontana" });
     // the contributor may attest it themselves by editing the edge type
     finishPass(db, d.id, "w1", { summary: "x" });
-    const edited = contributorPatchCandidate(db, getDraft(db, d.id)!, "c_03", { patch: { edge_type: "PARTICIPATED_IN" } });
+    const edited = contributorPatchCandidate(db, getDraft(db, d.id)!, "c_04", { patch: { edge_type: "PARTICIPATED_IN" } });
     assert.equal(edited.edited, true);
   });
 

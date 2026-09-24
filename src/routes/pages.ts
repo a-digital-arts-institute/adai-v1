@@ -237,11 +237,11 @@ function profileHandler(req: any, res: any) {
       body += `<h3>artists (${roster.length})</h3><p class='meta'>Read off this graph: represented here, in shows presented here, or with works shown here.</p><ul class='edge-list'>`;
       for (const a of roster.slice(0, LIMIT)) {
         const why = [
-          a.represented ? "represented" : "",
+          a.represented ? (a.estate ? "estate represented" : "represented") : "",
           a.shows ? `${a.shows} show${a.shows === 1 ? "" : "s"}` : "",
           a.works ? `${a.works} work${a.works === 1 ? "" : "s"}` : "",
         ].filter(Boolean).join(" · ");
-        body += `<li><a href='/${htmlEscape(a.type)}/${encodeURIComponent(a.slug)}'>${htmlEscape(a.name)}</a> <span class='meta'>${htmlEscape(why)}</span></li>`;
+        body += `<li><a href='/${htmlEscape(a.type)}/${encodeURIComponent(a.slug)}'>${htmlEscape(a.name)}</a>${a.estate ? " <span class='meta'>(estate)</span>" : ""} <span class='meta'>${htmlEscape(why)}</span></li>`;
       }
       if (roster.length > LIMIT) body += `<li class='meta'>and ${roster.length - LIMIT} more</li>`;
       body += `</ul>`;

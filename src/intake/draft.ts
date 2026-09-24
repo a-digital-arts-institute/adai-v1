@@ -548,18 +548,19 @@ function refusedByContributor(next: Candidate, cands: Candidate[]): Candidate | 
  */
 function representsNeedsMoreThanAName(c: Candidate, cands: Candidate[]): void {
   if (c.kind !== "edge" || c.edge.edge_type !== "REPRESENTS" || c.origin !== "site") return;
-  const t = c.edge.target;
-  const node = isCidRef(t) ? cands.find((x) => x.cid === t.slice(4)) : null;
-  const name = node && node.kind === "node" ? node.node.name : t.slice(t.indexOf(":") + 1).replace(/-/g, " ");
-  const norm = (x: string) => x.toLowerCase().normalize("NFKD").replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
-  let rest = ` ${norm(c.evidence?.quote ?? "")} `;
-  for (const w of norm(name).split(" ")) if (w) rest = rest.split(` ${w} `).join(" ");
-  if (rest.replace(/ /g, "").length < 8) {
-    throw new CandidateError(
-      "REPRESENTS needs a quote in which the site says it represents the artist (\"represented artists\", \"our artists\", \"X is represented by …\") — a bare name on a roster is not that. If the site only shows, sells or has worked with the artist, connect them through the show (PARTICIPATED_IN) or the works instead, or leave the relation out.",
-      "evidence.quote"
-    );
-  }
+  const quote = c.evidence?.quote ?? "";
+  // "Gallery Artists › Jane Doe": the section heading is the claim (the
+  // worker has checked that the name really sits under that heading).
+  const [head, item] = quote.split(/\s*[›>]\s*/);
+  if (item !== undefined && head && head.trim().length >= 3) return;
+  // Otherwise the sentence itself must say it. A bio ("Jane Doe is a
+  // Berlin-based artist…") proves the name is on the page, not that the
+  // gallery represents her — Fellowship run 3: 5 of 6 quotes were bios.
+  if (/\brepresent|\bour artists\b|\bgallery artists\b|\bartists we (represent|work with)\b|\broster\b/i.test(quote)) return;
+  throw new CandidateError(
+    "REPRESENTS needs evidence of representation: the section heading the artist is listed under (quote it as \"Gallery Artists › Jane Doe\"), or a sentence that says so (\"represented by …\", \"our artists\"). A bio or a bare name shows the artist is on the page, not that the site represents them. If the site only shows, sells or has worked with the artist, connect them through the show (PARTICIPATED_IN) or the works instead, or leave the relation out.",
+    "evidence.quote"
+  );
 }
 
 // Relations about a named person, and which end is the person.

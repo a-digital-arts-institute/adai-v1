@@ -9,7 +9,7 @@ process.env.WORKER_KEY = "test-worker-key-0123456789";
 process.env.ANTHROPIC_API_KEY = "test";
 
 const { renderPage, systemPrompt, initialUserMessage } = await import("../src/prompt.js");
-const { runTool, subjectLinks } = await import("../src/tools.js");
+const { runTool, subjectLinks, orphanWorks } = await import("../src/tools.js");
 const { newPolicy } = await import("../src/browser.js");
 
 const page = { final_url: "https://g.example/artists", status: 200, title: "Artists", text: "Artists", links: [], images: [], sha256: "aa" };
@@ -48,7 +48,8 @@ describe("the subject must end up connected", () => {
     const ctx: any = { draftId: "drf_x", policy: newPolicy("https://verse.example/", { maxPages: 10 }), checkSubject: true, getDraft: async () => base };
     const first = await runTool(ctx, "finish_pass", { summary: "done" });
     assert.equal(first.is_error, true);
-    assert.match(first.content, /subject_unconnected/);
+    assert.match(first.content, /draft_incomplete/);
+    assert.match(first.content, /no relation in this draft/);
     assert.equal(first.finished, undefined);
     const second = await runTool(ctx, "finish_pass", { summary: "No relation to Verse is evidenced." });
     assert.equal(second.finished, "No relation to Verse is evidenced.");
@@ -86,5 +87,20 @@ describe("prompt rules", () => {
     assert.match(p, /Heading|Gallery Artists › Jane Doe/);
     assert.match(p, /\(Estate\)/);
     assert.doesNotMatch(p, /Artists \(project\)|Fontana and Hockney/);
+  });
+  it("on a platform, the works are the programme", () => {
+    assert.match(p, /On a platform or marketplace, the works ARE the programme/);
+    assert.match(p, /is ONE artwork node, the way A\(DAI\) holds Fidenza/);
+  });
+  it("works linked to nothing are named at finish (Verse: 18 works, none connected)", async () => {
+    const d = { subject_node_id: "platform:verse", candidates: [
+      { cid: "c_01", kind: "node", state: "proposed", node: { type: "artwork", name: "Orphan" }, resolves_to: null },
+      { cid: "c_02", kind: "node", state: "proposed", node: { type: "artwork", name: "Linked" }, resolves_to: null },
+      { cid: "c_03", kind: "edge", state: "proposed", edge: { source: "cid:c_02", target: "platform:verse", edge_type: "EXHIBITED_AT" } },
+    ] };
+    assert.deepEqual(orphanWorks(d), ["Orphan"]);
+    const ctx: any = { draftId: "d", policy: newPolicy("https://verse.example/", { maxPages: 10 }), checkSubject: true, getDraft: async () => d };
+    const r = await runTool(ctx, "finish_pass", { summary: "x" });
+    assert.match(String(r.content), /1 proposed work\(s\) are linked to nothing: Orphan/);
   });
 });

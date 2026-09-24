@@ -18,29 +18,38 @@ export interface RosterEntry {
   represented: boolean;
   shows: number;
   works: number;
+  /** The site's own evidence names the ESTATE ("August Sander (Estate)"): the relation is with the estate, not the living artist. */
+  estate: boolean;
 }
 
+// Read from the relation's evidence, not stored: "(Estate)" / "Estate of".
+const ESTATE_SQL = "(s.content LIKE '%(estate)%' OR s.content LIKE '%estate of %')";
+
 export function rosterFor(db: DatabaseSync, orgId: string): RosterEntry[] {
-  const acc = new Map<string, { represented: boolean; shows: Set<string>; works: Set<string> }>();
+  const acc = new Map<string, { represented: boolean; estate: boolean; shows: Set<string>; works: Set<string> }>();
   const get = (id: string) => {
     let a = acc.get(id);
-    if (!a) acc.set(id, (a = { represented: false, shows: new Set(), works: new Set() }));
+    if (!a) acc.set(id, (a = { represented: false, estate: false, shows: new Set(), works: new Set() }));
     return a;
   };
 
   // represented: org REPRESENTS artist
   for (const r of db
-    .prepare("SELECT target_id AS pid FROM edges WHERE source_id = ? AND edge_type = 'REPRESENTS' AND valid_until IS NULL")
-    .all(orgId) as any[]) get(r.pid).represented = true;
+    .prepare(
+      `SELECT e.target_id AS pid, ${ESTATE_SQL} AS estate FROM edges e LEFT JOIN signals s ON s.id = e.signal_id
+        WHERE e.source_id = ? AND e.edge_type = 'REPRESENTS' AND e.valid_until IS NULL`
+    )
+    .all(orgId) as any[]) { const a = get(r.pid); a.represented = true; if (r.estate) a.estate = true; }
 
   // in shows the org presented: artist PARTICIPATED_IN show PRESENTED_BY org
   for (const r of db
     .prepare(
-      `SELECT p.source_id AS pid, p.target_id AS show FROM edges pr
+      `SELECT p.source_id AS pid, p.target_id AS show, ${ESTATE_SQL} AS estate FROM edges pr
          JOIN edges p ON p.target_id = pr.source_id AND p.edge_type = 'PARTICIPATED_IN' AND p.valid_until IS NULL
+         LEFT JOIN signals s ON s.id = p.signal_id
         WHERE pr.target_id = ? AND pr.edge_type = 'PRESENTED_BY' AND pr.valid_until IS NULL`
     )
-    .all(orgId) as any[]) get(r.pid).shows.add(r.show);
+    .all(orgId) as any[]) { const a = get(r.pid); a.shows.add(r.show); if (r.estate) a.estate = true; }
 
   // works shown here, directly or in a show the org presented
   for (const r of db
@@ -67,7 +76,7 @@ export function rosterFor(db: DatabaseSync, orgId: string): RosterEntry[] {
       .all(...chunk) as any[];
     for (const r of rows) {
       const a = acc.get(r.id)!;
-      out.push({ id: r.id, name: r.name, slug: r.slug, type: r.type, represented: a.represented, shows: a.shows.size, works: a.works.size });
+      out.push({ id: r.id, name: r.name, slug: r.slug, type: r.type, represented: a.represented, shows: a.shows.size, works: a.works.size, estate: a.estate });
     }
   }
   return out.sort(

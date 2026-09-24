@@ -229,6 +229,14 @@ export interface ToolContext {
   getDraft?: typeof getDraft;
 }
 
+/** Artwork cards (not rejected) that no live edge touches — a work linked to nothing. */
+export function orphanWorks(d: { candidates: any[] }): string[] {
+  const live = (c: any) => c.state !== "rejected" && c.state !== "context_only";
+  const linked = new Set<string>();
+  for (const c of d.candidates) if (live(c) && c.kind === "edge") { linked.add(c.edge.source); linked.add(c.edge.target); }
+  return d.candidates.filter((c) => live(c) && c.kind === "node" && c.node.type === "artwork" && !linked.has(`cid:${c.cid}`) && !(c.resolves_to && linked.has(c.resolves_to))).map((c) => c.node.name);
+}
+
 /**
  * How many live cards connect the draft's subject: edges (not rejected)
  * touching the subject, directly or through a node card that resolves to it,
@@ -276,15 +284,20 @@ export async function runTool(ctx: ToolContext, name: string, input: Record<stri
     if (ctx.checkSubject && !ctx.subjectChecked) {
       ctx.subjectChecked = true;
       const d = await (ctx.getDraft ?? getDraft)(ctx.draftId).catch(() => null);
+      const problems: string[] = [];
       if (d && subjectLinks(d) === 0) {
         const why = d.subject_node_id
           ? `The subject ${d.subject_node_id} has no relation in this draft.`
           : "No subject was set (set_subject).";
+        problems.push(`${why} The site's own subject must end up connected: the shows it presents (PRESENTED_BY the subject), the works shown on it (EXHIBITED_AT the subject), its roster. Propose those with quotes now; if the site truly evidences no relation to its subject, say so plainly at the top of the summary.`);
+      }
+      const orphans = d ? orphanWorks(d) : [];
+      if (orphans.length) {
+        problems.push(`${orphans.length} proposed work(s) are linked to nothing: ${orphans.slice(0, 12).join(", ")}${orphans.length > 12 ? " …" : ""}. Give each its CREATED_BY (and EXHIBITED_AT where the page says where it was shown) and its image, or remove_candidate the ones you cannot support.`);
+      }
+      if (problems.length) {
         return {
-          content: JSON.stringify({
-            error: "subject_unconnected",
-            message: `${why} The site's own subject must end up connected: the shows it presents (PRESENTED_BY the subject), the works shown on it (EXHIBITED_AT the subject), its roster. Propose those with quotes now; if the site truly evidences no relation to its subject, call finish_pass again and say so plainly at the top of the summary.`,
-          }),
+          content: JSON.stringify({ error: "draft_incomplete", message: `${problems.join("\n")}\nThen call finish_pass again; the second call stands.` }),
           is_error: true,
         };
       }

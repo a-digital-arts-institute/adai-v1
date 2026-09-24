@@ -61,6 +61,19 @@ describe("rosterFor", () => {
     const p = (SERVER_HANDLERS as any).get_node(db, { id: "practitioner:harold-cohen" });
     assert.equal(p.roster, undefined);
   });
+
+  it("an estate named by the evidence is labelled, read from the quote", () => {
+    const db = freshDb();
+    insertNode(db, "institution:fellowship", "institution", "Fellowship");
+    insertNode(db, "practitioner:august-sander", "practitioner", "August Sander");
+    insertNode(db, "practitioner:sougwen-chung", "practitioner", "Sougwen Chung");
+    db.prepare("INSERT INTO signals (id, title, content, status) VALUES ('s1', 't', 'Gallery Artists › August Sander (Estate)', 'active')").run();
+    db.prepare("INSERT INTO signals (id, title, content, status) VALUES ('s2', 't', 'Fellowship Artists › Sougwen Chung', 'active')").run();
+    db.prepare("INSERT INTO edges (id, source_id, target_id, edge_type, signal_id, created_by, valid_from) VALUES ('r1', 'institution:fellowship', 'practitioner:august-sander', 'REPRESENTS', 's1', 't', '2026-01-01T00:00:00Z')").run();
+    db.prepare("INSERT INTO edges (id, source_id, target_id, edge_type, signal_id, created_by, valid_from) VALUES ('r2', 'institution:fellowship', 'practitioner:sougwen-chung', 'REPRESENTS', 's2', 't', '2026-01-01T00:00:00Z')").run();
+    const r = rosterFor(db, "institution:fellowship");
+    assert.deepEqual(r.map((a) => [a.name, a.estate]), [["August Sander", true], ["Sougwen Chung", false]]);
+  });
 });
 
 function insertedSlug(name: string): string {

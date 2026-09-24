@@ -549,7 +549,7 @@
           <li class="ev-rel-row" data-node-id="${escapeHtml(a.id)}" role="link" tabindex="0" title="open ${escapeHtml(a.name)}">
             <span class="ev-rel-leader">··········</span>
             <span class="ev-rel-tag">[${escapeHtml(a.type)}]</span>
-            <span class="ev-rel-name">${escapeHtml(a.name)}</span>
+            <span class="ev-rel-name">${escapeHtml(a.name)}${a.estate ? ' <span class="ev-mono-dim">(estate)</span>' : ''}</span>
             <span class="ev-rel-qualifier">${escapeHtml(why)}</span>
           </li>`;
       }).join('');

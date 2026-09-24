@@ -111,6 +111,7 @@ export async function runPass(draft: ClaimedDraft, job: Job, deps: AgentDeps = {
 
     let finished: string | null = null;
     let stopReason = "";
+    let warned = false;
     for (let turn = 0; turn < maxCalls + 2 && finished === null; turn++) {
       if (now() - started > CONFIG.hardTimeoutS * 1000) return { summary: null, error: "hard timeout", usage };
       if (lost) return { summary: null, error: "claim lost (draft abandoned or reclaimed)", usage };
@@ -120,6 +121,14 @@ export async function runPass(draft: ClaimedDraft, job: Job, deps: AgentDeps = {
       }
       if (usage.tool_calls >= maxCalls) {
         messages.push({ role: "user", content: "Tool-call limit reached. Call finish_pass now with your summary; do not call any other tool." });
+      } else if (!warned && usage.tool_calls >= Math.floor(maxCalls * 0.8)) {
+        // Warn while there is still room to finish what is open: a Verse
+        // pass ran out with 18 works proposed and none connected or pictured.
+        warned = true;
+        const last = messages[messages.length - 1]!;
+        const note = { type: "text" as const, text: `About ${maxCalls - usage.tool_calls} tool calls left in this pass. Stop reading new pages. First complete what is open: every work you proposed gets its CREATED_BY, its EXHIBITED_AT and its image; every artist a relation. Then note_survey (covered / remaining) and finish_pass. What is not reached goes under 'remaining' for the next pass.` };
+        if (last.role === "user" && Array.isArray(last.content)) (last.content as any[]).push(note);
+        else messages.push({ role: "user", content: [note] });
       }
       // Moving cache breakpoint on the last message: the whole conversation
       // prefix (pages read, tool results) is then served from cache on the
