@@ -80,4 +80,11 @@ describe("prompt rules", () => {
     assert.match(p, /propose_ended/);
     assert.match(p, /Never end something because a page failed to load/);
   });
+  it("reading a page: structure, names in quotes, qualifiers — principles, not per-site rules", () => {
+    assert.match(p, /READING A PAGE/);
+    assert.match(p, /'#', '##', '###' lines are headings/);
+    assert.match(p, /Heading|Gallery Artists › Jane Doe/);
+    assert.match(p, /\(Estate\)/);
+    assert.doesNotMatch(p, /Artists \(project\)|Fontana and Hockney/);
+  });
 });

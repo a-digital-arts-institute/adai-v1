@@ -300,6 +300,26 @@ describe("passes that build on each other", () => {
     assert.equal(edited.edited, true);
   });
 
+  it("a relation about a person must quote their name — a roster-wide sentence supports no one (Fellowship)", () => {
+    const db = freshDb();
+    insertNode(db, "institution:fellowship", "institution", "Fellowship");
+    insertNode(db, "practitioner:sofia-crespo", "practitioner", "Sofia Crespo");
+    insertNode(db, "practitioner:sougwen-chung", "practitioner", "Sougwen Chung");
+    insertNode(db, "practitioner:laszlo-moholy-nagy", "practitioner", "László Moholy-Nagy");
+    insertNode(db, "project:show", "project", "Show");
+    const d = createDraft(db, CONTRIB, "https://fellowship.xyz/");
+    claimJob(db, "w1");
+    const about = { page_url: "https://fellowship.xyz/about-us", quote: "Our roster spans the field, from pioneers who have shaped it for decades to emerging voices defining its future." };
+    const rep = (target: string, ev: { page_url: string; quote: string }) =>
+      runDraftTool(db, d.id, "w1", "propose_edge", { source: "institution:fellowship", target, edge_type: "REPRESENTS", confidence: "high", ...ev });
+    assert.throws(() => rep("practitioner:sofia-crespo", about), /must name Sofia Crespo/);
+    assert.equal((rep("practitioner:sougwen-chung", { page_url: "https://fellowship.xyz/artists", quote: "Fellowship Artists › Sougwen Chung" }) as any).ok, true);
+    // diacritics and hyphens fold; the estate qualifier stays in the quote
+    assert.equal((rep("practitioner:laszlo-moholy-nagy", { page_url: "https://fellowship.xyz/artists", quote: "Fellowship Artists › Laszlo Moholy Nagy (Estate)" }) as any).ok, true);
+    // same rule for show participation
+    assert.throws(() => runDraftTool(db, d.id, "w1", "propose_edge", { source: "practitioner:sofia-crespo", target: "project:show", edge_type: "PARTICIPATED_IN", confidence: "high", page_url: "https://fellowship.xyz/show", quote: "A group show of twelve artists." }), /must name Sofia Crespo/);
+  });
+
   it("priorContext: a dated page ledger from every submitted read; decisions stay the contributor's own", () => {
     const db = freshDb();
     const first = createDraft(db, CONTRIB, "https://gallery.example/");

@@ -42,6 +42,14 @@ describe("htmlToText", () => {
     assert.equal(x.images.length, 2);
     assert.deepEqual(x.images[0], { src: "/img/p4.jpg", alt: "Process 4", w: 1200, h: 800 });
   });
+
+  it("keeps headings and list items (the plain-fetch fallback)", () => {
+    const x = htmlToText(`<body><h2>Fellowship Artists</h2><ul><li>Sougwen Chung</li><li>John Gerrard</li></ul><h2 class="t">Exhibited Artists</h2><ul><li>August Sander (Estate)</li></ul></body>`);
+    assert.match(x.text, /^## Fellowship Artists$/m);
+    assert.match(x.text, /^- Sougwen Chung$/m);
+    assert.match(x.text, /^## Exhibited Artists$/m);
+    assert.match(x.text, /^- August Sander \(Estate\)$/m);
+  });
 });
 
 describe("fetch policy (no network)", () => {

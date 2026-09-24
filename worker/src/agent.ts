@@ -5,7 +5,7 @@
 
 import Anthropic from "@anthropic-ai/sdk";
 import { CONFIG, estimateUsd } from "./config.js";
-import { TOOLS, runTool, type ToolContext } from "./tools.js";
+import { TOOLS, runTool, rememberPage, type ToolContext } from "./tools.js";
 import { systemPrompt, initialUserMessage, continueUserMessage, chatUserMessage, renderPage } from "./prompt.js";
 import { fetchPage, newPolicy, FetchRefused, siteOutline, endSession } from "./browser.js";
 import { heartbeat, addPage, type ClaimedDraft, type Job } from "./client.js";
@@ -87,6 +87,7 @@ export async function runPass(draft: ClaimedDraft, job: Job, deps: AgentDeps = {
         const p = await fetcher(draft.source_url, ctx.policy);
         ctx.policy.pagesFetched++; // root is always on-site
         rootRendered = renderPage(p, ctx.prior?.get(p.final_url) ?? ctx.prior?.get(p.url));
+        rememberPage(ctx, p);
         await ledger(draft.id, { url: p.url, final_url: p.final_url, title: p.title, status: p.status, chars: p.chars, sha256: p.sha256, via: p.via });
       } catch (e: any) {
         const msg = e instanceof FetchRefused ? `refused (${e.code}): ${e.message}` : `${e?.message ?? e}`;

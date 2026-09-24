@@ -562,6 +562,45 @@ function representsNeedsMoreThanAName(c: Candidate, cands: Candidate[]): void {
   }
 }
 
+// Relations about a named person, and which end is the person.
+const NAMED_PARTY: Record<string, "source" | "target"> = {
+  REPRESENTS: "target",
+  CURATED_BY: "target",
+  PARTICIPATED_IN: "source",
+  BELONGS_TO: "source",
+};
+
+const foldName = (x: string) => x.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim();
+
+/**
+ * A relation about a person must quote something that NAMES that person.
+ * Fellowship run: 65 REPRESENTS cards all cited one /about-us sentence
+ * ("Our roster spans the field…") that names nobody. A list under a heading
+ * is quoted as "Heading › Name". Agent path only (origin 'site'); a
+ * contributor who edits a card is attesting it themselves.
+ */
+function quoteNamesTheParty(db: DatabaseSync, c: Candidate, cands: Candidate[]): void {
+  if (c.kind !== "edge" || c.origin !== "site" || c.edited) return;
+  const end = NAMED_PARTY[c.edge.edge_type];
+  if (!end) return;
+  const ref = end === "source" ? c.edge.source : c.edge.target;
+  let name: string | null = null;
+  if (isCidRef(ref)) {
+    const n = cands.find((x) => x.cid === ref.slice(4));
+    name = n && n.kind === "node" ? n.node.name : null;
+  } else {
+    name = (db.prepare("SELECT name FROM nodes WHERE id = ?").get(ref) as any)?.name ?? ref.slice(ref.indexOf(":") + 1).replace(/-/g, " ");
+  }
+  if (!name) return;
+  const quote = ` ${foldName(c.evidence?.quote ?? "")} `;
+  const tokens = foldName(name).split(" ").filter((w) => w.length >= 3 && !["the", "and", "estate", "studio", "von", "van", "der", "del"].includes(w));
+  if (!tokens.length || tokens.some((w) => quote.includes(` ${w} `))) return;
+  throw new CandidateError(
+    `${c.edge.edge_type}: the quote must name ${name} — a sentence about the roster in general supports no one in particular. Quote the line that names them; for a list under a heading, quote "Heading › ${name}".`,
+    "evidence.quote"
+  );
+}
+
 const SITE_KINDS: ReadonlySet<string> = new Set(["artist", "gallery", "platform", "institution", "publication", "other"]);
 
 function mergeSurvey(prev: Survey | null, input: Record<string, unknown>): Survey {
@@ -757,6 +796,7 @@ export function runDraftTool(
       if (cands.length >= MAX_CANDIDATES) throw new CandidateError(`draft already has ${MAX_CANDIDATES} candidates — prefer fewer, stronger ones`);
       const c = validateCandidate({ ...raw, cid: nextCid(cands), state: "proposed", edited: false }, cands, ctx);
       representsNeedsMoreThanAName(c, cands);
+      quoteNamesTheParty(db, c, cands);
       const no = refusedByContributor(c, cands);
       if (no) throw new CandidateError(`the contributor already said no to this (${no.cid}, ${no.state}) — do not propose it again`);
       cands.push(c);

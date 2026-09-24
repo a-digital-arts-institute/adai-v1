@@ -10,6 +10,7 @@ import { graphTool, draftTool, addPage, getDraft } from "./client.js";
 import { fetchPage, sameSite, FetchRefused, type FetchPolicy } from "./browser.js";
 import { renderPage, type PriorRead } from "./prompt.js";
 import { ORG_KINDS } from "./org-kinds.js";
+import { checkQuote } from "./evidence.js";
 
 type Tool = Anthropic.Messages.Tool;
 
@@ -26,7 +27,14 @@ export const TOOLS: Tool[] = [
   {
     name: "fetch_page",
     description: "Open a page in the browser (JS rendered). Returns the readable text, its links (same-site, plus off-site ones flagged `offsite`) and the images on it. Same-site pages (subdomains included) are always allowed; an OFF-SITE page is allowed only if a same-site page linked to it (objkt, fxhash, Art Blocks, a gallery's show page, press) — one hop, own cap. Respects robots.txt and the page caps.",
-    input_schema: { type: "object", properties: { url: { type: "string" } }, required: ["url"] },
+    input_schema: {
+      type: "object",
+      properties: {
+        url: { type: "string" },
+        view: { type: "boolean", description: "Also return a screenshot of the page as a person sees it (top of the page). Use it where layout carries meaning the text may not: roster / artists pages, exhibition indexes, anything split into sections. Not needed for ordinary text pages." },
+      },
+      required: ["url"],
+    },
   },
   {
     name: "search_nodes",
@@ -216,6 +224,8 @@ export interface ToolContext {
   /** Reading passes (initial / continue) must leave the subject connected; chat passes are exempt. */
   checkSubject?: boolean;
   subjectChecked?: boolean;
+  /** Text of every page read this pass, by URL — quotes are checked against it. */
+  pageText?: Map<string, string>;
   getDraft?: typeof getDraft;
 }
 
@@ -245,9 +255,18 @@ export function subjectLinks(d: { subject_node_id: string | null; candidates: an
 }
 
 export interface ToolOutcome {
-  content: string;
+  /** Text, or text + a page screenshot (fetch_page view:true). */
+  content: string | Array<Anthropic.Messages.TextBlockParam | Anthropic.Messages.ImageBlockParam>;
   is_error: boolean;
   finished?: string; // summary when finish_pass was called
+}
+
+const normUrl = (u: string) => u.replace(/#.*$/, "").replace(/\/+$/, "");
+
+export function rememberPage(ctx: ToolContext, p: { url: string; final_url: string; text: string }): void {
+  if (!ctx.pageText) ctx.pageText = new Map();
+  ctx.pageText.set(normUrl(p.final_url), p.text);
+  ctx.pageText.set(normUrl(p.url), p.text);
 }
 
 export async function runTool(ctx: ToolContext, name: string, input: Record<string, unknown>): Promise<ToolOutcome> {
@@ -276,12 +295,24 @@ export async function runTool(ctx: ToolContext, name: string, input: Record<stri
   if (name === "fetch_page") {
     const url = typeof input.url === "string" ? input.url : "";
     try {
-      const p = await fetchPage(url, ctx.policy);
+      const p = await fetchPage(url, ctx.policy, { view: input.view === true });
       // Same-site pages count against the page cap; off-site ones are
       // counted against their own cap inside fetchPage.
       if (sameSite(url, ctx.policy.rootUrl)) ctx.policy.pagesFetched++;
       await addPage(ctx.draftId, { url: p.url, final_url: p.final_url, title: p.title, status: p.status, chars: p.chars, sha256: p.sha256, via: p.via });
-      return { content: renderPage(p, ctx.prior?.get(p.final_url) ?? ctx.prior?.get(p.url)), is_error: false };
+      rememberPage(ctx, p);
+      const rendered = renderPage(p, ctx.prior?.get(p.final_url) ?? ctx.prior?.get(p.url));
+      if (input.view === true) {
+        if (!p.screenshot) return { content: `${rendered}\n(no screenshot: the page could only be read as text)`, is_error: false };
+        return {
+          content: [
+            { type: "text", text: rendered },
+            { type: "image", source: { type: "base64", media_type: "image/jpeg", data: p.screenshot } },
+          ],
+          is_error: false,
+        };
+      }
+      return { content: rendered, is_error: false };
     } catch (e: any) {
       const msg = e instanceof FetchRefused ? `refused (${e.code}): ${e.message}` : `fetch failed: ${e?.message ?? e}`;
       return { content: JSON.stringify({ error: msg }), is_error: true };
@@ -293,6 +324,12 @@ export async function runTool(ctx: ToolContext, name: string, input: Record<stri
     return { content: JSON.stringify(r), is_error: isErr };
   }
   if (DRAFT_TOOLS.has(name)) {
+    // Evidence is held to the page (worker/src/evidence.ts) when we read it this pass.
+    if (typeof input.quote === "string" && typeof input.page_url === "string") {
+      const text = ctx.pageText?.get(normUrl(input.page_url));
+      const problem = text !== undefined ? checkQuote(text, input.quote, input.page_url) : null;
+      if (problem) return { content: JSON.stringify({ error: "quote_not_on_page", message: problem, field: "quote" }), is_error: true };
+    }
     const r = await draftTool(ctx.draftId, name, input);
     return { content: JSON.stringify(r.result), is_error: !r.ok };
   }

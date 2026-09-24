@@ -23,6 +23,8 @@ export interface FetchedPage {
   via: "browser" | "fetch";
   sha256: string;
   chars: number;
+  /** JPEG of the rendered page (top 2880px), only when asked for (fetch_page view:true) and read by the browser. */
+  screenshot?: string;
 }
 
 export { SsrfError as FetchRefused } from "./ssrf.js";
@@ -193,10 +195,15 @@ export function htmlToText(html: string): { title: string | null; text: string; 
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<noscript[\s\S]*?<\/noscript>/gi, " ")
-    .replace(/<(br|p|div|li|h[1-6]|tr|section|article|header|footer)[^>]*>/gi, "\n")
+    // Keep structure (see EXTRACT_SCRIPT): headings as "#" lines, list items as "- ".
+    .replace(/<h([1-6])[^>]*>/gi, (_m, n) => "\n" + "#".repeat(Math.min(3, Number(n))) + " ")
+    .replace(/<\/h[1-6]>/gi, "\n")
+    .replace(/<li[^>]*>/gi, "\n- ")
+    .replace(/<(br|p|div|tr|section|article|header|footer)[^>]*>/gi, "\n")
     .replace(/<[^>]+>/g, " ")
     .replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"').replace(/&#39;/g, "'")
     .replace(/[ \t]+/g, " ")
+    .replace(/ ?\n ?/g, "\n")
     .replace(/\n\s*\n+/g, "\n\n")
     .trim();
   return { title, text: body, links, images };
@@ -221,11 +228,57 @@ const EXTRACT_SCRIPT = `(() => {
   // Site chrome goes; content headers stay. Inside <main>/<article> a
   // <header> is the entry title block (WordPress, most gallery themes) —
   // on a roster page it is ALL the text there is.
+  // Structure is meaning on a gallery site: "Fellowship Artists" and
+  // "Exhibited Artists" are two headings over two lists, and flattened to
+  // plain lines they read as two more names in one run. So headings come out
+  // as "#"/"##"/"###" lines and list items as "- " lines. A heading is an
+  // h1–h6 / role=heading, OR short text set clearly larger than the body
+  // text (many themes style a <div> instead of using a heading tag) — that
+  // needs computed styles, so it is marked on the LIVE nodes before cloning.
+  const markHeadings = (root) => {
+    const base = parseFloat(getComputedStyle(document.body).fontSize) || 16;
+    const marked = [];
+    const mark = (el, level) => { el.setAttribute("data-adai-h", String(level)); marked.push(el); };
+    root.querySelectorAll("h1, h2, h3, h4, h5, h6, [role=heading]").forEach((el) => {
+      const tag = /^H([1-6])$/.exec(el.tagName);
+      mark(el, tag ? Math.min(3, Number(tag[1])) : Math.min(3, Number(el.getAttribute("aria-level")) || 2));
+    });
+    // Anything the page lays out as its own block ends its own line. A roster
+    // is often a grid of <a> names; grid and flex items are blockified, so
+    // computed display catches them where tag names do not ("Guy Bourdin
+    // (Estate)László Moholy-Nagy (Estate)0xfff…" otherwise).
+    let n = 0;
+    for (const el of root.querySelectorAll("a, span, em, strong, b, small, img, button, label")) {
+      if (++n > 15000) break;
+      const d = getComputedStyle(el).display;
+      if (d === "block" || d === "flex" || d === "grid" || d === "list-item" || d === "table-row" || d === "inline-block") {
+        el.setAttribute("data-adai-b", "1");
+        marked.push(el);
+      }
+    }
+    let seen = 0;
+    for (const el of root.querySelectorAll("div, p, span, strong, b, dt, header")) {
+      if (++seen > 6000) break;
+      if (el.closest("[data-adai-h], a, li, button")) continue;
+      if ([...el.children].some((c) => !/^(SPAN|B|STRONG|EM|I|SMALL|BR)$/.test(c.tagName))) continue;
+      const t = (el.textContent || "").trim();
+      if (t.length < 2 || t.length > 80) continue;
+      const ratio = (parseFloat(getComputedStyle(el).fontSize) || base) / base;
+      if (ratio >= 1.25) mark(el, ratio >= 2 ? 1 : ratio >= 1.6 ? 2 : 3);
+    }
+    return marked;
+  };
   const readable = (root) => {
     const kill = ["script", "style", "noscript", "svg", "nav", "form", "iframe", "aside"];
     if (root === document.body) kill.push(":scope > header", ":scope > footer", "[role=banner]", "[role=contentinfo]");
+    const marked = markHeadings(root);
     const clone = root.cloneNode(true);
+    for (const el of marked) { el.removeAttribute("data-adai-h"); el.removeAttribute("data-adai-b"); }
     for (const sel of kill) clone.querySelectorAll(sel).forEach((n) => n.remove());
+    clone.querySelectorAll("[data-adai-h]").forEach((n) => { n.prepend("\\n" + "#".repeat(Number(n.getAttribute("data-adai-h")) || 2) + " "); n.append("\\n"); });
+    clone.querySelectorAll("li").forEach((n) => n.prepend("- "));
+    clone.querySelectorAll("[data-adai-b]").forEach((n) => n.append("\\n"));
+    clone.querySelectorAll("td, th").forEach((n) => n.append(" | "));
     // A detached clone has no layout, so innerText degrades to textContent
     // and block boundaries vanish; mark them before reading.
     clone.querySelectorAll("br, p, div, li, h1, h2, h3, h4, h5, h6, tr, section, article, header, footer, figcaption, dt, dd").forEach((n) => n.append("\\n"));
@@ -410,7 +463,7 @@ function blockedRefusal(u: URL, status: number, title: string | null): FetchRefu
   return new FetchRefused(`${u.hostname} would not serve this page (HTTP ${status}${title ? `, "${title}"` : ""}): ${why}. It cannot be read from here.`, "blocked");
 }
 
-async function withBrowser(u: URL): Promise<Omit<FetchedPage, "via" | "sha256" | "chars" | "url">> {
+async function withBrowser(u: URL, view = false): Promise<Omit<FetchedPage, "via" | "sha256" | "chars" | "url">> {
   const s = await getSession();
   // A person does not open the next page of the same site within
   // milliseconds; neither do we.
@@ -468,7 +521,17 @@ async function withBrowser(u: URL): Promise<Omit<FetchedPage, "via" | "sha256" |
       images: Array<{ src: string; alt: string; w: number; h: number }>;
     };
     s.lastUrl = finalUrl;
-    return { final_url: finalUrl, status, title: extracted.title, text: extracted.text, links: extracted.links, images: extracted.images };
+    // What a person sees: the layout carries meaning the text cannot (two
+    // blocks of names under two headings). Top of the page only — the model
+    // downsizes anything taller anyway, and the text covers the rest.
+    let screenshot: string | undefined;
+    if (view) {
+      try {
+        const height = await page.evaluate("Math.min(document.documentElement.scrollHeight || 900, 2880)") as number;
+        screenshot = (await page.screenshot({ type: "jpeg", quality: 55, fullPage: true, clip: { x: 0, y: 0, width: 1440, height: Math.max(600, height) } })).toString("base64");
+      } catch { /* the text still stands */ }
+    }
+    return { final_url: finalUrl, status, title: extracted.title, text: extracted.text, links: extracted.links, images: extracted.images, ...(screenshot ? { screenshot } : {}) };
   } finally {
     s.lastAt = Date.now();
     await page.close().catch(() => {});
@@ -537,7 +600,7 @@ export function checkPolicy(u: URL, policy: FetchPolicy): { offsite: boolean } {
   return { offsite: true };
 }
 
-export async function fetchPage(rawUrl: string, policy: FetchPolicy): Promise<FetchedPage> {
+export async function fetchPage(rawUrl: string, policy: FetchPolicy, opts: { view?: boolean } = {}): Promise<FetchedPage> {
   const u = checkUrl(rawUrl);
   const { offsite } = checkPolicy(u, policy);
   await assertPublic(u);
@@ -546,7 +609,7 @@ export async function fetchPage(rawUrl: string, policy: FetchPolicy): Promise<Fe
   let core: Omit<FetchedPage, "via" | "sha256" | "chars" | "url">;
   let via: "browser" | "fetch" = "browser";
   try {
-    core = await withBrowser(u);
+    core = await withBrowser(u, !!opts.view);
   } catch (e: any) {
     if (e instanceof FetchRefused) throw e;
     console.warn(`[worker] browser failed for ${u} (${e?.message ?? e}); falling back to fetch`);
@@ -596,5 +659,6 @@ export async function fetchPage(rawUrl: string, policy: FetchPolicy): Promise<Fe
     via,
     sha256: crypto.createHash("sha256").update(text).digest("hex"),
     chars: text.length,
+    ...(core.screenshot ? { screenshot: core.screenshot } : {}),
   };
 }
