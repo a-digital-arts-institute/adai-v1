@@ -124,6 +124,23 @@ describe("candidate validator", () => {
     assert.throws(() => validateCandidate({ cid: "c_02", kind: "patch", origin: "site", evidence: ev, patch: { node_id: "institution:v-a", key: "kind", proposed: "national museum of art and design" } }, []), /not in the list/);
   });
 
+  it("direction: each relation runs one way; a swapped pair is refused with 'swap'", () => {
+    const edge = (source: string, target: string, edge_type: string, existing: Candidate[] = []) =>
+      validateCandidate({ cid: "c_09", kind: "edge", origin: "site", evidence: { page_url: ev.page_url, quote: "Gerrard is represented by Pace Gallery and Fellowship" }, edge: { source, target, edge_type, confidence: "high" } }, existing);
+    // the Fellowship run: the artist "represents" the gallery
+    assert.throws(() => edge("practitioner:john-gerrard", "institution:fellowship", "REPRESENTS"), /Swap source and target/);
+    assert.equal(edge("institution:fellowship", "practitioner:john-gerrard", "REPRESENTS").kind, "edge");
+    assert.equal(edge("platform:fellowship", "practitioner:john-gerrard", "REPRESENTS").kind, "edge");
+    // cid refs take the card's type
+    const gallery = node("c_01", "Fellowship", "institution");
+    assert.throws(() => edge("practitioner:john-gerrard", "cid:c_01", "REPRESENTS", [gallery]), /got practitioner -> institution/);
+    assert.throws(() => edge("artwork:w", "practitioner:a", "EXHIBITED_AT"), /EXHIBITED_AT runs artwork -> institution\/project\/platform/);
+    assert.throws(() => edge("institution:g", "artwork:w", "EXHIBITED_AT"), /Swap/);
+    assert.equal(edge("artwork:w", "platform:verse", "EXHIBITED_AT").kind, "edge");
+    // questions are checked too
+    assert.throws(() => validateCandidate({ cid: "c_01", kind: "question", origin: "graph", question: { text: "?", if_yes: { source: "concept:x", target: "practitioner:b", edge_type: "INFLUENCES" } } }, []), /INFLUENCES runs/);
+  });
+
   it("ended: present-tense relations only, from the site, with the page as it reads now", () => {
     const ended = (over: Record<string, unknown> = {}) =>
       validateCandidate({ cid: "c_01", kind: "ended", origin: "site", evidence: ev, ended: { edge_id: "e1", edge_type: "REPRESENTS", source_id: "institution:g", target_id: "practitioner:a", summary: "no longer on the roster" }, ...over }, []);

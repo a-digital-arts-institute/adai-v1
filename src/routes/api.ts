@@ -9,6 +9,8 @@ import { YEAR_SQL_FRAGMENT, formatArtworkYear } from "../utils/year.js";
 import { NODE_NOT_RETIRED } from "../utils/visibility.js";
 import { sourceLabel } from "../utils/source-label.js";
 import { validateSourceUrl } from "../utils/contribution.js";
+import { rosterFor } from "../utils/roster.js";
+import { collapseClaims, claimsOf, CLAIM_COLS } from "../utils/claims.js";
 
 // SQL fragment that exposes the two metadata keys sourceLabel() reads. Kept
 // next to the helper so the projection and the deriver can't drift.
@@ -54,13 +56,19 @@ router.get("/api/stats", (_req, res) => {
   // equal the stream's meta stamp, or the IndexedDB cache never validates and
   // every visit re-streams. 'related' is reserved/empty today so the related
   // filter is a no-op, but pinning the clauses together keeps it that way.
+  //
+  // Counted per RELATION, not per claim row: the stream collapses several
+  // claims of one (source, type, target) into one edge with a source count
+  // (src/utils/claims.ts), so this counts distinct triples.
   const { count: curatedEdges } = db
     .prepare(
-      `SELECT COUNT(*) as count FROM edges e
-       WHERE e.valid_until IS NULL
-         AND e.created_by IS NOT '${DERIVED_CREATED_BY}'
-         AND e.source_id IN (SELECT id FROM nodes WHERE ${VISIBLE_NODES})
-         AND e.target_id IN (SELECT id FROM nodes WHERE ${VISIBLE_NODES})`
+      `SELECT COUNT(*) as count FROM (
+         SELECT 1 FROM edges e
+          WHERE e.valid_until IS NULL
+            AND e.created_by IS NOT '${DERIVED_CREATED_BY}'
+            AND e.source_id IN (SELECT id FROM nodes WHERE ${VISIBLE_NODES})
+            AND e.target_id IN (SELECT id FROM nodes WHERE ${VISIBLE_NODES})
+          GROUP BY e.source_id, e.target_id, e.edge_type)`
     )
     .get() as any;
   // Pinned to /api/graph/derived's WHERE clause for the same stamp reason.
@@ -114,16 +122,18 @@ router.get("/api/graph", (req, res) => {
   if (!typeFilter || typeFilter === "_all") {
     edgeRows = db
       .prepare(
-        `SELECT e.source_id, e.target_id, e.edge_type, e.confidence, e.created_by FROM edges e WHERE e.valid_until IS NULL AND e.source_id IN (SELECT id FROM nodes WHERE ${VISIBLE_NODES}) AND e.target_id IN (SELECT id FROM nodes WHERE ${VISIBLE_NODES})`
+        `SELECT ${CLAIM_COLS}, e.confidence FROM edges e LEFT JOIN signals s ON s.id = e.signal_id WHERE e.valid_until IS NULL AND e.source_id IN (SELECT id FROM nodes WHERE ${VISIBLE_NODES}) AND e.target_id IN (SELECT id FROM nodes WHERE ${VISIBLE_NODES}) ORDER BY e.valid_from ASC`
       )
       .all();
   } else {
     edgeRows = db
       .prepare(
-        `SELECT e.source_id, e.target_id, e.edge_type, e.confidence, e.created_by FROM edges e WHERE e.valid_until IS NULL AND e.source_id IN (SELECT id FROM nodes WHERE type = ? AND ${NODE_NOT_RETIRED}) AND e.target_id IN (SELECT id FROM nodes WHERE type = ? AND ${NODE_NOT_RETIRED})`
+        `SELECT ${CLAIM_COLS}, e.confidence FROM edges e LEFT JOIN signals s ON s.id = e.signal_id WHERE e.valid_until IS NULL AND e.source_id IN (SELECT id FROM nodes WHERE type = ? AND ${NODE_NOT_RETIRED}) AND e.target_id IN (SELECT id FROM nodes WHERE type = ? AND ${NODE_NOT_RETIRED}) ORDER BY e.valid_from ASC`
       )
       .all(typeFilter, typeFilter);
   }
+  // One edge per relation, with the number of independent sources behind it.
+  const collapsed = collapseClaims(edgeRows);
 
   res.set(JSON_HEADERS).json({
     nodes: nodeRows.map((n: any) => {
@@ -143,12 +153,13 @@ router.get("/api/graph", (req, res) => {
         ...(n.image_url ? { image_url: n.image_url } : {}),
       };
     }),
-    edges: edgeRows.map((e: any) => ({
+    edges: collapsed.map((e: any) => ({
       source: e.source_id,
       target: e.target_id,
       type: e.edge_type,
       confidence: e.confidence,
       created_by: e.created_by,
+      ...(e.origins.length > 1 ? { src: e.origins.length } : {}),
     })),
   });
 });
@@ -189,16 +200,20 @@ router.get("/api/graph/stream", (req, res) => {
   const nodeRows = db
     .prepare(`SELECT ${NODE_COLS} FROM nodes WHERE ${VISIBLE_NODES} ORDER BY name`)
     .all() as any[];
-  const edgeRows = db
+  // One edge per relation; its claim rows collapse into a source count
+  // (distinct evidence origins — src/utils/claims.ts). Pinned to the
+  // per-triple count in /api/stats curated_edges.
+  const edgeRows = collapseClaims(db
     .prepare(
-      `SELECT e.source_id, e.target_id, e.edge_type, e.confidence, e.created_by
-       FROM edges e
+      `SELECT ${CLAIM_COLS}, e.confidence
+       FROM edges e LEFT JOIN signals s ON s.id = e.signal_id
        WHERE e.valid_until IS NULL
          AND e.created_by IS NOT '${DERIVED_CREATED_BY}'
          AND e.source_id IN (SELECT id FROM nodes WHERE ${VISIBLE_NODES})
-         AND e.target_id IN (SELECT id FROM nodes WHERE ${VISIBLE_NODES})`
+         AND e.target_id IN (SELECT id FROM nodes WHERE ${VISIBLE_NODES})
+       ORDER BY e.valid_from ASC`
     )
-    .all() as any[];
+    .all() as any[]);
 
   // Per-node "intention" = count of distinct curated edge types touching it.
   // The client's /field layout orders nodes BEFORE edges arrive (artworks by
@@ -276,8 +291,9 @@ router.get("/api/graph/stream", (req, res) => {
   }
   // created_by is omitted — every curated edge carries the same constant
   // ('contributor:migration') and the client filters by type, not provenance.
+  // `src` = how many independent sources back the relation; omitted when 1.
   for (const e of edgeRows) {
-    push({ e: { source: e.source_id, target: e.target_id, type: e.edge_type, confidence: e.confidence } });
+    push({ e: { source: e.source_id, target: e.target_id, type: e.edge_type, confidence: e.confidence, ...(e.origins.length > 1 ? { src: e.origins.length } : {}) } });
   }
   if (buf) sink.write(buf);
   sink.end();
@@ -357,6 +373,8 @@ router.get("/api/edge/attribution", (req, res) => {
     date: (row.event_time || row.valid_from || "").slice(0, 10) || null,
     source_url: structuralOnly ? null : row.source_url || null,
     source_origin: row.source_origin || null,
+    // Everyone who says it, one entry per independent source.
+    sources: claimsOf(db, source, target, type),
   });
 });
 
@@ -679,5 +697,20 @@ function neighboursHandler(req: any, res: any) {
 
 // Polymorphic registration matches the rest of the slug-keyed surface.
 router.get("/api/neighbours/:type/:slug", neighboursHandler);
+
+// GET /api/roster/:type/:slug — the artists of an institution or platform,
+// read off live edges one step behind its own (src/utils/roster.ts). The
+// same list the profile page leads with, for /field and any other client.
+// Other node types get an empty roster.
+router.get("/api/roster/:type/:slug", (req, res) => {
+  const db = getDb();
+  const node = db.prepare("SELECT id, name, type, slug FROM nodes WHERE slug = ?").get(req.params.slug) as any;
+  if (!node) {
+    res.status(404).set(JSON_HEADERS).json({ error: "not found" });
+    return;
+  }
+  const roster = node.type === "institution" || node.type === "platform" ? rosterFor(db, node.id) : [];
+  res.set(JSON_HEADERS).json({ node: { id: node.id, name: node.name, type: node.type, slug: node.slug }, derived: true, roster });
+});
 
 export default router;

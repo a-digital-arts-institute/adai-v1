@@ -35,6 +35,7 @@ import { mirrorImageFromUrl, ImageFetchError } from "../utils/images.js";
 import { getSkillVersion } from "../utils/skill-version.js";
 import { embedNodeAsync } from "../embed/server.js";
 import { normaliseOrgKinds, orgKindsError, ORG_KINDS } from "../utils/org-kinds.js";
+import { checkDirection } from "../intake/candidate.js";
 import { approveIntakeItem, rejectIntakeItem } from "../utils/review.js";
 import {
   AdminActionError,
@@ -524,6 +525,13 @@ router.post("/api/v1/edges", requireToken, (req, res) => {
   const warnings: string[] = [];
   if (!CURATED_EDGE_TYPES.has(edge_type)) {
     warnings.push(`uncurated edge type "${edge_type}" — accepted, but prefer one of: EMBODIES, CREATED_BY, PRACTICES, EXHIBITED_AT, CLASSIFIED_BY, BELONGS_TO, COLLABORATES_WITH, USES_TECHNIQUE, INFLUENCES, RESPONDS_TO, PARTICIPATED_IN, PRESENTED_BY, CURATED_BY, REPRESENTS`);
+  }
+  // Direction: a warning here, not a refusal — external callers predate the
+  // table. The URL intake refuses (src/intake/candidate.ts).
+  try {
+    checkDirection({ source: source_id, target: target_id, edge_type }, (ref) => (ref.includes(":") ? ref.slice(0, ref.indexOf(":")) : null));
+  } catch (e: any) {
+    warnings.push(`direction: ${e?.message ?? e}`);
   }
   if (edge_type === "INFLUENCES" || edge_type === "RESPONDS_TO") {
     // Soft policy: these require human-attested intent (see CLAUDE.md).

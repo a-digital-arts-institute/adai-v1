@@ -8,6 +8,7 @@ import express from "express";
 import { initDb } from "../src/db.js";
 import contributorApi from "../src/routes/contributor-api.js";
 import pages from "../src/routes/pages.js";
+import api from "../src/routes/api.js";
 import { mintToken } from "../src/utils/token-mint.js";
 
 it("kind: validated on create and patch; the page shows kinds and leads with artists", async () => {
@@ -17,6 +18,7 @@ it("kind: validated on create and patch; the page shows kinds and leads with art
   app.use(express.json());
   app.use(contributorApi);
   app.use(pages);
+  app.use(api);
   const server = app.listen(0, "127.0.0.1");
   await new Promise<void>((resolve) => server.once("listening", resolve));
   const base = `http://127.0.0.1:${(server.address() as any).port}`;
@@ -47,6 +49,15 @@ it("kind: validated on create and patch; the page shows kinds and leads with art
     assert.match(html, /a project-based gallery, private art dealership and advisory/);
     assert.match(html, /artists \(1\)[\s\S]*Vera Molnár[\s\S]*1 work/);
     assert.ok(html.indexOf("artists (1)") < html.indexOf("connections ("), "artists lead");
+
+    // the same roster for /field and the JSON export
+    const slug = row.id.split(":")[1];
+    const ro = await (await fetch(`${base}/api/roster/institution/${slug}`)).json();
+    assert.deepEqual(ro.roster.map((a: any) => [a.name, a.works]), [["Vera Molnár", 1]]);
+    const data = await (await fetch(`${base}/institution/${slug}/data`)).json();
+    assert.equal(data.roster.length, 1);
+    const none = await (await fetch(`${base}/api/roster/practitioner/vera-molnar`)).json();
+    assert.deepEqual(none.roster, []);
   } finally {
     await new Promise<void>((resolve, reject) => server.close((e) => (e ? reject(e) : resolve())));
     db.close();

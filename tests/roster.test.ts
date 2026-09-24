@@ -5,6 +5,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { freshDb, insertNode } from "./helpers.js";
 import { rosterFor } from "../src/utils/roster.js";
+import { SERVER_HANDLERS } from "../src/archivist/tools.js";
 
 function edge(db: ReturnType<typeof freshDb>, s: string, t: string, type: string, live = true) {
   db.prepare(
@@ -46,4 +47,22 @@ describe("rosterFor", () => {
       ["Georg Nees", false, 1, 1],
     ]);
   });
+
+  it("the archivist's get_node carries the roster for an institution (the field and /data read the same helper)", () => {
+    const db = freshDb();
+    insertNode(db, "institution:fellowship", "institution", "Fellowship");
+    insertNode(db, "practitioner:harold-cohen", "practitioner", "Harold Cohen");
+    insertNode(db, "project:aaron", "project", "AARON");
+    edge(db, "project:aaron", "institution:fellowship", "PRESENTED_BY");
+    edge(db, "practitioner:harold-cohen", "project:aaron", "PARTICIPATED_IN");
+    const r = (SERVER_HANDLERS as any).get_node(db, { id: "institution:fellowship" });
+    assert.equal(r.roster_count, 1);
+    assert.deepEqual(r.roster[0], { id: "practitioner:harold-cohen", name: "Harold Cohen", slug: insertedSlug("Harold Cohen"), represented: false, shows: 1, works: 0 });
+    const p = (SERVER_HANDLERS as any).get_node(db, { id: "practitioner:harold-cohen" });
+    assert.equal(p.roster, undefined);
+  });
 });
+
+function insertedSlug(name: string): string {
+  return name.toLowerCase().replace(/ /g, "-");
+}

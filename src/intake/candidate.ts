@@ -40,6 +40,46 @@ export const SUGGESTABLE_EDGE_TYPES = [
 export type SuggestableEdgeType = (typeof SUGGESTABLE_EDGE_TYPES)[number];
 export const QUESTION_EDGE_TYPES = [...SUGGESTABLE_EDGE_TYPES, "INFLUENCES", "RESPONDS_TO"] as const;
 
+// Which way each relation runs, by node type (source → target). The type
+// names alone were checked before; direction was left to the prompt, and a
+// Fellowship run produced "John Gerrard REPRESENTS Fellowship" from a quote
+// that said the opposite. Matches every live edge on the graph (Sept 2026).
+const ARTIST = ["practitioner", "collective"];
+export const EDGE_DIRECTIONS: Record<string, { source: readonly string[]; target: readonly string[]; symmetric?: boolean }> = {
+  CREATED_BY: { source: ["artwork"], target: ARTIST },
+  EXHIBITED_AT: { source: ["artwork"], target: ["institution", "project", "platform"] },
+  PARTICIPATED_IN: { source: ARTIST, target: ["project"] },
+  PRESENTED_BY: { source: ["project"], target: ["institution", "platform", "collective"] },
+  CURATED_BY: { source: ["project"], target: ARTIST },
+  REPRESENTS: { source: ["institution", "platform"], target: ARTIST },
+  USES_TECHNIQUE: { source: ["artwork", ...ARTIST], target: ["concept"] },
+  EMBODIES: { source: ["artwork"], target: ["concept"] },
+  BELONGS_TO: { source: ARTIST, target: ["collective", "scene"] },
+  COLLABORATES_WITH: { source: ARTIST, target: ARTIST, symmetric: true },
+  INFLUENCES: { source: ["artwork", ...ARTIST], target: ["artwork", ...ARTIST] },
+  RESPONDS_TO: { source: ["artwork"], target: ["artwork"] },
+};
+
+/**
+ * Refuse an edge whose endpoints have the wrong types for its relation,
+ * with a message the agent can act on — a swapped pair says "swap".
+ * `typeOf` returns null when a ref's type cannot be known (then no check).
+ */
+export function checkDirection(edge: { source: string; target: string; edge_type: string }, typeOf: (ref: string) => string | null, field = "edge"): void {
+  const rule = EDGE_DIRECTIONS[edge.edge_type];
+  if (!rule) return;
+  const s = typeOf(edge.source);
+  const t = typeOf(edge.target);
+  if (!s || !t) return;
+  if (rule.source.includes(s) && rule.target.includes(t)) return;
+  const swapped = rule.source.includes(t) && rule.target.includes(s);
+  throw new CandidateError(
+    `${edge.edge_type} runs ${rule.source.join("/")} -> ${rule.target.join("/")}; got ${s} -> ${t}` +
+      (swapped ? `. Swap source and target: ${edge.target} ${edge.edge_type} ${edge.source}.` : "."),
+    `${field}.edge_type`
+  );
+}
+
 // Relations that describe the present ("represents"), as opposed to events
 // ("was shown at", 2021). An event stays true after the site moves on; a
 // present-tense claim can lapse, so a later read of the same site may
@@ -291,6 +331,16 @@ export function validateCandidate(
     }
   };
 
+  // The type of a ref: a node card's type, or the prefix of a node id.
+  const typeOfRef = (ref: string): string | null => {
+    if (isCidRef(ref)) {
+      const hit = existing.find((c) => c.cid === ref.slice(4));
+      return hit && hit.kind === "node" ? hit.node.type : null;
+    }
+    const i = ref.indexOf(":");
+    return i > 0 ? ref.slice(0, i) : null;
+  };
+
   switch (kind) {
     case "node": {
       if (!isObj(raw.node)) throw new CandidateError("node is required", "node");
@@ -337,6 +387,7 @@ export function validateCandidate(
       cidRefOk(edge.target, "edge.target");
       if (origin === "site" && !base.evidence) throw new CandidateError("edge with origin 'site' needs evidence {page_url, quote}", "evidence");
       if (origin === "embedding") throw new CandidateError("sensed (embedding) relations may only be 'known' or 'question', never 'edge'", "origin");
+      checkDirection(edge, typeOfRef, "edge");
       if (edge.edge_type === "COLLABORATES_WITH") {
         // The quote must name the other party — check the target's/source's
         // name against the quote when the referent is a candidate in this
@@ -399,6 +450,7 @@ export function validateCandidate(
       const if_yes = checkEdgeSpec(raw.question.if_yes, "question.if_yes", QUESTION_EDGE_TYPES);
       cidRefOk(if_yes.source, "question.if_yes.source");
       cidRefOk(if_yes.target, "question.if_yes.target");
+      checkDirection(if_yes, typeOfRef, "question.if_yes");
       const others = existing.filter((c) => c.kind === "question" && c.cid !== cid).length;
       if (others >= MAX_QUESTIONS) throw new CandidateError(`at most ${MAX_QUESTIONS} questions per draft`, "question");
       const answer = str(raw.question.answer, "question.answer", 1000);

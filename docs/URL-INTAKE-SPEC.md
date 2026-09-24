@@ -594,6 +594,13 @@ Tuning that followed: initial pass cap 40 → 80 tool calls (run 1 spent the who
 - **Organisation kinds.** `institution` stays one node type; `metadata.kind` is a list from `src/utils/org-kinds.ts` (museum, art centre, gallery, dealership, advisory, fair, festival, venue, auction house, archive, residency, lab, foundation, biennial, prize), with `metadata.kind_source {page_url, quote}` in the organisation's own words. Enforced in the candidate validator (node + `kind` patches) and on `/api/v1/nodes` POST/PATCH. A legacy free-text kind (the V&A's) is shown as a quote until corrected through the governed path.
 - **Snapshots** — §6.2c.
 
+## Feedback round (Sept 24, 2026): Fellowship
+
+- **Draft page script** broke on `\'` inside a TS template literal (served as a bare quote). `tests/intake-pages-script.test.ts` now parses every intake page's inline script.
+- **Direction is enforced**, not only the edge type: `EDGE_DIRECTIONS` in `src/intake/candidate.ts` (source types → target types, matching every live edge). A swapped pair is refused with "swap source and target"; questions and contributor edits are checked too. `/api/v1/edges` returns a warning instead of refusing.
+- **The roster everywhere**: `GET /api/roster/:type/:slug` (the `/field` entity panel's "artists" section), `roster` on the archivist's `get_node` (which the intake agent also uses) and on `/:type/:slug/data`.
+- **One relation, several claims**: storage stays one row per claim (the writer is in the edge id, so claims never overwrite each other). Reading collapses them — `src/utils/claims.ts`: a source is the evidence page's host, else the attesting person, else the writer stamp; three readers of one site are one source. The stream ships one edge per relation with `src` (field cache schema v5), `/api/stats curated_edges` counts relations to keep the cache stamp, `/api/edge/attribution` returns `sources[]` ("claimed by 2 sources: pacegallery.com, fellowship.xyz"), the profile page and `get_node` show one line per relation.
+
 ## Review hardening (September 2026)
 
 - Worker updates cannot modify contributor-touched cards or populate question

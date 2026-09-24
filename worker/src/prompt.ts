@@ -26,6 +26,8 @@ Suggestable from a web page, with the page as evidence (quote required):
 Never from a site: INFLUENCES, RESPONDS_TO, STYLE_KIN, VISUALLY_AFFINE, CLASSIFIED_BY.
 INFLUENCES and RESPONDS_TO reach the graph only through ask_contributor, answered yes by the contributor in their own words.
 
+Direction is checked by the server: source -> target exactly as in the table. Passive sentences flip it — "X is represented by G" is G REPRESENTS X; "the show was curated by C" is show CURATED_BY C. A refused edge says "swap": swap and propose again.
+
 A show can have more than one presenter: on a platform, a series organised by a curator or gallery is PRESENTED_BY that organiser AND PRESENTED_BY the platform hosting it — quote the page for each.`;
 
 export const DISCOVERY_ROUTINE = `DISCOVERY ROUTINE (after the site pass, before finish_pass)

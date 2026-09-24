@@ -10,6 +10,7 @@ import { formatArtworkYearFromMetadata, formatArtworkYear, YEAR_SQL_FRAGMENT } f
 import { NODE_NOT_RETIRED } from "../utils/visibility.js";
 import { sourceLabel } from "../utils/source-label.js";
 import { rosterFor } from "../utils/roster.js";
+import { collapseClaims, CLAIM_COLS } from "../utils/claims.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.join(__dirname, "..", "..");
@@ -272,11 +273,13 @@ function profileHandler(req: any, res: any) {
     }
   }
 
-  const edges = db
+  // One line per relation; several claims of it (different sources) collapse
+  // into "claimed by N sources" (src/utils/claims.ts).
+  const edges = collapseClaims(db
     .prepare(
-      "SELECT e.id, e.source_id, e.target_id, e.edge_type, e.confidence, n1.name as source_name, n1.slug as source_slug, n2.name as target_name, n2.slug as target_slug FROM edges e LEFT JOIN nodes n1 ON e.source_id = n1.id LEFT JOIN nodes n2 ON e.target_id = n2.id WHERE e.valid_until IS NULL AND (e.source_id = ? OR e.target_id = ?)"
+      `SELECT e.id, ${CLAIM_COLS}, e.confidence, n1.name as source_name, n1.slug as source_slug, n2.name as target_name, n2.slug as target_slug FROM edges e LEFT JOIN signals s ON s.id = e.signal_id LEFT JOIN nodes n1 ON e.source_id = n1.id LEFT JOIN nodes n2 ON e.target_id = n2.id WHERE e.valid_until IS NULL AND (e.source_id = ? OR e.target_id = ?) ORDER BY e.valid_from ASC`
     )
-    .all(node.id, node.id) as any[];
+    .all(node.id, node.id) as any[]);
 
   if (edges.length > 0) {
     const grouped = new Map<string, any[]>();
@@ -293,7 +296,10 @@ function profileHandler(req: any, res: any) {
         const otherName = e.source_id === node.id ? e.target_name : e.source_name;
         const otherSlug = e.source_id === node.id ? e.target_slug : e.source_slug;
         if (!otherSlug) continue;
-        body += `<li><a href='/practitioner/${encodeURIComponent(otherSlug)}'>${htmlEscape(String(otherName ?? otherSlug))}</a></li>`;
+        const claimed = e.origins.length > 1
+          ? ` <span class='meta'>— claimed by ${e.origins.length} sources: ${e.origins.map((o: { label: string }) => htmlEscape(o.label)).join(", ")}</span>`
+          : "";
+        body += `<li><a href='/practitioner/${encodeURIComponent(otherSlug)}'>${htmlEscape(String(otherName ?? otherSlug))}</a>${claimed}</li>`;
       }
       body += `</ul></div>`;
     }
@@ -467,6 +473,8 @@ function dataHandler(req: any, res: any) {
       title: s.title,
       submitted_by: s.submitted_by,
     })),
+    // Derived at read time, never stored as edges (src/utils/roster.ts).
+    ...(node.type === "institution" || node.type === "platform" ? { roster: rosterFor(db, node.id) } : {}),
   });
 }
 

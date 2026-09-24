@@ -171,7 +171,8 @@ empty — it requires evidence of artist intent, not thematic similarity.
   listing surface but stay reachable by direct URL. Applied at `/api/stats`,
   `/api/graph*` (⚠️ stamp-pinned — `total_nodes`/`curated_edges` must stay
   clause-identical to the stream queries or the `/field` IndexedDB cache never
-  validates), page listings, archivist search, `src/embed/vectors.ts loadAll`,
+  validates; `curated_edges` counts distinct (source, type, target) relations,
+  because the stream collapses several claims of one relation into one edge), page listings, archivist search, `src/embed/vectors.ts loadAll`,
   and embed backfill.
 
 ## HTTP endpoints
@@ -218,7 +219,13 @@ a later read of the same site is an update (unchanged pages skipped), and a
 present-tense relation the site no longer shows (REPRESENTS) comes back as an
 `ended` card that closes the edge bi-temporally (spec §6.2c). Institution
 pages lead with an artists roster derived at read time (`src/utils/roster.ts`);
-`metadata.kind` on an institution is a list from `src/utils/org-kinds.ts`.
+`metadata.kind` on an institution is a list from `src/utils/org-kinds.ts`
+(the roster also reaches `/field`, the archivist's `get_node` and `/:type/:slug/data`).
+Edge direction by node type is enforced for intake (`EDGE_DIRECTIONS` in
+`src/intake/candidate.ts`; a warning on `/api/v1/edges`). One relation with
+several claims is shown once, "claimed by N sources", counted by distinct
+evidence origin — the evidence page's host, else the attesting person —
+not by contributor (`src/utils/claims.ts`); `/field` threads get heavier with N.
 
 Two promises enforced in code: (1) the worker has **no graph write path** —
 `/internal/intake/tool` is an allowlist of read tools, the draft endpoints
