@@ -22,6 +22,7 @@ interface Expect {
   represents?: string[];
   represents_exact?: boolean;
   min_image_ratio?: number;
+  min_works?: number;
   min_questions?: number;
   kinds?: string[];
   subject_connected?: boolean;
@@ -69,6 +70,7 @@ function score(d: any, ex: Expect) {
     const distinctQuotes = new Set(quotes).size;
     if (quotes.length > 1) checks.push({ check: "represents quotes distinct", ok: distinctQuotes >= Math.ceil(quotes.length / 2), detail: `${distinctQuotes} distinct quotes for ${quotes.length} cards` });
   }
+  if (ex.min_works !== undefined) checks.push({ check: "works proposed", ok: works.length >= ex.min_works, detail: `${works.length} (min ${ex.min_works})` });
   if (ex.min_image_ratio !== undefined) {
     const ratio = works.length ? workImages / works.length : 1;
     checks.push({ check: "images per work", ok: ratio >= ex.min_image_ratio, detail: `${workImages}/${works.length}` });
