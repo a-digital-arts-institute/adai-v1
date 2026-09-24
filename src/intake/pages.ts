@@ -224,7 +224,7 @@ function cardBody(c) {
   if (c.kind === 'question') {
     const e = c.question.if_yes;
     return '<div class="title">' + esc(c.question.text) + '</div><div class="link">if yes: ' + refLink(e.source) + ' ' + esc(VERBS[e.edge_type] || e.edge_type) + ' ' + refLink(e.target) + '</div>' + (c.note ? '<div class="note">' + esc(c.note) + '</div>' : '') +
-      (c.question.answered_yes !== undefined ? '<div class="note">you said ' + (e.edge_type === 'COLLABORATES_WITH' ? (c.question.answered_yes ? 'they worked together' : 'only shown together') : (c.question.answered_yes ? 'yes' : 'no')) + (c.question.answer ? ': ' + esc(c.question.answer) : '') + '</div>' : c.state === 'context_only' ? '<div class="note">you don\'t know — left out</div>' : '');
+      (c.question.answered_yes !== undefined ? '<div class="note">you said ' + (e.edge_type === 'COLLABORATES_WITH' ? (c.question.answered_yes ? 'they worked together' : 'only shown together') : (c.question.answered_yes ? 'yes' : 'no')) + (c.question.answer ? ': ' + esc(c.question.answer) : '') + '</div>' : c.state === 'context_only' ? '<div class="note">you don’t know — left out</div>' : '');
   }
   if (c.kind === 'ended') {
     const e = c.ended;
@@ -244,7 +244,7 @@ function actions(c) {
     // "Did they work together, or show together?" — a shared show is already
     // in the graph (PARTICIPATED_IN); only "worked together" adds a relation.
     const collab = c.question.if_yes.edge_type === 'COLLABORATES_WITH';
-    return '<div class="actions"><button class="btn ' + (c.question.answered_yes === true ? 'on' : '') + '" data-a="yes">' + (collab ? 'Worked together' : 'Yes') + '</button><button class="btn ' + (c.question.answered_yes === false ? 'off' : '') + '" data-a="no">' + (collab ? 'Only shown together' : 'No') + '</button><button class="btn" data-a="skip">Don\'t know</button><button class="btn" data-a="edit">Add a note</button></div>' +
+    return '<div class="actions"><button class="btn ' + (c.question.answered_yes === true ? 'on' : '') + '" data-a="yes">' + (collab ? 'Worked together' : 'Yes') + '</button><button class="btn ' + (c.question.answered_yes === false ? 'off' : '') + '" data-a="no">' + (collab ? 'Only shown together' : 'No') + '</button><button class="btn" data-a="skip">Don’t know</button><button class="btn" data-a="edit">Add a note</button></div>' +
       '<div class="edit"><textarea data-f="answer" placeholder="In your own words — this becomes the record.">' + esc(c.question.answer || '') + '</textarea><button class="btn" data-a="save">Save note</button></div>';
   }
   const s = c.state;
