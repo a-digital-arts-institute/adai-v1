@@ -156,9 +156,16 @@ export async function safeFetch(raw: string, opts: SafeFetchOptions = {}): Promi
           method,
           signal: ctl.signal,
           agent: false,
+          // Answer like DNS does: asynchronously. A synchronous answer lets
+          // an immediate connect failure (ENETUNREACH on a host whose only
+          // addresses are unreachable IPv6) fire on the socket before the
+          // request has attached its listeners — an unheard 'error' that
+          // kills the process, i.e. the whole intake worker mid-draft.
           lookup: (_host, options, callback) => {
-            if (options.all) callback(null, addresses);
-            else callback(null, addresses[0]!.address, addresses[0]!.family);
+            setImmediate(() => {
+              if (options.all) callback(null, addresses);
+              else callback(null, addresses[0]!.address, addresses[0]!.family);
+            });
           },
           headers: { "user-agent": "ADAI-intake/1.0 (+https://adai-basel.fly.dev)", ...headers, "accept-encoding": "identity" },
         }, resolve);
