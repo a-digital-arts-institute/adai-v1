@@ -162,6 +162,52 @@ function contributorIdForEmail(db: DatabaseSync, email: string): string {
   return `${base}-${crypto.randomBytes(3).toString("hex")}`;
 }
 
+// ---- invites --------------------------------------------------------------
+//
+// The URL intake is invite-only: a draft spends model money, and an open
+// sign-in let anyone with an address spend the shared daily budget. An
+// email may sign in when an admin invited it (contributor_emails.invited_at)
+// and has not revoked it. INTAKE_OPEN=1 turns the check off (e.g. a local
+// demo). Bearer tokens are unaffected: they are issued by hand already.
+
+export function intakeOpen(): boolean {
+  return process.env.INTAKE_OPEN === "1";
+}
+
+export function isInvited(db: DatabaseSync, email: string): boolean {
+  if (intakeOpen()) return true;
+  const row = db.prepare("SELECT invited_at, revoked_at FROM contributor_emails WHERE email = ?").get(email) as any;
+  return !!row && !!row.invited_at && !row.revoked_at;
+}
+
+/**
+ * Record an uninvited sign-in attempt. Returns true when the admins should
+ * hear about it (first time, or a day since the last note) — the login
+ * route's answer stays the same either way (no enumeration).
+ */
+export function recordAccessRequest(db: DatabaseSync, email: string): boolean {
+  const now = nowIso();
+  const row = db.prepare("SELECT notified_at FROM intake_access_requests WHERE email = ?").get(email) as any;
+  if (!row) {
+    db.prepare("INSERT INTO intake_access_requests (email, first_at, last_at, count, notified_at) VALUES (?, ?, ?, 1, ?)").run(email, now, now, now);
+    return true;
+  }
+  const notify = !row.notified_at || row.notified_at < plusIso(-86_400_000);
+  db.prepare("UPDATE intake_access_requests SET last_at = ?, count = count + 1" + (notify ? ", notified_at = ?" : "") + " WHERE email = ?")
+    .run(...((notify ? [now, now, email] : [now, email]) as any[]));
+  return notify;
+}
+
+/** End an invite: sessions end now, unused links die. The contributor and their history stay. */
+export function revokeInvite(db: DatabaseSync, email: string): boolean {
+  const row = db.prepare("SELECT contributor_id FROM contributor_emails WHERE email = ?").get(email) as any;
+  if (!row) return false;
+  db.prepare("UPDATE contributor_emails SET revoked_at = ? WHERE email = ?").run(nowIso(), email);
+  db.prepare("DELETE FROM contributor_sessions WHERE contributor_id = ?").run(row.contributor_id);
+  db.prepare("UPDATE magic_links SET used_at = ? WHERE email = ? AND used_at IS NULL").run(nowIso(), email);
+  return true;
+}
+
 /** Look up the contributor behind an email (invited or previously logged in). */
 export function contributorByEmail(db: DatabaseSync, email: string): ContributorRecord | null {
   const row = db
@@ -183,7 +229,7 @@ export function contributorByEmail(db: DatabaseSync, email: string): Contributor
  */
 export function ensureContributorForEmail(
   db: DatabaseSync,
-  args: { email: string; name?: string | null; tier?: string | null; self_node_id?: string | null; verified?: boolean }
+  args: { email: string; name?: string | null; tier?: string | null; self_node_id?: string | null; verified?: boolean; invite?: boolean }
 ): ContributorRecord {
   const existing = contributorByEmail(db, args.email);
   if (existing) {
@@ -191,6 +237,7 @@ export function ensureContributorForEmail(
     const params: unknown[] = [];
     if (args.self_node_id !== undefined) { updates.push("self_node_id = ?"); params.push(args.self_node_id); }
     if (args.verified) { updates.push("verified_at = COALESCE(verified_at, ?)"); params.push(nowIso()); }
+    if (args.invite) { updates.push("invited_at = ?", "revoked_at = NULL"); params.push(nowIso()); }
     if (updates.length) {
       params.push(args.email);
       db.prepare(`UPDATE contributor_emails SET ${updates.join(", ")} WHERE email = ?`).run(...(params as any[]));
@@ -201,6 +248,7 @@ export function ensureContributorForEmail(
     if (args.tier && args.tier !== existing.trust_tier) {
       db.prepare("UPDATE contributors SET trust_tier = ? WHERE id = ?").run(args.tier, existing.id);
     }
+    if (args.invite) db.prepare("DELETE FROM intake_access_requests WHERE email = ?").run(args.email);
     return contributorByEmail(db, args.email)!;
   }
   const id = contributorIdForEmail(db, args.email);
@@ -210,8 +258,9 @@ export function ensureContributorForEmail(
     "INSERT INTO contributors (id, name, type, trust_tier, contributions, approved_count) VALUES (?, ?, 'human', ?, 0, 0)"
   ).run(id, name, tier);
   db.prepare(
-    "INSERT INTO contributor_emails (email, contributor_id, self_node_id, verified_at) VALUES (?, ?, ?, ?)"
-  ).run(args.email, id, args.self_node_id ?? null, args.verified ? nowIso() : null);
+    "INSERT INTO contributor_emails (email, contributor_id, self_node_id, verified_at, invited_at) VALUES (?, ?, ?, ?, ?)"
+  ).run(args.email, id, args.self_node_id ?? null, args.verified ? nowIso() : null, args.invite ? nowIso() : null);
+  if (args.invite) db.prepare("DELETE FROM intake_access_requests WHERE email = ?").run(args.email);
   return { id, name, trust_tier: tier, email: args.email, self_node_id: args.self_node_id ?? null };
 }
 
@@ -280,7 +329,7 @@ export function readSession(db: DatabaseSync, req: Request): ContributorSession 
   if (!sessionId) return null;
   const row = db
     .prepare(
-      `SELECT s.session_id, s.expires_at, c.id, c.name, c.trust_tier, e.email, e.self_node_id
+      `SELECT s.session_id, s.expires_at, c.id, c.name, c.trust_tier, e.email, e.self_node_id, e.invited_at, e.revoked_at
          FROM contributor_sessions s
          JOIN contributors c ON c.id = s.contributor_id
          LEFT JOIN contributor_emails e ON e.contributor_id = c.id
@@ -289,7 +338,8 @@ export function readSession(db: DatabaseSync, req: Request): ContributorSession 
     )
     .get(sessionId) as any;
   if (!row) return null;
-  if (row.expires_at < nowIso()) {
+  // Expired, or the invite was revoked (or never given): the session ends.
+  if (row.expires_at < nowIso() || (!intakeOpen() && (!row.invited_at || row.revoked_at))) {
     db.prepare("DELETE FROM contributor_sessions WHERE session_id = ?").run(sessionId);
     return null;
   }

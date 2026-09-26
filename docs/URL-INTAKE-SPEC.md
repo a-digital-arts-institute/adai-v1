@@ -136,7 +136,7 @@ Email never lands in a CRR. `contributors` (a CRR, no `metadata` column, and alt
 
 ### 4.3 Invites and tiers
 
-`npm run invite -- --email x@y.z --name "Name" --tier auto [--practitioner "practitioner:name"]` inserts the contributor + `contributor_emails` row up front (unverified) so that on first login the tier is already right. `--practitioner` stores `contributor_emails.self_node_id`, which lets the agent treat that node as the subject by default. Anyone who logs in without an invite becomes `probationary`; their drafts still work but go to `/review` on confirm. Nothing else changes in the tier model.
+`npm run invite -- --email x@y.z --name "Name" --tier auto [--practitioner "practitioner:name"]` inserts the contributor + `contributor_emails` row up front (unverified) so that on first login the tier is already right. `--practitioner` stores `contributor_emails.self_node_id`, which lets the agent treat that node as the subject by default. **Invite-only (Sept 26, 2026).** Only invited, unrevoked addresses (`contributor_emails.invited_at`, `revoked_at IS NULL`) get a sign-in link; `readSession` and `/auth/:token` re-check it, so a revoke ends sessions and unused links at once. An uninvited request gets the same answer (no enumeration), sends no link, and lands in `intake_access_requests`; the admins (`ADMIN_NOTIFY_EMAILS`) get at most one email a day per address. Admin endpoints: `POST /api/v1/invites` `{email, name, tier?, practitioner?, send?}`, `GET /api/v1/invites` (invites + pending requests), `POST /api/v1/invites/revoke` `{email}` — SKILL.md §4.6b. `INTAKE_OPEN=1` disables the check (local demos). Bearer tokens (`/api/v1`, usable on `/api/intake/*`) are unaffected — they are issued by hand.
 
 ### 4.4 Magic links in notification emails
 

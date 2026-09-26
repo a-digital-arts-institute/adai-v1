@@ -726,6 +726,30 @@ Un-retiring is deliberate manual work: `PATCH /api/v1/nodes/:id` with
 brings the node back into listings, but its superseded edges stay
 superseded — re-attest the ones that should live again (§1.4).
 
+### 4.6b Invite someone to the URL intake (who may read websites into A(DAI))
+
+The URL intake (`/contribute` — paste a website, the agent proposes cards) is
+**invite-only**: every read costs model money, so only invited addresses get a
+sign-in link. Anyone else who asks is recorded as a pending request, and the
+admins get an email about it.
+
+```bash
+# Invite (name = their public attribution; tier as in §4.1; practitioner = the node they ARE, optional)
+curl -s -X POST "$ADAI_BASE/api/v1/invites" -H "Authorization: Bearer $ADAI_TOKEN" -H 'content-type: application/json' \
+  -d '{"email":"irina@example.org","name":"Irina","tier":"reviewed","send":true}' | jq
+# Who is invited, and who asked without an invite
+curl -s "$ADAI_BASE/api/v1/invites" -H "Authorization: Bearer $ADAI_TOKEN" | jq '{invites: [.invites[] | {email,name,trust_tier,revoked_at,drafts}], requests}'
+# Revoke: their sessions end at once; their contributions and drafts stay
+curl -s -X POST "$ADAI_BASE/api/v1/invites/revoke" -H "Authorization: Bearer $ADAI_TOKEN" -H 'content-type: application/json' \
+  -d '{"email":"irina@example.org"}' | jq
+```
+
+`send: true` emails them a sign-in link now; without it they sign in at
+`/contribute` whenever they like. Ask the operator before inviting at
+`auto` tier — auto means their confirmed drafts go live without review.
+Treat the email addresses in these responses as private: never paste them
+into a signal, a node, or anywhere public.
+
 ### 4.7 Batch rollback — "delete and start again"
 
 The big one. When an upload session went wrong (wrong CSV, wrong artist

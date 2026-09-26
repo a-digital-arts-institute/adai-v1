@@ -36,6 +36,8 @@ import { getSkillVersion } from "../utils/skill-version.js";
 import { embedNodeAsync } from "../embed/server.js";
 import { normaliseOrgKinds, orgKindsError, ORG_KINDS } from "../utils/org-kinds.js";
 import { checkDirection } from "../intake/candidate.js";
+import { ensureContributorForEmail, normaliseEmail, revokeInvite, intakeOpen } from "../intake/auth.js";
+import { sendLoginEmail } from "../intake/mail.js";
 import { approveIntakeItem, rejectIntakeItem } from "../utils/review.js";
 import {
   AdminActionError,
@@ -763,6 +765,55 @@ router.get("/api/v1/beta-signups", requireAdmin, (req, res) => {
     .all(limit);
   const { total } = db.prepare("SELECT COUNT(*) AS total FROM beta_signups").get() as any;
   res.set(JSON_HEADERS).json({ total, returned: items.length, items });
+});
+
+// ---- URL-intake invites (admin) --------------------------------------------
+// The URL intake is invite-only (src/intake/auth.ts). These are the admin
+// skill's handle on it: invite, list (with pending access requests), revoke.
+// Emails appear only here, behind requireAdmin; they never enter a CRR.
+
+router.post("/api/v1/invites", requireAdmin, async (req, res) => {
+  const db = getDb();
+  const b = req.body ?? {};
+  const email = normaliseEmail(b.email);
+  const name = typeof b.name === "string" ? b.name.trim() : "";
+  const tier = typeof b.tier === "string" ? b.tier : "probationary";
+  const practitioner = typeof b.practitioner === "string" && b.practitioner ? b.practitioner : null;
+  if (!email) { res.status(400).set(JSON_HEADERS).json({ error: "email is required" }); return; }
+  if (!name) { res.status(400).set(JSON_HEADERS).json({ error: "name is required — it is the public attribution on their contributions" }); return; }
+  if (!["auto", "reviewed", "probationary"].includes(tier)) { res.status(400).set(JSON_HEADERS).json({ error: "tier must be auto | reviewed | probationary" }); return; }
+  if (practitioner && !db.prepare("SELECT 1 FROM nodes WHERE id = ?").get(practitioner)) {
+    res.status(400).set(JSON_HEADERS).json({ error: `practitioner node '${practitioner}' does not exist` });
+    return;
+  }
+  const c = ensureContributorForEmail(db, { email, name, tier, self_node_id: practitioner ?? undefined, invite: true });
+  let sent = false;
+  if (b.send === true) {
+    try { await sendLoginEmail(db, email, null, "/contribute"); sent = true; } catch (e: any) { console.error("[invites] send failed:", e?.message ?? e); }
+  }
+  res.status(201).set(JSON_HEADERS).json({ invited: { email: c.email, contributor_id: c.id, name: c.name, trust_tier: c.trust_tier, self_node_id: c.self_node_id }, link_sent: sent });
+});
+
+router.get("/api/v1/invites", requireAdmin, (_req, res) => {
+  const db = getDb();
+  const invites = db
+    .prepare(
+      `SELECT e.email, c.name, c.trust_tier, e.self_node_id, e.invited_at, e.revoked_at, e.verified_at,
+              (SELECT MAX(last_seen_at) FROM contributor_sessions s WHERE s.contributor_id = c.id) AS last_seen_at,
+              (SELECT COUNT(*) FROM drafts d WHERE d.contributor_id = c.id) AS drafts
+         FROM contributor_emails e JOIN contributors c ON c.id = e.contributor_id
+        ORDER BY e.invited_at DESC`
+    )
+    .all();
+  const requests = db.prepare("SELECT email, first_at, last_at, count FROM intake_access_requests ORDER BY last_at DESC LIMIT 200").all();
+  res.set(JSON_HEADERS).json({ invite_only: !intakeOpen(), invites, requests });
+});
+
+router.post("/api/v1/invites/revoke", requireAdmin, (req, res) => {
+  const email = normaliseEmail(req.body?.email);
+  if (!email) { res.status(400).set(JSON_HEADERS).json({ error: "email is required" }); return; }
+  if (!revokeInvite(getDb(), email)) { res.status(404).set(JSON_HEADERS).json({ error: "no such invite", email }); return; }
+  res.set(JSON_HEADERS).json({ revoked: email, note: "sessions ended; their contributions and drafts stay" });
 });
 
 router.get("/api/v1/tokens", requireAdmin, (req, res) => {

@@ -10,6 +10,8 @@ import { JSON_HEADERS, HTML_HEADERS, htmlPage } from "../templates.js";
 import {
   normaliseEmail,
   loginRateOk,
+  isInvited,
+  recordAccessRequest,
   clientIp,
   consumeMagicLink,
   ensureContributorForEmail,
@@ -40,7 +42,7 @@ import {
   DraftError,
 } from "../intake/draft.js";
 import { CandidateError } from "../intake/candidate.js";
-import { sendLoginEmail, sendReceiptEmail } from "../intake/mail.js";
+import { sendLoginEmail, sendReceiptEmail, sendAccessRequestEmail } from "../intake/mail.js";
 import { spawnAsync } from "../intake/spawn.js";
 import { contributePage, draftPage, batchPage } from "../intake/pages.js";
 
@@ -80,7 +82,10 @@ router.post("/api/intake/login", async (req, res) => {
   sweepAuth(db);
   const redirect = typeof req.body?.redirect === "string" ? req.body.redirect : "/contribute";
   try {
-    await sendLoginEmail(db, email, ip, redirect);
+    // Invite-only: a link goes to invited addresses; anyone else becomes an
+    // access request for the admins. Same answer to the caller either way.
+    if (isInvited(db, email)) await sendLoginEmail(db, email, ip, redirect);
+    else if (recordAccessRequest(db, email)) await sendAccessRequestEmail(email);
   } catch (e: any) {
     console.error("[intake] login email failed:", e?.message ?? e);
   }
@@ -103,6 +108,11 @@ router.get("/auth/:token", (req, res) => {
     }
     const why = r.reason === "expired" ? "That link has expired." : r.reason === "used" ? "That link was already used." : "That link is not valid.";
     res.status(400).set(HTML_HEADERS).send(htmlPage("Sign in", `<h2>${why}</h2><p><a href="/contribute">Request a new one.</a></p>`));
+    return;
+  }
+  // A link issued before an invite was revoked must not open a session.
+  if (!isInvited(db, r.email)) {
+    res.status(403).set(HTML_HEADERS).send(htmlPage("Sign in", "<h2>This address is not invited to the URL intake.</h2><p>Your request has been passed on to the A(DAI) team.</p>"));
     return;
   }
   const c = contributorByEmail(db, r.email) ?? ensureContributorForEmail(db, { email: r.email, verified: true });

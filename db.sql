@@ -273,9 +273,21 @@ CREATE TABLE IF NOT EXISTS contributor_emails (
     contributor_id  TEXT NOT NULL,
     self_node_id    TEXT,                           -- practitioner node the contributor is (from the invite)
     verified_at     TEXT,
-    created_at      TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+    created_at      TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+    invited_at      TEXT,                           -- the URL intake is invite-only: NULL = may not sign in
+    revoked_at      TEXT                            -- set by an admin; sessions end at once
 );
 CREATE INDEX IF NOT EXISTS idx_contributor_emails_contributor ON contributor_emails(contributor_id);
+
+-- Uninvited addresses that asked for a sign-in link: the admins' "pending"
+-- list (GET /api/v1/invites). Local; never a CRR.
+CREATE TABLE IF NOT EXISTS intake_access_requests (
+    email           TEXT PRIMARY KEY NOT NULL,      -- lowercased
+    first_at        TEXT NOT NULL,
+    last_at         TEXT NOT NULL,
+    count           INTEGER NOT NULL DEFAULT 1,
+    notified_at     TEXT                            -- last admin email about it (at most daily)
+);
 
 -- Drafts double as the job queue: a row with job IS NOT NULL is claimable by
 -- the intake worker; a claim older than 20 min with no heartbeat is

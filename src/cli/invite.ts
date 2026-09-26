@@ -43,7 +43,7 @@ async function main() {
       process.exit(1);
     }
   }
-  const c = ensureContributorForEmail(db, { email, name, tier, self_node_id: practitioner ?? undefined });
+  const c = ensureContributorForEmail(db, { email, name, tier, self_node_id: practitioner ?? undefined, invite: true });
   console.log(JSON.stringify({ contributor_id: c.id, name: c.name, trust_tier: c.trust_tier, email: c.email, self_node_id: c.self_node_id }));
   if (send) {
     await sendLoginEmail(db, email, null, "/contribute");

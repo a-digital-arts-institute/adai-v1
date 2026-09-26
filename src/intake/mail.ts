@@ -32,6 +32,19 @@ export async function sendLoginEmail(db: DatabaseSync, email: string, ip: string
   await send(email, "Your A(DAI) sign-in link", text);
 }
 
+/** To the admins (ADMIN_NOTIFY_EMAILS): an uninvited address asked to sign in. */
+export async function sendAccessRequestEmail(email: string): Promise<void> {
+  const admins = replyTo();
+  if (!admins.length) return;
+  const text =
+    `${email} asked for a sign-in link to the A(DAI) URL intake, which is invite-only.\n\n` +
+    `To invite them (admin token, or ask Claude with the admin skill):\n` +
+    `  POST ${baseUrl()}/api/v1/invites {"email": "${email}", "name": "…", "send": true}\n` +
+    `or: just invite-prod ${email} "Name" probationary\n\n` +
+    `Pending requests: GET ${baseUrl()}/api/v1/invites`;
+  for (const to of admins) await send(to, `A(DAI) access request: ${email}`, text);
+}
+
 export function candidateCounts(d: Draft): { works: number; shows: number; people: number; images: number; questions: number; known: number } {
   let works = 0, shows = 0, people = 0, images = 0, questions = 0, known = 0;
   for (const c of d.candidates) {

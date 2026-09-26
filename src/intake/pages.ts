@@ -110,12 +110,12 @@ const app = $('#app');
 function loginForm(msg) {
   app.innerHTML = (msg ? '<div class="msg msg-ok">' + esc(msg) + '</div>' : '') +
     '<form id="f"><label>your email</label><div class="row"><input type="email" name="email" required placeholder="you@studio.example" autocomplete="email"><button class="btn primary" type="submit">Send me a link</button></div>' +
-    '<p class="lede" style="margin-top:10px">No password. We email you a sign-in link that works once.</p></form>';
+    '<p class="lede" style="margin-top:10px">No password. The URL intake is by invitation: invited addresses get a sign-in link that works once.</p></form>';
   $('#f').onsubmit = async (e) => {
     e.preventDefault();
     const b = $('button', e.target); b.disabled = true;
     const r = await api('POST', '/api/intake/login', { email: e.target.email.value });
-    if (r.ok) app.innerHTML = '<div class="msg msg-ok">Check your inbox. The link is valid for 15 minutes.</div>';
+    if (r.ok) app.innerHTML = '<div class="msg msg-ok">If this address is invited, a sign-in link is on its way (valid for 15 minutes). If not, your request has been passed on to the A(DAI) team.</div>';
     else { b.disabled = false; alertMsg(r.json && r.json.message || 'could not send'); }
   };
 }

@@ -15,6 +15,9 @@ import {
   normaliseEmail,
   cookieHeader,
   SESSION_COOKIE,
+  isInvited,
+  recordAccessRequest,
+  revokeInvite,
 } from "../src/intake/auth.js";
 
 before(() => {
@@ -99,7 +102,7 @@ describe("contributors from email", () => {
 describe("sessions", () => {
   it("cookie round trip, tamper rejection, delete revokes", () => {
     const db = freshDb();
-    const c = ensureContributorForEmail(db, { email: "a@example.org", name: "A", tier: "reviewed", verified: true });
+    const c = ensureContributorForEmail(db, { email: "a@example.org", name: "A", tier: "reviewed", verified: true, invite: true });
     const { session_id, signed } = issueSession(db, c.id);
     const cookie = cookieHeader(signed, 100, false).split(";")[0]!;
     const s = readSession(db, fakeReq(cookie));
@@ -122,5 +125,46 @@ describe("sessions", () => {
     db.prepare("UPDATE contributor_sessions SET expires_at = '2000-01-01T00:00:00Z'").run();
     assert.equal(readSession(db, fakeReq(`${SESSION_COOKIE}=${encodeURIComponent(signed)}`)), null);
     assert.equal((db.prepare("SELECT COUNT(*) AS n FROM contributor_sessions").get() as any).n, 0);
+  });
+});
+
+describe("invite-only", () => {
+  it("only invited, unrevoked addresses may hold a session; revoking ends it at once", () => {
+    const db = freshDb();
+    const stranger = ensureContributorForEmail(db, { email: "s@example.org", verified: true });
+    assert.equal(isInvited(db, "s@example.org"), false);
+    const s1 = issueSession(db, stranger.id);
+    assert.equal(readSession(db, fakeReq(cookieHeader(s1.signed, 100, false).split(";")[0]!)), null, "uninvited: no session");
+
+    const invited = ensureContributorForEmail(db, { email: "i@example.org", name: "Irina", invite: true });
+    assert.equal(isInvited(db, "i@example.org"), true);
+    const s2 = issueSession(db, invited.id);
+    const cookie = cookieHeader(s2.signed, 100, false).split(";")[0]!;
+    assert.ok(readSession(db, fakeReq(cookie)));
+    assert.equal(revokeInvite(db, "i@example.org"), true);
+    assert.equal(isInvited(db, "i@example.org"), false);
+    assert.equal(readSession(db, fakeReq(cookie)), null, "revoked: session gone");
+    // re-inviting restores access; the contributor (and their history) is the same
+    const again = ensureContributorForEmail(db, { email: "i@example.org", invite: true });
+    assert.equal(again.id, invited.id);
+    assert.equal(isInvited(db, "i@example.org"), true);
+  });
+
+  it("an unused link dies with the invite", () => {
+    const db = freshDb();
+    ensureContributorForEmail(db, { email: "i@example.org", name: "I", invite: true });
+    const link = issueMagicLink(db, { email: "i@example.org", purpose: "login", redirect: null, ip: null });
+    revokeInvite(db, "i@example.org");
+    const raw = link.url.split("/auth/")[1]!;
+    assert.equal(consumeMagicLink(db, raw).ok, false);
+  });
+
+  it("access requests notify the admins at most daily, and an invite clears the request", () => {
+    const db = freshDb();
+    assert.equal(recordAccessRequest(db, "x@example.org"), true);
+    assert.equal(recordAccessRequest(db, "x@example.org"), false);
+    assert.equal((db.prepare("SELECT count FROM intake_access_requests WHERE email = 'x@example.org'").get() as any).count, 2);
+    ensureContributorForEmail(db, { email: "x@example.org", name: "X", invite: true });
+    assert.equal(db.prepare("SELECT 1 FROM intake_access_requests WHERE email = 'x@example.org'").get(), undefined);
   });
 });

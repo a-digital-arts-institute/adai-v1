@@ -46,6 +46,15 @@ function runMigrations(db: DatabaseSync) {
   } catch (e: any) {
     if (!String(e?.message ?? e).includes("duplicate column name")) throw e;
   }
+  // contributor_emails.invited_at / revoked_at (Sept 2026): the URL intake
+  // became invite-only. Same idempotent pattern.
+  for (const col of ["invited_at", "revoked_at"]) {
+    try {
+      db.exec(`ALTER TABLE contributor_emails ADD COLUMN ${col} TEXT`);
+    } catch (e: any) {
+      if (!String(e?.message ?? e).includes("duplicate column name")) throw e;
+    }
+  }
 }
 
 export function getDb(): DatabaseSync {

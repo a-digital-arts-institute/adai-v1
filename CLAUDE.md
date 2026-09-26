@@ -101,12 +101,14 @@ just intake-dev                # first run installs worker deps + Chromium; Ctrl
 ```
 
 Then:
-1. http://localhost:8080/contribute → your email → "Send me a link".
-2. Copy the `http://localhost:8080/auth/…` line from the terminal into the
+1. The intake is **invite-only**: invite yourself first or no link is sent
+   (`just invite you@x.y "Name" auto [practitioner:slug]`; `probationary`
+   confirms go to `/review`). `INTAKE_OPEN=1` in `.env` skips the check.
+   On prod: `just invite-prod …` or the admin endpoints `/api/v1/invites`
+   (SKILL.md §4.6b).
+2. http://localhost:8080/contribute → your email → "Send me a link".
+3. Copy the `http://localhost:8080/auth/…` line from the terminal into the
    browser (single use, 15 min). Set a display name when asked.
-3. Uninvited logins are `probationary` (confirm → `/review`). For the
-   auto-merge path invite yourself first:
-   `just invite you@x.y "Name" auto [practitioner:slug]`.
 4. Paste a URL (a big site like reas.com takes ~5 min and ~$0.75 of Sonnet 5;
    a small portfolio is quicker) → `/draft/:id` polls every 3 s as cards
    appear → accept / reject / edit / answer / chat → Confirm → `/batch/:id`.
@@ -226,6 +228,10 @@ Edge direction by node type is enforced for intake (`EDGE_DIRECTIONS` in
 several claims is shown once, "claimed by N sources", counted by distinct
 evidence origin — the evidence page's host, else the attesting person —
 not by contributor (`src/utils/claims.ts`); `/field` threads get heavier with N.
+
+Sign-in is **invite-only** (`contributor_emails.invited_at`; admin
+`POST/GET /api/v1/invites`, `POST /api/v1/invites/revoke`); uninvited requests
+land in `intake_access_requests` and email the admins.
 
 Two promises enforced in code: (1) the worker has **no graph write path** —
 `/internal/intake/tool` is an allowlist of read tools, the draft endpoints
