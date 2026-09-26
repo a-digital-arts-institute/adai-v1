@@ -1025,10 +1025,17 @@
         : { dash: [], width: 1, alpha: 1 });
   }
 
+  // Gravity from agreement: a relation several independent sources state
+  // (edge.src — distinct evidence origins, not contributors) draws heavier.
+  function sourceWeight(item) {
+    const n = (item && item.edge && item.edge.src) || 1;
+    return n > 1 ? Math.min(2.2, 1 + 0.7 * Math.log2(n)) : 1;
+  }
+
   function applyEdgeThreadStyle(ctx, item, baseAlpha, baseWidth) {
     const style = edgeThreadStyle(item);
     const alpha = clamp(baseAlpha * (style.alpha || 1), 0, 1);
-    const width = Math.max(0.45, baseWidth * (style.width || 1));
+    const width = Math.max(0.45, baseWidth * (style.width || 1) * sourceWeight(item));
     const dash = style.dash || [];
     ctx.globalAlpha = alpha;
     ctx.strokeStyle = item.edgeColor || '#888';
@@ -1922,6 +1929,25 @@
   function renderEdgeAttrib(data, edgeType, x, y) {
     const el = edgeAttribEl();
     const color = colorForEdge(edgeType);
+    // Several independent sources: one line, everyone who says it underneath.
+    const sources = Array.isArray(data.sources) ? data.sources : [];
+    if (sources.length > 1) {
+      const items = sources.map((s) => {
+        const label = escapeForBreadcrumb(s.label || 'unknown');
+        return s.source_url && /^https?:\/\//i.test(s.source_url)
+          ? `<a href="${escapeForBreadcrumb(s.source_url)}" target="_blank" rel="noopener" style="color:#7eb8da;text-decoration:underline dotted;text-underline-offset:2px">${label}</a>`
+          : `<span style="color:#c8c8c8">${label}</span>`;
+      });
+      el.innerHTML =
+        `<div style="color:${color};font-size:9px;letter-spacing:0.08em;margin-bottom:2px">${escapeForBreadcrumb(edgeType)}</div>` +
+        `claimed by <span style="color:#c8c8c8">${sources.length} sources</span>: ${items.join(', ')}`;
+      el.style.display = 'block';
+      const pad = 14;
+      const rect = el.getBoundingClientRect();
+      el.style.left = `${Math.max(8, Math.min(x + pad, window.innerWidth - rect.width - 8))}px`;
+      el.style.top = `${Math.max(8, Math.min(y + pad, window.innerHeight - rect.height - 8))}px`;
+      return;
+    }
     const parts = [`attested by <span style="color:#c8c8c8">${escapeForBreadcrumb(data.attested_by || 'unknown')}</span>`];
     // Mechanical API titles ("Add edge X: a → b") restate the header — skip.
     if (data.basis && !/^Add (edge|node|signal)\b/.test(data.basis)) parts.push(escapeForBreadcrumb(data.basis));
@@ -2657,8 +2683,9 @@
       STYLE_PROXIMITY: 6,
     }[item.edgeType] || 4;
     const similarity = typeof item.similarity === 'number' ? item.similarity * 20 : 0;
+    const sources = item.edge && item.edge.src > 1 ? 10 * (item.edge.src - 1) : 0;
     const distancePenalty = focusPoint && point ? Math.hypot(point.x - focusPoint.x, point.y - focusPoint.y) / 120 : 0;
-    return directBonus + confidence + typeBonus + similarity - distancePenalty;
+    return directBonus + confidence + typeBonus + similarity + sources - distancePenalty;
   }
 
   function roundedRectPath(ctx, rect, radius = 3) {

@@ -9,6 +9,8 @@ import { buildEmbeddingSections } from "../embed/sections.js";
 import { formatArtworkYearFromMetadata, formatArtworkYear, YEAR_SQL_FRAGMENT } from "../utils/year.js";
 import { NODE_NOT_RETIRED } from "../utils/visibility.js";
 import { sourceLabel } from "../utils/source-label.js";
+import { rosterFor } from "../utils/roster.js";
+import { collapseClaims, CLAIM_COLS } from "../utils/claims.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.join(__dirname, "..", "..");
@@ -131,7 +133,7 @@ function profileHandler(req: any, res: any) {
         const maxW = isPortrait ? "240px" : "480px";
         const altText = htmlEscape(`${node.name} — ${node.type}`);
         body += `<figure style='margin:1rem 0;max-width:${maxW}'>` +
-          `<img src='${htmlEscape(String(imgSrc))}' alt='${altText}' ` +
+          `<img src='${htmlEscape(String(imgSrc))}' alt='${altText}' crossorigin='anonymous' ` +
           `style='width:100%;height:auto;border-radius:6px;display:block' loading='lazy' />`;
         if (meta.image_source || meta.image_license) {
           const parts: string[] = [];
@@ -144,6 +146,18 @@ function profileHandler(req: any, res: any) {
 
       if (meta.status) {
         body += `<p class='meta'>Status: <span class='tag'>${htmlEscape(String(meta.status))}</span></p>`;
+      }
+
+      // What the organisation says it is (src/utils/org-kinds.ts): several
+      // kinds from a fixed list, with its own words when we have them. A
+      // legacy free-text kind is shown as the description it is.
+      if (node.type === "institution" && meta.kind) {
+        const src = meta.kind_source && typeof meta.kind_source === "object" ? meta.kind_source : null;
+        const kinds = Array.isArray(meta.kind) ? meta.kind.map(String) : null;
+        body += `<p class='meta'>` +
+          (kinds ? kinds.map((k: string) => `<span class='tag'>${htmlEscape(k)}</span>`).join(" ") : `“${htmlEscape(String(meta.kind))}”`) +
+          (src?.quote ? ` <span class='meta'>— “${htmlEscape(String(src.quote))}”${typeof src.page_url === "string" && /^https?:\/\//i.test(src.page_url) ? ` <a href='${htmlEscape(src.page_url)}' target='_blank' rel='noopener'>source</a>` : ""}</span>` : "") +
+          `</p>`;
       }
 
       // Upstream provenance — same label the field's entity-view footer shows
@@ -214,6 +228,26 @@ function profileHandler(req: any, res: any) {
     }
   }
 
+  // A gallery / venue / platform page leads with its artists. Derived from
+  // live edges at read time (src/utils/roster.ts) — never stored as edges.
+  if (node.type === "institution" || node.type === "platform") {
+    const roster = rosterFor(db, node.id);
+    if (roster.length) {
+      const LIMIT = 300;
+      body += `<h3>artists (${roster.length})</h3><p class='meta'>Read off this graph: represented here, in shows presented here, or with works shown here.</p><ul class='edge-list'>`;
+      for (const a of roster.slice(0, LIMIT)) {
+        const why = [
+          a.represented ? (a.estate ? "estate represented" : "represented") : "",
+          a.shows ? `${a.shows} show${a.shows === 1 ? "" : "s"}` : "",
+          a.works ? `${a.works} work${a.works === 1 ? "" : "s"}` : "",
+        ].filter(Boolean).join(" · ");
+        body += `<li><a href='/${htmlEscape(a.type)}/${encodeURIComponent(a.slug)}'>${htmlEscape(a.name)}</a>${a.estate ? " <span class='meta'>(estate)</span>" : ""} <span class='meta'>${htmlEscape(why)}</span></li>`;
+      }
+      if (roster.length > LIMIT) body += `<li class='meta'>and ${roster.length - LIMIT} more</li>`;
+      body += `</ul>`;
+    }
+  }
+
   // Honor consent_scope='structural_only': the contributor was promised
   // "only the edge counts, not the content" — so we hide title/summary/
   // content for those signals here too. Their edges are still rendered
@@ -239,11 +273,13 @@ function profileHandler(req: any, res: any) {
     }
   }
 
-  const edges = db
+  // One line per relation; several claims of it (different sources) collapse
+  // into "claimed by N sources" (src/utils/claims.ts).
+  const edges = collapseClaims(db
     .prepare(
-      "SELECT e.id, e.source_id, e.target_id, e.edge_type, e.confidence, n1.name as source_name, n1.slug as source_slug, n2.name as target_name, n2.slug as target_slug FROM edges e LEFT JOIN nodes n1 ON e.source_id = n1.id LEFT JOIN nodes n2 ON e.target_id = n2.id WHERE e.valid_until IS NULL AND (e.source_id = ? OR e.target_id = ?)"
+      `SELECT e.id, ${CLAIM_COLS}, e.confidence, n1.name as source_name, n1.slug as source_slug, n2.name as target_name, n2.slug as target_slug FROM edges e LEFT JOIN signals s ON s.id = e.signal_id LEFT JOIN nodes n1 ON e.source_id = n1.id LEFT JOIN nodes n2 ON e.target_id = n2.id WHERE e.valid_until IS NULL AND (e.source_id = ? OR e.target_id = ?) ORDER BY e.valid_from ASC`
     )
-    .all(node.id, node.id) as any[];
+    .all(node.id, node.id) as any[]);
 
   if (edges.length > 0) {
     const grouped = new Map<string, any[]>();
@@ -260,7 +296,10 @@ function profileHandler(req: any, res: any) {
         const otherName = e.source_id === node.id ? e.target_name : e.source_name;
         const otherSlug = e.source_id === node.id ? e.target_slug : e.source_slug;
         if (!otherSlug) continue;
-        body += `<li><a href='/practitioner/${encodeURIComponent(otherSlug)}'>${htmlEscape(String(otherName ?? otherSlug))}</a></li>`;
+        const claimed = e.origins.length > 1
+          ? ` <span class='meta'>— claimed by ${e.origins.length} sources: ${e.origins.map((o: { label: string }) => htmlEscape(o.label)).join(", ")}</span>`
+          : "";
+        body += `<li><a href='/practitioner/${encodeURIComponent(otherSlug)}'>${htmlEscape(String(otherName ?? otherSlug))}</a>${claimed}</li>`;
       }
       body += `</ul></div>`;
     }
@@ -354,7 +393,7 @@ function renderNeighbourList(neighbours: Neighbour[]): string {
     const nameEsc = htmlEscape(String(n.name ?? n.node_id));
     const typeEsc = htmlEscape(String(n.type ?? "?"));
     const thumb = img
-      ? `<img src='${htmlEscape(String(img))}' alt='${nameEsc}' style='width:96px;height:96px;object-fit:cover;border-radius:4px;display:block' loading='lazy' />`
+      ? `<img src='${htmlEscape(String(img))}' alt='${nameEsc}' crossorigin='anonymous' style='width:96px;height:96px;object-fit:cover;border-radius:4px;display:block' loading='lazy' />`
       : `<div style='width:96px;height:96px;background:#181818;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:#666;text-align:center;padding:0.4rem;box-sizing:border-box'>${nameEsc.slice(0, 40)}</div>`;
     const yearTag = n.year ? ` <span class='meta'>(${htmlEscape(String(n.year))})</span>` : "";
     s += `<a href='${url}' style='display:block;width:108px;text-decoration:none;color:inherit'>
@@ -434,6 +473,8 @@ function dataHandler(req: any, res: any) {
       title: s.title,
       submitted_by: s.submitted_by,
     })),
+    // Derived at read time, never stored as edges (src/utils/roster.ts).
+    ...(node.type === "institution" || node.type === "platform" ? { roster: rosterFor(db, node.id) } : {}),
   });
 }
 
@@ -551,7 +592,7 @@ function renderNeighbourTable(neighbours: Neighbour[]): string {
     const nameEsc = htmlEscape(String(n.name ?? n.node_id));
     const typeEsc = htmlEscape(String(n.type ?? "?"));
     const thumb = img
-      ? `<img src='${htmlEscape(String(img))}' alt='' style='width:72px;height:72px;object-fit:cover;border-radius:3px;display:block' loading='lazy' />`
+      ? `<img src='${htmlEscape(String(img))}' alt='' crossorigin='anonymous' style='width:72px;height:72px;object-fit:cover;border-radius:3px;display:block' loading='lazy' />`
       : `<div style='width:72px;height:72px;background:#181818;border-radius:3px'></div>`;
     s += `<tr style='border-bottom:1px solid #1a1a1a'>
   <td style='padding:0.4rem 0.6rem'>${thumb}</td>
@@ -565,7 +606,9 @@ function renderNeighbourTable(neighbours: Neighbour[]): string {
 }
 
 // GET /contribute — contribution form
-router.get("/contribute", (_req, res) => {
+// Legacy signal form. The URL intake (src/routes/intake.ts) owns /contribute;
+// this page stays reachable for the token/assistant path described on it.
+router.get("/contribute/signal", (_req, res) => {
   const db = getDb();
   const entities = db
     .prepare(`SELECT id, name, slug FROM nodes WHERE type NOT IN ${ENTITY_TYPES_EXCLUDE} AND ${NODE_NOT_RETIRED} ORDER BY name`)
@@ -757,6 +800,8 @@ router.get("/review", (req, res) => {
               body += `<li>patch metadata of <code>${htmlEscape(String(op.node_id))}</code> — keys: ${htmlEscape(keys)}</li>`;
             } else if (op?.op === "attach_image") {
               body += `<li>attach image to <code>${htmlEscape(String(op.node_id))}</code> — <a href='${htmlEscape(String(op.cdn_image_url))}' target='_blank'>preview</a> (sha256: <code>${htmlEscape(String(op.sha256).slice(0, 12))}…</code>)</li>`;
+            } else if (op?.op === "end_edge") {
+              body += `<li>end relation <code>${htmlEscape(String(op.edge_id))}</code> — the source no longer shows it (nothing is deleted; the edge becomes historical)</li>`;
             } else {
               body += `<li>${htmlEscape(JSON.stringify(op))}</li>`;
             }

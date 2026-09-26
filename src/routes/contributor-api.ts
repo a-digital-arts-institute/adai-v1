@@ -31,8 +31,13 @@ import {
   type ProposedNodeOp,
 } from "../utils/contribution.js";
 import { uploadImage, isR2Configured } from "../r2.js";
+import { mirrorImageFromUrl, ImageFetchError } from "../utils/images.js";
 import { getSkillVersion } from "../utils/skill-version.js";
 import { embedNodeAsync } from "../embed/server.js";
+import { normaliseOrgKinds, orgKindsError, ORG_KINDS } from "../utils/org-kinds.js";
+import { checkDirection } from "../intake/candidate.js";
+import { ensureContributorForEmail, normaliseEmail, revokeInvite, intakeOpen } from "../intake/auth.js";
+import { sendLoginEmail } from "../intake/mail.js";
 import { approveIntakeItem, rejectIntakeItem } from "../utils/review.js";
 import {
   AdminActionError,
@@ -325,6 +330,16 @@ router.post("/api/v1/nodes", requireToken, (req, res) => {
     );
   }
 
+  // What an organisation says it is: values from the fixed list, several allowed.
+  if (type === "institution" && effectiveMetadata.kind !== undefined && effectiveMetadata.kind !== null) {
+    const k = normaliseOrgKinds(effectiveMetadata.kind);
+    if (!k.ok) {
+      res.status(400).set(JSON_HEADERS).json({ error: "invalid_kind", message: orgKindsError(k.unknown), allowed: ORG_KINDS });
+      return;
+    }
+    effectiveMetadata = { ...effectiveMetadata, kind: k.kinds };
+  }
+
   const slug = typeof providedSlug === "string" && providedSlug.length > 0 ? providedSlug : slugify(name);
   const computedId = composeNodeId(type, slug);
 
@@ -426,6 +441,15 @@ router.patch("/api/v1/nodes/:id", requireToken, (req, res) => {
     return;
   }
 
+  if (existing.type === "institution" && patch.kind !== undefined && patch.kind !== null) {
+    const k = normaliseOrgKinds(patch.kind);
+    if (!k.ok) {
+      res.status(400).set(JSON_HEADERS).json({ error: "invalid_kind", message: orgKindsError(k.unknown), allowed: ORG_KINDS });
+      return;
+    }
+    patch.kind = k.kinds;
+  }
+
   const signalId = insertSignal(db, {
     contributor: req.contributor!,
     title: `Patch node metadata: ${nodeId}`,
@@ -504,6 +528,13 @@ router.post("/api/v1/edges", requireToken, (req, res) => {
   if (!CURATED_EDGE_TYPES.has(edge_type)) {
     warnings.push(`uncurated edge type "${edge_type}" — accepted, but prefer one of: EMBODIES, CREATED_BY, PRACTICES, EXHIBITED_AT, CLASSIFIED_BY, BELONGS_TO, COLLABORATES_WITH, USES_TECHNIQUE, INFLUENCES, RESPONDS_TO, PARTICIPATED_IN, PRESENTED_BY, CURATED_BY, REPRESENTS`);
   }
+  // Direction: a warning here, not a refusal — external callers predate the
+  // table. The URL intake refuses (src/intake/candidate.ts).
+  try {
+    checkDirection({ source: source_id, target: target_id, edge_type }, (ref) => (ref.includes(":") ? ref.slice(0, ref.indexOf(":")) : null));
+  } catch (e: any) {
+    warnings.push(`direction: ${e?.message ?? e}`);
+  }
   if (edge_type === "INFLUENCES" || edge_type === "RESPONDS_TO") {
     // Soft policy: these require human-attested intent (see CLAUDE.md).
     warnings.push(`${edge_type} edges should reflect attested artist intent — make sure source_url anchors a statement, interview, or first-person attestation.`);
@@ -556,7 +587,9 @@ router.post("/api/v1/edges", requireToken, (req, res) => {
 
 // ---------- POST /api/v1/images -------------------------------------------
 // multipart/form-data { image, node_id }   — or
-// application/json    { node_id, image_base64, mime_type }
+// application/json    { node_id, image_base64, mime_type }   — or
+// application/json    { node_id, image_url }  (server-side fetch: SSRF guard,
+//                                              20 MiB cap, magic-byte sniff)
 //
 // Bytes are content-addressed and immutable on R2, so the upload runs even
 // for probationary contributors (cheap, deduped). The metadata patch that
@@ -578,6 +611,7 @@ router.post(
     let mime = "application/octet-stream";
     let nodeId: string | null = null;
     let batchRaw: unknown;
+    let imageUrl: string | null = null;
 
     if (req.file) {
       buf = req.file.buffer;
@@ -593,6 +627,7 @@ router.post(
       mime = typeof body.mime_type === "string" ? body.mime_type : mime;
       nodeId = typeof body.node_id === "string" ? body.node_id : null;
       batchRaw = body.batch_id;
+      if (!b64 && typeof body.image_url === "string") imageUrl = body.image_url;
     }
 
     const batch = parseBatchId(batchRaw);
@@ -601,8 +636,8 @@ router.post(
       return;
     }
 
-    if (!buf || buf.length === 0) {
-      res.status(400).set(JSON_HEADERS).json({ error: "no image bytes — send multipart 'image' field or JSON {image_base64}" });
+    if ((!buf || buf.length === 0) && !imageUrl) {
+      res.status(400).set(JSON_HEADERS).json({ error: "no image bytes — send multipart 'image' field, JSON {image_base64}, or JSON {image_url}" });
       return;
     }
     if (!nodeId) {
@@ -616,17 +651,31 @@ router.post(
     }
 
     let upresult: Awaited<ReturnType<typeof uploadImage>>;
-    try {
-      upresult = await uploadImage(buf, mime);
-    } catch (e: any) {
-      res.status(502).set(JSON_HEADERS).json({ error: "r2_upload_failed", detail: String(e?.message ?? e) });
-      return;
+    if (imageUrl) {
+      try {
+        upresult = (await mirrorImageFromUrl(imageUrl)).upload;
+      } catch (e: any) {
+        if (e instanceof ImageFetchError) {
+          res.status(e.status).set(JSON_HEADERS).json({ error: e.code, detail: e.message });
+          return;
+        }
+        res.status(502).set(JSON_HEADERS).json({ error: "image_fetch_failed", detail: String(e?.message ?? e) });
+        return;
+      }
+    } else {
+      try {
+        upresult = await uploadImage(buf!, mime);
+      } catch (e: any) {
+        res.status(502).set(JSON_HEADERS).json({ error: "r2_upload_failed", detail: String(e?.message ?? e) });
+        return;
+      }
     }
 
     const signalId = insertSignal(db, {
       contributor: req.contributor!,
       title: `Upload image to ${nodeId}`,
-      content: JSON.stringify({ node_id: nodeId, key: upresult.key, sha256: upresult.sha256, bytes: upresult.bytes, content_type: upresult.content_type }),
+      content: JSON.stringify({ node_id: nodeId, key: upresult.key, sha256: upresult.sha256, bytes: upresult.bytes, content_type: upresult.content_type, ...(imageUrl ? { image_url: imageUrl } : {}) }),
+      source_url: imageUrl,
       source_type: "api_image",
       batch_id: batch.value,
     });
@@ -634,7 +683,8 @@ router.post(
     const op: ProposedNodeOp = {
       op: "attach_image",
       node_id: nodeId,
-      image_url: upresult.url,
+      // image_url keeps upstream provenance when the bytes came from a URL.
+      image_url: imageUrl ?? upresult.url,
       cdn_image_url: upresult.url,
       sha256: upresult.sha256,
     };
@@ -715,6 +765,55 @@ router.get("/api/v1/beta-signups", requireAdmin, (req, res) => {
     .all(limit);
   const { total } = db.prepare("SELECT COUNT(*) AS total FROM beta_signups").get() as any;
   res.set(JSON_HEADERS).json({ total, returned: items.length, items });
+});
+
+// ---- URL-intake invites (admin) --------------------------------------------
+// The URL intake is invite-only (src/intake/auth.ts). These are the admin
+// skill's handle on it: invite, list (with pending access requests), revoke.
+// Emails appear only here, behind requireAdmin; they never enter a CRR.
+
+router.post("/api/v1/invites", requireAdmin, async (req, res) => {
+  const db = getDb();
+  const b = req.body ?? {};
+  const email = normaliseEmail(b.email);
+  const name = typeof b.name === "string" ? b.name.trim() : "";
+  const tier = typeof b.tier === "string" ? b.tier : "probationary";
+  const practitioner = typeof b.practitioner === "string" && b.practitioner ? b.practitioner : null;
+  if (!email) { res.status(400).set(JSON_HEADERS).json({ error: "email is required" }); return; }
+  if (!name) { res.status(400).set(JSON_HEADERS).json({ error: "name is required — it is the public attribution on their contributions" }); return; }
+  if (!["auto", "reviewed", "probationary"].includes(tier)) { res.status(400).set(JSON_HEADERS).json({ error: "tier must be auto | reviewed | probationary" }); return; }
+  if (practitioner && !db.prepare("SELECT 1 FROM nodes WHERE id = ?").get(practitioner)) {
+    res.status(400).set(JSON_HEADERS).json({ error: `practitioner node '${practitioner}' does not exist` });
+    return;
+  }
+  const c = ensureContributorForEmail(db, { email, name, tier, self_node_id: practitioner ?? undefined, invite: true });
+  let sent = false;
+  if (b.send === true) {
+    try { await sendLoginEmail(db, email, null, "/contribute"); sent = true; } catch (e: any) { console.error("[invites] send failed:", e?.message ?? e); }
+  }
+  res.status(201).set(JSON_HEADERS).json({ invited: { email: c.email, contributor_id: c.id, name: c.name, trust_tier: c.trust_tier, self_node_id: c.self_node_id }, link_sent: sent });
+});
+
+router.get("/api/v1/invites", requireAdmin, (_req, res) => {
+  const db = getDb();
+  const invites = db
+    .prepare(
+      `SELECT e.email, c.name, c.trust_tier, e.self_node_id, e.invited_at, e.revoked_at, e.verified_at,
+              (SELECT MAX(last_seen_at) FROM contributor_sessions s WHERE s.contributor_id = c.id) AS last_seen_at,
+              (SELECT COUNT(*) FROM drafts d WHERE d.contributor_id = c.id) AS drafts
+         FROM contributor_emails e JOIN contributors c ON c.id = e.contributor_id
+        ORDER BY e.invited_at DESC`
+    )
+    .all();
+  const requests = db.prepare("SELECT email, first_at, last_at, count FROM intake_access_requests ORDER BY last_at DESC LIMIT 200").all();
+  res.set(JSON_HEADERS).json({ invite_only: !intakeOpen(), invites, requests });
+});
+
+router.post("/api/v1/invites/revoke", requireAdmin, (req, res) => {
+  const email = normaliseEmail(req.body?.email);
+  if (!email) { res.status(400).set(JSON_HEADERS).json({ error: "email is required" }); return; }
+  if (!revokeInvite(getDb(), email)) { res.status(404).set(JSON_HEADERS).json({ error: "no such invite", email }); return; }
+  res.set(JSON_HEADERS).json({ revoked: email, note: "sessions ended; their contributions and drafts stay" });
 });
 
 router.get("/api/v1/tokens", requireAdmin, (req, res) => {

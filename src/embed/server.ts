@@ -29,7 +29,7 @@ import type { DatabaseSync } from "node:sqlite";
 import { encodeBlob, l2normalise, DIMS, invalidateVectorCache } from "./vectors.js";
 
 const EMBED_MODEL = process.env.EMBED_MODEL || "gemini-embedding-2";
-const TASK_PREFIX = "task: sentence similarity | query: ";
+export const TASK_PREFIX = "task: sentence similarity | query: ";
 
 const EMBEDDABLE_TYPES = new Set([
   "artwork",
@@ -213,7 +213,12 @@ interface GeminiPart {
   inlineData?: { data: string; mimeType: string };
 }
 
-async function embedOnce(text: string, image: { bytes: Buffer; mime: string } | null): Promise<Float32Array> {
+/**
+ * One Gemini embedding call. Exported for the URL-intake tools
+ * (resolve_entity text queries, image_neighbours) — callers must
+ * l2normalise the result before comparing against node_embeddings.
+ */
+export async function embedOnce(text: string, image: { bytes: Buffer; mime: string } | null): Promise<Float32Array> {
   const client = await getClient();
   const contents: GeminiPart[] = [{ text }];
   if (image) {

@@ -26,6 +26,7 @@
 //  - Config posture. Missing config is tolerated in --dry-run (so a preview
 //    works before secrets exist) but is a hard error on a real send.
 
+import { sendMail } from "../utils/mail.js";
 import type { DatabaseSync } from "node:sqlite";
 
 const MARKER_KEY = "last_review_digest_at";
@@ -298,29 +299,18 @@ export function renderDigest(d: Digest, cfg: NotifyConfig): RenderedEmail {
 // ----- send ------------------------------------------------------------------
 
 export async function sendViaResend(cfg: NotifyConfig, msg: RenderedEmail): Promise<{ id: string }> {
-  const resp = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${cfg.apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: cfg.from,
-      to: cfg.recipients,
-      subject: msg.subject,
-      html: msg.html,
-      text: msg.text,
-    }),
+  // Thin shim over the shared transport in src/utils/mail.ts. Kept so the
+  // digest's call site and its tests don't change; new senders should call
+  // sendMail directly.
+  if (!cfg.apiKey) throw new Error("RESEND_API_KEY is not set");
+  const { id } = await sendMail({
+    from: cfg.from,
+    to: cfg.recipients,
+    subject: msg.subject,
+    html: msg.html,
+    text: msg.text,
   });
-  const body = await resp.text();
-  if (!resp.ok) {
-    throw new Error(`Resend API ${resp.status}: ${body}`);
-  }
-  try {
-    return JSON.parse(body) as { id: string };
-  } catch {
-    return { id: "" };
-  }
+  return { id };
 }
 
 // ----- orchestrate -----------------------------------------------------------

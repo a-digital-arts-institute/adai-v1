@@ -42,9 +42,21 @@ src/
     contributor-api.ts    — token-gated /api/v1/* write surface
   embed/                  — embedding derive + on-write + neighbours
   archivist/              — the in-app research/archivist surface
-  utils/                  — token-mint, review, admin-actions, visibility, db-path, …
+  intake/                 — URL intake: magic-link auth, drafts (job queue +
+                            candidates + confirm), read-tool allowlist, mail,
+                            worker spawner, page shells
+  routes/intake.ts        — /contribute, /draft/:id, /batch/:id, /auth/:token,
+                            /api/intake/* (session cookie or bearer)
+  routes/internal.ts      — /internal/intake/* for the worker (X-Worker-Key;
+                            mounted only when WORKER_KEY is set)
+  utils/                  — token-mint, review, admin-actions, visibility, db-path,
+                            ssrf (the one fetch guard), images (image_url → R2),
+                            mail (Resend / stdout transport), …
   cli/                    — operator CLIs (token issue/revoke/restore, rename,
-                            notify-digest, apply-image-patch)
+                            notify-digest, apply-image-patch, invite)
+worker/                   — the intake worker (own package + Playwright image,
+                            Fly app adai-intake-worker; never opens the DB —
+                            talks HTTP to /internal/intake/* only)
 db.sql                    — CR-SQLite schema (CRR tables + local tables)
 seed/_build/              — the LIVE R2 janitors only (genesis pipeline retired):
     cull_orphans.py       — delete R2 images no live node references
@@ -71,6 +83,41 @@ npm run dev
 
 Server: http://localhost:8080
 
+### Trying the URL intake locally (no Fly needed)
+
+The intake runs entirely on your machine: the main app plus the worker in
+poll mode; emails print to the terminal; the Fly spawner is a no-op.
+
+```bash
+# .env — add once (keys ≥16 chars; the rest of .env as usual)
+SESSION_SECRET=<openssl rand -hex 24>
+WORKER_KEY=<openssl rand -hex 24>
+MAIL_TRANSPORT=stdout          # magic links land in the server log, not Resend
+ADAI_BASE_URL=http://localhost:8080
+# ANTHROPIC_API_KEY required (worker); GEMINI_API_KEY optional (embedding
+# lookups in resolve_entity / image_neighbours); R2_* optional (image confirm)
+
+just intake-dev                # first run installs worker deps + Chromium; Ctrl-C stops both
+```
+
+Then:
+1. The intake is **invite-only**: invite yourself first or no link is sent
+   (`just invite you@x.y "Name" auto [practitioner:slug]`; `probationary`
+   confirms go to `/review`). `INTAKE_OPEN=1` in `.env` skips the check.
+   On prod: `just invite-prod …` or the admin endpoints `/api/v1/invites`
+   (SKILL.md §4.6b).
+2. http://localhost:8080/contribute → your email → "Send me a link".
+3. Copy the `http://localhost:8080/auth/…` line from the terminal into the
+   browser (single use, 15 min). Set a display name when asked.
+4. Paste a URL (a big site like reas.com takes ~5 min and ~$0.75 of Sonnet 5;
+   a small portfolio is quicker) → `/draft/:id` polls every 3 s as cards
+   appear → accept / reject / edit / answer / chat → Confirm → `/batch/:id`.
+
+Everything writes to your local `./adai.db`, never prod. Two-terminal
+alternative: `npm run dev` and `ADAI_URL=http://localhost:8080 npm run
+intake:worker`. Tests: `npm test` (main) and `cd worker && npm test`
+(mocked model + browser, no Chromium needed).
+
 ## Database
 
 Single SQLite file (`/data/adai.db` on Fly, `./adai.db` locally) with CR-SQLite
@@ -92,7 +139,10 @@ R2 backup bucket continuously.
 
 **Local tables** (NOT CRRs — never synced): `intake_queue` (review pipeline),
 `settings`, `contributor_tokens` (sha256-hashed bearer tokens), `node_embeddings`
-(768-d multimodal vectors), `archivist_sessions`, `rejected_ai_suggestions`.
+(768-d multimodal vectors), `archivist_sessions`, `rejected_ai_suggestions`, and
+the URL-intake set: `magic_links`, `contributor_sessions`, `contributor_emails`
+(email → contributor, `self_node_id`), `drafts` (doubles as the worker job
+queue), `intake_usage`. Email never lands in a CRR.
 
 **Node types**: `artwork`, `practitioner`, `concept`, `classification_regime`,
 `collective`, `platform`, `institution` (schema reserves `scene`, `publication`,
@@ -123,7 +173,8 @@ empty — it requires evidence of artist intent, not thematic similarity.
   listing surface but stay reachable by direct URL. Applied at `/api/stats`,
   `/api/graph*` (⚠️ stamp-pinned — `total_nodes`/`curated_edges` must stay
   clause-identical to the stream queries or the `/field` IndexedDB cache never
-  validates), page listings, archivist search, `src/embed/vectors.ts loadAll`,
+  validates; `curated_edges` counts distinct (source, type, target) relations,
+  because the stream collapses several claims of one relation into one edge), page listings, archivist search, `src/embed/vectors.ts loadAll`,
   and embed backfill.
 
 ## HTTP endpoints
@@ -152,6 +203,51 @@ empty — it requires evidence of artist intent, not thematic similarity.
 - `POST /api/contribute` — submit a signal
 - `POST /api/review/:id/approve` · `/reject` — curator actions
 
+### URL intake (`/contribute`, `/draft/:id`, `/batch/:id`, `/api/intake/*`)
+
+Spec: `docs/URL-INTAKE-SPEC.md`. A contributor signs in by magic link
+(`POST /api/intake/login` → email → `GET /auth/:token` → `adai_session`
+cookie), pastes a URL (`POST /api/intake/drafts`), a **separate worker
+process** (`worker/`, Playwright + `claude-sonnet-5`) reads the site and
+proposes *candidates* (nodes, edges, images, patches, questions, "known")
+onto the draft, the contributor reviews them on `/draft/:id` and presses
+**Confirm** → `confirmDraft` turns accepted cards into ONE batch
+(`batch_id = draft id`) through `insertSignal` + `materialise*` (auto /
+reviewed) or one pending `intake_queue` row (probationary). Receipt at
+`/batch/:id`.
+
+A read is a **dated snapshot**: signals carry the page's read date and hash;
+a later read of the same site is an update (unchanged pages skipped), and a
+present-tense relation the site no longer shows (REPRESENTS) comes back as an
+`ended` card that closes the edge bi-temporally (spec §6.2c). Institution
+pages lead with an artists roster derived at read time (`src/utils/roster.ts`);
+`metadata.kind` on an institution is a list from `src/utils/org-kinds.ts`
+(the roster also reaches `/field`, the archivist's `get_node` and `/:type/:slug/data`).
+Edge direction by node type is enforced for intake (`EDGE_DIRECTIONS` in
+`src/intake/candidate.ts`; a warning on `/api/v1/edges`). One relation with
+several claims is shown once, "claimed by N sources", counted by distinct
+evidence origin — the evidence page's host, else the attesting person —
+not by contributor (`src/utils/claims.ts`); `/field` threads get heavier with N.
+
+Sign-in is **invite-only** (`contributor_emails.invited_at`; admin
+`POST/GET /api/v1/invites`, `POST /api/v1/invites/revoke`); uninvited requests
+land in `intake_access_requests` and email the admins.
+
+Two promises enforced in code: (1) the worker has **no graph write path** —
+`/internal/intake/tool` is an allowlist of read tools, the draft endpoints
+touch only `drafts` (`tests/intake-imports.test.ts`); (2) nothing leaves a
+draft until Confirm. Relation policy (§7 of the spec) lives in
+`src/intake/candidate.ts` — INFLUENCES / RESPONDS_TO only through an
+answered question. `/api/intake/*` also accepts a `/api/v1` bearer token, so
+an external assistant can drive drafts. Secrets: `SESSION_SECRET`,
+`WORKER_KEY` (main + worker app), `WORKER_IMAGE` + `FLY_API_TOKEN`
+(spawner), `INTAKE_FROM` (optional). Locally: `just intake-dev`; invites:
+`npm run invite` / `just invite-prod`. Worker image: `just deploy-worker`
+(build-only + push; the main app spawns one ephemeral machine per job via
+the Machines API; the worker calls back over the public HTTPS URL
+(`WORKER_ADAI_URL`) — NOT Flycast, which `force_https` breaks; first-time Fly
+setup is in `docs/URL-INTAKE-SPEC.md` §14).
+
 ### Contributor API (`/api/v1/*`) — bearer-token, AI-driven
 
 The write surface for AI assistants. Every endpoint requires
@@ -165,8 +261,10 @@ caller contract is `SKILL.md` (served at `GET /skill.md`).
 - `PATCH /api/v1/nodes/:id` — JSON-merge-patch on `metadata` (null deletes a key)
 - `POST /api/v1/edges` — add an edge; bi-temporal supersession via
   `supersedes_edge_id`
-- `POST /api/v1/images` — `multipart/form-data` or JSON `image_base64`; uploads to
-  R2 (content-addressed `images/<sha[:2]>/<sha>.<ext>`), attaches `cdn_image_url`
+- `POST /api/v1/images` — `multipart/form-data`, JSON `image_base64`, or JSON
+  `image_url` (server-side fetch through the SSRF guard, magic-byte sniffed);
+  uploads to R2 (content-addressed `images/<sha[:2]>/<sha>.<ext>`), attaches
+  `cdn_image_url`
 - `GET /api/v1/contributions` — the contributor's own history
 
 Every write accepts an optional **`batch_id`** (stamped onto the anchoring
@@ -317,3 +415,15 @@ just wait-healthy  # poll /api/stats until healthy
 reas`, `artwork:fidenza`). The `slug` field is the kebab-case URL-safe form.
 Server-side writes compute `<type>:<slug>`; live contributions may use kebab ids
 (`practitioner:mat-dryhurst`). Cross-source identity merges by node id.
+
+### Intake worker build inputs
+
+The worker uses the canonical `src/utils/ssrf.ts` guard and the master protocol
+plus gatherer context from `claude/skills/`. `worker/scripts/prepare.mjs` generates
+its local TypeScript inputs before build, test and start; do not edit the
+ignored generated files. Build its Dockerfile with the repository root as
+context (`just deploy-worker` does this). CI builds and tests both packages.
+Contributor-touched cards are immutable to the worker. Confirm checks the
+candidate snapshot after image uploads; edits require another confirmation.
+Receipt JSON requires the owner or an admin; public HTML receipts exist only
+after submission.

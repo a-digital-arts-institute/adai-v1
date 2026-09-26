@@ -38,6 +38,23 @@ function runMigrations(db: DatabaseSync) {
   } catch (e: any) {
     if (!String(e?.message ?? e).includes("duplicate column name")) throw e;
   }
+  // drafts.survey (Sept 2026): the intake agent's site survey + coverage
+  // statement. Same idempotent pattern; a fresh DB already has the column
+  // from db.sql, an existing volume gets it here.
+  try {
+    db.exec("ALTER TABLE drafts ADD COLUMN survey TEXT");
+  } catch (e: any) {
+    if (!String(e?.message ?? e).includes("duplicate column name")) throw e;
+  }
+  // contributor_emails.invited_at / revoked_at (Sept 2026): the URL intake
+  // became invite-only. Same idempotent pattern.
+  for (const col of ["invited_at", "revoked_at"]) {
+    try {
+      db.exec(`ALTER TABLE contributor_emails ADD COLUMN ${col} TEXT`);
+    } catch (e: any) {
+      if (!String(e?.message ?? e).includes("duplicate column name")) throw e;
+    }
+  }
 }
 
 export function getDb(): DatabaseSync {

@@ -1,7 +1,7 @@
 ---
 name: adai-contribute
 description: Contribute to the A(DAI) Digital Arts Knowledge Commons graph (https://digitalartsinstitute.io) on behalf of a practitioner using their bearer token in ADAI_TOKEN. Use when the user wants to add a text signal about an existing node, create a node (practitioner, artwork, concept, scene, institution, collective, platform, etc.), add or supersede an edge (CREATED_BY, EMBODIES, PRACTICES, EXHIBITED_AT, CLASSIFIED_BY, BELONGS_TO, COLLABORATES_WITH, USES_TECHNIQUE, INFLUENCES, RESPONDS_TO, PARTICIPATED_IN, PRESENTED_BY, CURATED_BY, REPRESENTS), upload an image and attach it to a node, tag a session of writes with a batch_id, review their contribution history, or — with an admin-scope token — mint/list/revoke tokens, work the curator review queue (approve/reject/bulk), revoke a signal, retire a node, or roll back a contribution batch (provenance-preserving). Talks to /api/v1/* via curl. Respects trust tiers (auto/reviewed go live, probationary queue at /review). Never infer INFLUENCES or RESPONDS_TO from style or visual similarity; both require attested artist intent.
-version: 2026-08-14
+version: 2026-09-20
 ---
 
 # A(DAI) contributor skill — for Claude (and any other AI assistant) writing to the knowledge commons
@@ -304,7 +304,7 @@ The graph is mostly edges. Use the curated edge types:
 | `BELONGS_TO` | practitioner → collective / scene | membership |
 | `EXHIBITED_AT` | artwork → institution / platform | where it showed |
 | `PARTICIPATED_IN` | practitioner → project | artist took part in a show / fair |
-| `PRESENTED_BY` | project → institution | gallery / host that presented the show |
+| `PRESENTED_BY` | project → institution / platform | gallery / host that presented the show (a platform-hosted series can have both) |
 | `CURATED_BY` | project → practitioner | the show's curator (where named) |
 | `REPRESENTS` | institution → practitioner | a gallery's core roster |
 | `CLASSIFIED_BY` | any node → classification_regime | who positioned it |
@@ -319,6 +319,18 @@ with `CURATED_BY`. A gallery's standing roster of artists is `REPRESENTS`, from
 the `institution` to each `practitioner`. Without these, a show and its gallery
 have nothing to connect to and float as orphans, so add them in the same session
 you create the show.
+
+**What an organisation is.** Galleries, museums, art centres, fairs, dealers
+and advisories are all `institution` nodes — in the graph they do the same
+thing. What the organisation says it is goes in `metadata.kind`: a list, since
+one organisation can be several things, from this fixed set — `museum`,
+`art centre`, `gallery`, `dealership`, `advisory`, `fair`, `festival`,
+`venue`, `auction house`, `archive`, `residency`, `lab`, `foundation`,
+`biennial`, `prize`. Take it from how the organisation describes itself on
+its own site and keep its words in `metadata.kind_source` `{page_url, quote}`:
+`{"kind": ["gallery", "dealership", "advisory"], "kind_source": {"page_url": "https://www.interfacegallery.io/about", "quote": "a project-based gallery, private art dealership and advisory"}}`.
+Values outside the set are refused with `400 invalid_kind`. Publications,
+platforms and collectives are node types, not kinds.
 
 **Hard rule — do not infer `INFLUENCES` or `RESPONDS_TO` from style /
 visual / thematic similarity.** These require an attested statement
@@ -400,6 +412,20 @@ curl -s -X POST "$ADAI_BASE/api/v1/images" \
   -d "{\"node_id\":\"practitioner:casey-reas\",\"mime_type\":\"image/jpeg\",\"image_base64\":\"$B64\"}"
 ```
 
+URL transport (the image already lives on the web — the server fetches it,
+through an SSRF guard, 20 MiB cap, and sniffs the bytes to make sure it is
+a JPEG/PNG/GIF/WebP/AVIF; `image_url` is kept as provenance):
+
+```bash
+curl -s -X POST "$ADAI_BASE/api/v1/images" \
+  -H "Authorization: Bearer $ADAI_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"node_id":"artwork:process-4","image_url":"https://reas.com/images/process4.jpg"}'
+```
+
+Errors: `400 private_host|bad_scheme`, `413 too_large`, `415 not_an_image`,
+`502 upstream_status|image_fetch_failed`.
+
 **What gets attached.** On approval, three fields are merged into the
 node's `metadata`:
 - `cdn_image_url` — the R2 URL. **Always overwritten** by each upload.
@@ -478,6 +504,57 @@ curl -s -H "Authorization: Bearer $ADAI_TOKEN" \
 ```
 
 ---
+
+### 1.8 Contributing from a website — the URL intake
+
+When the practitioner says "here is my site / the show page / our roster",
+you have two routes.
+
+**Manual** (you read the site yourself): one `batch_id` for the session
+(§1.7), `resolve before create` (§1.0), then `/api/v1/nodes|edges|images`
+as above. Relation policy for anything sourced from a page, verbatim:
+
+| edge_type | direction | condition |
+|---|---|---|
+| CREATED_BY | artwork -> practitioner/collective | page attributes the work |
+| EXHIBITED_AT | artwork -> institution/project/platform | page lists the show, venue or platform |
+| PARTICIPATED_IN | practitioner -> project | page lists the artist in the show |
+| PRESENTED_BY | project -> institution/platform | page names the venue, organiser or host platform |
+| CURATED_BY | project -> practitioner | page names the curator |
+| REPRESENTS | institution -> practitioner | roster page, or "represented by" |
+| USES_TECHNIQUE | artwork/practitioner -> concept | page names the technique |
+| EMBODIES | artwork -> concept | page's own description, low confidence |
+| BELONGS_TO | practitioner -> collective | page states membership |
+| COLLABORATES_WITH | practitioner <-> practitioner | only with a quote naming the other party |
+
+Never from a site: `INFLUENCES`, `RESPONDS_TO`, `CLASSIFIED_BY`. Put the
+supporting sentence from the page in the signal `content` and the page in
+`source_url`; that is the audit trail.
+
+**Delegated** (A(DAI) reads the site, the practitioner confirms):
+
+```bash
+curl -s -X POST "$ADAI_BASE/api/intake/drafts" \
+  -H "Authorization: Bearer $ADAI_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"source_url":"https://example-artist.com"}'
+# → 202 { draft_id, draft_url: "/draft/drf_…" }
+```
+
+A worker crawls the site, resolves every entity against the graph, and
+proposes cards — works, shows, venues, people, relations, images, plus
+"already in A(DAI)" notes and yes/no questions for the relations only the
+artist can attest. **Nothing is written until the practitioner opens
+`/draft/:id` and presses Confirm.** Send them the link (they sign in with
+an emailed magic link). You can poll `GET /api/intake/drafts/:id` with the
+same bearer token to watch progress (`status`, `candidates`, `summary`),
+`PATCH …/candidates/:cid` to pre-accept cards they told you about, and
+`POST …/chat` to ask the worker for changes, and `POST …/continue`
+(optional `{"focus":"…"}`) for another full reading pass — it builds on the
+survey, the pages already read and the cards they rejected; the draft's
+`survey.remaining` says what is not covered yet. The confirmed batch has
+`batch_id = draft_id` and shows up in `GET /api/v1/batches` and on the
+public receipt `/batch/:id` like any other batch.
 
 ## 2 — ID conventions
 
@@ -648,6 +725,30 @@ Un-retiring is deliberate manual work: `PATCH /api/v1/nodes/:id` with
 `{"retired": null, "retired_at": null, "retired_by": null, "retired_reason": null}`
 brings the node back into listings, but its superseded edges stay
 superseded — re-attest the ones that should live again (§1.4).
+
+### 4.6b Invite someone to the URL intake (who may read websites into A(DAI))
+
+The URL intake (`/contribute` — paste a website, the agent proposes cards) is
+**invite-only**: every read costs model money, so only invited addresses get a
+sign-in link. Anyone else who asks is recorded as a pending request, and the
+admins get an email about it.
+
+```bash
+# Invite (name = their public attribution; tier as in §4.1; practitioner = the node they ARE, optional)
+curl -s -X POST "$ADAI_BASE/api/v1/invites" -H "Authorization: Bearer $ADAI_TOKEN" -H 'content-type: application/json' \
+  -d '{"email":"irina@example.org","name":"Irina","tier":"reviewed","send":true}' | jq
+# Who is invited, and who asked without an invite
+curl -s "$ADAI_BASE/api/v1/invites" -H "Authorization: Bearer $ADAI_TOKEN" | jq '{invites: [.invites[] | {email,name,trust_tier,revoked_at,drafts}], requests}'
+# Revoke: their sessions end at once; their contributions and drafts stay
+curl -s -X POST "$ADAI_BASE/api/v1/invites/revoke" -H "Authorization: Bearer $ADAI_TOKEN" -H 'content-type: application/json' \
+  -d '{"email":"irina@example.org"}' | jq
+```
+
+`send: true` emails them a sign-in link now; without it they sign in at
+`/contribute` whenever they like. Ask the operator before inviting at
+`auto` tier — auto means their confirmed drafts go live without review.
+Treat the email addresses in these responses as private: never paste them
+into a signal, a node, or anywhere public.
 
 ### 4.7 Batch rollback — "delete and start again"
 
