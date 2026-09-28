@@ -37,23 +37,17 @@
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
-  // Clickable contribute CTA. Opens the modern in-field contribute panel
-  // (the #contribute room — the token/LLM path), NOT the legacy /contribute
-  // form. The actual open is wired in the click handler below (it triggers
-  // the existing #contribute room-link), so this stays a plain in-page anchor.
-  const CONTRIB_LINK = '<a class="ev-contrib-link" href="#contribute" role="button" title="how to contribute to A(DAI)">contribute ↗</a>';
+  // Clickable contribute CTA → the URL intake at /contribute (invite-only;
+  // uninvited addresses become access requests). The click handler below
+  // stops it from bubbling into the field's zoom/navigation.
+  const CONTRIB_LINK = '<a class="ev-contrib-link" href="/contribute" role="button" title="how to contribute to A(DAI)">contribute ↗</a>';
   // Linkify the legacy phrase inside already-escaped empty-state copy.
   function linkifyContribute(escapedText) {
     return escapedText.replace(/contribute via \/contribute skill/g, CONTRIB_LINK);
   }
 
-  // Open the modern contribute surface — the in-field #contribute panel
-  // (token/LLM path) — via the shared room API in field.js. Falls back to the
-  // standalone form only if the field nav isn't present (entity view used
-  // outside /field).
   function openContributePanel() {
-    if (window.ADAI_ROOMS && window.ADAI_ROOMS.open('#contribute')) return;
-    window.open('/contribute', '_blank', 'noopener');
+    window.location.href = '/contribute';
   }
 
   // ---------- "Who is this for" toggle (style-kin panel) ----------
@@ -804,7 +798,7 @@
   document.addEventListener('click', (e) => {
     if (!STATE.open) return;
     // Contribute CTA (empty-state "contribute ↗" links throughout the panel)
-    // → modern in-field contribute panel, not the legacy /contribute form.
+    // → the URL intake at /contribute.
     // Handled first so it never bubbles to the field's zoom/navigation.
     if (e.target?.closest?.('.ev-contrib-link')) {
       e.preventDefault();
@@ -856,8 +850,7 @@
     if (action === 'close') {
       e.preventDefault(); close();
     } else if (action === 'add') {
-      // The + header icon → modern in-field contribute panel (not the legacy
-      // /contribute form).
+      // The + header icon → the URL intake at /contribute.
       e.preventDefault();
       openContributePanel();
     } else if (action === 'chat') {

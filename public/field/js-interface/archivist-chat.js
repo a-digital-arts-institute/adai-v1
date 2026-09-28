@@ -198,7 +198,7 @@
           <li><span class="arch-help-btn">×</span> reset chat &nbsp;·&nbsp; <span class="arch-help-btn">−</span> minimize panel &nbsp;·&nbsp; <span class="arch-help-btn">⇄</span> move (center / right / left) &nbsp;·&nbsp; <span class="arch-help-btn">?</span> this panel</li>
         </ul>
       </div>
-      <div class="arch-help-foot">read-only by design — it can't add nodes, edges, or signals. To contribute, open the <a href="#contribute" class="arch-room-link">contribute</a> panel.</div>
+      <div class="arch-help-foot">read-only by design — it can't add nodes, edges, or signals. To contribute, use the <a href="/contribute">contribute</a> page.</div>
     </div>`;
 
   function renderLog() {
@@ -747,20 +747,6 @@
       }
       if (ev && typeof ev.open === 'function') {
         try { ev.open(id); } catch (err) { console.warn('[archivist] entity-view open failed:', err); }
-      }
-    });
-
-    // Room links inside the archivist (e.g. the help footer's "contribute")
-    // open the in-field panel via the shared room API rather than navigating
-    // to the legacy /contribute form.
-    root.addEventListener('click', (e) => {
-      if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-      const a = e.target?.closest?.('a.arch-room-link');
-      if (!a || !root.contains(a)) return;
-      e.preventDefault();
-      const hash = a.getAttribute('href') || '';
-      if (!(window.ADAI_ROOMS && window.ADAI_ROOMS.open(hash))) {
-        window.open('/contribute', '_blank', 'noopener');
       }
     });
 

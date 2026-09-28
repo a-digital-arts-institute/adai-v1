@@ -380,8 +380,8 @@ html, body {
   flex-wrap: nowrap;
   justify-content: flex-end;
   /* Right-anchored pill; with nowrap, a row wider than this cap overflows off
-     the LEFT edge. Sized to hug the label row ("sense connect contribute
-     philosophy brand" ≈ 396px) with headroom — raise it if a room is added. */
+     the LEFT edge. Sized to hug the label row ("sense contribute
+     philosophy brand" ≈ 330px) with headroom — raise it if a room is added. */
   max-width: 460px;
   height: var(--bottom-control-height);
   row-gap: 6px;
