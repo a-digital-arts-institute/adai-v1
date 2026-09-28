@@ -103,7 +103,7 @@ export function contributePage(): string {
   const body = `
 <div class="kicker">CONTRIBUTE FROM A WEBSITE</div>
 <h2>Give A(DAI) a URL.</h2>
-<p class="lede">Your portfolio, an exhibition page, a gallery roster or a programme. A(DAI) reads it and drafts what it could add: works, shows, people, relations — each with the sentence on the page that backs it. Nothing enters the commons until you review the draft and press Confirm. <a href="/contribute/signal">Prefer to write a signal by hand?</a></p>
+<p class="lede">Your portfolio, an exhibition page, a gallery roster or a programme. A(DAI) reads it and drafts what it could add: works, shows, people, relations — each with the sentence on the page that backs it. Nothing enters the commons until you review the draft and press Confirm. <a href="/contribute/signal">Prefer to write a signal by hand?</a> Have an access token for your own AI assistant? <a href="/field#assistant">Setup guide</a>.</p>
 <div id="app"><p class="progress">loading…</p></div>`;
   const script = `${helpers}
 const app = $('#app');

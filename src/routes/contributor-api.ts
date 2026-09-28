@@ -751,8 +751,9 @@ router.use("/api/v1/images", (err: any, _req: any, res: any, next: any) => {
 // vs queue. Scope and trust_tier are deliberately decoupled.
 
 // ---------- GET /api/v1/beta-signups (admin) ------------------------------
-// Read beta-programme email signups captured by the /field "Connect" room
-// (POST /api/connect → local beta_signups table). Newest first. Admin-scope
+// Read the beta-programme email signups the retired /field "Connect" room
+// captured (local beta_signups table; access requests now go through the
+// invite-only /contribute sign-in instead). Newest first. Admin-scope
 // like the rest of the queue/correction surface — visitor emails aren't for
 // write-scope contributors.
 router.get("/api/v1/beta-signups", requireAdmin, (req, res) => {
