@@ -287,6 +287,14 @@ Every correction inserts an anchoring admin signal (`source_type='api_admin'`)
 that superseded edges reference via `invalidated_by`. SKILL.md §4.4–4.7 + §6
 document the workflow.
 
+**Every node write keeps its before-image.** Metadata is overwritten in place,
+so each patch / image attach / retire appends what it replaced to the causing
+signal's `processing_trace` (`{"prior":[{op,node_id,at,updated_by,before}]}`,
+`recordPrior` in `src/utils/contribution.ts`). The operator CLIs
+(`apply-image-patch`, `contributor:rename`, both `--by <operator>`) write an
+`api_admin` signal too. A URL-intake card the contributor changed carries the
+reader's original in its signal's `provenance_chain.proposed_as`.
+
 **Trust tiers**: `auto` (founding team + self-report — auto-merge), `reviewed`
 (established — auto-merge + tagged), `probationary` (default for new contributors
 — queued for `/review`). `scope` (write|admin) governs *which endpoints*;

@@ -90,10 +90,10 @@ export function approveIntakeItem(
           // desync the embed call from the actual row written.
           if (result.node_id) touchedNodes.add(result.node_id);
         } else if (op?.op === "patch_node") {
-          materialisePatchNode(db, op, { createdBy });
+          materialisePatchNode(db, op, { createdBy, signalId: op.signal_id ?? item.signal_id });
           if (op.node_id) touchedNodes.add(op.node_id);
         } else if (op?.op === "attach_image") {
-          materialiseAttachImage(db, op, { createdBy });
+          materialiseAttachImage(db, op, { createdBy, signalId: op.signal_id ?? item.signal_id });
           if (op.node_id) touchedNodes.add(op.node_id);
         } else if (op?.op === "end_edge" && op.edge_id) {
           materialiseEndEdge(db, op, { signalId: op.signal_id ?? item.signal_id });

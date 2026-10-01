@@ -103,6 +103,28 @@ describe("confirmDraft", () => {
     assert.equal(receipt.contributor, "auto tester");
   });
 
+  it("a card the contributor changed keeps the reader's proposal in its signal's provenance", async () => {
+    const db = freshDb();
+    const c = contributor(db, "auto");
+    let d = buildDraft(db, c);
+    // c_04 (EXHIBITED_AT 2005) re-dated; c_03 only accepted.
+    contributorPatchCandidate(db, d, "c_04", { patch: { event_time: "2006" } });
+    d = getDraft(db, d.id)!;
+    assert.equal(d.candidates.find((x) => x.cid === "c_03")!.proposed_as, undefined);
+    // A second edit keeps the FIRST snapshot — the reader's, not the contributor's.
+    contributorPatchCandidate(db, d, "c_04", { patch: { event_time: "2007" } });
+    d = getDraft(db, d.id)!;
+    await confirmDraft(db, d, c, { mirror });
+
+    const edge = db.prepare("SELECT signal_id, event_time FROM edges WHERE edge_type = 'EXHIBITED_AT'").get() as any;
+    assert.equal(edge.event_time, "2007");
+    const prov = JSON.parse((db.prepare("SELECT provenance_chain FROM signals WHERE id = ?").get(edge.signal_id) as any).provenance_chain);
+    assert.equal(prov.cid, "c_04");
+    assert.equal((prov.proposed_as.edge as any).event_time, "2005");
+    const created = db.prepare("SELECT signal_id FROM edges WHERE edge_type = 'CREATED_BY'").get() as any;
+    assert.equal(JSON.parse((db.prepare("SELECT provenance_chain FROM signals WHERE id = ?").get(created.signal_id) as any).provenance_chain).proposed_as, undefined);
+  });
+
   it("probationary: one pending row that approveIntakeItem replays", async () => {
     const db = freshDb();
     const c = contributor(db, "probationary");
@@ -118,6 +140,8 @@ describe("confirmDraft", () => {
     assert.equal(row.target_node, "practitioner:casey-reas");
     const nodesOps = JSON.parse(row.proposed_nodes);
     assert.deepEqual(nodesOps.map((o: any) => o.op), ["create_node", "attach_image"]);
+    const imageSignal = nodesOps[1].signal_id;
+    assert.ok(imageSignal, "a queued image op carries its own evidence signal");
     assert.equal(JSON.parse(row.proposed_edges).length, 3);
     assert.equal(batchReceipt(db, d.id)!.review_state, "pending");
 
@@ -128,6 +152,10 @@ describe("confirmDraft", () => {
     const md = JSON.parse((db.prepare("SELECT metadata FROM nodes WHERE id = 'artwork:process-4'").get() as any).metadata);
     assert.equal(md.cdn_image_url, "https://cdn.example/images/ab/abcd.jpg");
     assert.equal(batchReceipt(db, d.id)!.review_state, "live");
+    // The approval recorded what the image write replaced on that op's signal.
+    const trace = JSON.parse((db.prepare("SELECT processing_trace FROM signals WHERE id = ?").get(imageSignal) as any).processing_trace);
+    assert.deepEqual(trace.prior.map((p: any) => [p.op, p.node_id]), [["attach_image", "artwork:process-4"]]);
+    assert.deepEqual(trace.prior[0].before, { cdn_image_url: null, image_url: null, image_sha256: null });
   });
 
   it("preserves reviewed question provenance and individual revocation", async () => {

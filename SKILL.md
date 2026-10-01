@@ -778,10 +778,12 @@ batch. What it deliberately does NOT do:
 - **never retires pre-existing nodes** the batch merely collided with or
   patched (guarded by creation time; they're listed under
   `nodes_skipped_preexisting`);
-- **cannot auto-revert metadata patches / image attachments on
-  pre-existing nodes** (no before-image is stored) — these come back in
-  `patches_to_review`, each with its `signal_id` whose `content` records
-  the exact patch, so you can fix them by hand with PATCH (§1.3);
+- **does not auto-revert metadata patches / image attachments on
+  pre-existing nodes** (a later write may have built on them) — these come
+  back in `patches_to_review`, each with its `signal_id` (whose `content`
+  records the exact patch) and `before`: the values the write replaced
+  (`null` for a key that was absent; `before` itself is `null` for writes
+  older than before-image recording). Restore by hand with PATCH (§1.3);
 - R2 image bytes stay (content-addressed, immutable, harmless orphans).
 
 After the rollback the gallery starts again with a **new** batch_id.

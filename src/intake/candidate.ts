@@ -95,6 +95,11 @@ export interface CandidateBase {
   evidence?: Evidence;
   note?: string;
   edited: boolean;
+  // The reader's proposal, kept the first time the contributor changes the
+  // card's content (not its state). Set only by contributorPatchCandidate —
+  // validateCandidate drops it, so the worker can never supply one. Confirm
+  // copies it into the signal's provenance: what was proposed vs. what landed.
+  proposed_as?: Record<string, unknown>;
 }
 
 export interface NodeCandidate extends CandidateBase {

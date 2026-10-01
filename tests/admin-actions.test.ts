@@ -16,7 +16,7 @@ import {
   listBatches,
 } from "../src/utils/admin-actions.js";
 import { approveIntakeItem, rejectIntakeItem } from "../src/utils/review.js";
-import { insertSignal, insertIntake } from "../src/utils/contribution.js";
+import { insertSignal, insertIntake, materialisePatchNode, materialiseAttachImage } from "../src/utils/contribution.js";
 import type { AuthedContributor } from "../src/auth.js";
 
 const GALLERY: AuthedContributor = {
@@ -273,6 +273,48 @@ describe("retireBatch", () => {
   it("404s on an unknown batch", () => {
     const db = freshDb();
     assert.throws(() => retireBatch(db, "nope", { reason: "r", by: "admin" }), AdminActionError);
+  });
+});
+
+describe("before-images", () => {
+  const prior = (db: any, signalId: string) =>
+    JSON.parse((db.prepare("SELECT processing_trace FROM signals WHERE id = ?").get(signalId) as any).processing_trace).prior;
+
+  it("a patch and an image write record the values they replaced on their signal", () => {
+    const db = freshDb();
+    seedContributor(db, GALLERY);
+    insertNode(db, "artwork:x", "artwork", "X", { year: "1999", cdn_image_url: "https://cdn/old.jpg", image_url: "https://up/old.jpg" });
+    const sig = insertSignal(db, { contributor: GALLERY, title: "Patch", content: "{}" });
+    materialisePatchNode(db, { op: "patch_node", node_id: "artwork:x", metadata: { year: "2001", medium: "ink" } }, { createdBy: "api-Test Gallery", signalId: sig });
+    materialiseAttachImage(db, { op: "attach_image", node_id: "artwork:x", image_url: "https://up/new.jpg", cdn_image_url: "https://cdn/new.jpg", sha256: "ff" }, { createdBy: "api-Test Gallery", signalId: sig });
+    const p = prior(db, sig);
+    assert.deepEqual(p.map((e: any) => e.op), ["patch_node", "attach_image"]);
+    assert.deepEqual(p[0].before, { year: "1999", medium: null });
+    assert.equal(p[0].updated_by, "test");
+    assert.deepEqual(p[1].before, { cdn_image_url: "https://cdn/old.jpg", image_url: "https://up/old.jpg", image_sha256: null });
+    assert.equal(p[1].updated_by, "api-Test Gallery");
+    assert.ok(p[0].at);
+  });
+
+  it("retireNode records the retire keys it overwrote on its admin signal", () => {
+    const db = freshDb();
+    insertNode(db, "artwork:x", "artwork", "X", { retired_reason: "old note" });
+    const r = retireNode(db, "artwork:x", { reason: "dup", by: "admin" });
+    const p = prior(db, r.admin_signal_id!);
+    assert.equal(p[0].op, "retire_node");
+    assert.deepEqual(p[0].before, { retired: null, retired_at: null, retired_by: null, retired_reason: "old note" });
+  });
+
+  it("retireBatch's patches_to_review carries the before-image", () => {
+    const db = freshDb();
+    seedContributor(db, GALLERY);
+    insertNode(db, "artwork:x", "artwork", "X", { year: "1999" });
+    const sig = insertSignal(db, { contributor: GALLERY, title: "Patch", content: "{}", batch_id: "b1" });
+    const op = { op: "patch_node" as const, node_id: "artwork:x", metadata: { year: "2001" } };
+    materialisePatchNode(db, op, { createdBy: "api-Test Gallery", signalId: sig });
+    insertIntake(db, { contributor: GALLERY, signal_id: sig, target_node: "artwork:x", proposed_nodes: [op] });
+    const plan = retireBatch(db, "b1", { reason: "r", by: "admin", dryRun: true });
+    assert.deepEqual(plan.patches_to_review, [{ op: "patch_node", node_id: "artwork:x", signal_id: sig, before: { year: "1999" } }]);
   });
 });
 

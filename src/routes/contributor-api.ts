@@ -459,7 +459,7 @@ router.patch("/api/v1/nodes/:id", requireToken, (req, res) => {
   });
 
   if (isAutoMerge(req.contributor!.trust_tier)) {
-    materialisePatchNode(db, { op: "patch_node", node_id: nodeId, metadata: patch }, { createdBy: `api-${req.contributor!.name}` });
+    materialisePatchNode(db, { op: "patch_node", node_id: nodeId, metadata: patch }, { createdBy: `api-${req.contributor!.name}`, signalId });
     const { intake_id } = insertIntake(db, {
       contributor: req.contributor!,
       signal_id: signalId,
@@ -690,7 +690,7 @@ router.post(
     };
 
     if (isAutoMerge(req.contributor!.trust_tier)) {
-      materialiseAttachImage(db, op as Extract<ProposedNodeOp, { op: "attach_image" }>, { createdBy: `api-${req.contributor!.name}` });
+      materialiseAttachImage(db, op as Extract<ProposedNodeOp, { op: "attach_image" }>, { createdBy: `api-${req.contributor!.name}`, signalId });
       const { intake_id } = insertIntake(db, {
         contributor: req.contributor!,
         signal_id: signalId,

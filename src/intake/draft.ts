@@ -377,6 +377,12 @@ export function abandonDraft(db: DatabaseSync, draft: Draft): Draft {
   return getDraft(db, draft.id)!;
 }
 
+// What a card claims, without the review bookkeeping around it.
+function cardContent(c: Candidate): Record<string, unknown> {
+  const { cid: _cid, state: _state, origin: _origin, edited: _edited, note: _note, evidence: _evidence, proposed_as: _p, ...content } = c;
+  return content;
+}
+
 export function contributorPatchCandidate(
   db: DatabaseSync,
   draft: Draft,
@@ -396,6 +402,9 @@ export function contributorPatchCandidate(
       slugify,
     });
     checked.edited = true;
+    const cur = fresh.candidates[idx]!;
+    const proposedAs = cur.proposed_as ?? (JSON.stringify(cardContent(cur)) !== JSON.stringify(cardContent(checked)) ? cardContent(cur) : undefined);
+    if (proposedAs) checked.proposed_as = proposedAs;
     fresh.candidates[idx] = checked;
     touch(db, draft.id, { candidates: JSON.stringify(fresh.candidates) });
     return checked;
@@ -1059,7 +1068,9 @@ export async function confirmDraft(
   const prov = (c: Candidate) => {
     const url = c.kind === "image" ? c.image.page_url : c.evidence?.page_url;
     const page = pageEntry(draft, url);
-    return JSON.stringify({ draft_id: draft.id, cid: c.cid, origin: c.origin, page_sha256: page?.sha256 ?? null, page_fetched_at: page?.fetched_at ?? null });
+    // proposed_as: the contributor changed this card before confirming; it
+    // holds what the reader proposed, so the signal shows both.
+    return JSON.stringify({ draft_id: draft.id, cid: c.cid, origin: c.origin, page_sha256: page?.sha256 ?? null, page_fetched_at: page?.fetched_at ?? null, ...(c.proposed_as ? { proposed_as: c.proposed_as } : {}) });
   };
 
   const ops: PlannedOp[] = [];
@@ -1228,12 +1239,12 @@ export async function confirmDraft(
             const r = materialiseCreateNode(db, op.node_op, { signalId, createdBy });
             touched.add(r.node_id);
           } else if (op.node_op.op === "patch_node") {
-            materialisePatchNode(db, op.node_op, { createdBy });
+            materialisePatchNode(db, op.node_op, { createdBy, signalId });
             touched.add(op.node_op.node_id);
           } else if (op.node_op.op === "end_edge") {
             materialiseEndEdge(db, op.node_op, { signalId });
           } else {
-            materialiseAttachImage(db, op.node_op, { createdBy });
+            materialiseAttachImage(db, op.node_op, { createdBy, signalId });
             touched.add(op.node_op.node_id);
           }
         }
@@ -1247,8 +1258,10 @@ export async function confirmDraft(
         });
         intakeIds.push(intake_id);
       } else {
-        // An end_edge carries its own evidence signal, like queued edges do.
-        if (op.node_op) queuedNodes.push(op.node_op.op === "end_edge" ? { ...op.node_op, signal_id: signalId } : op.node_op);
+        // Every op but a create carries its own evidence signal, like queued
+        // edges do — an end_edge cites it, a patch / image records its
+        // before-image on it.
+        if (op.node_op) queuedNodes.push(op.node_op.op === "create_node" ? op.node_op : { ...op.node_op, signal_id: signalId });
         if (op.edge) queuedEdges.push({ ...op.edge, signal_id: signalId });
       }
     }

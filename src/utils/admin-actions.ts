@@ -20,7 +20,7 @@
 
 import crypto from "node:crypto";
 import type { DatabaseSync } from "node:sqlite";
-import { mergeMetadata } from "./contribution.js";
+import { mergeMetadata, priorValues, recordPrior } from "./contribution.js";
 
 export class AdminActionError extends Error {
   constructor(
@@ -53,8 +53,9 @@ function withTx<T>(db: DatabaseSync, fn: () => T): T {
 
 // The audit anchor for every admin correction. Confidence 'high' (it's a
 // first-person operator statement), consent full/attributed, origin
-// human_primary — the admin is a contributor like anyone else.
-function insertAdminSignal(
+// human_primary — the admin is a contributor like anyone else. Exported for
+// the operator CLIs that write outside the HTTP surface.
+export function insertAdminSignal(
   db: DatabaseSync,
   args: { by: string; title: string; content: unknown }
 ): string {
@@ -139,17 +140,19 @@ function retireNodeInner(
         WHERE (source_id = ? OR target_id = ?) AND valid_until IS NULL`
     )
     .run(opts.anchor, nodeId, nodeId);
-  const row = db.prepare("SELECT metadata FROM nodes WHERE id = ?").get(nodeId) as any;
+  const row = db.prepare("SELECT metadata, updated_by FROM nodes WHERE id = ?").get(nodeId) as any;
   let base: any = {};
   if (row?.metadata) {
     try { base = JSON.parse(row.metadata); } catch { base = {}; }
   }
-  const merged = mergeMetadata(base, {
+  const patch = {
     retired: true,
     retired_at: isoNow(),
     retired_by: opts.by,
     retired_reason: opts.reason,
-  });
+  };
+  recordPrior(db, opts.anchor, { op: "retire_node", node_id: nodeId, updated_by: row?.updated_by ?? null, before: priorValues(base, Object.keys(patch)) });
+  const merged = mergeMetadata(base, patch);
   db.prepare("UPDATE nodes SET metadata = ?, updated_by = ? WHERE id = ?")
     .run(JSON.stringify(merged), `api-${opts.by}`, nodeId);
   return { edges_superseded: Number(r.changes) };
@@ -205,7 +208,7 @@ export interface BatchRetirePlan {
   edges_to_supersede: number;
   nodes_to_retire: string[];
   nodes_skipped_preexisting: string[];
-  patches_to_review: Array<{ op: string; node_id: string; signal_id: string | null }>;
+  patches_to_review: Array<{ op: string; node_id: string; signal_id: string | null; before: Record<string, unknown> | null }>;
   pending_intake_to_reject: number;
 }
 
@@ -217,6 +220,21 @@ export interface RetireBatchResult extends BatchRetirePlan {
   edges_superseded?: number;
   nodes_retired?: number;
   pending_rejected?: number;
+}
+
+// The before-image a patch / image write recorded on its signal (see
+// recordPrior in contribution.ts), or null when none was recorded.
+function priorFor(db: DatabaseSync, signalId: string | null, op: string, nodeId: string): Record<string, unknown> | null {
+  if (!signalId) return null;
+  const row = db.prepare("SELECT processing_trace FROM signals WHERE id = ?").get(signalId) as any;
+  if (!row?.processing_trace) return null;
+  try {
+    const prior = JSON.parse(row.processing_trace)?.prior;
+    const hit = Array.isArray(prior) ? prior.find((p: any) => p?.op === op && p?.node_id === nodeId) : null;
+    return hit?.before ?? null;
+  } catch {
+    return null;
+  }
 }
 
 function buildBatchPlan(db: DatabaseSync, batchId: string): BatchRetirePlan & { signalIds: string[] } {
@@ -252,7 +270,7 @@ function buildBatchPlan(db: DatabaseSync, batchId: string): BatchRetirePlan & { 
   // created_at is >= the batch's first signal (ISO strings compare
   // lexicographically).
   const createCandidates = new Map<string, string | null>(); // node_id → signal_id
-  const patchesToReview: Array<{ op: string; node_id: string; signal_id: string | null }> = [];
+  const patchesToReview: BatchRetirePlan["patches_to_review"] = [];
   for (const row of intakeRows) {
     if (!row.proposed_nodes) continue;
     let ops: any[] = [];
@@ -261,7 +279,8 @@ function buildBatchPlan(db: DatabaseSync, batchId: string): BatchRetirePlan & { 
       if (op?.op === "create_node" && op.type && op.slug) {
         createCandidates.set(`${op.type}:${op.slug}`, row.signal_id);
       } else if ((op?.op === "patch_node" || op?.op === "attach_image") && op.node_id) {
-        patchesToReview.push({ op: op.op, node_id: op.node_id, signal_id: row.signal_id });
+        const signalId = op.signal_id ?? row.signal_id;
+        patchesToReview.push({ op: op.op, node_id: op.node_id, signal_id: signalId, before: priorFor(db, signalId, op.op, op.node_id) });
       }
     }
   }
@@ -331,9 +350,10 @@ function buildBatchPlan(db: DatabaseSync, batchId: string): BatchRetirePlan & { 
  *   4. reject every still-pending intake row from the batch
  *
  * Metadata patches / image attachments the batch applied to PRE-EXISTING
- * nodes cannot be auto-reverted (no before-image is stored) — they're
- * returned in patches_to_review for manual follow-up; each signal's content
- * records the exact patch that was applied.
+ * nodes are not auto-reverted — a later write may have built on them. They're
+ * returned in patches_to_review for manual follow-up, each with the values
+ * it replaced (`before`, from the signal's processing_trace; null for writes
+ * made before before-images were recorded).
  *
  * Always run with dryRun first.
  */
