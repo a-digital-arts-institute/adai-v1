@@ -186,6 +186,9 @@ empty — it requires evidence of artist intent, not thematic similarity.
 - `GET /field` — the 30k canvas field view (press `e` for embeddings mode)
 - `GET /practitioner/:slug` · `/artwork/:slug` · `/concept/:slug` · `/scene/:slug`
   — profile pages (with on-demand Style-kin / Visually-affine sections)
+- `GET /:type/:slug/history` (+ `history.json`) — every metadata edit (before →
+  after) and every relation added/ended, newest first, each with its signal;
+  consent-filtered like the profile (`src/utils/history.ts`)
 - `GET /neighbours/:type/:slug` — similarity browser (top-20 cosine neighbours)
 - `GET /contribute` — signal submission form
 - `GET /review` — curator review queue

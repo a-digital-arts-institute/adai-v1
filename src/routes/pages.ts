@@ -11,6 +11,7 @@ import { NODE_NOT_RETIRED } from "../utils/visibility.js";
 import { sourceLabel } from "../utils/source-label.js";
 import { rosterFor } from "../utils/roster.js";
 import { collapseClaims, CLAIM_COLS } from "../utils/claims.js";
+import { nodeHistory, type HistoryEvent } from "../utils/history.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.join(__dirname, "..", "..");
@@ -350,6 +351,7 @@ function profileHandler(req: any, res: any) {
   // Shareable deep-link into the field view, zoomed straight to this node —
   // the URL contributors send around ("look at what I added").
   body += ` <a href='/field?node=${encodeURIComponent(node.id)}' class='btn'>View in field</a>`;
+  body += ` <a href='/${encodeURIComponent(node.type)}/${encodeURIComponent(slug)}/history' class='btn'>History</a>`;
 
   res.set(HTML_HEADERS).send(htmlPage(node.name, body));
 }
@@ -488,6 +490,93 @@ router.get("/platform/:slug/data", dataHandler);
 router.get("/publication/:slug/data", dataHandler);
 router.get("/project/:slug/data", dataHandler);
 router.get("/classification_regime/:slug/data", dataHandler);
+
+// GET /:type/:slug/history — every metadata write and every relation that
+// started or ended, newest first, each with the signal behind it
+// (src/utils/history.ts). history.json is the same data. Slug-only
+// resolution like /data; retired nodes stay reachable here too.
+function historyFor(req: any): ReturnType<typeof nodeHistory> {
+  const db = getDb();
+  const row = db.prepare("SELECT id FROM nodes WHERE slug = ?").get(req.params.slug) as any;
+  return row ? nodeHistory(db, row.id) : null;
+}
+
+const historyValue = (v: unknown): string => {
+  if (v === null || v === undefined) return "<span class='meta'>(none)</span>";
+  const s = typeof v === "string" ? v : JSON.stringify(v);
+  const short = s.length > 160 ? s.slice(0, 157) + "…" : s;
+  return /^https?:\/\//i.test(s) && s === short
+    ? `<a href='${htmlEscape(s)}' target='_blank' rel='noopener'>${htmlEscape(short)}</a>`
+    : `<code>${htmlEscape(short)}</code>`;
+};
+
+const HISTORY_OP_LABEL: Record<string, string> = {
+  patch_node: "edited",
+  attach_image: "image attached",
+  retire_node: "retired",
+  apply_image_patch: "image resized",
+};
+
+function renderHistoryEvent(e: HistoryEvent): string {
+  const day = e.at ? htmlEscape(e.at.slice(0, 10)) : "undated";
+  let what: string;
+  if (e.kind === "metadata") {
+    what = `<strong>${htmlEscape(HISTORY_OP_LABEL[e.op] ?? e.op)}</strong><ul class='edge-list'>` +
+      e.changes.map((c) =>
+        `<li>${htmlEscape(c.key)}: ${e.before_recorded ? `${historyValue(c.before)} → ` : ""}${historyValue(c.after)}</li>`
+      ).join("") + `</ul>`;
+    if (!e.before_recorded) what += `<p class='meta'>Earlier value not recorded (written before before-images were kept).</p>`;
+  } else {
+    const other = e.other.slug && e.other.type
+      ? `<a href='/${encodeURIComponent(e.other.type)}/${encodeURIComponent(e.other.slug)}'>${htmlEscape(e.other.name ?? e.other.id)}</a>`
+      : htmlEscape(e.other.name ?? e.other.id);
+    const rel = e.direction === "out" ? `<span class='edge-type'>${htmlEscape(e.edge_type)}</span> → ${other}` : `${other} → <span class='edge-type'>${htmlEscape(e.edge_type)}</span>`;
+    what = `<strong>${e.change === "added" ? "relation added" : "relation ended"}</strong> ${rel}${e.event_time ? ` <span class='meta'>(${htmlEscape(e.event_time)})</span>` : ""}`;
+  }
+  const s = e.source;
+  const meta: string[] = [];
+  if (e.by) meta.push(`by ${htmlEscape(e.by)}`);
+  else if (s) meta.push("anonymous");
+  if (s?.title) meta.push(htmlEscape(s.title));
+  if (s?.source_url && /^https?:\/\//i.test(s.source_url)) meta.push(`<a href='${htmlEscape(s.source_url)}' target='_blank' rel='noopener'>source</a>`);
+  if (s?.batch_id) meta.push(`batch: ${htmlEscape(s.batch_id)}`);
+  if (s?.status && s.status !== "active") meta.push(`<span class='tag'>${htmlEscape(s.status)}</span>`);
+  let html = `<div class='card'><p class='meta'>${day}</p>${what}`;
+  if (meta.length) html += `<p class='meta'>${meta.join(" · ")}</p>`;
+  if (s?.proposed_as) {
+    html += `<details><summary class='meta'>changed by the contributor before confirming — what the reader proposed</summary><pre style='white-space:pre-wrap;font-size:0.75rem'>${htmlEscape(JSON.stringify(s.proposed_as, null, 2))}</pre></details>`;
+  }
+  return html + `</div>`;
+}
+
+function historyHandler(req: any, res: any) {
+  const h = historyFor(req);
+  if (!h) {
+    res.status(404).set(HTML_HEADERS).send(htmlPage("Not found", "<p>No such node.</p>"));
+    return;
+  }
+  const profile = `/${encodeURIComponent(h.node.type)}/${encodeURIComponent(h.node.slug)}`;
+  let body = `<h2>History: <a href='${profile}'>${htmlEscape(h.node.name)}</a></h2>`;
+  body += `<p class='meta'>Every change to this ${htmlEscape(h.node.type)}, newest first. Nothing is deleted: edits keep the value they replaced, ended relations stay on record. <a href='${profile}/history.json'>JSON</a></p>`;
+  if (h.events.length === 0) body += `<p class='meta'>No recorded changes.</p>`;
+  for (const e of h.events) body += renderHistoryEvent(e);
+  if (h.node.created_at) body += `<div class='card'><p class='meta'>${htmlEscape(h.node.created_at.slice(0, 10))}</p><strong>created</strong></div>`;
+  res.set(HTML_HEADERS).send(htmlPage(`${h.node.name} — history`, body));
+}
+
+function historyJsonHandler(req: any, res: any) {
+  const h = historyFor(req);
+  if (!h) {
+    res.status(404).json({ error: "not found" });
+    return;
+  }
+  res.json(h);
+}
+
+for (const t of ["practitioner", "artwork", "concept", "scene", "collective", "institution", "platform", "publication", "project", "classification_regime"]) {
+  router.get(`/${t}/:slug/history`, historyHandler);
+  router.get(`/${t}/:slug/history.json`, historyJsonHandler);
+}
 
 // GET /neighbours/:type/:slug — similarity browser. Shows the top-K cosine
 // neighbours of a node across any kind+candidate combination. Useful for
