@@ -66,7 +66,7 @@ export function claimPage(node: { id: string; type: string; name: string; slug: 
 <p class="lede">Claiming says “this page is me” (or “mine”, for a collective or an institution). A claimed page shows a badge and a short <b>@handle</b> link, and gives you a log of everything the commons holds about it, where you can add context, contest what is wrong, and invite the people at the other end. You do not edit the page directly — curators still review changes. <a href="${href}">Back to the page</a>.</p>
 <div id="app"><p class="progress">loading…</p></div>`;
   const script = `${helpers}${LOGIN}
-const NODE = ${JSON.stringify(node)};
+const NODE = ${JSON.stringify(node).replace(/</g, "\\u003c")};
 const app = $('#app');
 function alertMsg(m) { const d = document.createElement('div'); d.className = 'msg msg-err'; d.textContent = m; app.prepend(d); setTimeout(() => d.remove(), 7000); }
 function signedOut() {

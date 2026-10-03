@@ -72,6 +72,32 @@ router.post("/api/claims/handle", json, requireContributor, (req, res) => {
   } catch (e) { fail(res, e); }
 });
 
+// ---- public read surface for /field ------------------------------------------------------
+
+// Open contests, so /field can draw contested relations dashed (kept off the
+// cached graph stream: its stamp only tracks node / relation counts).
+router.get("/api/contested", (_req, res) => {
+  const relations = getDb()
+    .prepare("SELECT DISTINCT source_id, edge_type, target_id FROM relation_notes WHERE kind = 'contest' AND state = 'open' AND source_id IS NOT NULL")
+    .all();
+  res.set(JSON_HEADERS).json({ relations });
+});
+
+// The claim badge for the field's entity panel.
+router.get("/api/claimed/:type/:slug", (req, res) => {
+  const type = String(req.params.type);
+  const n = nodeBySlug(type, String(req.params.slug));
+  if (!n) { res.status(404).set(JSON_HEADERS).json({ error: "not_found" }); return; }
+  let claimed: any = null;
+  try { claimed = JSON.parse(n.metadata ?? "{}")?.claimed ?? null; } catch { /* bad metadata */ }
+  const claimable = (CLAIMABLE_TYPES as readonly string[]).includes(type);
+  res.set(JSON_HEADERS).json({
+    claimed: claimed ? { handle: claimed.handle ?? null, by: Array.isArray(claimed.by) ? claimed.by : [], at: claimed.at ?? null } : null,
+    claimable,
+    claim_url: claimable ? `/claim/${encodeURIComponent(type)}/${encodeURIComponent(n.slug)}` : null,
+  });
+});
+
 // ---- claiming ---------------------------------------------------------------------------
 
 function nodeBySlug(type: string, slug: string): any {
