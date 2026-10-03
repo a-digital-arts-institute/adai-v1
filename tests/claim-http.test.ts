@@ -104,6 +104,12 @@ it("claim → handle → log → contest → curator; signed-out request → inv
     assert.match((await call("GET", "/review?kind=contest", curator)).text, /Never represented me/);
     assert.equal((await call("POST", `/api/review/${contestQ}/approve`, curator)).status, 200);
     assert.equal((db.prepare("SELECT COUNT(*) AS n FROM edges WHERE source_id = 'institution:g' AND valid_until IS NULL").get() as any).n, 0);
+    // history keeps the contest and its outcome next to the ended relation
+    const hist = await call("GET", "/practitioner/ada/history.json");
+    const note = hist.json.events.find((e: any) => e.kind === "note");
+    assert.equal(note.state, "upheld");
+    assert.equal(note.note, "Never represented me");
+    assert.match((await call("GET", "/practitioner/ada/history")).text, /contested by the subject/);
 
     // peer invite Bob: instant claim, email sent with a link
     r = await call("POST", "/api/me/invite", ada, { node_id: "practitioner:bob", email: "bob@x.org", message: "join us" });

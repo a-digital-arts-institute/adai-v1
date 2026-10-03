@@ -3,8 +3,10 @@
 // endpoints in src/routes/claim.ts, so an assistant with a bearer token can
 // do everything these pages do.
 
+import type { DatabaseSync } from "node:sqlite";
 import { shell, helpers } from "../intake/pages.js";
 import { htmlEscape } from "../templates.js";
+import { CLAIMABLE_TYPES, approvedClaimsFor, claimsOf, suggestHandle } from "./store.js";
 
 const CSS = `<style>
 #intake .rel { border-bottom: 1px solid #1a1a1c; padding: 9px 0; font-size: 12.5px; }
@@ -177,6 +179,9 @@ function pendingRow(p) {
     (p.my_objections.some(o => o.state === 'open') ? '' : '<form class="obj"><textarea name="note" required maxlength="2000" placeholder="Object: tell the curator what is wrong before they decide."></textarea><button class="btn" type="submit">Object</button></form>') + '</div>';
 }
 function evRow(e) {
+  if (e.kind === 'note') {
+    return '<div class="ev">' + esc((e.at || '').slice(0, 10)) + ' · <b>' + (e.note_kind === 'contest' ? 'contested' : 'context') + '</b> <span class="pill">' + esc(e.state) + '</span> ' + esc(e.note) + (e.by ? ' · by ' + esc(e.by) : '') + '</div>';
+  }
   if (e.kind === 'relation') {
     const verb = esc(VERBS[e.edge_type] || e.edge_type);
     const o = '<a href="' + href(e.other.id, e.other.slug) + '">' + esc(e.other.name || e.other.id) + '</a>';
@@ -228,4 +233,65 @@ async function load() {
 }
 load();`;
   return shell("Your log", body, script);
+}
+
+// ---- after a URL read: "is one of these you?" (§6) ------------------------------------
+
+/**
+ * Candidates on a receipt: the draft's subject first, then the batch's
+ * people / collectives / institutions (cap 8) — minus pages the contributor
+ * already claims and practitioners someone else claimed.
+ */
+export function postIntakeCandidates(db: DatabaseSync, contributorId: string, receipt: Record<string, any>): Array<{ id: string; name: string; type: string; handle: string | null }> {
+  const mine = new Set(claimsOf(db, contributorId, ["approved", "pending"]).map((c) => c.node_id));
+  const ids: string[] = [];
+  const push = (id: unknown) => { if (typeof id === "string" && id && !id.startsWith("cid:") && !ids.includes(id)) ids.push(id); };
+  push(receipt.subject_node_id);
+  for (const e of (receipt.edges as any[]) ?? []) { push(e.source_id); push(e.target_id); }
+  const out: Array<{ id: string; name: string; type: string; handle: string | null }> = [];
+  for (const id of ids) {
+    if (out.length >= 8) break;
+    if (mine.has(id)) continue;
+    const n = db.prepare("SELECT id, name, type FROM nodes WHERE id = ?").get(id) as any;
+    if (!n || !(CLAIMABLE_TYPES as readonly string[]).includes(n.type)) continue;
+    if (n.type === "practitioner" && approvedClaimsFor(db, id).length) continue;
+    out.push({ id: n.id, name: n.name, type: n.type, handle: suggestHandle(db, n.id) });
+  }
+  return out;
+}
+
+export function postIntakeClaimPrompt(db: DatabaseSync, contributorId: string, draftId: string, receipt: Record<string, any>): string {
+  const cands = postIntakeCandidates(db, contributorId, receipt);
+  if (!cands.length) return "";
+  const hasClaim = claimsOf(db, contributorId, ["approved"]).length > 0;
+  const rows = cands
+    .map((c, i) => `<div class="row" style="align-items:center;margin:4px 0"><label style="display:flex;gap:6px;align-items:center;flex:1;margin:0"><input type="checkbox" name="c${i}" value="${htmlEscape(c.id)}" style="width:auto"${i === 0 && !hasClaim ? " checked" : ""}> ${htmlEscape(c.name)} <span class="pill">${htmlEscape(c.type)}</span></label><input name="h${i}" value="${htmlEscape(c.handle ?? "")}" placeholder="handle" style="max-width:200px"></div>`)
+    .join("");
+  const evidence = `Read ${String(receipt.source_url ?? receipt.source_domain ?? "")} through the URL intake (batch ${draftId}).`;
+  return `<div class="group" id="claim-prompt" style="border:1px solid #2a3a5a;padding:10px 12px;border-radius:3px;margin:12px 0">
+<h3 style="margin-top:0">${hasClaim ? "Add another page you represent?" : "Is one of these you?"}</h3>
+<p class="lede">Claim the page that is you (or yours — your collective, your gallery). It gets a badge and a short @handle, and you get a log of what the commons holds about it. Your invitation's own page is yours at once; any other claim goes to a curator, with this read as your evidence.</p>
+<form id="cp">${rows}<div class="row" style="margin-top:8px"><button class="btn primary" type="submit">Claim selected</button><a href="#" id="cp-later" class="lede" style="margin-left:12px">not now</a></div></form><div id="cp-out"></div></div>
+<script>
+(function(){
+  var esc = function (v) { return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
+  var KEY = 'adai-claim-prompt-' + ${JSON.stringify(draftId)};
+  var box = document.getElementById('claim-prompt');
+  try { if (localStorage.getItem(KEY) === 'later') { box.style.display = 'none'; return; } } catch (e) {}
+  document.getElementById('cp-later').onclick = function (e) { e.preventDefault(); try { localStorage.setItem(KEY, 'later'); } catch (x) {} box.style.display = 'none'; };
+  document.getElementById('cp').onsubmit = async function (e) {
+    e.preventDefault();
+    var f = e.target, out = document.getElementById('cp-out'), lines = [];
+    for (var i = 0; i < ${cands.length}; i++) {
+      var cb = f['c' + i]; if (!cb || !cb.checked) continue;
+      var r = await fetch('/api/claims', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ node_id: cb.value, handle: f['h' + i].value, via: 'post_intake', evidence: ${JSON.stringify(evidence).replace(/</g, "\\u003c")} }) });
+      var j = {}; try { j = await r.json(); } catch (x) {}
+      var name = esc(cb.parentNode.textContent.trim());
+      lines.push(r.ok ? (j.claim.status === 'approved' ? '✓ ' + name + ' is yours — <a href="/me?node=' + encodeURIComponent(cb.value) + '">open your log</a>' : '… ' + name + ': sent to a curator') : '✗ ' + name + ': ' + esc(j.message || r.status));
+    }
+    out.innerHTML = '<div class="msg msg-ok">' + (lines.join('<br>') || 'Nothing selected.') + '</div>';
+    if (lines.length) f.style.display = 'none';
+  };
+})();
+</script>`;
 }

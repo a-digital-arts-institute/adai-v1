@@ -533,6 +533,15 @@ function renderHistoryEvent(e: HistoryEvent): string {
         `<li>${htmlEscape(c.key)}: ${e.before_recorded ? `${historyValue(c.before)} → ` : ""}${historyValue(c.after)}</li>`
       ).join("") + `</ul>`;
     if (!e.before_recorded) what += `<p class='meta'>Earlier value not recorded (written before before-images were kept).</p>`;
+  } else if (e.kind === "note") {
+    const target = e.relation
+      ? `<code>${htmlEscape(e.relation.source_id)}</code> <span class='edge-type'>${htmlEscape(e.relation.edge_type)}</span> <code>${htmlEscape(e.relation.target_id)}</code>`
+      : `<code>${htmlEscape(e.meta_key ?? "")}</code>`;
+    const label = e.note_kind === "contest" ? `contested by the subject` : `context from the subject`;
+    const outcome = e.note_kind === "contest" && e.state !== "open"
+      ? ` <span class='tag'>${htmlEscape(e.state)}${e.resolved_at ? ` ${htmlEscape(e.resolved_at.slice(0, 10))}` : ""}</span>${e.resolution ? ` <span class='meta'>${htmlEscape(e.resolution)}</span>` : ""}`
+      : e.state === "withdrawn" ? " <span class='tag'>withdrawn</span>" : "";
+    what = `<strong>${label}</strong> ${target}${outcome}${e.note ? `<p>“${htmlEscape(e.note)}”</p>` : ""}`;
   } else {
     const other = e.other.slug && e.other.type
       ? `<a href='/${encodeURIComponent(e.other.type)}/${encodeURIComponent(e.other.slug)}'>${htmlEscape(e.other.name ?? e.other.id)}</a>`

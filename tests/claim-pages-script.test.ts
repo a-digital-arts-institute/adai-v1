@@ -24,3 +24,30 @@ describe("claim page scripts parse", () => {
     });
   }
 });
+
+import { freshDb, insertNode } from "./helpers.js";
+import { postIntakeCandidates, postIntakeClaimPrompt } from "../src/claim/screens.js";
+import { ensureContributorForEmail } from "../src/intake/auth.js";
+import { backfillInviteClaims } from "../src/claim/store.js";
+
+describe("post-intake claim prompt", () => {
+  it("offers the subject first, claimable types only, skips what is taken", () => {
+    const db = freshDb();
+    insertNode(db, "practitioner:ada", "practitioner", "Ada </script><b>");
+    insertNode(db, "collective:k", "collective", "K");
+    insertNode(db, "artwork:w", "artwork", "W");
+    insertNode(db, "practitioner:bob", "practitioner", "Bob");
+    const me = ensureContributorForEmail(db, { email: "a@x.org", name: "A", invite: true });
+    ensureContributorForEmail(db, { email: "b@x.org", name: "B", invite: true, self_node_id: "practitioner:bob" });
+    backfillInviteClaims(db);
+    const receipt = { subject_node_id: "practitioner:ada", source_url: "https://ada.art", edges: [
+      { source_id: "artwork:w", target_id: "practitioner:ada" },
+      { source_id: "practitioner:ada", target_id: "collective:k" },
+      { source_id: "practitioner:ada", target_id: "practitioner:bob" },
+    ] };
+    assert.deepEqual(postIntakeCandidates(db, me.id, receipt).map((c) => c.id), ["practitioner:ada", "collective:k"]);
+    const html = postIntakeClaimPrompt(db, me.id, "drf_0123456789abcdef", receipt);
+    assert.match(html, /Is one of these you\?/);
+    for (const s of scriptsOf(html)) assert.doesNotThrow(() => new Function(s));
+  });
+});

@@ -46,6 +46,7 @@ import { sendLoginEmail, sendReceiptEmail, sendAccessRequestEmail } from "../int
 import { spawnAsync } from "../intake/spawn.js";
 import { contributePage, draftPage, batchPage } from "../intake/pages.js";
 import { myNodes } from "../claim/log.js";
+import { postIntakeClaimPrompt } from "../claim/screens.js";
 
 const router = Router();
 
@@ -282,7 +283,9 @@ router.get("/batch/:batch_id", (req, res) => {
   const draft = getDraft(db, String(req.params.batch_id));
   const isOwner = !!(s && draft && draft.contributor_id === s.contributor.id);
   const admins = (process.env.ADMIN_NOTIFY_EMAILS || "").split(/[,\s]+/).filter(Boolean);
-  res.set(HTML_HEADERS).send(batchPage(r, isOwner, admins));
+  // "Is one of these you?" (docs/CLAIM-SPEC.md §6) — the owner only.
+  const prompt = isOwner && draft ? postIntakeClaimPrompt(db, s!.contributor.id, draft.id, r) : "";
+  res.set(HTML_HEADERS).send(batchPage(r, isOwner, admins, prompt));
 });
 
 export default router;
