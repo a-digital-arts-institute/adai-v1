@@ -1,6 +1,6 @@
 # Claim, handle, personal log, field lens — spec
 
-Status: **draft for review** · 2026-10-03 · target: live on prod before Glitch (2–3 weeks)
+Status: **built** on `feat/claim` (PR #48) · 2026-10-03 · open questions settled with the defaults (§9) · target: live on prod before Glitch
 
 The five agreed MVP points, as decided:
 
@@ -214,8 +214,11 @@ On `/batch/:id` (the receipt, after Confirm), if the contributor has **no approv
 | `POST /api/claims` `{node_id, evidence?, handle?, via?}` | session/bearer | create a claim (§2.2 rule) |
 | `POST /api/claims/request` `{node_id, email, evidence}` | public | the signed-out claim → magic link or access request |
 | `POST /api/claims/:id/withdraw` | owner | |
-| `GET /api/claim/handle?h=` | session | availability |
-| `PUT /api/nodes/:id/handle` `{handle}` | claimant | set/change a handle |
+| `GET /api/claims/handle?h=&node=` | session | availability |
+| `POST /api/claims/handle` `{node_id, handle}` | claimant | set/change a handle |
+| `GET /api/contested` · `GET /api/claimed/:type/:slug` | public | open contests for `/field`; the entity panel's badge |
+| `POST /api/review/access/approve\|reject` `{email}` | curator | a signed-out claim request: invite + approve in one step |
+| `POST /api/me/objection` · `POST /api/me/notes/:signal_id/withdraw` | session/bearer | §4 |
 | `GET /me` · `GET /api/me/log` | session/bearer | the personal log |
 | `POST /api/me/contest` · `/context` · `/invite` | session/bearer | §4 |
 | `POST /api/v1/claims/:id/revoke` · `GET /api/v1/claims` | admin | |
@@ -237,7 +240,11 @@ Each step lands as its own commit on `feat/claim`, with tests next to the existi
 
 ---
 
-## 9. Open questions
+## 9. Open questions — settled with the defaults (2026-10-03)
+
+Also built beyond the draft: `/review` and `POST /api/review/:id/*` were
+unauthenticated; they now need a curator (an `ADMIN_EMAILS` session, a
+contributor holding an admin token, or an admin bearer token).
 
 - **Q1. Context notes from probationary claimants**: queue them (consistent with "moderators approve") or publish at once (the subject speaking about themselves)? *Default in this spec: queue.*
 - **Q2. Contester identity**: should a contest show "contested by the subject" only, or name the claimant? *Default: "the subject" plus the handle.*
