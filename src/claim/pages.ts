@@ -123,6 +123,37 @@ export function claimReviewCards(db: DatabaseSync, kind: "claim" | "contest" | "
   return html;
 }
 
+/** Signed-out claim requests: uninvited addresses that asked to claim a page (§2.3). */
+export function accessClaimCount(db: DatabaseSync): number {
+  return Number((db.prepare("SELECT COUNT(*) AS n FROM intake_access_requests WHERE node_id IS NOT NULL").get() as any).n);
+}
+
+export function accessClaimCards(db: DatabaseSync): string {
+  const rows = db
+    .prepare("SELECT email, node_id, evidence, first_at, last_at FROM intake_access_requests WHERE node_id IS NOT NULL ORDER BY last_at ASC")
+    .all() as any[];
+  if (!rows.length) return "";
+  let html = `<h3 style='margin-top:1.5rem'>Not yet invited (${rows.length})</h3><p class='meta'>Approving invites the address and approves the claim at once; they get a sign-in link to their log. Their credit defaults to the page's name.</p>`;
+  for (const r of rows) {
+    const id = `acc-${Buffer.from(r.email).toString("hex")}`;
+    const node = db.prepare("SELECT name, type FROM nodes WHERE id = ?").get(r.node_id) as any;
+    const domain = String(r.email).split("@")[1] ?? "";
+    const hosts = nodeHosts(parse((db.prepare("SELECT metadata FROM nodes WHERE id = ?").get(r.node_id) as any)?.metadata));
+    const match = hosts.some((h) => h === domain || h.endsWith(`.${domain}`) || domain.endsWith(`.${h}`));
+    html += `<div class='card' id='${id}'><h3>${esc(r.email)} claims ${nodeLink(db, r.node_id)} <span class='tag'>${esc(node?.type)}</span></h3>
+<p class='meta'>${esc(r.last_at)}${match ? " · <span class='tag' style='color:#6fbf8a'>email domain matches the page's website</span>" : hosts.length ? ` · page website: ${hosts.map(esc).join(", ")}` : ""}</p>
+${r.evidence ? `<p>${esc(r.evidence)}</p>` : "<p class='meta'>No evidence given.</p>"}
+<div style='margin-top:0.5rem'><button class='btn btn-approve' data-acc='approve' data-email='${esc(r.email)}' data-card='${id}'>Invite + approve claim</button>
+<button class='btn btn-reject' data-acc='reject' data-email='${esc(r.email)}' data-card='${id}'>Drop the claim</button></div></div>`;
+  }
+  html += `<script>
+document.querySelectorAll('[data-acc]').forEach(function(b){b.onclick=function(){
+fetch('/api/review/access/'+b.dataset.acc,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:b.dataset.email})})
+.then(function(r){return r.json().then(function(j){var el=document.getElementById(b.dataset.card);el.style.opacity='0.4';el.innerHTML+='<p class="meta">'+(r.ok?b.dataset.acc+'d':(j.message||j.error||'failed'))+'</p>';});});};});
+</script>`;
+  return html;
+}
+
 /** Objections a claimant filed against a pending item, for its /review card. */
 export function objectionsBlock(db: DatabaseSync, queueId: string): string {
   const obs = objectionsFor(db, queueId).filter((o) => o.state === "open");

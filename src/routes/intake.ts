@@ -45,6 +45,7 @@ import { CandidateError } from "../intake/candidate.js";
 import { sendLoginEmail, sendReceiptEmail, sendAccessRequestEmail } from "../intake/mail.js";
 import { spawnAsync } from "../intake/spawn.js";
 import { contributePage, draftPage, batchPage } from "../intake/pages.js";
+import { myNodes } from "../claim/log.js";
 
 const router = Router();
 
@@ -138,6 +139,8 @@ router.get("/api/intake/me", requireContributor, (req, res) => {
     email: req.intakeSession?.email ?? emailFor(db, c.id),
     trust_tier: c.trust_tier,
     self_node_id: req.intakeSession?.self_node_id ?? null,
+    claims: myNodes(db, c.id),
+    curator: c.scope === "admin",
     via: req.intakeSession ? "session" : "token",
   });
 });

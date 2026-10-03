@@ -82,11 +82,11 @@ const CSS = `
 #intake .bulk { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0 0; }
 `;
 
-function shell(title: string, body: string, script = ""): string {
+export function shell(title: string, body: string, script = ""): string {
   return htmlPage(title, `<style>${CSS}</style><div id="intake">${body}</div>${script ? `<script>${script}</script>` : ""}`);
 }
 
-const helpers = `
+export const helpers = `
 const $ = (s, r) => (r || document).querySelector(s);
 const esc = (s) => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 async function api(method, path, body) {

@@ -8,6 +8,7 @@ import apiRoutes from "./routes/api.js";
 import contributorApiRoutes from "./routes/contributor-api.js";
 import archivistRoutes from "./routes/archivist.js";
 import intakeRoutes from "./routes/intake.js";
+import claimRoutes from "./routes/claim.js";
 import internalRoutes, { workerKey } from "./routes/internal.js";
 import { startSpawnerInterval, isSpawnerConfigured } from "./intake/spawn.js";
 import { isSessionConfigured } from "./intake/auth.js";
@@ -53,7 +54,8 @@ const app = express();
 // before hitting the rate-limit gate.
 const generousJson = express.json({ limit: "16mb" });
 app.use((req, res, next) => {
-  if (req.path.startsWith("/api/archivist/") || req.path.startsWith("/api/intake/") || req.path.startsWith("/internal/")) return next();
+  if (req.path.startsWith("/api/archivist/") || req.path.startsWith("/api/intake/") || req.path.startsWith("/internal/") ||
+      req.path.startsWith("/api/claims") || req.path.startsWith("/api/me/") || req.path.startsWith("/api/review/access/")) return next();
   return generousJson(req, res, next);
 });
 
@@ -138,6 +140,8 @@ app.use(
 // /auth/:token, so it goes before the page router. /internal/* (worker
 // surface) is mounted ONLY when WORKER_KEY is set (>=16 chars).
 app.use(intakeRoutes);
+// Claims, /@handle, /me (docs/CLAIM-SPEC.md).
+app.use(claimRoutes);
 if (workerKey()) {
   app.use(internalRoutes);
   console.log("[intake] /internal/intake/* mounted");

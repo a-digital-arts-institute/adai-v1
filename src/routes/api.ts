@@ -12,6 +12,7 @@ import { validateSourceUrl } from "../utils/contribution.js";
 import { rosterFor } from "../utils/roster.js";
 import { collapseClaims, claimsOf, CLAIM_COLS } from "../utils/claims.js";
 import { requireCurator } from "../intake/auth.js";
+import { notifyAfterReview } from "../claim/mail.js";
 
 // SQL fragment that exposes the two metadata keys sourceLabel() reads. Kept
 // next to the helper so the projection and the deriver can't drift.
@@ -586,6 +587,7 @@ router.post("/api/review/:id/approve", requireCurator, (req, res) => {
     return;
   }
   res.set(HTML_HEADERS).send("<div class='msg msg-ok'>Approved and is now live.</div>");
+  void notifyAfterReview(db, String(req.params.id), true, null);
 });
 
 // POST /api/review/:id/reject — thin HTML wrapper over the shared reject
@@ -603,6 +605,7 @@ router.post("/api/review/:id/reject", requireCurator, (req, res) => {
     return;
   }
   res.set(HTML_HEADERS).send("<div class='msg msg-err'>Rejected.</div>");
+  void notifyAfterReview(db, String(req.params.id), false, reason);
 });
 
 // GET /api/islands — latent k-means cluster id per node. Reads the local

@@ -40,6 +40,7 @@ import { ensureContributorForEmail, normaliseEmail, revokeInvite, intakeOpen } f
 import { sendLoginEmail } from "../intake/mail.js";
 import { approveIntakeItem, rejectIntakeItem } from "../utils/review.js";
 import { backfillInviteClaims, endClaim, ClaimError } from "../claim/store.js";
+import { notifyAfterReview } from "../claim/mail.js";
 import {
   AdminActionError,
   revokeSignal,
@@ -1078,8 +1079,10 @@ router.post("/api/v1/review/bulk", requireAdmin, (req, res) => {
     const outcome = action === "approve"
       ? approveIntakeItem(db, r.id, reviewedBy)
       : rejectIntakeItem(db, r.id, String(reason), reviewedBy);
-    if (outcome.ok) processed += 1;
-    else failed.push({ intake_id: r.id, error: outcome.error });
+    if (outcome.ok) {
+      processed += 1;
+      void notifyAfterReview(db, r.id, action === "approve", action === "approve" ? null : String(reason));
+    } else failed.push({ intake_id: r.id, error: outcome.error });
   }
 
   // Failed items are still status='pending' in the DB, so they genuinely
@@ -1104,6 +1107,7 @@ router.post("/api/v1/review/:id/approve", requireAdmin, (req, res) => {
     return;
   }
   res.set(JSON_HEADERS).json({ intake_id: outcome.intake_id, status: "approved" });
+  void notifyAfterReview(db, outcome.intake_id, true, null);
 });
 
 // POST /api/v1/review/:id/reject — JSON twin of the web curator reject.
@@ -1120,6 +1124,7 @@ router.post("/api/v1/review/:id/reject", requireAdmin, (req, res) => {
     return;
   }
   res.set(JSON_HEADERS).json({ intake_id: outcome.intake_id, status: "rejected" });
+  void notifyAfterReview(db, outcome.intake_id, false, reason);
 });
 
 // ---------- Admin: correction primitives ------------------------------------

@@ -10,10 +10,11 @@ import { formatArtworkYearFromMetadata, formatArtworkYear, YEAR_SQL_FRAGMENT } f
 import { NODE_NOT_RETIRED } from "../utils/visibility.js";
 import { sourceLabel } from "../utils/source-label.js";
 import { rosterFor } from "../utils/roster.js";
-import { collapseClaims, CLAIM_COLS } from "../utils/claims.js";
+import { collapseClaims, CLAIM_COLS, tripleKey } from "../utils/claims.js";
 import { nodeHistory, type HistoryEvent } from "../utils/history.js";
 import { readSession } from "../intake/auth.js";
-import { claimReviewCards, curatorSignIn, objectionsBlock } from "../claim/pages.js";
+import { accessClaimCards, accessClaimCount, claimReviewCards, curatorSignIn, objectionsBlock, profileClaimBlock, relationNotesHtml } from "../claim/pages.js";
+import { notesByTriple, publicNotesFor } from "../claim/notes.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.join(__dirname, "..", "..");
@@ -90,6 +91,8 @@ function profileHandler(req: any, res: any) {
   const escName = htmlEscape(String(node.name));
   const escType = htmlEscape(String(node.type));
   let body = `<h2>${escName}</h2><span class='tag'>${escType}</span>`;
+  // Claimed: the badge (+ the claimant's own links); unclaimed: "Is this you?"
+  body += profileClaimBlock(db, node, readSession(db, req)?.contributor.id ?? null);
 
   // For artworks, surface the year prominently right under the title.
   // The same display string is exposed by the API on artwork nodes, so
@@ -284,6 +287,8 @@ function profileHandler(req: any, res: any) {
     )
     .all(node.id, node.id) as any[]);
 
+  // The subject's word on its relations: open contests, context notes.
+  const notes = notesByTriple(publicNotesFor(db, node.id));
   if (edges.length > 0) {
     const grouped = new Map<string, any[]>();
     for (const e of edges) {
@@ -302,7 +307,7 @@ function profileHandler(req: any, res: any) {
         const claimed = e.origins.length > 1
           ? ` <span class='meta'>— claimed by ${e.origins.length} sources: ${e.origins.map((o: { label: string }) => htmlEscape(o.label)).join(", ")}</span>`
           : "";
-        body += `<li><a href='/practitioner/${encodeURIComponent(otherSlug)}'>${htmlEscape(String(otherName ?? otherSlug))}</a>${claimed}</li>`;
+        body += `<li><a href='/practitioner/${encodeURIComponent(otherSlug)}'>${htmlEscape(String(otherName ?? otherSlug))}</a>${claimed}${relationNotesHtml(notes.get(tripleKey(e)))}</li>`;
       }
       body += `</ul></div>`;
     }
@@ -804,7 +809,8 @@ router.get("/review", (req, res) => {
   ];
   const tabKind = TABS.some(([k]) => k === tab) ? tab : "human_signal";
   const pendingCount = (k: string): number =>
-    Number((db.prepare("SELECT COUNT(*) as count FROM intake_queue WHERE status='pending' AND kind=?").get(k) as any).count);
+    Number((db.prepare("SELECT COUNT(*) as count FROM intake_queue WHERE status='pending' AND kind=?").get(k) as any).count) +
+    (k === "claim" ? accessClaimCount(db) : 0);
   const qCount = pendingCount(tabKind);
 
   const tabLink = (k: string, label: string, n: number, active: boolean): string =>
@@ -820,6 +826,7 @@ router.get("/review", (req, res) => {
     body += `<p>Nothing to review here.</p>`;
   } else if (tabKind === "claim" || tabKind === "contest" || tabKind === "context") {
     body += claimReviewCards(db, tabKind);
+    if (tabKind === "claim") body += accessClaimCards(db);
   } else if (tabKind === "ai_suggestion") {
     // AI suggestion rows: target_node is the *artwork*; proposed_edges
     // carries the proposed CREATED_BY pointing to a practitioner. We show
