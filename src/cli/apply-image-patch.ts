@@ -25,13 +25,21 @@
 //     surgical metadata UPDATE through the same crsql-loaded connection the
 //     server uses, so CRDT bookkeeping stays correct.
 //
+// AUDIT: a run that repoints anything leaves one admin signal
+// (source_type='api_admin', submitted_by=--by) whose processing_trace holds
+// each node's replaced cdn_image_url / cdn_resized — the same before-image
+// every other node write records (recordPrior in src/utils/contribution.ts).
+//
 //   --from <path>   patch JSON (required)
+//   --by <name>     operator recorded on the audit signal (default "operator")
 //   --dry-run       report what would change, write nothing
 //   --db <path>     override DB path (else resolveCliDbPath: DB_PATH → /data/adai.db → ./adai.db)
 
 import { readFileSync } from "node:fs";
 import { initDb, getDb } from "../db.js";
 import { resolveCliDbPath } from "../utils/db-path.js";
+import { priorValues, recordPrior } from "../utils/contribution.js";
+import { insertAdminSignal } from "../utils/admin-actions.js";
 
 interface PatchEntry {
   node_id: string;
@@ -73,6 +81,7 @@ function main(): void {
   const args = parseArgs(process.argv.slice(2));
   const from = typeof args.from === "string" ? args.from : null;
   const dryRun = args["dry-run"] === true;
+  const by = typeof args.by === "string" ? args.by : "operator";
   if (!from) {
     console.error("Usage: apply-image-patch --from <patch.json> [--dry-run] [--db <path>]");
     process.exit(2);
@@ -97,7 +106,7 @@ function main(): void {
   initDb(dbPath);
   const db = getDb();
 
-  const sel = db.prepare("SELECT metadata FROM nodes WHERE id = ?");
+  const sel = db.prepare("SELECT metadata, updated_by FROM nodes WHERE id = ?");
   const upd = db.prepare("UPDATE nodes SET metadata = ?, updated_by = ? WHERE id = ?");
 
   let updated = 0;
@@ -106,11 +115,12 @@ function main(): void {
   let missing = 0;
   let savedBytes = 0;
   const at = NOW_ISO();
+  let anchor: string | undefined;
 
   const apply = () => {
     for (const e of entries) {
       if (!e?.node_id || !e?.new_cdn_image_url) { missing++; continue; }
-      const row = sel.get(e.node_id) as { metadata?: string } | undefined;
+      const row = sel.get(e.node_id) as { metadata?: string; updated_by?: string | null } | undefined;
       if (!row) { missing++; continue; }
       let meta: any = {};
       if (row.metadata) {
@@ -122,6 +132,14 @@ function main(): void {
         // prod drifted from the snapshot — do not clobber.
         mismatched++;
         continue;
+      }
+      if (!dryRun) {
+        anchor ??= insertAdminSignal(db, {
+          by,
+          title: `Shrink oversized images: ${from}`,
+          content: { action: "apply_image_patch", patch: from, generated_at: patch.generated_at ?? null, params: patch.params ?? null },
+        });
+        recordPrior(db, anchor, { op: "apply_image_patch", node_id: e.node_id, updated_by: row.updated_by ?? null, before: priorValues(meta, ["cdn_image_url", "cdn_resized"]) });
       }
       meta.cdn_image_url = e.new_cdn_image_url;
       // Inline provenance: enough to trace the swap after the original is culled.

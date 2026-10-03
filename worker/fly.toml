@@ -1,0 +1,13 @@
+# adai-intake-worker — owns the image and the ephemeral machines the main
+# app spawns. No services, no autoscaling, never `flyctl deploy` without
+# --build-only (see docs/URL-INTAKE-SPEC.md §14).
+app = 'adai-intake-worker'
+primary_region = 'fra'
+
+[build]
+  dockerfile = 'Dockerfile'
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1

@@ -14,3 +14,14 @@ adai-digital-arts-report-research/
 # now holds only the live R2 janitors (cull_orphans.py, shrink_oversized.py),
 # which run from the host venv, never in the image. Ignored from the context.
 seed/
+
+# Both Dockerfiles can use the repository root. Keep package installations,
+# generated worker inputs and local credentials out of either build context.
+worker/node_modules/
+worker/dist/
+worker/tests/
+worker/src/ssrf.ts
+worker/src/editorial-context.ts
+.env
+.env.*
+.tokens*.json

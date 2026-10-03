@@ -9,6 +9,9 @@ import { buildEmbeddingSections } from "../embed/sections.js";
 import { formatArtworkYearFromMetadata, formatArtworkYear, YEAR_SQL_FRAGMENT } from "../utils/year.js";
 import { NODE_NOT_RETIRED } from "../utils/visibility.js";
 import { sourceLabel } from "../utils/source-label.js";
+import { rosterFor } from "../utils/roster.js";
+import { collapseClaims, CLAIM_COLS } from "../utils/claims.js";
+import { nodeHistory, type HistoryEvent } from "../utils/history.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.join(__dirname, "..", "..");
@@ -131,7 +134,7 @@ function profileHandler(req: any, res: any) {
         const maxW = isPortrait ? "240px" : "480px";
         const altText = htmlEscape(`${node.name} — ${node.type}`);
         body += `<figure style='margin:1rem 0;max-width:${maxW}'>` +
-          `<img src='${htmlEscape(String(imgSrc))}' alt='${altText}' ` +
+          `<img src='${htmlEscape(String(imgSrc))}' alt='${altText}' crossorigin='anonymous' ` +
           `style='width:100%;height:auto;border-radius:6px;display:block' loading='lazy' />`;
         if (meta.image_source || meta.image_license) {
           const parts: string[] = [];
@@ -144,6 +147,18 @@ function profileHandler(req: any, res: any) {
 
       if (meta.status) {
         body += `<p class='meta'>Status: <span class='tag'>${htmlEscape(String(meta.status))}</span></p>`;
+      }
+
+      // What the organisation says it is (src/utils/org-kinds.ts): several
+      // kinds from a fixed list, with its own words when we have them. A
+      // legacy free-text kind is shown as the description it is.
+      if (node.type === "institution" && meta.kind) {
+        const src = meta.kind_source && typeof meta.kind_source === "object" ? meta.kind_source : null;
+        const kinds = Array.isArray(meta.kind) ? meta.kind.map(String) : null;
+        body += `<p class='meta'>` +
+          (kinds ? kinds.map((k: string) => `<span class='tag'>${htmlEscape(k)}</span>`).join(" ") : `“${htmlEscape(String(meta.kind))}”`) +
+          (src?.quote ? ` <span class='meta'>— “${htmlEscape(String(src.quote))}”${typeof src.page_url === "string" && /^https?:\/\//i.test(src.page_url) ? ` <a href='${htmlEscape(src.page_url)}' target='_blank' rel='noopener'>source</a>` : ""}</span>` : "") +
+          `</p>`;
       }
 
       // Upstream provenance — same label the field's entity-view footer shows
@@ -214,6 +229,26 @@ function profileHandler(req: any, res: any) {
     }
   }
 
+  // A gallery / venue / platform page leads with its artists. Derived from
+  // live edges at read time (src/utils/roster.ts) — never stored as edges.
+  if (node.type === "institution" || node.type === "platform") {
+    const roster = rosterFor(db, node.id);
+    if (roster.length) {
+      const LIMIT = 300;
+      body += `<h3>artists (${roster.length})</h3><p class='meta'>Read off this graph: represented here, in shows presented here, or with works shown here.</p><ul class='edge-list'>`;
+      for (const a of roster.slice(0, LIMIT)) {
+        const why = [
+          a.represented ? (a.estate ? "estate represented" : "represented") : "",
+          a.shows ? `${a.shows} show${a.shows === 1 ? "" : "s"}` : "",
+          a.works ? `${a.works} work${a.works === 1 ? "" : "s"}` : "",
+        ].filter(Boolean).join(" · ");
+        body += `<li><a href='/${htmlEscape(a.type)}/${encodeURIComponent(a.slug)}'>${htmlEscape(a.name)}</a>${a.estate ? " <span class='meta'>(estate)</span>" : ""} <span class='meta'>${htmlEscape(why)}</span></li>`;
+      }
+      if (roster.length > LIMIT) body += `<li class='meta'>and ${roster.length - LIMIT} more</li>`;
+      body += `</ul>`;
+    }
+  }
+
   // Honor consent_scope='structural_only': the contributor was promised
   // "only the edge counts, not the content" — so we hide title/summary/
   // content for those signals here too. Their edges are still rendered
@@ -239,11 +274,13 @@ function profileHandler(req: any, res: any) {
     }
   }
 
-  const edges = db
+  // One line per relation; several claims of it (different sources) collapse
+  // into "claimed by N sources" (src/utils/claims.ts).
+  const edges = collapseClaims(db
     .prepare(
-      "SELECT e.id, e.source_id, e.target_id, e.edge_type, e.confidence, n1.name as source_name, n1.slug as source_slug, n2.name as target_name, n2.slug as target_slug FROM edges e LEFT JOIN nodes n1 ON e.source_id = n1.id LEFT JOIN nodes n2 ON e.target_id = n2.id WHERE e.valid_until IS NULL AND (e.source_id = ? OR e.target_id = ?)"
+      `SELECT e.id, ${CLAIM_COLS}, e.confidence, n1.name as source_name, n1.slug as source_slug, n2.name as target_name, n2.slug as target_slug FROM edges e LEFT JOIN signals s ON s.id = e.signal_id LEFT JOIN nodes n1 ON e.source_id = n1.id LEFT JOIN nodes n2 ON e.target_id = n2.id WHERE e.valid_until IS NULL AND (e.source_id = ? OR e.target_id = ?) ORDER BY e.valid_from ASC`
     )
-    .all(node.id, node.id) as any[];
+    .all(node.id, node.id) as any[]);
 
   if (edges.length > 0) {
     const grouped = new Map<string, any[]>();
@@ -260,7 +297,10 @@ function profileHandler(req: any, res: any) {
         const otherName = e.source_id === node.id ? e.target_name : e.source_name;
         const otherSlug = e.source_id === node.id ? e.target_slug : e.source_slug;
         if (!otherSlug) continue;
-        body += `<li><a href='/practitioner/${encodeURIComponent(otherSlug)}'>${htmlEscape(String(otherName ?? otherSlug))}</a></li>`;
+        const claimed = e.origins.length > 1
+          ? ` <span class='meta'>— claimed by ${e.origins.length} sources: ${e.origins.map((o: { label: string }) => htmlEscape(o.label)).join(", ")}</span>`
+          : "";
+        body += `<li><a href='/practitioner/${encodeURIComponent(otherSlug)}'>${htmlEscape(String(otherName ?? otherSlug))}</a>${claimed}</li>`;
       }
       body += `</ul></div>`;
     }
@@ -311,6 +351,7 @@ function profileHandler(req: any, res: any) {
   // Shareable deep-link into the field view, zoomed straight to this node —
   // the URL contributors send around ("look at what I added").
   body += ` <a href='/field?node=${encodeURIComponent(node.id)}' class='btn'>View in field</a>`;
+  body += ` <a href='/${encodeURIComponent(node.type)}/${encodeURIComponent(slug)}/history' class='btn'>History</a>`;
 
   res.set(HTML_HEADERS).send(htmlPage(node.name, body));
 }
@@ -354,7 +395,7 @@ function renderNeighbourList(neighbours: Neighbour[]): string {
     const nameEsc = htmlEscape(String(n.name ?? n.node_id));
     const typeEsc = htmlEscape(String(n.type ?? "?"));
     const thumb = img
-      ? `<img src='${htmlEscape(String(img))}' alt='${nameEsc}' style='width:96px;height:96px;object-fit:cover;border-radius:4px;display:block' loading='lazy' />`
+      ? `<img src='${htmlEscape(String(img))}' alt='${nameEsc}' crossorigin='anonymous' style='width:96px;height:96px;object-fit:cover;border-radius:4px;display:block' loading='lazy' />`
       : `<div style='width:96px;height:96px;background:#181818;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;color:#666;text-align:center;padding:0.4rem;box-sizing:border-box'>${nameEsc.slice(0, 40)}</div>`;
     const yearTag = n.year ? ` <span class='meta'>(${htmlEscape(String(n.year))})</span>` : "";
     s += `<a href='${url}' style='display:block;width:108px;text-decoration:none;color:inherit'>
@@ -434,6 +475,8 @@ function dataHandler(req: any, res: any) {
       title: s.title,
       submitted_by: s.submitted_by,
     })),
+    // Derived at read time, never stored as edges (src/utils/roster.ts).
+    ...(node.type === "institution" || node.type === "platform" ? { roster: rosterFor(db, node.id) } : {}),
   });
 }
 
@@ -447,6 +490,93 @@ router.get("/platform/:slug/data", dataHandler);
 router.get("/publication/:slug/data", dataHandler);
 router.get("/project/:slug/data", dataHandler);
 router.get("/classification_regime/:slug/data", dataHandler);
+
+// GET /:type/:slug/history — every metadata write and every relation that
+// started or ended, newest first, each with the signal behind it
+// (src/utils/history.ts). history.json is the same data. Slug-only
+// resolution like /data; retired nodes stay reachable here too.
+function historyFor(req: any): ReturnType<typeof nodeHistory> {
+  const db = getDb();
+  const row = db.prepare("SELECT id FROM nodes WHERE slug = ?").get(req.params.slug) as any;
+  return row ? nodeHistory(db, row.id) : null;
+}
+
+const historyValue = (v: unknown): string => {
+  if (v === null || v === undefined) return "<span class='meta'>(none)</span>";
+  const s = typeof v === "string" ? v : JSON.stringify(v);
+  const short = s.length > 160 ? s.slice(0, 157) + "…" : s;
+  return /^https?:\/\//i.test(s) && s === short
+    ? `<a href='${htmlEscape(s)}' target='_blank' rel='noopener'>${htmlEscape(short)}</a>`
+    : `<code>${htmlEscape(short)}</code>`;
+};
+
+const HISTORY_OP_LABEL: Record<string, string> = {
+  patch_node: "edited",
+  attach_image: "image attached",
+  retire_node: "retired",
+  apply_image_patch: "image resized",
+};
+
+function renderHistoryEvent(e: HistoryEvent): string {
+  const day = e.at ? htmlEscape(e.at.slice(0, 10)) : "undated";
+  let what: string;
+  if (e.kind === "metadata") {
+    what = `<strong>${htmlEscape(HISTORY_OP_LABEL[e.op] ?? e.op)}</strong><ul class='edge-list'>` +
+      e.changes.map((c) =>
+        `<li>${htmlEscape(c.key)}: ${e.before_recorded ? `${historyValue(c.before)} → ` : ""}${historyValue(c.after)}</li>`
+      ).join("") + `</ul>`;
+    if (!e.before_recorded) what += `<p class='meta'>Earlier value not recorded (written before before-images were kept).</p>`;
+  } else {
+    const other = e.other.slug && e.other.type
+      ? `<a href='/${encodeURIComponent(e.other.type)}/${encodeURIComponent(e.other.slug)}'>${htmlEscape(e.other.name ?? e.other.id)}</a>`
+      : htmlEscape(e.other.name ?? e.other.id);
+    const rel = e.direction === "out" ? `<span class='edge-type'>${htmlEscape(e.edge_type)}</span> → ${other}` : `${other} → <span class='edge-type'>${htmlEscape(e.edge_type)}</span>`;
+    what = `<strong>${e.change === "added" ? "relation added" : "relation ended"}</strong> ${rel}${e.event_time ? ` <span class='meta'>(${htmlEscape(e.event_time)})</span>` : ""}`;
+  }
+  const s = e.source;
+  const meta: string[] = [];
+  if (e.by) meta.push(`by ${htmlEscape(e.by)}`);
+  else if (s) meta.push("anonymous");
+  if (s?.title) meta.push(htmlEscape(s.title));
+  if (s?.source_url && /^https?:\/\//i.test(s.source_url)) meta.push(`<a href='${htmlEscape(s.source_url)}' target='_blank' rel='noopener'>source</a>`);
+  if (s?.batch_id) meta.push(`batch: ${htmlEscape(s.batch_id)}`);
+  if (s?.status && s.status !== "active") meta.push(`<span class='tag'>${htmlEscape(s.status)}</span>`);
+  let html = `<div class='card'><p class='meta'>${day}</p>${what}`;
+  if (meta.length) html += `<p class='meta'>${meta.join(" · ")}</p>`;
+  if (s?.proposed_as) {
+    html += `<details><summary class='meta'>changed by the contributor before confirming — what the reader proposed</summary><pre style='white-space:pre-wrap;font-size:0.75rem'>${htmlEscape(JSON.stringify(s.proposed_as, null, 2))}</pre></details>`;
+  }
+  return html + `</div>`;
+}
+
+function historyHandler(req: any, res: any) {
+  const h = historyFor(req);
+  if (!h) {
+    res.status(404).set(HTML_HEADERS).send(htmlPage("Not found", "<p>No such node.</p>"));
+    return;
+  }
+  const profile = `/${encodeURIComponent(h.node.type)}/${encodeURIComponent(h.node.slug)}`;
+  let body = `<h2>History: <a href='${profile}'>${htmlEscape(h.node.name)}</a></h2>`;
+  body += `<p class='meta'>Every change to this ${htmlEscape(h.node.type)}, newest first. Nothing is deleted: edits keep the value they replaced, ended relations stay on record. <a href='${profile}/history.json'>JSON</a></p>`;
+  if (h.events.length === 0) body += `<p class='meta'>No recorded changes.</p>`;
+  for (const e of h.events) body += renderHistoryEvent(e);
+  if (h.node.created_at) body += `<div class='card'><p class='meta'>${htmlEscape(h.node.created_at.slice(0, 10))}</p><strong>created</strong></div>`;
+  res.set(HTML_HEADERS).send(htmlPage(`${h.node.name} — history`, body));
+}
+
+function historyJsonHandler(req: any, res: any) {
+  const h = historyFor(req);
+  if (!h) {
+    res.status(404).json({ error: "not found" });
+    return;
+  }
+  res.json(h);
+}
+
+for (const t of ["practitioner", "artwork", "concept", "scene", "collective", "institution", "platform", "publication", "project", "classification_regime"]) {
+  router.get(`/${t}/:slug/history`, historyHandler);
+  router.get(`/${t}/:slug/history.json`, historyJsonHandler);
+}
 
 // GET /neighbours/:type/:slug — similarity browser. Shows the top-K cosine
 // neighbours of a node across any kind+candidate combination. Useful for
@@ -551,7 +681,7 @@ function renderNeighbourTable(neighbours: Neighbour[]): string {
     const nameEsc = htmlEscape(String(n.name ?? n.node_id));
     const typeEsc = htmlEscape(String(n.type ?? "?"));
     const thumb = img
-      ? `<img src='${htmlEscape(String(img))}' alt='' style='width:72px;height:72px;object-fit:cover;border-radius:3px;display:block' loading='lazy' />`
+      ? `<img src='${htmlEscape(String(img))}' alt='' crossorigin='anonymous' style='width:72px;height:72px;object-fit:cover;border-radius:3px;display:block' loading='lazy' />`
       : `<div style='width:72px;height:72px;background:#181818;border-radius:3px'></div>`;
     s += `<tr style='border-bottom:1px solid #1a1a1a'>
   <td style='padding:0.4rem 0.6rem'>${thumb}</td>
@@ -565,7 +695,9 @@ function renderNeighbourTable(neighbours: Neighbour[]): string {
 }
 
 // GET /contribute — contribution form
-router.get("/contribute", (_req, res) => {
+// Legacy signal form. The URL intake (src/routes/intake.ts) owns /contribute;
+// this page stays reachable for the token/assistant path described on it.
+router.get("/contribute/signal", (_req, res) => {
   const db = getDb();
   const entities = db
     .prepare(`SELECT id, name, slug FROM nodes WHERE type NOT IN ${ENTITY_TYPES_EXCLUDE} AND ${NODE_NOT_RETIRED} ORDER BY name`)
@@ -578,7 +710,7 @@ router.get("/contribute", (_req, res) => {
 
   // Styled to read native next to the /field chrome (SF Mono, near-black,
   // sharp borders, cobalt accent) — this page is the no-JS/fallback human
-  // path; the in-field #contribute panel covers the assistant/token path.
+  // path; the in-field /field#assistant guide covers the assistant/token path.
   // Scoped under #contribute-page so the shared template CSS stays untouched.
   const formBody = `<style>
 #contribute-page { font-family: 'SF Mono','SFMono-Regular',Menlo,Consolas,'Liberation Mono',monospace; }
@@ -607,7 +739,7 @@ router.get("/contribute", (_req, res) => {
 <p class='kicker'>[contribute · signal]</p>
 <h2>Contribute a Signal</h2>
 <p class='lede'>Submit information about an entity in the graph. Contributions from new contributors go to the review queue before they merge.</p>
-<div class='assist'>Prefer to contribute through your own AI assistant? The <a href='/field#contribute'>in-field setup guide</a> connects Claude (or any assistant) to the governed write API — every edit attributed, withdrawable anytime.</div>
+<div class='assist'>Prefer to contribute through your own AI assistant? The <a href='/field#assistant'>in-field setup guide</a> connects Claude (or any assistant) to the governed write API — every edit attributed, withdrawable anytime.</div>
 <form id='contribute-form'>
 <label>About which entity</label>
 <select name='target_node' required>${options}</select>
@@ -757,6 +889,8 @@ router.get("/review", (req, res) => {
               body += `<li>patch metadata of <code>${htmlEscape(String(op.node_id))}</code> — keys: ${htmlEscape(keys)}</li>`;
             } else if (op?.op === "attach_image") {
               body += `<li>attach image to <code>${htmlEscape(String(op.node_id))}</code> — <a href='${htmlEscape(String(op.cdn_image_url))}' target='_blank'>preview</a> (sha256: <code>${htmlEscape(String(op.sha256).slice(0, 12))}…</code>)</li>`;
+            } else if (op?.op === "end_edge") {
+              body += `<li>end relation <code>${htmlEscape(String(op.edge_id))}</code> — the source no longer shows it (nothing is deleted; the edge becomes historical)</li>`;
             } else {
               body += `<li>${htmlEscape(JSON.stringify(op))}</li>`;
             }

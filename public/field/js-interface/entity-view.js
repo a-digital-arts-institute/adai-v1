@@ -37,23 +37,17 @@
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
-  // Clickable contribute CTA. Opens the modern in-field contribute panel
-  // (the #contribute room — the token/LLM path), NOT the legacy /contribute
-  // form. The actual open is wired in the click handler below (it triggers
-  // the existing #contribute room-link), so this stays a plain in-page anchor.
-  const CONTRIB_LINK = '<a class="ev-contrib-link" href="#contribute" role="button" title="how to contribute to A(DAI)">contribute ↗</a>';
+  // Clickable contribute CTA → the URL intake at /contribute (invite-only;
+  // uninvited addresses become access requests). The click handler below
+  // stops it from bubbling into the field's zoom/navigation.
+  const CONTRIB_LINK = '<a class="ev-contrib-link" href="/contribute" role="button" title="how to contribute to A(DAI)">contribute ↗</a>';
   // Linkify the legacy phrase inside already-escaped empty-state copy.
   function linkifyContribute(escapedText) {
     return escapedText.replace(/contribute via \/contribute skill/g, CONTRIB_LINK);
   }
 
-  // Open the modern contribute surface — the in-field #contribute panel
-  // (token/LLM path) — via the shared room API in field.js. Falls back to the
-  // standalone form only if the field nav isn't present (entity view used
-  // outside /field).
   function openContributePanel() {
-    if (window.ADAI_ROOMS && window.ADAI_ROOMS.open('#contribute')) return;
-    window.open('/contribute', '_blank', 'noopener');
+    window.location.href = '/contribute';
   }
 
   // ---------- "Who is this for" toggle (style-kin panel) ----------
@@ -512,6 +506,58 @@
     return `<aside class="ev-rec" aria-hidden="true">REC<br>.${num}</aside>`;
   }
 
+  // ---------- Artists (institutions / platforms) ----------
+  // A gallery's own edges are to works and shows; its artists sit one step
+  // behind them. /api/roster/:type/:slug derives the list server-side
+  // (src/utils/roster.ts) — the same one the profile page leads with.
+  const ROSTER_TYPES = new Set(['institution', 'platform']);
+
+  function renderRosterPlaceholder(node) {
+    if (!ROSTER_TYPES.has(node.type)) return '';
+    return `
+      <section class="ev-section" id="ev-roster">
+        <h2 class="ev-h2">// artists <span class="ev-h2-count" id="ev-roster-count">/··</span></h2>
+        <p class="ev-empty adai-embed-loading" id="ev-roster-status"><span class="adai-spin"></span>reading the artists off its shows and works…</p>
+      </section>
+    `;
+  }
+
+  async function fillRoster(node) {
+    const root = document.getElementById('ev-roster');
+    if (!root) return;
+    const slug = node.slug || node.id.split(':').slice(1).join(':');
+    const status = root.querySelector('#ev-roster-status');
+    try {
+      const r = await fetch(`/api/roster/${encodeURIComponent(node.type)}/${encodeURIComponent(slug)}`, { headers: { 'accept': 'application/json' } });
+      if (STATE.currentId !== node.id) return;
+      if (!r.ok) { if (status) { status.className = 'ev-empty'; status.textContent = `artists unavailable (${r.status})`; } return; }
+      const { roster = [] } = await r.json();
+      if (STATE.currentId !== node.id) return;
+      const countEl = root.querySelector('#ev-roster-count');
+      if (countEl) countEl.textContent = `/${String(roster.length).padStart(2, '0')}`;
+      if (!roster.length) { if (status) { status.className = 'ev-empty'; status.textContent = 'no artists linked through its shows or works yet'; } return; }
+      if (status) status.remove();
+      const rows = roster.slice(0, 300).map((a) => {
+        const why = [a.represented ? 'represented' : '', a.shows ? `${a.shows} show${a.shows === 1 ? '' : 's'}` : '', a.works ? `${a.works} work${a.works === 1 ? '' : 's'}` : ''].filter(Boolean).join(' · ');
+        return `
+          <li class="ev-rel-row" data-node-id="${escapeHtml(a.id)}" role="link" tabindex="0" title="open ${escapeHtml(a.name)}">
+            <span class="ev-rel-leader">··········</span>
+            <span class="ev-rel-tag">[${escapeHtml(a.type)}]</span>
+            <span class="ev-rel-name">${escapeHtml(a.name)}${a.estate ? ' <span class="ev-mono-dim">(estate)</span>' : ''}</span>
+            <span class="ev-rel-qualifier">${escapeHtml(why)}</span>
+          </li>`;
+      }).join('');
+      const list = document.createElement('ul');
+      list.className = 'ev-rel-list';
+      list.innerHTML = rows;
+      root.appendChild(list);
+    } catch (err) {
+      if (STATE.currentId !== node.id) return;
+      if (status) { status.className = 'ev-empty'; status.textContent = 'artists unavailable (network error)'; }
+      console.warn('[entity-view] /api/roster fetch failed', err);
+    }
+  }
+
   // ---------- Embedding sections ----------
   // Fetched async from /api/neighbours/:type/:slug after the overlay opens.
   // The container is laid down empty (with a "computing…" placeholder) by
@@ -659,6 +705,7 @@
         ${renderMetadata(showcase)}
         ${renderQuote(showcase)}
         ${renderWorks(node, showcase)}
+        ${renderRosterPlaceholder(node)}
         ${renderRelations(node, showcase, neighborMap)}
         ${renderEmbeddingsPlaceholder()}
         ${renderListSection('collections', collections, { empty: 'no public collection holdings linked yet — contribute via /contribute skill' })}
@@ -705,7 +752,7 @@
     // Kick off the async embedding-neighbours fetch. The placeholder
     // section already exists in the DOM; this fills it.
     const node = resolveGraphNode(id);
-    if (node) fillEmbeddings(node);
+    if (node) { fillEmbeddings(node); fillRoster(node); }
   }
 
   function close() {
@@ -751,7 +798,7 @@
   document.addEventListener('click', (e) => {
     if (!STATE.open) return;
     // Contribute CTA (empty-state "contribute ↗" links throughout the panel)
-    // → modern in-field contribute panel, not the legacy /contribute form.
+    // → the URL intake at /contribute.
     // Handled first so it never bubbles to the field's zoom/navigation.
     if (e.target?.closest?.('.ev-contrib-link')) {
       e.preventDefault();
@@ -803,8 +850,7 @@
     if (action === 'close') {
       e.preventDefault(); close();
     } else if (action === 'add') {
-      // The + header icon → modern in-field contribute panel (not the legacy
-      // /contribute form).
+      // The + header icon → the URL intake at /contribute.
       e.preventDefault();
       openContributePanel();
     } else if (action === 'chat') {

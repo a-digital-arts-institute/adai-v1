@@ -13,6 +13,7 @@
 //   { op: 'create_node',  type, name, slug, metadata, aliases? }
 //   { op: 'patch_node',   node_id, metadata }            // metadata is a merge-patch
 //   { op: 'attach_image', node_id, image_url, cdn_image_url, sha256 }
+//   { op: 'end_edge',     edge_id, signal_id? }          // valid_until = now; never a delete
 //
 // Edges queue exactly like AI suggestions do today (see src/embed/derive.ts):
 //   { source_id, target_id, edge_type, confidence?, event_time?, supersedes_edge_id? }
@@ -26,8 +27,9 @@ import { isAutoMerge, type AuthedContributor } from "../auth.js";
 
 export type ProposedNodeOp =
   | { op: "create_node"; type: string; name: string; slug: string; metadata?: any; aliases?: Array<{ source: string; external_id: string }> }
-  | { op: "patch_node"; node_id: string; metadata: any }
-  | { op: "attach_image"; node_id: string; image_url: string; cdn_image_url: string; sha256: string };
+  | { op: "patch_node"; node_id: string; metadata: any; signal_id?: string | null }
+  | { op: "attach_image"; node_id: string; image_url: string; cdn_image_url: string; sha256: string; signal_id?: string | null }
+  | { op: "end_edge"; edge_id: string; signal_id?: string | null };
 
 export interface ProposedEdge {
   source_id: string;
@@ -94,6 +96,8 @@ export interface CreateSignalArgs {
   consent_scope?: string;
   consent_attribution?: string;
   batch_id?: string | null;    // caller-supplied session/batch handle (signals.batch_id)
+  source_origin?: string;      // default 'human_primary'; URL intake writes 'url_intake'
+  provenance_chain?: string | null; // JSON: e.g. {draft_id, cid, origin, page_sha256}
 }
 
 export function insertSignal(db: DatabaseSync, args: CreateSignalArgs): string {
@@ -104,7 +108,7 @@ export function insertSignal(db: DatabaseSync, args: CreateSignalArgs): string {
       ? args.consent_attribution
       : "attributed";
   db.prepare(
-    "INSERT INTO signals (id, title, source_url, source_type, cla_layer, summary, content, submitted_by, confidence, lived_experience, consent_scope, consent_attribution, source_origin, batch_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    "INSERT INTO signals (id, title, source_url, source_type, cla_layer, summary, content, submitted_by, confidence, lived_experience, consent_scope, consent_attribution, source_origin, batch_id, provenance_chain) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
   ).run(
     signalId,
     args.title,
@@ -118,8 +122,9 @@ export function insertSignal(db: DatabaseSync, args: CreateSignalArgs): string {
     0,
     scope,
     attribution,
-    "human_primary",
-    args.batch_id ?? null
+    args.source_origin ?? "human_primary",
+    args.batch_id ?? null,
+    args.provenance_chain ?? null
   );
   return signalId;
 }
@@ -194,17 +199,50 @@ export function materialiseCreateNode(
   return { node_id: nodeId, created: true };
 }
 
+// The before-image of a node write. Metadata is overwritten in place, so the
+// value a write replaced survives only here: appended to the causing signal's
+// processing_trace as {"prior": [{op, node_id, at, updated_by, before}]}.
+// `before` maps each top-level metadata key the write touched to its old
+// value (null = the key was absent); `updated_by` is the previous writer.
+// A signal can anchor several writes (a batch retire), hence the list.
+export function recordPrior(
+  db: DatabaseSync,
+  signalId: string | null | undefined,
+  entry: { op: string; node_id: string; updated_by: string | null; before: Record<string, unknown> }
+): void {
+  if (!signalId) return;
+  const row = db.prepare("SELECT processing_trace FROM signals WHERE id = ?").get(signalId) as any;
+  if (!row) return;
+  let trace: any = {};
+  if (row.processing_trace) {
+    try { trace = JSON.parse(row.processing_trace); } catch { trace = {}; }
+  }
+  if (!trace || typeof trace !== "object" || Array.isArray(trace)) trace = {};
+  const prior = Array.isArray(trace.prior) ? trace.prior : [];
+  prior.push({ op: entry.op, node_id: entry.node_id, at: new Date().toISOString().replace(/\.\d{3}Z$/, "Z"), updated_by: entry.updated_by, before: entry.before });
+  trace.prior = prior;
+  db.prepare("UPDATE signals SET processing_trace = ? WHERE id = ?").run(JSON.stringify(trace), signalId);
+}
+
+export function priorValues(base: any, keys: string[]): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const k of keys) out[k] = base && Object.prototype.hasOwnProperty.call(base, k) ? base[k] : null;
+  return out;
+}
+
 export function materialisePatchNode(
   db: DatabaseSync,
   op: Extract<ProposedNodeOp, { op: "patch_node" }>,
-  context: { createdBy: string }
+  context: { createdBy: string; signalId?: string | null }
 ): void {
-  const row = db.prepare("SELECT metadata FROM nodes WHERE id = ?").get(op.node_id) as any;
+  const row = db.prepare("SELECT metadata, updated_by FROM nodes WHERE id = ?").get(op.node_id) as any;
   if (!row) return;
   let base: any = {};
   if (row.metadata) {
     try { base = JSON.parse(row.metadata); } catch { base = {}; }
   }
+  const keys = op.metadata && typeof op.metadata === "object" && !Array.isArray(op.metadata) ? Object.keys(op.metadata) : [];
+  recordPrior(db, context.signalId, { op: "patch_node", node_id: op.node_id, updated_by: row.updated_by ?? null, before: priorValues(base, keys) });
   const merged = mergeMetadata(base, op.metadata);
   db.prepare("UPDATE nodes SET metadata = ?, updated_by = ? WHERE id = ?")
     .run(JSON.stringify(merged), context.createdBy, op.node_id);
@@ -213,14 +251,20 @@ export function materialisePatchNode(
 export function materialiseAttachImage(
   db: DatabaseSync,
   op: Extract<ProposedNodeOp, { op: "attach_image" }>,
-  context: { createdBy: string }
+  context: { createdBy: string; signalId?: string | null }
 ): void {
-  const row = db.prepare("SELECT metadata FROM nodes WHERE id = ?").get(op.node_id) as any;
+  const row = db.prepare("SELECT metadata, updated_by FROM nodes WHERE id = ?").get(op.node_id) as any;
   if (!row) return;
   let base: any = {};
   if (row.metadata) {
     try { base = JSON.parse(row.metadata); } catch { base = {}; }
   }
+  recordPrior(db, context.signalId, {
+    op: "attach_image",
+    node_id: op.node_id,
+    updated_by: row.updated_by ?? null,
+    before: priorValues(base, ["cdn_image_url", "image_url", "image_sha256"]),
+  });
   // Don't overwrite a provenance image_url if the node already has one — the
   // contributor's upload is mirrored but the upstream source stays authoritative.
   // We always (re)write cdn_image_url to point at the freshly uploaded copy.
@@ -230,6 +274,22 @@ export function materialiseAttachImage(
   const merged = mergeMetadata(base, patch);
   db.prepare("UPDATE nodes SET metadata = ?, updated_by = ? WHERE id = ?")
     .run(JSON.stringify(merged), context.createdBy, op.node_id);
+}
+
+// End a live edge: the relation stops being current (valid_until = now) and
+// points at the signal that says so. Nothing is deleted; an edge that is
+// already closed stays as it was. Used by URL intake for present-tense
+// relations a site no longer shows (REPRESENTS after an artist leaves a
+// roster).
+export function materialiseEndEdge(
+  db: DatabaseSync,
+  op: Extract<ProposedNodeOp, { op: "end_edge" }>,
+  context: { signalId: string | null }
+): { ended: boolean } {
+  const r = db
+    .prepare("UPDATE edges SET valid_until = strftime('%Y-%m-%dT%H:%M:%SZ','now'), invalidated_by = ? WHERE id = ? AND valid_until IS NULL")
+    .run(op.signal_id ?? context.signalId ?? null, op.edge_id);
+  return { ended: Number(r.changes) > 0 };
 }
 
 // Materialise an edge. Mirrors the loop in the /api/review approve handler

@@ -24,6 +24,10 @@
 // file keys entries by contributor name) or the next `just restore-tokens`
 // will refuse with token_belongs_to_other_contributor.
 //
+// The rename itself is recorded: one admin signal (source_type='api_admin',
+// submitted_by=--by, default "operator") holding the contributor id, both
+// names and the row counts rewritten, so the old name stays answerable.
+//
 // Guards: refuses when --from doesn't exist, and when --to already names a
 // DIFFERENT contributor (this is a rename, not a merge). Idempotent: re-running
 // after success hits the "no such contributor" guard, which is correct.
@@ -34,6 +38,7 @@
 
 import { initDb, getDb } from "../db.js";
 import { resolveCliDbPath } from "../utils/db-path.js";
+import { insertAdminSignal } from "../utils/admin-actions.js";
 
 function parseArgs(argv: string[]): Record<string, string | boolean> {
   const out: Record<string, string | boolean> = {};
@@ -57,9 +62,10 @@ function main(): void {
   const from = typeof args.from === "string" ? args.from.trim() : null;
   const to = typeof args.to === "string" ? args.to.trim() : null;
   const dryRun = args["dry-run"] === true;
+  const by = typeof args.by === "string" ? args.by.trim() : "operator";
 
   if (!from || !to) {
-    console.error('Usage: npm run contributor:rename -- --from "<old name>" --to "<new name>" [--dry-run]');
+    console.error('Usage: npm run contributor:rename -- --from "<old name>" --to "<new name>" [--by "<operator>"] [--dry-run]');
     process.exit(2);
   }
   if (from === to) {
@@ -117,6 +123,12 @@ function main(): void {
     db.prepare("UPDATE edges SET created_by = ? WHERE created_by = ?").run(curatorNew, curatorOld);
     db.prepare("UPDATE nodes SET updated_by = ? WHERE updated_by = ?").run(apiNew, apiOld);
     db.prepare("UPDATE nodes SET updated_by = ? WHERE updated_by = ?").run(curatorNew, curatorOld);
+    // After the rewrite, so an operator renaming themselves keeps --by as given.
+    insertAdminSignal(db, {
+      by,
+      title: `Rename contributor: ${from} → ${to}`,
+      content: { action: "rename_contributor", contributor_id: fromRow.id, from, to, rewritten: counts },
+    });
     db.exec("COMMIT");
   } catch (e) {
     db.exec("ROLLBACK");

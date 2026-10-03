@@ -7,6 +7,11 @@ import pageRoutes from "./routes/pages.js";
 import apiRoutes from "./routes/api.js";
 import contributorApiRoutes from "./routes/contributor-api.js";
 import archivistRoutes from "./routes/archivist.js";
+import intakeRoutes from "./routes/intake.js";
+import internalRoutes, { workerKey } from "./routes/internal.js";
+import { startSpawnerInterval, isSpawnerConfigured } from "./intake/spawn.js";
+import { isSessionConfigured } from "./intake/auth.js";
+import { getDb } from "./db.js";
 import { htmlPage, HTML_HEADERS } from "./templates.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -42,7 +47,7 @@ const app = express();
 // before hitting the rate-limit gate.
 const generousJson = express.json({ limit: "16mb" });
 app.use((req, res, next) => {
-  if (req.path.startsWith("/api/archivist/")) return next();
+  if (req.path.startsWith("/api/archivist/") || req.path.startsWith("/api/intake/") || req.path.startsWith("/internal/")) return next();
   return generousJson(req, res, next);
 });
 
@@ -123,7 +128,23 @@ app.use(
   })
 );
 
-// mount routes
+// mount routes. The URL intake owns /contribute, /draft/:id, /batch/:id and
+// /auth/:token, so it goes before the page router. /internal/* (worker
+// surface) is mounted ONLY when WORKER_KEY is set (>=16 chars).
+app.use(intakeRoutes);
+if (workerKey()) {
+  app.use(internalRoutes);
+  console.log("[intake] /internal/intake/* mounted");
+} else {
+  console.log("[intake] WORKER_KEY unset — worker surface not mounted");
+}
+if (!isSessionConfigured()) console.log("[intake] SESSION_SECRET unset — magic-link login disabled");
+if (isSpawnerConfigured()) {
+  startSpawnerInterval(getDb());
+  console.log("[intake] spawner interval running");
+} else {
+  console.log("[intake] spawner not configured (WORKER_IMAGE / FLY_API_TOKEN) — run the worker locally");
+}
 app.use(pageRoutes);
 app.use(apiRoutes);
 app.use(contributorApiRoutes);

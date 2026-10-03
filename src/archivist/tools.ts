@@ -18,6 +18,8 @@ import { topKByNodeId, topKByVector, withMetadata, type Neighbour } from "../emb
 import { loadAll } from "../embed/vectors.js";
 import { YEAR_SQL_FRAGMENT, formatArtworkYear } from "../utils/year.js";
 import { NODE_NOT_RETIRED } from "../utils/visibility.js";
+import { rosterFor } from "../utils/roster.js";
+import { collapseClaims, CLAIM_COLS } from "../utils/claims.js";
 
 // ---- types ------------------------------------------------------------
 
@@ -128,14 +130,16 @@ function get_node(db: DatabaseSync, input: Record<string, unknown>): unknown {
   if (!node) return { error: "not_found" };
 
   const md = safeJson(node.metadata) ?? {};
-  const edgeRows = db
+  // One entry per relation; its claims collapse into the sources behind it.
+  const edgeRows = collapseClaims(db
     .prepare(
-      `SELECT source_id, target_id, edge_type, confidence
-         FROM edges
-        WHERE valid_until IS NULL AND (source_id = ? OR target_id = ?)
-        LIMIT 80`
+      `SELECT ${CLAIM_COLS}, e.confidence
+         FROM edges e LEFT JOIN signals s ON s.id = e.signal_id
+        WHERE e.valid_until IS NULL AND (e.source_id = ? OR e.target_id = ?)
+        ORDER BY e.valid_from ASC
+        LIMIT 240`
     )
-    .all(node.id, node.id) as any[];
+    .all(node.id, node.id) as any[]).slice(0, 80);
 
   // Look up the names of the connected nodes in a single round-trip so the
   // agent gets human-readable peers instead of bare colon-ids.
@@ -154,6 +158,10 @@ function get_node(db: DatabaseSync, input: Record<string, unknown>): unknown {
     peers = new Map(rows.map((r) => [r.id, { name: r.name, slug: r.slug, type: r.type }]));
   }
 
+  // A gallery's or platform's artists sit one step behind its own edges
+  // (works, shows); the raw edge list above shows almost none of them.
+  const roster = node.type === "institution" || node.type === "platform" ? rosterFor(db, node.id) : null;
+
   const edges = edgeRows.map((e) => {
     const otherId = e.source_id === node.id ? e.target_id : e.source_id;
     const direction = e.source_id === node.id ? "out" : "in";
@@ -163,6 +171,7 @@ function get_node(db: DatabaseSync, input: Record<string, unknown>): unknown {
       direction,
       other: peer ? { id: otherId, name: peer.name, slug: peer.slug, type: peer.type } : { id: otherId },
       confidence: e.confidence,
+      ...(e.origins.length > 1 ? { sources: e.origins.map((o: { label: string }) => o.label) } : {}),
     };
   });
 
@@ -190,6 +199,14 @@ function get_node(db: DatabaseSync, input: Record<string, unknown>): unknown {
     },
     edges,
     edge_count: edges.length,
+    ...(edges.length >= 80 ? { edges_truncated: true, edge_total: (db.prepare("SELECT COUNT(*) AS n FROM (SELECT 1 FROM edges WHERE valid_until IS NULL AND (source_id = ? OR target_id = ?) GROUP BY source_id, target_id, edge_type)").get(node.id, node.id) as any).n } : {}),
+    ...(roster
+      ? {
+          roster: roster.slice(0, 100).map((a) => ({ id: a.id, name: a.name, slug: a.slug, represented: a.represented, shows: a.shows, works: a.works, ...(a.estate ? { estate: true } : {}) })),
+          roster_count: roster.length,
+          roster_note: "The artists of this organisation, derived from live edges: represented here, in shows it presented, or with works shown here. Only 'represented' means REPRESENTS. 'estate: true' means the site names the artist's estate, not the artist.",
+        }
+      : {}),
     signals,
   };
 }
@@ -406,7 +423,7 @@ export const TOOL_DEFINITIONS: ToolDef[] = [
   {
     name: "get_node",
     description:
-      "Fetch a single node's full metadata, its current edges (bi-temporal filter applied — valid_until IS NULL), the names of its peers, and its approved signals. Use slug OR id; slug is preferred. This is the workhorse for any 'tell me about X' question.",
+      "Fetch a single node's full metadata, its current edges (bi-temporal filter applied — valid_until IS NULL), the names of its peers, and its approved signals. Use slug OR id; slug is preferred. For an institution or platform it also returns `roster`: its artists, read off its shows and works — use it for 'who does X show / work with'. This is the workhorse for any 'tell me about X' question.",
     input_schema: {
       type: "object",
       properties: {
