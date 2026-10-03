@@ -10,8 +10,11 @@ import { formatArtworkYearFromMetadata, formatArtworkYear, YEAR_SQL_FRAGMENT } f
 import { NODE_NOT_RETIRED } from "../utils/visibility.js";
 import { sourceLabel } from "../utils/source-label.js";
 import { rosterFor } from "../utils/roster.js";
-import { collapseClaims, CLAIM_COLS } from "../utils/claims.js";
+import { collapseClaims, CLAIM_COLS, tripleKey } from "../utils/claims.js";
 import { nodeHistory, type HistoryEvent } from "../utils/history.js";
+import { readSession } from "../intake/auth.js";
+import { accessClaimCards, accessClaimCount, claimReviewCards, curatorSignIn, objectionsBlock, profileClaimBlock, relationNotesHtml } from "../claim/pages.js";
+import { notesByTriple, publicNotesFor } from "../claim/notes.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.join(__dirname, "..", "..");
@@ -88,6 +91,8 @@ function profileHandler(req: any, res: any) {
   const escName = htmlEscape(String(node.name));
   const escType = htmlEscape(String(node.type));
   let body = `<h2>${escName}</h2><span class='tag'>${escType}</span>`;
+  // Claimed: the badge (+ the claimant's own links); unclaimed: "Is this you?"
+  body += profileClaimBlock(db, node, readSession(db, req)?.contributor.id ?? null);
 
   // For artworks, surface the year prominently right under the title.
   // The same display string is exposed by the API on artwork nodes, so
@@ -282,6 +287,8 @@ function profileHandler(req: any, res: any) {
     )
     .all(node.id, node.id) as any[]);
 
+  // The subject's word on its relations: open contests, context notes.
+  const notes = notesByTriple(publicNotesFor(db, node.id));
   if (edges.length > 0) {
     const grouped = new Map<string, any[]>();
     for (const e of edges) {
@@ -300,7 +307,7 @@ function profileHandler(req: any, res: any) {
         const claimed = e.origins.length > 1
           ? ` <span class='meta'>— claimed by ${e.origins.length} sources: ${e.origins.map((o: { label: string }) => htmlEscape(o.label)).join(", ")}</span>`
           : "";
-        body += `<li><a href='/practitioner/${encodeURIComponent(otherSlug)}'>${htmlEscape(String(otherName ?? otherSlug))}</a>${claimed}</li>`;
+        body += `<li><a href='/practitioner/${encodeURIComponent(otherSlug)}'>${htmlEscape(String(otherName ?? otherSlug))}</a>${claimed}${relationNotesHtml(notes.get(tripleKey(e)))}</li>`;
       }
       body += `</ul></div>`;
     }
@@ -526,6 +533,15 @@ function renderHistoryEvent(e: HistoryEvent): string {
         `<li>${htmlEscape(c.key)}: ${e.before_recorded ? `${historyValue(c.before)} → ` : ""}${historyValue(c.after)}</li>`
       ).join("") + `</ul>`;
     if (!e.before_recorded) what += `<p class='meta'>Earlier value not recorded (written before before-images were kept).</p>`;
+  } else if (e.kind === "note") {
+    const target = e.relation
+      ? `<code>${htmlEscape(e.relation.source_id)}</code> <span class='edge-type'>${htmlEscape(e.relation.edge_type)}</span> <code>${htmlEscape(e.relation.target_id)}</code>`
+      : `<code>${htmlEscape(e.meta_key ?? "")}</code>`;
+    const label = e.note_kind === "contest" ? `contested by the subject` : `context from the subject`;
+    const outcome = e.note_kind === "contest" && e.state !== "open"
+      ? ` <span class='tag'>${htmlEscape(e.state)}${e.resolved_at ? ` ${htmlEscape(e.resolved_at.slice(0, 10))}` : ""}</span>${e.resolution ? ` <span class='meta'>${htmlEscape(e.resolution)}</span>` : ""}`
+      : e.state === "withdrawn" ? " <span class='tag'>withdrawn</span>" : "";
+    what = `<strong>${label}</strong> ${target}${outcome}${e.note ? `<p>“${htmlEscape(e.note)}”</p>` : ""}`;
   } else {
     const other = e.other.slug && e.other.type
       ? `<a href='/${encodeURIComponent(e.other.type)}/${encodeURIComponent(e.other.slug)}'>${htmlEscape(e.other.name ?? e.other.id)}</a>`
@@ -787,32 +803,39 @@ fetch('/api/contribute',{method:'POST',headers:{'Content-Type':'application/json
 // curator's attention so we keep them separate by URL.
 router.get("/review", (req, res) => {
   const db = getDb();
+  const session = readSession(db, req);
+  if (!session || session.contributor.scope !== "admin") {
+    res.status(session ? 403 : 401).set(HTML_HEADERS).send(htmlPage("Review Queue", curatorSignIn(!!session)));
+    return;
+  }
   const tab = String(req.query.kind ?? "human_signal");
-  const tabKind = tab === "ai_suggestion" ? "ai_suggestion" : "human_signal";
-
-  const countHuman = (db
-    .prepare("SELECT COUNT(*) as count FROM intake_queue WHERE status='pending' AND kind='human_signal'")
-    .get() as any).count;
-  const countAI = (db
-    .prepare("SELECT COUNT(*) as count FROM intake_queue WHERE status='pending' AND kind='ai_suggestion'")
-    .get() as any).count;
-  const { count: qCount } = db
-    .prepare("SELECT COUNT(*) as count FROM intake_queue WHERE status='pending' AND kind=?")
-    .get(tabKind) as any;
+  const TABS: Array<[string, string]> = [
+    ["human_signal", "Human signals"],
+    ["ai_suggestion", "AI suggestions"],
+    ["claim", "Claims"],
+    ["contest", "Contests"],
+    ["context", "Subject notes"],
+  ];
+  const tabKind = TABS.some(([k]) => k === tab) ? tab : "human_signal";
+  const pendingCount = (k: string): number =>
+    Number((db.prepare("SELECT COUNT(*) as count FROM intake_queue WHERE status='pending' AND kind=?").get(k) as any).count) +
+    (k === "claim" ? accessClaimCount(db) : 0);
+  const qCount = pendingCount(tabKind);
 
   const tabLink = (k: string, label: string, n: number, active: boolean): string =>
     `<a href='/review?kind=${k}' class='tag'${active ? " style='background:#444;color:#fff'" : ""}>${label} (${n})</a>`;
 
   let body = `<h2>Review Queue</h2>
 <p class='meta'>
-  ${tabLink("human_signal", "Human signals", countHuman, tabKind === "human_signal")}
-  &nbsp;
-  ${tabLink("ai_suggestion", "AI suggestions", countAI, tabKind === "ai_suggestion")}
+  ${TABS.map(([k, label]) => tabLink(k, label, pendingCount(k), tabKind === k)).join(" &nbsp; ")}
 </p>
-<p class='meta'>${qCount} pending in this tab.</p>`;
+<p class='meta'>${qCount} pending in this tab · signed in as ${htmlEscape(session.contributor.name || session.email)}</p>`;
 
   if (qCount === 0) {
     body += `<p>Nothing to review here.</p>`;
+  } else if (tabKind === "claim" || tabKind === "contest" || tabKind === "context") {
+    body += claimReviewCards(db, tabKind);
+    if (tabKind === "claim") body += accessClaimCards(db);
   } else if (tabKind === "ai_suggestion") {
     // AI suggestion rows: target_node is the *artwork*; proposed_edges
     // carries the proposed CREATED_BY pointing to a practitioner. We show
@@ -912,6 +935,7 @@ router.get("/review", (req, res) => {
       if (qurl) {
         body += `<p class='meta'>Source: <a href='${qurl}'>${qurl}</a></p>`;
       }
+      body += objectionsBlock(db, item.id);
 
       body += `<div style='margin-top:0.5rem'>
 <button class='btn btn-approve' onclick="reviewAction('${item.id}','approve')">Approve</button>
@@ -924,14 +948,14 @@ router.get("/review", (req, res) => {
   // recent decisions
   const recentDecisions = db
     .prepare(
-      "SELECT iq.id, iq.status, iq.reviewed_at, s.title, n.name as target_name FROM intake_queue iq LEFT JOIN signals s ON iq.signal_id = s.id LEFT JOIN nodes n ON iq.target_node = n.id WHERE iq.status != 'pending' ORDER BY iq.reviewed_at DESC LIMIT 10"
+      "SELECT iq.id, iq.status, iq.kind, iq.reviewed_at, s.title, n.name as target_name FROM intake_queue iq LEFT JOIN signals s ON iq.signal_id = s.id LEFT JOIN nodes n ON iq.target_node = n.id WHERE iq.status != 'pending' ORDER BY iq.reviewed_at DESC LIMIT 10"
     )
     .all() as any[];
 
   if (recentDecisions.length > 0) {
     body += `<h3>recent decisions</h3>`;
     for (const r of recentDecisions) {
-      body += `<div class='card'><span class='status-${r.status}'>${r.status}</span> ${r.title} — ${r.target_name}</div>`;
+      body += `<div class='card'><span class='status-${htmlEscape(String(r.status))}'>${htmlEscape(String(r.status))}</span> ${htmlEscape(String(r.title ?? r.kind ?? ""))} — ${htmlEscape(String(r.target_name ?? ""))}</div>`;
     }
   }
 

@@ -1,7 +1,7 @@
 ---
 name: adai-contribute
-description: Contribute to the A(DAI) Digital Arts Knowledge Commons graph (https://digitalartsinstitute.io) on behalf of a practitioner using their bearer token in ADAI_TOKEN. Use when the user wants to add a text signal about an existing node, create a node (practitioner, artwork, concept, scene, institution, collective, platform, etc.), add or supersede an edge (CREATED_BY, EMBODIES, PRACTICES, EXHIBITED_AT, CLASSIFIED_BY, BELONGS_TO, COLLABORATES_WITH, USES_TECHNIQUE, INFLUENCES, RESPONDS_TO, PARTICIPATED_IN, PRESENTED_BY, CURATED_BY, REPRESENTS), upload an image and attach it to a node, tag a session of writes with a batch_id, review their contribution history, or — with an admin-scope token — mint/list/revoke tokens, work the curator review queue (approve/reject/bulk), revoke a signal, retire a node, or roll back a contribution batch (provenance-preserving). Talks to /api/v1/* via curl. Respects trust tiers (auto/reviewed go live, probationary queue at /review). Never infer INFLUENCES or RESPONDS_TO from style or visual similarity; both require attested artist intent.
-version: 2026-09-20
+description: Contribute to the A(DAI) Digital Arts Knowledge Commons graph (https://digitalartsinstitute.io) on behalf of a practitioner using their bearer token in ADAI_TOKEN. Use when the user wants to add a text signal about an existing node, create a node (practitioner, artwork, concept, scene, institution, collective, platform, etc.), add or supersede an edge (CREATED_BY, EMBODIES, PRACTICES, EXHIBITED_AT, CLASSIFIED_BY, BELONGS_TO, COLLABORATES_WITH, USES_TECHNIQUE, INFLUENCES, RESPONDS_TO, PARTICIPATED_IN, PRESENTED_BY, CURATED_BY, REPRESENTS), upload an image and attach it to a node, tag a session of writes with a batch_id, review their contribution history, claim the practitioner's own page and speak for it (contest or add context to relations about them, invite the people at the other end), or — with an admin-scope token — mint/list/revoke tokens, work the curator review queue (approve/reject/bulk), revoke a signal, retire a node, or roll back a contribution batch (provenance-preserving). Talks to /api/v1/* via curl. Respects trust tiers (auto/reviewed go live, probationary queue at /review). Never infer INFLUENCES or RESPONDS_TO from style or visual similarity; both require attested artist intent.
+version: 2026-10-03
 ---
 
 # A(DAI) contributor skill — for Claude (and any other AI assistant) writing to the knowledge commons
@@ -556,6 +556,41 @@ survey, the pages already read and the cards they rejected; the draft's
 `batch_id = draft_id` and shows up in `GET /api/v1/batches` and on the
 public receipt `/batch/:id` like any other batch.
 
+### 1.9 Claimed pages — speaking for the practitioner
+
+A practitioner (or a collective / institution) can **claim** their page: it
+gets a `✓ claimed` badge and a short **@handle** link (`/@casey-reas`), and
+they get a log of everything the commons holds about it. Claiming does not
+let anyone edit the page directly — curators still approve every change.
+What a claimant can do is **speak**: contest a relation that is wrong, add
+context to one, object to a proposal still in review, and invite the person
+at the other end of a relation. The same bearer token works:
+
+```bash
+# Claim (instant when their invitation named this page; otherwise a curator decides)
+curl -s -X POST "$ADAI_BASE/api/claims" -H "Authorization: Bearer $ADAI_TOKEN" -H 'content-type: application/json' \
+  -d '{"node_id":"practitioner:casey-reas","evidence":"https://reas.com/bio names me","handle":"casey-reas"}' | jq
+# Their log for one claimed page: relations (+ sources and notes), items in review about them, history
+curl -s "$ADAI_BASE/api/me/log?node=practitioner:casey-reas" -H "Authorization: Bearer $ADAI_TOKEN" | jq
+# Contest a relation — public at once ("contested by the subject"); a curator ends it or dismisses
+curl -s -X POST "$ADAI_BASE/api/me/contest" -H "Authorization: Bearer $ADAI_TOKEN" -H 'content-type: application/json' \
+  -d '{"node_id":"practitioner:casey-reas","relation":{"source_id":"institution:x","edge_type":"REPRESENTS","target_id":"practitioner:casey-reas"},"note":"Never represented by them."}'
+# Contest a metadata edit instead: "edit":{"key":"born","signal_id":"signal-…"} (from the log's history)
+# Context on a relation (live for auto/reviewed tiers, else reviewed)
+curl -s -X POST "$ADAI_BASE/api/me/context" … -d '{"node_id":"…","relation":{…},"note":"Two shows together, 2019–21."}'
+# Object to a pending proposal about them (queue_id from the log's "pending")
+curl -s -X POST "$ADAI_BASE/api/me/objection" … -d '{"node_id":"…","queue_id":"intake-…","note":"…"}'
+# Invite the other end of one of their relations (unclaimed person/collective/institution; 10 a week)
+curl -s -X POST "$ADAI_BASE/api/me/invite" … -d '{"node_id":"practitioner:other","email":"them@example.org","message":"optional"}'
+# Handle: check, then set (once every 30 days; old handles keep resolving)
+curl -s "$ADAI_BASE/api/claims/handle?h=casey&node=practitioner:casey-reas" -H "Authorization: Bearer $ADAI_TOKEN"
+curl -s -X POST "$ADAI_BASE/api/claims/handle" … -d '{"node_id":"practitioner:casey-reas","handle":"casey"}'
+```
+
+A note is always in the practitioner's own words — draft it with them, never
+for them. A contest needs a reason a curator can check. Never invite someone
+the practitioner did not name, and never put an email address anywhere public.
+
 ## 2 — ID conventions
 
 - **Newly-created nodes** always get the hyphenated form:
@@ -734,7 +769,7 @@ sign-in link. Anyone else who asks is recorded as a pending request, and the
 admins get an email about it.
 
 ```bash
-# Invite (name = their public attribution; tier as in §4.1; practitioner = the node they ARE, optional)
+# Invite (name = their public attribution; tier as in §4.1; node = the page they ARE — theirs at once, optional)
 curl -s -X POST "$ADAI_BASE/api/v1/invites" -H "Authorization: Bearer $ADAI_TOKEN" -H 'content-type: application/json' \
   -d '{"email":"irina@example.org","name":"Irina","tier":"reviewed","send":true}' | jq
 # Who is invited, and who asked without an invite
@@ -749,6 +784,28 @@ curl -s -X POST "$ADAI_BASE/api/v1/invites/revoke" -H "Authorization: Bearer $AD
 `auto` tier — auto means their confirmed drafts go live without review.
 Treat the email addresses in these responses as private: never paste them
 into a signal, a node, or anywhere public.
+
+### 4.6c Claims, contests and subject notes
+
+Three more `kind`s in the review queue (§4.4 — `?kind=claim|contest|context`,
+same approve / reject calls): **claim** (approve = the page is theirs; reject
+with a reason they receive by email), **contest** (approve = *uphold*: every
+live claim of that relation ends bi-temporally, or an edited value goes back
+to its before-image; reject = *dismiss*: the public mark comes off), and
+**context** (a probationary claimant's note; approve publishes it). Look at
+the evidence first: the claim card on `/review` shows the email domain against
+the page's website and any drafts they ran on that site.
+
+```bash
+curl -s "$ADAI_BASE/api/v1/claims?status=approved" -H "Authorization: Bearer $ADAI_TOKEN" | jq   # ?status= ?node=
+curl -s -X POST "$ADAI_BASE/api/v1/claims/<claim_id>/revoke" -H "Authorization: Bearer $ADAI_TOKEN" -H 'content-type: application/json' \
+  -d '{"reason":"impersonation"}'
+```
+
+Inviting with `"node": "practitioner:…"` (§4.6b; `practitioner` still works)
+makes that page theirs at once. An uninvited person who asks to claim a page
+from its profile shows up on `/review?kind=claim` under "not yet invited";
+approving there invites them and approves the claim in one step.
 
 ### 4.7 Batch rollback — "delete and start again"
 

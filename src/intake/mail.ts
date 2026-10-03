@@ -12,11 +12,11 @@ function from(): string {
   return process.env.INTAKE_FROM || "A(DAI) <contribute@fragcolor.com>";
 }
 
-function replyTo(): string[] {
+export function replyTo(): string[] {
   return (process.env.ADMIN_NOTIFY_EMAILS || "").split(/[,\s]+/).map((s) => s.trim()).filter(Boolean);
 }
 
-async function send(to: string, subject: string, text: string): Promise<void> {
+export async function send(to: string, subject: string, text: string): Promise<void> {
   try {
     await sendMail({ from: from(), to: [to], replyTo: replyTo(), subject, text, html: textToHtml(text) });
   } catch (e: any) {

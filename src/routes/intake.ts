@@ -45,6 +45,8 @@ import { CandidateError } from "../intake/candidate.js";
 import { sendLoginEmail, sendReceiptEmail, sendAccessRequestEmail } from "../intake/mail.js";
 import { spawnAsync } from "../intake/spawn.js";
 import { contributePage, draftPage, batchPage } from "../intake/pages.js";
+import { myNodes } from "../claim/log.js";
+import { postIntakeClaimPrompt } from "../claim/screens.js";
 
 const router = Router();
 
@@ -138,6 +140,8 @@ router.get("/api/intake/me", requireContributor, (req, res) => {
     email: req.intakeSession?.email ?? emailFor(db, c.id),
     trust_tier: c.trust_tier,
     self_node_id: req.intakeSession?.self_node_id ?? null,
+    claims: myNodes(db, c.id),
+    curator: c.scope === "admin",
     via: req.intakeSession ? "session" : "token",
   });
 });
@@ -279,7 +283,9 @@ router.get("/batch/:batch_id", (req, res) => {
   const draft = getDraft(db, String(req.params.batch_id));
   const isOwner = !!(s && draft && draft.contributor_id === s.contributor.id);
   const admins = (process.env.ADMIN_NOTIFY_EMAILS || "").split(/[,\s]+/).filter(Boolean);
-  res.set(HTML_HEADERS).send(batchPage(r, isOwner, admins));
+  // "Is one of these you?" (docs/CLAIM-SPEC.md §6) — the owner only.
+  const prompt = isOwner && draft ? postIntakeClaimPrompt(db, s!.contributor.id, draft.id, r) : "";
+  res.set(HTML_HEADERS).send(batchPage(r, isOwner, admins, prompt));
 });
 
 export default router;

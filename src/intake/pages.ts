@@ -82,11 +82,11 @@ const CSS = `
 #intake .bulk { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0 0; }
 `;
 
-function shell(title: string, body: string, script = ""): string {
+export function shell(title: string, body: string, script = ""): string {
   return htmlPage(title, `<style>${CSS}</style><div id="intake">${body}</div>${script ? `<script>${script}</script>` : ""}`);
 }
 
-const helpers = `
+export const helpers = `
 const $ = (s, r) => (r || document).querySelector(s);
 const esc = (s) => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 async function api(method, path, body) {
@@ -374,7 +374,7 @@ load();`;
 
 // ---- /batch/:id -------------------------------------------------------------------
 
-export function batchPage(receipt: Record<string, any>, isOwner: boolean, adminEmails: string[]): string {
+export function batchPage(receipt: Record<string, any>, isOwner: boolean, adminEmails: string[], claimPrompt = ""): string {
   const VERBS: Record<string, string> = { CREATED_BY: "was created by", EXHIBITED_AT: "was exhibited at", PARTICIPATED_IN: "took part in", PRESENTED_BY: "was presented by", CURATED_BY: "was curated by", REPRESENTS: "represents", USES_TECHNIQUE: "uses the technique", EMBODIES: "embodies", BELONGS_TO: "belongs to", COLLABORATES_WITH: "collaborates with", INFLUENCES: "influences", RESPONDS_TO: "responds to" };
   const link = (id: string) => {
     const t = id.split(":")[0] ?? "";
@@ -396,6 +396,7 @@ export function batchPage(receipt: Record<string, any>, isOwner: boolean, adminE
 <div class="kicker">RECEIPT · ${htmlEscape(String(receipt.batch_id))}</div>
 <h2>${htmlEscape(String(receipt.contributor ?? "A contributor"))} · ${htmlEscape(String(receipt.source_domain ?? ""))}</h2>
 <p class="lede">${readRange ? `Site read ${htmlEscape(readRange)} · ` : ""}Submitted ${htmlEscape(String(receipt.submitted_at ?? ""))} · state <span class="pill ${htmlEscape(String(receipt.review_state).replace(/ /g, "-"))}">${htmlEscape(String(receipt.review_state))}</span>${receipt.source_url ? ` · <a href="${htmlEscape(String(receipt.source_url))}" rel="noopener" target="_blank">source ↗</a>` : ""}${receipt.subject_node_id && !String(receipt.subject_node_id).startsWith("cid:") ? ` · subject ${link(String(receipt.subject_node_id))}` : ""}</p>
+${claimPrompt}
 ${nodeSigs.length ? `<div class="group"><h3>Nodes · ${nodeSigs.length}</h3>${nodeSigs.map((s) => `<div class="card"><div class="title">${htmlEscape(String(s.title).replace(/^Create node: /, ""))}${s.status === "revoked" ? '<span class="badge">retired</span>' : ""}</div>${s.content ? `<div class="quote">“${htmlEscape(String(s.content).slice(0, 300))}”${s.source_url ? `<a href="${htmlEscape(String(s.source_url))}" target="_blank" rel="noopener">source ↗</a>` : ""}</div>` : ""}</div>`).join("")}</div>` : ""}
 ${edges.length ? `<div class="group"><h3>Relations · ${edges.length}</h3>${edges.map((e) => `<div class="card"><div class="title">${link(e.source_id)} ${htmlEscape(VERBS[e.edge_type] ?? e.edge_type)} ${link(e.target_id)}<span class="badge">${htmlEscape(e.edge_type)}</span>${e.live ? "" : '<span class="badge">superseded</span>'}</div></div>`).join("")}</div>` : ""}
 ${imgSigs.length ? `<div class="group"><h3>Images · ${imgSigs.length}</h3>${imgSigs.map((s) => { let c: any = {}; try { c = JSON.parse(s.content); } catch { /* */ } return `<div class="card"><div class="title">${c.node_id ? link(c.node_id) : ""}</div>${c.key ? `<img class="thumb" loading="lazy" crossorigin="anonymous" src="${htmlEscape(`${process.env.R2_PUBLIC_BASE ?? ""}/${c.key}`)}" alt="">` : ""}</div>`; }).join("")}</div>` : ""}

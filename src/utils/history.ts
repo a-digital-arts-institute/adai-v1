@@ -55,6 +55,21 @@ export type HistoryEvent =
       invalidated_by: string | null;
       by: string | null;
       source: HistorySource | null;
+    }
+  | {
+      // The subject's word (docs/CLAIM-SPEC.md §4): a contest on a relation or
+      // an edit, or a published context note. `state` is where it stands now.
+      kind: "note";
+      at: string | null;
+      note_kind: "contest" | "context";
+      state: string;
+      note: string;
+      relation: { source_id: string; edge_type: string; target_id: string } | null;
+      meta_key: string | null;
+      resolution: string | null;
+      resolved_at: string | null;
+      by: string | null;
+      source: HistorySource | null;
     };
 
 export interface NodeHistory {
@@ -231,7 +246,34 @@ export function nodeHistory(db: DatabaseSync, nodeId: string): NodeHistory | nul
     }
   }
 
-  const events = [...metaEvents, ...relEvents].sort((a, b) => at(b).localeCompare(at(a)) || (seqOf.get(b) ?? 0) - (seqOf.get(a) ?? 0));
+  // ---- the subject's notes ------------------------------------------------------
+  const noteRows = db.prepare(
+    `SELECT signal_id, kind, state, note, source_id, edge_type, target_id, meta_key, resolution, resolved_at, created_at
+       FROM relation_notes
+      WHERE kind IN ('contest','context') AND state NOT IN ('pending','rejected')
+        AND (source_id = ? OR target_id = ? OR (meta_key IS NOT NULL AND node_id = ?))`
+  ).all(nodeId, nodeId, nodeId) as any[];
+  const noteEvents: HistoryEvent[] = noteRows.map((r) => {
+    const sig = signal(r.signal_id);
+    const src = sourceOf(sig);
+    const ev: HistoryEvent = {
+      kind: "note",
+      at: r.created_at ?? null,
+      note_kind: r.kind,
+      state: r.state,
+      note: sig?.consent_scope === "structural_only" ? "" : r.note,
+      relation: r.source_id ? { source_id: r.source_id, edge_type: r.edge_type, target_id: r.target_id } : null,
+      meta_key: r.meta_key ?? null,
+      resolution: r.resolution ?? null,
+      resolved_at: r.resolved_at ?? null,
+      by: src?.by ?? null,
+      source: src,
+    };
+    seqOf.set(ev, Number(sig?.seq ?? 0));
+    return ev;
+  });
+
+  const events = [...metaEvents, ...relEvents, ...noteEvents].sort((a, b) => at(b).localeCompare(at(a)) || (seqOf.get(b) ?? 0) - (seqOf.get(a) ?? 0));
   return {
     node: { id: node.id, name: node.name, type: node.type, slug: node.slug, created_at: node.created_at ?? null },
     events,

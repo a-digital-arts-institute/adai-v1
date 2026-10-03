@@ -24,6 +24,40 @@ import {
   materialiseEdge,
 } from "./contribution.js";
 import { embedNodeAsync } from "../embed/server.js";
+import { ClaimError, approveClaim, claimByQueueId, rejectClaim } from "../claim/store.js";
+import { approveContext, dismissContest, rejectContext, settleObjections, upholdContest } from "../claim/notes.js";
+
+// Claims and a subject's notes (docs/CLAIM-SPEC.md) settle through their
+// own code: approve = approve the claim / uphold the contest / publish the
+// context note; reject = reject / dismiss / reject.
+function reviewClaimKind(
+  db: DatabaseSync,
+  item: { id: string; kind: string },
+  action: "approve" | "reject",
+  by: string,
+  reason: string | null
+): ReviewOutcome {
+  try {
+    if (item.kind === "claim") {
+      const c = claimByQueueId(db, item.id);
+      if (!c) return { ok: false, status: 404, error: "claim not found for this item" };
+      if (action === "approve") approveClaim(db, c.id, { by });
+      else rejectClaim(db, c.id, { by, reason: reason ?? "rejected" });
+    } else if (item.kind === "contest") {
+      if (action === "approve") upholdContest(db, item.id, { by, reason });
+      else dismissContest(db, item.id, { by, reason: reason ?? "dismissed" });
+    } else if (item.kind === "context") {
+      if (action === "approve") approveContext(db, item.id, { by });
+      else rejectContext(db, item.id, { by, reason: reason ?? "rejected" });
+    }
+  } catch (e) {
+    if (e instanceof ClaimError) return { ok: false, status: e.status, error: e.message };
+    throw e;
+  }
+  return { ok: true, intake_id: item.id };
+}
+
+export const CLAIM_KINDS = ["claim", "contest", "context"];
 
 const sha256Hex = (s: string): string =>
   crypto.createHash("sha256").update(s).digest("hex");
@@ -46,6 +80,7 @@ export function approveIntakeItem(
   if (!item) {
     return { ok: false, status: 404, error: "not found or already reviewed" };
   }
+  if (CLAIM_KINDS.includes(item.kind)) return reviewClaimKind(db, item, "approve", reviewedBy, null);
 
   // For AI-suggestion items, materialise the proposed edge into the live
   // graph. The `proposed_edges` column carries a JSON array of edge specs
@@ -120,6 +155,7 @@ export function approveIntakeItem(
   ).run(reviewedBy, id);
 
   db.prepare("UPDATE contributors SET approved_count = approved_count + 1 WHERE name = ?").run(item.submitted_by);
+  settleObjections(db, id, "approved", reviewedBy);
 
   return { ok: true, intake_id: id };
 }
@@ -138,6 +174,7 @@ export function rejectIntakeItem(
   if (!item) {
     return { ok: false, status: 404, error: "not found or already reviewed" };
   }
+  if (CLAIM_KINDS.includes(item.kind)) return reviewClaimKind(db, item, "reject", reviewedBy, reason);
 
   // For AI suggestions, record the rejected pair in rejected_ai_suggestions
   // so the next derive pass won't re-propose it. Hash is sha256(source||
@@ -163,6 +200,7 @@ export function rejectIntakeItem(
   db.prepare(
     "UPDATE intake_queue SET status = 'rejected', rejection_reason = ?, reviewed_by = ?, reviewed_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = ?"
   ).run(reason, reviewedBy, id);
+  settleObjections(db, id, "rejected", reviewedBy);
 
   return { ok: true, intake_id: id };
 }

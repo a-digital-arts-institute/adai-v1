@@ -14,7 +14,7 @@ import type { Request, Response, NextFunction } from "express";
 import crypto from "node:crypto";
 import type { DatabaseSync } from "node:sqlite";
 import { getDb } from "../db.js";
-import { requireToken, type AuthedContributor } from "../auth.js";
+import { requireAdmin, requireToken, type AuthedContributor } from "../auth.js";
 import { slugify } from "../utils/slug.js";
 
 export const SESSION_COOKIE = "adai_session";
@@ -356,7 +356,7 @@ export function readSession(db: DatabaseSync, req: Request): ContributorSession 
       trust_tier: row.trust_tier ?? "probationary",
       token_label: "session",
       token_prefix: "session",
-      scope: "write",
+      scope: isCurator(db, row.id, row.email ?? "") ? "admin" : "write",
     },
   };
 }
@@ -375,6 +375,41 @@ export function clearSessionCookie(res: Response): void {
 }
 
 // ---- middleware ------------------------------------------------------------------
+
+// ---- curators -------------------------------------------------------------------
+//
+// Who may approve on /review from a browser: a signed-in contributor whose
+// email is listed in ADMIN_EMAILS (falls back to ADMIN_NOTIFY_EMAILS — the
+// people who already get the access-request mail), or whose contributor
+// holds an active admin-scope token. Such a session carries scope 'admin'.
+
+export function adminEmails(): string[] {
+  const raw = process.env.ADMIN_EMAILS || process.env.ADMIN_NOTIFY_EMAILS || "";
+  return raw.split(/[,\s]+/).map((s) => s.trim().toLowerCase()).filter(Boolean);
+}
+
+export function isCurator(db: DatabaseSync, contributorId: string, email: string): boolean {
+  if (email && adminEmails().includes(email.toLowerCase())) return true;
+  return !!db
+    .prepare("SELECT 1 FROM contributor_tokens WHERE contributor_id = ? AND scope = 'admin' AND revoked_at IS NULL LIMIT 1")
+    .get(contributorId);
+}
+
+/** A curator session, or an admin bearer token. */
+export function requireCurator(req: Request, res: Response, next: NextFunction): void {
+  const s = readSession(getDb(), req);
+  if (s) {
+    if (s.contributor.scope !== "admin") {
+      res.status(403).json({ error: "curator_required" });
+      return;
+    }
+    req.intakeSession = s;
+    req.contributor = s.contributor;
+    next();
+    return;
+  }
+  requireAdmin(req, res, next);
+}
 
 /** Session cookie only. Populates req.intakeSession + req.contributor. */
 export function requireSession(req: Request, res: Response, next: NextFunction): void {

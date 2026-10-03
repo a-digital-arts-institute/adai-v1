@@ -8,10 +8,12 @@ import apiRoutes from "./routes/api.js";
 import contributorApiRoutes from "./routes/contributor-api.js";
 import archivistRoutes from "./routes/archivist.js";
 import intakeRoutes from "./routes/intake.js";
+import claimRoutes from "./routes/claim.js";
 import internalRoutes, { workerKey } from "./routes/internal.js";
 import { startSpawnerInterval, isSpawnerConfigured } from "./intake/spawn.js";
 import { isSessionConfigured } from "./intake/auth.js";
 import { getDb } from "./db.js";
+import { backfillInviteClaims } from "./claim/store.js";
 import { htmlPage, HTML_HEADERS } from "./templates.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -37,6 +39,11 @@ const port = parseInt(process.env.PORT || "8080", 10);
 console.log("Setting database path:", dbPath);
 initDb(dbPath);
 console.log("Database initialized.");
+{
+  // Every invite that named a node is an approved claim (docs/CLAIM-SPEC.md §1.1).
+  const n = backfillInviteClaims(getDb());
+  if (n) console.log(`[claims] ${n} invite(s) became approved claims`);
+}
 
 const app = express();
 // 12 MB matches the multer cap on /api/v1/images and gives base64 payloads
@@ -47,7 +54,8 @@ const app = express();
 // before hitting the rate-limit gate.
 const generousJson = express.json({ limit: "16mb" });
 app.use((req, res, next) => {
-  if (req.path.startsWith("/api/archivist/") || req.path.startsWith("/api/intake/") || req.path.startsWith("/internal/")) return next();
+  if (req.path.startsWith("/api/archivist/") || req.path.startsWith("/api/intake/") || req.path.startsWith("/internal/") ||
+      req.path.startsWith("/api/claims") || req.path.startsWith("/api/me/") || req.path.startsWith("/api/review/access/")) return next();
   return generousJson(req, res, next);
 });
 
@@ -132,6 +140,8 @@ app.use(
 // /auth/:token, so it goes before the page router. /internal/* (worker
 // surface) is mounted ONLY when WORKER_KEY is set (>=16 chars).
 app.use(intakeRoutes);
+// Claims, /@handle, /me (docs/CLAIM-SPEC.md).
+app.use(claimRoutes);
 if (workerKey()) {
   app.use(internalRoutes);
   console.log("[intake] /internal/intake/* mounted");
