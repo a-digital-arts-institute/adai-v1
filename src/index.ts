@@ -12,6 +12,7 @@ import internalRoutes, { workerKey } from "./routes/internal.js";
 import { startSpawnerInterval, isSpawnerConfigured } from "./intake/spawn.js";
 import { isSessionConfigured } from "./intake/auth.js";
 import { getDb } from "./db.js";
+import { backfillInviteClaims } from "./claim/store.js";
 import { htmlPage, HTML_HEADERS } from "./templates.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -37,6 +38,11 @@ const port = parseInt(process.env.PORT || "8080", 10);
 console.log("Setting database path:", dbPath);
 initDb(dbPath);
 console.log("Database initialized.");
+{
+  // Every invite that named a node is an approved claim (docs/CLAIM-SPEC.md §1.1).
+  const n = backfillInviteClaims(getDb());
+  if (n) console.log(`[claims] ${n} invite(s) became approved claims`);
+}
 
 const app = express();
 // 12 MB matches the multer cap on /api/v1/images and gives base64 payloads

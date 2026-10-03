@@ -286,7 +286,9 @@ CREATE TABLE IF NOT EXISTS intake_access_requests (
     first_at        TEXT NOT NULL,
     last_at         TEXT NOT NULL,
     count           INTEGER NOT NULL DEFAULT 1,
-    notified_at     TEXT                            -- last admin email about it (at most daily)
+    notified_at     TEXT,                           -- last admin email about it (at most daily)
+    node_id         TEXT,                           -- signed-out "claim this page": the node asked for
+    evidence        TEXT                            -- … and why it is theirs
 );
 
 -- Drafts double as the job queue: a row with job IS NOT NULL is claimable by
@@ -330,3 +332,57 @@ CREATE TABLE IF NOT EXISTS intake_usage (
     cache_write_tokens   INTEGER DEFAULT 0,
     est_cost_usd         REAL DEFAULT 0
 );
+
+-- === CLAIMS (docs/CLAIM-SPEC.md) ===
+-- "This node is me / mine." Local; the public face of an approved claim is
+-- the node's metadata.claimed + a 'claim' signal + its handle alias row
+-- (node_aliases source='handle', whose PK makes handles unique).
+-- Several approved claimants per node (members of a collective); one
+-- contributor may claim several nodes.
+CREATE TABLE IF NOT EXISTS node_claims (
+    id              TEXT PRIMARY KEY NOT NULL,      -- 'clm_' + 16 hex
+    node_id         TEXT NOT NULL,
+    contributor_id  TEXT NOT NULL,
+    status          TEXT NOT NULL DEFAULT 'pending', -- pending | approved | rejected | withdrawn | revoked
+    via             TEXT NOT NULL,                   -- invite | request | peer_invite | post_intake
+    evidence        TEXT,
+    public_name     INTEGER NOT NULL DEFAULT 1,      -- 0 = badge without the claimant's name
+    invited_by      TEXT,                            -- contributor id (peer_invite)
+    queue_id        TEXT,                            -- intake_queue row (kind='claim') while pending
+    signal_id       TEXT,                            -- the signal that made it public
+    reviewed_by     TEXT,
+    reviewed_at     TEXT,
+    reason          TEXT,
+    created_at      TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+);
+CREATE INDEX IF NOT EXISTS idx_node_claims_node ON node_claims(node_id, status);
+CREATE INDEX IF NOT EXISTS idx_node_claims_contributor ON node_claims(contributor_id, status);
+
+-- A claimant's word on a relation (or a metadata edit, or a pending queue
+-- item) about a node they claimed. The signal (CRR) is the public record;
+-- this is the index the profile / field / personal log read.
+--   kind='contest'   — public mark at once; a curator upholds or dismisses
+--   kind='context'   — a note shown with the relation (tier-gated)
+--   kind='objection' — on a pending queue item; the curator sees it there
+CREATE TABLE IF NOT EXISTS relation_notes (
+    signal_id       TEXT PRIMARY KEY NOT NULL,
+    kind            TEXT NOT NULL,
+    source_id       TEXT,                            -- relation triple (contest/context on a relation)
+    edge_type       TEXT,
+    target_id       TEXT,
+    meta_key        TEXT,                            -- contest on a metadata edit: the key …
+    edit_signal_id  TEXT,                            -- … and the signal that wrote it
+    queue_ref       TEXT,                            -- objection: the intake_queue row objected to
+    node_id         TEXT NOT NULL,                   -- the claimed node it was written from
+    contributor_id  TEXT NOT NULL,
+    note            TEXT NOT NULL,
+    state           TEXT NOT NULL,                   -- contest/objection: open | upheld | dismissed ; context: live | pending | rejected | withdrawn
+    queue_id        TEXT,                            -- its own review row (contest; pending context)
+    resolved_by     TEXT,
+    resolved_at     TEXT,
+    resolution      TEXT,
+    created_at      TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+);
+CREATE INDEX IF NOT EXISTS idx_relation_notes_triple ON relation_notes(source_id, edge_type, target_id);
+CREATE INDEX IF NOT EXISTS idx_relation_notes_node ON relation_notes(node_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_relation_notes_queue_ref ON relation_notes(queue_ref);

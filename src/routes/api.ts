@@ -11,6 +11,7 @@ import { sourceLabel } from "../utils/source-label.js";
 import { validateSourceUrl } from "../utils/contribution.js";
 import { rosterFor } from "../utils/roster.js";
 import { collapseClaims, claimsOf, CLAIM_COLS } from "../utils/claims.js";
+import { requireCurator } from "../intake/auth.js";
 
 // SQL fragment that exposes the two metadata keys sourceLabel() reads. Kept
 // next to the helper so the projection and the deriver can't drift.
@@ -577,9 +578,9 @@ router.post("/api/contribute", (req, res) => {
 // POST /api/review/:id/approve — thin HTML wrapper over the shared
 // approve logic in src/utils/review.ts (also used by the admin JSON
 // endpoints in contributor-api.ts).
-router.post("/api/review/:id/approve", (req, res) => {
+router.post("/api/review/:id/approve", requireCurator, (req, res) => {
   const db = getDb();
-  const outcome = approveIntakeItem(db, req.params.id, "curator");
+  const outcome = approveIntakeItem(db, String(req.params.id), req.contributor?.name || "curator");
   if (!outcome.ok) {
     res.status(outcome.status).set(JSON_HEADERS).json({ error: outcome.error });
     return;
@@ -589,14 +590,14 @@ router.post("/api/review/:id/approve", (req, res) => {
 
 // POST /api/review/:id/reject — thin HTML wrapper over the shared reject
 // logic in src/utils/review.ts.
-router.post("/api/review/:id/reject", (req, res) => {
+router.post("/api/review/:id/reject", requireCurator, (req, res) => {
   const db = getDb();
   const reason = req.body?.reason;
   if (!reason) {
     res.status(400).set(JSON_HEADERS).json({ error: "reason is required" });
     return;
   }
-  const outcome = rejectIntakeItem(db, req.params.id, reason, "curator");
+  const outcome = rejectIntakeItem(db, String(req.params.id), reason, req.contributor?.name || "curator");
   if (!outcome.ok) {
     res.status(outcome.status).set(JSON_HEADERS).json({ error: outcome.error });
     return;

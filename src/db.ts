@@ -55,6 +55,15 @@ function runMigrations(db: DatabaseSync) {
       if (!String(e?.message ?? e).includes("duplicate column name")) throw e;
     }
   }
+  // intake_access_requests.node_id / evidence (Oct 2026): a signed-out
+  // "claim this page" request names the node (docs/CLAIM-SPEC.md §2.3).
+  for (const col of ["node_id", "evidence"]) {
+    try {
+      db.exec(`ALTER TABLE intake_access_requests ADD COLUMN ${col} TEXT`);
+    } catch (e: any) {
+      if (!String(e?.message ?? e).includes("duplicate column name")) throw e;
+    }
+  }
 }
 
 export function getDb(): DatabaseSync {

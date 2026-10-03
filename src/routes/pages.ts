@@ -12,6 +12,8 @@ import { sourceLabel } from "../utils/source-label.js";
 import { rosterFor } from "../utils/roster.js";
 import { collapseClaims, CLAIM_COLS } from "../utils/claims.js";
 import { nodeHistory, type HistoryEvent } from "../utils/history.js";
+import { readSession } from "../intake/auth.js";
+import { claimReviewCards, curatorSignIn, objectionsBlock } from "../claim/pages.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.join(__dirname, "..", "..");
@@ -787,32 +789,37 @@ fetch('/api/contribute',{method:'POST',headers:{'Content-Type':'application/json
 // curator's attention so we keep them separate by URL.
 router.get("/review", (req, res) => {
   const db = getDb();
+  const session = readSession(db, req);
+  if (!session || session.contributor.scope !== "admin") {
+    res.status(session ? 403 : 401).set(HTML_HEADERS).send(htmlPage("Review Queue", curatorSignIn(!!session)));
+    return;
+  }
   const tab = String(req.query.kind ?? "human_signal");
-  const tabKind = tab === "ai_suggestion" ? "ai_suggestion" : "human_signal";
-
-  const countHuman = (db
-    .prepare("SELECT COUNT(*) as count FROM intake_queue WHERE status='pending' AND kind='human_signal'")
-    .get() as any).count;
-  const countAI = (db
-    .prepare("SELECT COUNT(*) as count FROM intake_queue WHERE status='pending' AND kind='ai_suggestion'")
-    .get() as any).count;
-  const { count: qCount } = db
-    .prepare("SELECT COUNT(*) as count FROM intake_queue WHERE status='pending' AND kind=?")
-    .get(tabKind) as any;
+  const TABS: Array<[string, string]> = [
+    ["human_signal", "Human signals"],
+    ["ai_suggestion", "AI suggestions"],
+    ["claim", "Claims"],
+    ["contest", "Contests"],
+    ["context", "Subject notes"],
+  ];
+  const tabKind = TABS.some(([k]) => k === tab) ? tab : "human_signal";
+  const pendingCount = (k: string): number =>
+    Number((db.prepare("SELECT COUNT(*) as count FROM intake_queue WHERE status='pending' AND kind=?").get(k) as any).count);
+  const qCount = pendingCount(tabKind);
 
   const tabLink = (k: string, label: string, n: number, active: boolean): string =>
     `<a href='/review?kind=${k}' class='tag'${active ? " style='background:#444;color:#fff'" : ""}>${label} (${n})</a>`;
 
   let body = `<h2>Review Queue</h2>
 <p class='meta'>
-  ${tabLink("human_signal", "Human signals", countHuman, tabKind === "human_signal")}
-  &nbsp;
-  ${tabLink("ai_suggestion", "AI suggestions", countAI, tabKind === "ai_suggestion")}
+  ${TABS.map(([k, label]) => tabLink(k, label, pendingCount(k), tabKind === k)).join(" &nbsp; ")}
 </p>
-<p class='meta'>${qCount} pending in this tab.</p>`;
+<p class='meta'>${qCount} pending in this tab · signed in as ${htmlEscape(session.contributor.name || session.email)}</p>`;
 
   if (qCount === 0) {
     body += `<p>Nothing to review here.</p>`;
+  } else if (tabKind === "claim" || tabKind === "contest" || tabKind === "context") {
+    body += claimReviewCards(db, tabKind);
   } else if (tabKind === "ai_suggestion") {
     // AI suggestion rows: target_node is the *artwork*; proposed_edges
     // carries the proposed CREATED_BY pointing to a practitioner. We show
@@ -912,6 +919,7 @@ router.get("/review", (req, res) => {
       if (qurl) {
         body += `<p class='meta'>Source: <a href='${qurl}'>${qurl}</a></p>`;
       }
+      body += objectionsBlock(db, item.id);
 
       body += `<div style='margin-top:0.5rem'>
 <button class='btn btn-approve' onclick="reviewAction('${item.id}','approve')">Approve</button>
@@ -924,14 +932,14 @@ router.get("/review", (req, res) => {
   // recent decisions
   const recentDecisions = db
     .prepare(
-      "SELECT iq.id, iq.status, iq.reviewed_at, s.title, n.name as target_name FROM intake_queue iq LEFT JOIN signals s ON iq.signal_id = s.id LEFT JOIN nodes n ON iq.target_node = n.id WHERE iq.status != 'pending' ORDER BY iq.reviewed_at DESC LIMIT 10"
+      "SELECT iq.id, iq.status, iq.kind, iq.reviewed_at, s.title, n.name as target_name FROM intake_queue iq LEFT JOIN signals s ON iq.signal_id = s.id LEFT JOIN nodes n ON iq.target_node = n.id WHERE iq.status != 'pending' ORDER BY iq.reviewed_at DESC LIMIT 10"
     )
     .all() as any[];
 
   if (recentDecisions.length > 0) {
     body += `<h3>recent decisions</h3>`;
     for (const r of recentDecisions) {
-      body += `<div class='card'><span class='status-${r.status}'>${r.status}</span> ${r.title} — ${r.target_name}</div>`;
+      body += `<div class='card'><span class='status-${htmlEscape(String(r.status))}'>${htmlEscape(String(r.status))}</span> ${htmlEscape(String(r.title ?? r.kind ?? ""))} — ${htmlEscape(String(r.target_name ?? ""))}</div>`;
     }
   }
 
