@@ -1,244 +1,136 @@
 # A(DAI) — A Digital Arts Institute
 
-Field intelligence infrastructure for the digital arts. A knowledge commons and semantic graph where practitioner intelligence, lived experience, artworks, and field signals accumulate into something the field can query, traverse, challenge, and build on.
+**Shared cultural infrastructure for the digital arts.**
 
-*A* canon, not *the* canon. The indefinite article is load-bearing.
+A(DAI) connects works, people, practices, exhibitions, and histories while keeping track of who contributed each connection and what supports it. Its first layer, the **Digital Arts Commons**, is a public knowledge graph: a shared record that artists, curators, galleries, institutions, researchers, and collectors can explore and contribute to.
 
-**Live at [adai-basel.fly.dev](https://adai-basel.fly.dev)**
+The question behind it is simple: **who says this, on what basis, and how can someone respond?** A(DAI) calls this *interpretive provenance*: keeping a cultural claim connected to its source, its contributor, and its history.
 
----
+**[Explore](https://digitalartsinstitute.io/) · [Contribute](https://digitalartsinstitute.io/contribute) · [Run locally](#run-locally) · [Architecture](ARCHITECTURE.md)**
 
-> **⚠️ The genesis seed pipeline was RETIRED in June 2026.** The live
-> `/data/adai.db` (Litestream-replicated to R2) is the only source of truth;
-> there is no reseed-from-JSON and the image ships no `seed.db`. The
-> `seed/*.json` canon + the offline `seed/_build` gatherers are gone (in git
-> history) — `seed/` now holds only the live R2 janitors. **Live counts:
-> `GET /api/stats`.** New data enters through the governed write path
-> (`/api/v1/*`) / curator `/review`. The "What's in the graph" and "rebuild
-> journey" notes below are kept as **history** and describe how the seed canon
-> was originally produced; several files they link (`seed/STATS.md`,
-> `seed/_build/PRODUCER_CONTRACT.md`, …) no longer exist in the tree.
+## What this looks like
 
----
+![Nguyen Wahed Gallery at the centre of a graph connecting its exhibitions, fairs, and represented artists.](docs/images/nguyen-wahed-gallery-graph.png)
 
-## What's in the graph (May 2026 — Seed Canon, curated-platform + V&A pipeline)
+*Nguyen Wahed Gallery's programme appears as a network of exhibitions, fairs, and represented artists.*
 
-**Exact counts: [`seed/STATS.md`](seed/STATS.md)** (generated from the canon, so
-they never drift) · live: `GET /api/stats`. In shape:
+![Anna Ridler connected to Nguyen Wahed Gallery, exhibition records, an artwork, and the Computer Art concept, with embedding suggestions listed separately.](docs/images/anna-ridler-connections.png)
 
-- **Nodes** — `artwork` (platform tokens + V&A holdings, **every one with a
-  mirrored R2 image**), `practitioner` (platform artists + V&A pioneers),
-  `concept` (8 base + fxhash tag-concepts), `classification_regime` (6),
-  `collective` (V&A groups), `platform` (Art Blocks, fxhash), `institution` (V&A).
-- **Curated edges** — CLASSIFIED_BY, CREATED_BY, EXHIBITED_AT, EMBODIES (two-tier:
-  generative-art/computer-art + fxhash tag-concepts), PRACTICES (V&A makers →
-  computer-art). BELONGS_TO / COLLABORATES_WITH / USES_TECHNIQUE / INFLUENCES
-  reserved at 0; RESPONDS_TO empty by design (artist-intent only).
-- **Multimodal embeddings** — Gemini Embedding 2 (768-d), committed sidecars baked
-  into `seed.db`; auto-derived STYLE_KIN + VISUALLY_AFFINE + Tier-2 concept-EMBODIES
-  refreshed by the daily `embed-derive-daily` workflow.
+*Following Anna Ridler brings the gallery's programme together with an independently contributed V&A collection record. Each connection retains its own source.*
 
-**The May 2026 rebuild + V&A de-bias pass.** The canon went through a long arc (full story in [`CLAUDE.md`](CLAUDE.md) § "The rebuild journey"): the contaminated original was wiped; a four-source *sweep* (MoMA / Wikidata / Art Blocks / fxhash) was generated, then culled — until the Wikidata `digital_art_qids` list was found to be **corrupt** (one QID, "graphic artist", dragged in 3,652 non-digital painters/sculptors — Duchamp, Miró). The cull couldn't catch it because it *trusted the source tag*. So the tainted sources were dropped and the canon was **re-run from the two genuinely-clean platform gatherers — Art Blocks + fxhash**, plus a rule-derived editorial layer. Two May-2026 passes then refined it: a **V&A de-bias pass** added the **Victoria & Albert Museum's Computer Arts Society collection** — the 1960s–70s computer-art spine (Nake, Cohen, Mohr, Molnár, Nees …), all IIIF-imaged (the every-artwork-imaged bar Wikidata's Commons images couldn't clear); and an **fxhash curation pass** replaced a provenance-murky chronological dump with a `--curate`d selection (fxhash relevance + a secondary-market demand gate → the collector-validated 2021 generative canon: SMOLSKULL, RGB Elementary Cellular Automaton, Dragons …), killing the permissionless trash and over-dominance. Each source now contributes its *most significant slice*. The canon stays clean *by construction*: `merge_batches.py` assembles only the batches present; **every artwork carries a mirrored R2 image** (the `merge --require-cdn` invariant). The EMBODIES layer is enriched from **artist-applied fxhash tags** into source-attested tag-concepts (`abstract`, `pixel`, `geometric`, …), with the embedding pipeline propagating inferred tag-labels to visually-similar untagged works. Counts live in [`seed/STATS.md`](seed/STATS.md); the producer contract is in [`seed/_build/PRODUCER_CONTRACT.md`](seed/_build/PRODUCER_CONTRACT.md).
+## Why A(DAI)?
 
-See [`docs/EMBEDDINGS.md`](docs/EMBEDDINGS.md) for the embedding pipeline; [`seed/SOURCES.md`](seed/SOURCES.md) for the selection criteria + provenance; [`CLAUDE.md`](CLAUDE.md) for architecture + operator notes.
+Digital art's knowledge lives across studios, archives, code, catalogues, platforms, and conversations. Websites disappear, platforms close, and works become detached from the conditions in which they were made. A(DAI) helps connect these scattered records while preserving their sources and perspectives.
 
----
+*A canon, not the canon.* An artist's account and a curator's reading can offer different perspectives on the same work. A(DAI)'s commitment is to keep those perspectives recognisable and give people ways to question or respond to them. The tools and policies for doing this are still developing.
 
-## Architecture
+## Who says what?
 
-CR-SQLite Matryoshka — the long-term design is one SQLite database per practitioner, scene, and the field itself, synced via CRDTs. Today the live deployment is a single CRR-mode DB; per-practitioner split is designed, not yet implemented.
+A(DAI) distinguishes between records, people's accounts, and machine suggestions:
 
-```
-┌──────────────────────────────────────────────────┐
-│  FIELD DB (full commons — fat materialized view)  │
-│  ┌────────────────────────────────────────────┐   │
-│  │  SCENE DB ("Berlin generative art")        │   │
-│  │  ┌──────────────────────────────────────┐  │   │
-│  │  │  PRACTITIONER DB (artist-rafael)     │  │   │
-│  │  └──────────────────────────────────────┘  │   │
-│  └────────────────────────────────────────────┘   │
-└──────────────────────────────────────────────────┘
-```
+| Kind | Example | What supports it |
+|---|---|---|
+| Documentary record | A work appeared in an exhibition | A catalogue, institutional record, or other source |
+| Personal account | An artist identifies an influence on their practice | The artist's attributed testimony |
+| Machine-derived pattern | Two works appear visually similar | A comparison made by a model |
 
-**Signal flow:** Arrive → classify source origin → extract entities/edges → intake queue → merge boundary check → CRDT merge → contribution receipt
+Who contributed a claim, what supports it, and whether the artist agrees with it are different questions. Someone contributing a museum record stands behind their use of that source; they are not speaking on the artist's behalf. A(DAI)'s commitment is to make these differences visible.
 
-### Multimodal embedding pipeline
+A source can also support one claim without supporting another. A gallery page may establish its exhibition history without establishing an artist's private intention. Attribution makes a claim accountable; it does not automatically make it true.
 
-Layered on top of the graph: **Gemini Embedding 2** (multimodal, 768-d) projects artworks (text + image fused), practitioners, concepts, and scenes into one vector space. From that space we derive `STYLE_KIN` edges (practitioner ↔ practitioner aesthetic adjacency), `VISUALLY_AFFINE` edges (artwork ↔ artwork visual rhymes), and `SUGGESTS_CREATED_BY` proposals for unattributed artworks (routed through the curator review queue, never auto-merged).
+AI can help organise sources, prepare proposals, and surface patterns. Its similarity suggestions are marked separately. Visual resemblance alone cannot establish influence, intention, or artistic response. The similarity pipeline does not generate those claims; in website intake, influence and response proposals require an answered contributor question.
 
-```
-seed/nodes.json
-    ↓
-seed/_build/embed_nodes.py  ──► Gemini API  ──► seed/embeddings.bin (+ .json)
-                                                       │
-                                                       ▼
-                                          src/seed-consolidated.ts
-                                          loads + chains embed:derive
-                                                       │
-                                                       ▼
-                                       seed.db (baked into Docker image)
-                                                       │
-                              ┌────────────────────────┴───────────────────┐
-                              ▼                                            ▼
-                   /field, /neighbours                       /review?kind=ai_suggestion
-                   profile-page enrichment                   attribution candidates
-```
+Keeping these distinctions clear depends on both the software and the people using it. Beta is testing the safeguards, contribution guidance, and review process together.
 
-Full reference: [`docs/EMBEDDINGS.md`](docs/EMBEDDINGS.md).
+## Contribute
 
----
+**The primary way to contribute is to [submit a website](https://digitalartsinstitute.io/contribute).** Start with a portfolio, exhibition page, or another public source.
 
-## Stack
+1. **Sign in and paste a URL.** An email link signs you in; an AI assistant prepares a draft from the page you submit.
+2. **Review the proposals.** Edit, accept, or reject additions and answer questions.
+3. **Confirm what to submit.** Your accepted additions form a batch with a receipt you can inspect.
 
-- **CR-SQLite** ([Gio's C port](https://github.com/shards-lang/crsqlite-rs)) — SQLite + CRDT extensions for sync
-- **Node 22 + TypeScript + Express** — HTTP server, JSON API, HTML pages
-- **D3 + Canvas** — graph viz (`/graph`), field viz (`/field`)
-- **Google Gemini Embedding 2** — multimodal vector space (offline batch via Python, online derive in TS)
-- **Cloudflare R2** — content-addressable image mirror (every artwork)
-- **Fly.io** — backend hosting, single 512MB machine in `fra`, persistent `/data` volume
-- **Docker** — multi-stage build, runtime image ~74 MB
+The reading agent cannot publish to the graph. New contributors' submissions go to curator review; trusted contributors' approved additions may publish directly. This publication setting is called a **trust tier**. Contributor approval and curator review are separate steps, and both routes retain attribution and support correction.
 
----
+You can also use **[adai-contribute](SKILL.md)** through an AI assistant with a personal access token. It helps prepare existing material or a correction for your review and approval.
 
-## Endpoints
+## Current status
 
-### Browsing
-| Route | Description |
-|---|---|
-| `/` | Home — stats + recent additions |
-| `/explore` | Browse all entities, filterable by type |
-| `/practitioner/:slug` | Profile + connections + style kin + AI attribution proposals |
-| `/artwork/:slug` | Profile + visually affine artworks + style proximity |
-| `/concept/:slug`, `/scene/:slug`, `/collective/:slug`, … | Polymorphic profile pages |
+The working system includes public profiles and graph views, website contribution drafts, receipts, curator review, an assistant contribution API, and public record exports. **Stewards—the people responsible for reviewing and maintaining the record—** have tools to revoke contributions, retire records, and replace outdated relations while preserving a history of the change.
 
-### Visualisation
-| Route | Description |
-|---|---|
-| `/graph` | D3 force-directed graph view |
-| `/field` | Generative dot-field view (press `e` for embeddings mode) |
-| `/neighbours/:type/:slug` | Top-K cosine neighbours of any node, with knobs |
+The service runs as **one instance operated by the founding team**. Independent, synchronising A(DAI) databases are not implemented. Coverage is partial: inclusion is not a ranking of artistic importance, and absence is not a judgment.
 
-### Curation
-| Route | Description |
-|---|---|
-| `/contribute` | Submit a signal |
-| `/review` | Curator review queue (human signals tab) |
-| `/review?kind=ai_suggestion` | Curator review queue (AI attribution proposals) |
+Beta is testing whether people can contribute, understand the result, correct mistakes, and find a reason to return. Planned work includes claimable profiles, clearer replies and withdrawal processes, partner stewardship, and portable records. Claiming a profile is intended to identify a contributor's presence, without implying agreement with every claim or granting control over other people's accounts. Review policies and the support needed to sustain this work remain open questions.
 
-### API
-| Route | Description |
-|---|---|
-| `/api/stats` | Node / edge / signal / pending-review counts |
-| `/api/graph` | Full graph as `{nodes, edges}`, supports `?type=` filter |
-| `/api/graph/:slug` | Ego graph (1-hop neighborhood) |
-| `/api/graph/:slug/component` | Full connected component reached via BFS |
-| `/practitioner/:slug/data`, `/artwork/:slug/data`, … | Full JSON export per node ("give me my data") |
-| `POST /api/contribute` | Submit a signal (JSON body) |
-| `POST /api/review/:id/approve` / `/reject` | Curator actions |
+The generative [field interface](https://digitalartsinstitute.io/field), designed by **Pixel Symphony**, offers one changing view of the commons. The public API makes the graph available for other research tools and artistic interfaces.
 
----
+## For developers
 
-## Repo layout
+### Run locally
 
-```
-adai-v1/
-├── src/
-│   ├── index.ts                 — entry point: init DB, start Express
-│   ├── db.ts                    — SQLite/CR-SQLite setup + migrations
-│   ├── seed.ts                  — legacy seed (results/*.json, kebab IDs)
-│   ├── seed-consolidated.ts     — canonical seed (seed/*.json) + chained embed:derive
-│   ├── templates.ts             — HTML templates
-│   ├── routes/
-│   │   ├── pages.ts             — HTML page handlers (incl. /field)
-│   │   └── api.ts               — JSON API handlers
-│   └── embed/                   — multimodal embedding derive pipeline
-│       ├── vectors.ts           — cosine, decode/encode, loadAll
-│       ├── centroids.ts         — practitioner style centroid computation
-│       ├── derive.ts            — pairwise pass → STYLE_KIN + VISUALLY_AFFINE + AI suggestions
-│       ├── neighbours.ts        — shared topK module (profile pages, /neighbours)
-│       └── cli.ts               — npm run embed:* entrypoint
-├── db.sql                       — CR-SQLite schema (CRR + local-only tables)
-├── seed/
-│   ├── nodes.json, edges.json, signals.json, contributors.json, aliases.json
-│   ├── embeddings.bin           — Gemini multimodal vectors (committed, baked into seed.db)
-│   ├── embeddings.json          — sidecar metadata (offsets, hashes)
-│   ├── SOURCES.md               — canonical edge types + source provenance
-│   ├── COVERAGE.md, README.md
-│   └── _build/                  — offline Python pipeline (gitignored from Docker)
-│       ├── embed_nodes.py, image_fetch.py, calibrate.py
-│       ├── fetch_artblocks.py, fetch_fxhash.py — the two live gatherers (fetch_wikidata.py quarantined)
-│       └── upload_to_r2.py      — R2 image mirror uploader
-├── public/
-│   └── field/                   — /field generative dot-field view
-├── results/                     — 59 legacy per-practitioner JSONs (reference)
-├── docs/
-│   ├── EMBEDDINGS.md            — canonical reference for the embedding pipeline
-│   └── BUILD-INSTRUCTIONS.md    — original build spec
-├── Dockerfile / fly.toml / entrypoint.sh   — Fly.io deployment
-├── CLAUDE.md                    — architecture + operator notes
-└── README.md                    — this file
-```
+**Running locally currently requires an authorised copy of the database; this repository does not yet provide a standalone demo dataset.** Obtain a development copy from a maintainer or restore an available backup before starting. See [operator guidance](CLAUDE.md) for database access and environment setup.
 
----
-
-## Running locally
-
-The genesis seed is retired — a local run needs an existing `./adai.db`. Pull
-the live one off prod (or restore from the Litestream replica):
+With Node.js 22.5 or later and `adai.db` in the repository root:
 
 ```bash
 npm install
-echo "get //data/adai.db ./adai.db" | flyctl ssh sftp shell --app adai-basel
-npm run dev          # serves the existing ./adai.db
+npm run dev
 ```
 
-Server: http://localhost:8080
+The server runs at `http://localhost:8080`.
 
----
-
-## Deploying
+To try website intake locally, configure the server and worker environment described in the [URL intake specification](docs/URL-INTAKE-SPEC.md), then run:
 
 ```bash
-just deploy          # FLY_REMOTE_BUILDER_REGION=iad flyctl deploy --ha=false
+just intake-dev
 ```
 
-Deploy is **code-only**: the `/data` volume (and its DB) survives every deploy
-and is **never** wiped — the live DB is the only source of truth. Disaster
-recovery is a Litestream restore (automatic on a fresh host), not a reseed.
-See [`CLAUDE.md` § Deploying](CLAUDE.md).
+### Architecture at a glance
 
----
+The main TypeScript/Express application serves the website and APIs and manages a SQLite database with CR-SQLite extensions. A separate worker reads websites and prepares drafts. It never opens the graph database or publishes directly to it.
 
-## Entity IDs
+```mermaid
+flowchart TD
+    A[Contributor submits a website] --> B[Agent prepares a draft]
+    B --> C[Contributor reviews and confirms]
+    C --> D{Publication route}
+    D -->|New contributor| E[Curator review]
+    D -->|Trusted contributor| F[Shared graph]
+    E -->|Approved| F
+    F --> G[Profiles, field view, and public API]
+```
 
-Human-readable with type prefix: `artwork:fidenza`, `practitioner:casey reas`, `concept:generative code`. The `slug` field is the kebab-case URL-safe form.
+D3 and Canvas power the visualisation; Gemini embeddings support similarity discovery. Fly.io hosts the application, Cloudflare R2 stores mirrored images, and Litestream replicates the database to a separate private backup bucket.
 
----
+**Deployments are code-only.** The live database persists on its volume. There is no reseed-from-JSON path and no database baked into the Docker image.
+
+See **[Architecture](ARCHITECTURE.md)** for the components, data model, contribution paths, storage, and longer-term direction.
+
+### Public API
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /api/stats` | Current graph counts |
+| `GET /api/graph` | Public graph |
+| `GET /api/graph/:slug` | A record and its immediate connections |
+| `GET /api/graph/:slug/component` | Its wider connected component |
+| `GET /:type/:slug/data` | Individual record export |
+
+Authenticated contribution routes and permissions are documented in the [contributor contract](SKILL.md) and [URL intake specification](docs/URL-INTAKE-SPEC.md). Deployment and maintenance commands are in [operator guidance](CLAUDE.md).
 
 ## Team
 
-- **Iri** — strategy, editorial, signal source curation, value framework for agents
-- **JB** — market development, artist relations, sensing conversations
-- **Gio** — backend architecture, CR-SQLite, protocol, public layer data collection
-- **Piyush** — frontend, generative landing page, brand system, particle/gravitational visualization
+- **Iri** — strategy, editorial, source curation, and the value framework for agents.
+- **JB** — market development, artist relations, and field conversations.
+- **Gio** — backend architecture, CR-SQLite, protocol, and public data infrastructure.
+- **Piyush** — frontend, visual identity, and graph visualisation.
 
----
+## Licensing
 
-## License
+A(DAI) is licensed by layer:
 
-A(DAI) is a commons, licensed by layer:
+- **Code:** [Apache License 2.0](LICENSE).
+- **Knowledge graph and documentation:** [Creative Commons Attribution-ShareAlike 4.0](LICENSE-DATA).
+- **Artwork images:** excluded from these licences. Rights remain with the artists and other rights holders. Display in A(DAI) does not grant permission to reuse an image.
 
-- **Code** — Apache License 2.0 ([`LICENSE`](LICENSE)). The TypeScript server, the Python pipeline (`seed/_build/`), and the schema.
-- **Knowledge graph + documentation** — Creative Commons Attribution-ShareAlike 4.0 ([`LICENSE-DATA`](LICENSE-DATA)). The nodes, edges, concepts, curated descriptions and connections (`seed/*.json`), and the written content. Attribution + share-alike, so forks of the data stay openly licensed — *it cannot be enclosed*.
-- **Mirrored artwork images** — **not licensed here.** Copyright remains with the artists and holding institutions (Victoria & Albert Museum, SuperRare creators, Art Blocks, fxhash, …). Images are mirrored only so the graph stays renderable when upstream URLs rot, with upstream provenance preserved in each node's metadata. Several sources are explicitly **not** CC0. Their presence in this repository is not permission to reuse them.
-
-The *reading* of the field is the commons; the *works* stay with the artists who made them.
-
----
-
-## Further reading
-
-- [`CLAUDE.md`](CLAUDE.md) — authoritative architecture spec: data model, edge types, trust tiers, gravity model, embedding pipeline operator notes, deploy gotchas
-- [`docs/EMBEDDINGS.md`](docs/EMBEDDINGS.md) — embedding pipeline reference: design rationale, schema, calibration, visualisation surfaces
-- [`seed/SOURCES.md`](seed/SOURCES.md) — canonical edge-type list and source provenance
-- [`seed/COVERAGE.md`](seed/COVERAGE.md) — coverage gaps and known issues
+The knowledge commons and the artworks it describes have different rights.
