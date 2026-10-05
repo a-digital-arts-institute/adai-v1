@@ -710,7 +710,7 @@ router.get("/contribute/signal", (_req, res) => {
 
   // Styled to read native next to the /field chrome (SF Mono, near-black,
   // sharp borders, cobalt accent) — this page is the no-JS/fallback human
-  // path; the in-field /field#assistant guide covers the assistant/token path.
+  // path; /contribute/assistant covers the assistant/token path.
   // Scoped under #contribute-page so the shared template CSS stays untouched.
   const formBody = `<style>
 #contribute-page { font-family: 'SF Mono','SFMono-Regular',Menlo,Consolas,'Liberation Mono',monospace; }
@@ -739,7 +739,7 @@ router.get("/contribute/signal", (_req, res) => {
 <p class='kicker'>[contribute · signal]</p>
 <h2>Contribute a Signal</h2>
 <p class='lede'>Submit information about an entity in the graph. Contributions from new contributors go to the review queue before they merge.</p>
-<div class='assist'>Prefer to contribute through your own AI assistant? The <a href='/field#assistant'>in-field setup guide</a> connects Claude (or any assistant) to the governed write API — every edit attributed, withdrawable anytime.</div>
+<div class='assist'>Prefer to contribute through your own AI assistant? The <a href='/contribute/assistant'>setup guide</a> connects Claude (or any assistant) to the governed write API — every edit attributed, withdrawable anytime.</div>
 <form id='contribute-form'>
 <label>About which entity</label>
 <select name='target_node' required>${options}</select>
