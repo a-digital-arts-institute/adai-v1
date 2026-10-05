@@ -47,6 +47,7 @@ import { spawnAsync } from "../intake/spawn.js";
 import { contributePage, draftPage, batchPage } from "../intake/pages.js";
 import { myNodes } from "../claim/log.js";
 import { postIntakeClaimPrompt } from "../claim/screens.js";
+import { assistantGuidePage } from "../intake/assistant-guide.js";
 
 const router = Router();
 
@@ -266,6 +267,10 @@ router.get("/api/intake/batches/:batch_id", requireContributor, (req, res) => {
 
 router.get(["/contribute", "/contribute/url"], (_req, res) => {
   res.set(HTML_HEADERS).send(contributePage());
+});
+
+router.get("/contribute/assistant", (_req, res) => {
+  res.set(HTML_HEADERS).send(assistantGuidePage());
 });
 
 router.get("/draft/:id", (req, res) => {
