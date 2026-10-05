@@ -6,6 +6,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { contributePage, draftPage, batchPage } from "../src/intake/pages.js";
+import { assistantGuidePage } from "../src/intake/assistant-guide.js";
 
 function scriptsOf(html: string): string[] {
   return [...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map((m) => m[1]!).filter((s) => s.trim());
@@ -23,4 +24,17 @@ describe("intake page scripts parse", () => {
     });
   }
   it("the draft page actually has a script", () => assert.ok(scriptsOf(draftPage("drf_x")).length > 0));
+});
+
+describe("assistant setup guide", () => {
+  it("/contribute links to /contribute/assistant, not the field overlay", () => {
+    assert.match(contributePage(), /href="\/contribute\/assistant"/);
+    assert.doesNotMatch(contributePage(), /field#assistant/);
+  });
+  it("renders the seven steps on a page of its own", () => {
+    const html = assistantGuidePage();
+    assert.match(html, /Set up once\. Then just talk\./);
+    for (const n of ["01", "02", "03", "04", "05", "06", "07"]) assert.match(html, new RegExp(`<div class="no">${n}</div>`));
+    assert.match(html, /href="\/skill\.md"/);
+  });
 });
