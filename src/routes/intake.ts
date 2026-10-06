@@ -241,7 +241,7 @@ router.post("/api/intake/drafts/:id/confirm", requireContributor, async (req, re
     res.set(JSON_HEADERS).json(result);
     const email = emailFor(db, req.contributor!.id);
     const fresh = getDraft(db, d.id);
-    if (email && fresh) await sendReceiptEmail(db, email, fresh, result);
+    if (email && fresh) await sendReceiptEmail(db, email, req.contributor!.name, fresh, result);
   } catch (e) {
     if (!res.headersSent) fail(res, e);
     else console.error("[intake] receipt email failed:", (e as any)?.message ?? e);

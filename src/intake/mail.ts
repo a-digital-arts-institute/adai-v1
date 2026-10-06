@@ -16,9 +16,9 @@ function replyTo(): string[] {
   return (process.env.ADMIN_NOTIFY_EMAILS || "").split(/[,\s]+/).map((s) => s.trim()).filter(Boolean);
 }
 
-async function send(to: string, subject: string, text: string): Promise<void> {
+async function send(to: string, subject: string, text: string, html?: string): Promise<void> {
   try {
-    await sendMail({ from: from(), to: [to], replyTo: replyTo(), subject, text, html: textToHtml(text) });
+    await sendMail({ from: from(), to: [to], replyTo: replyTo(), subject, text, html: html ?? textToHtml(text) });
   } catch (e: any) {
     console.error(`[intake-mail] failed to send "${subject}" to ${to}: ${e?.message ?? e}`);
   }
@@ -81,20 +81,70 @@ export async function sendDraftFailedEmail(db: DatabaseSync, email: string, draf
   await send(email, `We could not read ${draft.source_domain}`, text);
 }
 
-export async function sendReceiptEmail(db: DatabaseSync, email: string, draft: Draft, result: ConfirmResult): Promise<void> {
+// The receipt is the contributor's thank-you (copy by Iri, 2026-10-06). Built
+// as blocks so the plain-text body and the HTML twin say the same thing, but
+// the HTML can put the links behind their labels.
+type Block = { p: string } | { list: string[] } | { link: string; url: string };
+
+function blocksToText(blocks: Block[]): string {
+  return blocks.map((b) =>
+    "p" in b ? b.p : "list" in b ? b.list.map((l) => `- ${l}`).join("\n") : `${b.link}:\n${b.url}`,
+  ).join("\n\n");
+}
+
+function blocksToHtml(blocks: Block[]): string {
+  const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  const P = `style="margin:0 0 14px;line-height:1.5"`;
+  const body = blocks.map((b) =>
+    "p" in b ? `<p ${P}>${esc(b.p).replace(/\n/g, "<br>")}</p>`
+    : "list" in b ? `<ul style="margin:0 0 14px;padding-left:20px;line-height:1.5">${b.list.map((l) => `<li>${esc(l)}</li>`).join("")}</ul>`
+    : `<p ${P}><a href="${esc(b.url)}">${esc(b.link)}</a></p>`,
+  ).join("");
+  return `<!doctype html><html><body style="font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;font-size:15px;color:#1a1a1a;max-width:560px;margin:24px auto;padding:0 16px">${body}</body></html>`;
+}
+
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
+export function receiptEmail(
+  name: string, draft: Draft, result: ConfirmResult, receiptUrl: string, profileUrl: string | null,
+): { subject: string; text: string; html: string } {
+  const live = result.status === "live";
+  const counts: Array<[number, string, string]> = [
+    [result.created_nodes.length, "new record for works, people, or exhibitions", "new records for works, people, or exhibitions"],
+    [result.linked_nodes.length, "connection to a record already in A(DAI)", "connections to records already in A(DAI)"],
+    [result.edges.length, "relationship, such as who made a work or took part in an exhibition", "relationships, such as who made a work or took part in an exhibition"],
+    [result.images.length, "image", "images"],
+    [result.patched_nodes.length, "update to an existing record", "updates to existing records"],
+    [result.ended.length, "relationship marked as ended, because the site no longer shows it", "relationships marked as ended, because the site no longer shows them"],
+  ];
+  const shown = counts.filter(([n]) => n > 0);
+  const total = shown.reduce((a, [n]) => a + n, 0);
+  const blocks: Block[] = [
+    { p: name.trim() ? `Hi ${name.trim()},` : "Hi," },
+    { p: "Thank you for adding to the Digital Arts Commons. Your contribution helps preserve the works, relationships, and context that make up the field’s shared history." },
+    { p: live
+      ? "We’ve received your contribution, and it is now part of the public record."
+      : "We’ve received your contribution and will review it before it becomes public." },
+    { p: `From ${draft.source_domain}, you submitted ${plural(total, "addition", "additions")}:` },
+  ];
+  if (shown.length) blocks.push({ list: shown.map(([n, one, many]) => plural(n, one, many)) });
+  if (result.skipped.length) blocks.push({ p: `${plural(result.skipped.length, "item", "items")} could not be added; the page below says why.` });
+  blocks.push({ link: live ? "View your contribution" : "View your contribution and its review status", url: receiptUrl });
+  if (profileUrl) {
+    blocks.push({ p: "You can also explore the existing record around your practice:" });
+    blocks.push({ link: "Explore your practice in A(DAI)", url: profileUrl });
+  }
+  blocks.push({ p: "If something needs correcting or more context, reply to this email, we’ll help. We’d also love to hear how the process felt and what could be clearer." });
+  blocks.push({ p: `Warmly,\nA(DAI) team\nContribution reference: ${draft.id}` });
+  return { subject: "Thank you for contributing to A(DAI)", text: blocksToText(blocks), html: blocksToHtml(blocks) };
+}
+
+export async function sendReceiptEmail(db: DatabaseSync, email: string, name: string, draft: Draft, result: ConfirmResult): Promise<void> {
   const link = issueMagicLink(db, { email, purpose: "receipt", redirect: `/batch/${draft.id}` });
-  const n = result.created_nodes.length + result.linked_nodes.length + result.edges.length + result.images.length + result.patched_nodes.length;
-  const outcome = result.status === "live"
-    ? "Everything is live in A(DAI) now."
-    : "Your submission is in the curator review queue; you will be able to see its state on the receipt page.";
-  const subjectLine = draft.subject_node_id && !draft.subject_node_id.startsWith("cid:")
-    ? `\nSubject profile: ${baseUrl()}/${draft.subject_node_id.split(":")[0]}/${encodeURIComponent(draft.subject_node_id.split(":").slice(1).join(":"))}\n`
-    : "";
-  const text =
-    `Received: ${n} items from ${draft.source_domain}.\n\n${outcome}\n\n` +
-    `Receipt (batch ${draft.id}):\n${link.url}\n${subjectLine}\n` +
-    `Created: ${result.created_nodes.length} · linked to existing: ${result.linked_nodes.length} · relations: ${result.edges.length} · images: ${result.images.length}` +
-    (result.skipped.length ? `\nSkipped: ${result.skipped.map((s) => s.reason).join("; ")}` : "") +
-    `\n\nThank you for contributing to the commons.`;
-  await send(email, `Received: ${n} items from ${draft.source_domain}`, text);
+  const subject = draft.subject_node_id && !draft.subject_node_id.startsWith("cid:")
+    ? db.prepare("SELECT type, slug FROM nodes WHERE id = ?").get(draft.subject_node_id) as { type: string; slug: string } | undefined
+    : undefined;
+  const profileUrl = subject?.slug ? `${baseUrl()}/${subject.type}/${encodeURIComponent(subject.slug)}` : null;
+  const m = receiptEmail(name, draft, result, link.url, profileUrl);
+  await send(email, m.subject, m.text, m.html);
 }
