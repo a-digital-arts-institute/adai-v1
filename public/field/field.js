@@ -1114,23 +1114,23 @@
         <div class="ph-body">
           <section class="ph-sec">
             <div class="ph-sec-label">What</div>
-            <p class="ph-line">A shared protocol for the digital arts to tell its own story — across time, mediums and practices.</p>
-            <p class="ph-line">A plural, open commons. Never finished, never flattened.</p>
-            <p class="ph-line">A provocation to begin: a seed canon inviting discovery and participation.</p>
-            <p class="ph-line">Re-weightable, forkable — every fork a legitimate centre.</p>
+            <p class="ph-p">A(DAI) is the founding steward of the Digital Arts Commons, shared cultural infrastructure shaped by the people who make, exhibit, study, and care for digital art.</p>
+            <p class="ph-p">Its first layer is a public knowledge graph connecting works, people, exhibitions, tools, and histories. Contributors bring these relationships into the record, along with the sources and perspectives that give them meaning. The commons depends on their continuing participation: adding context, questioning claims, and caring for what is held together.</p>
           </section>
           <section class="ph-sec">
             <div class="ph-sec-label">Why</div>
-            <p class="ph-line">Digital art is the defining art of our time — testing the line between human and machine.</p>
-            <p class="ph-line">Decades of history still unmetabolised, and a scene exploding at machine-speed.</p>
-            <p class="ph-line">Its story lives between practitioners — scattered across feeds, shows and moments.</p>
-            <p class="ph-line">No single institution holds that tension without flattening it. The field needs a native one.</p>
+            <p class="ph-p">Digital art’s history is distributed across studios, archives, websites, and conversations. These places preserve different kinds of knowledge. Connecting their records can help us understand a practice more fully, provided those connections retain where they came from and who contributed them.</p>
+            <p class="ph-p">The commons asks: <strong>who says this, on what basis, and how can someone respond?</strong></p>
+            <p class="ph-p">An artist’s account and a curator’s interpretation may differ. Both can remain identifiable without requiring agreement. We call this <em>interpretive provenance</em>: keeping claims about meaning connected to their sources, contributors, and history.</p>
           </section>
           <section class="ph-sec">
-            <div class="ph-sec-label">How</div>
-            <p class="ph-line">Speed without intention collapses under its own weight.</p>
-            <p class="ph-line">So we turn the machine on itself — sourcing work openly, inviting practitioners to curate.</p>
-            <p class="ph-line">A seed canon and knowledge graph: a commons to surface bias and provoke contribution.</p>
+            <div class="ph-sec-label">Take part</div>
+            <p class="ph-p">Contributing gives your own account a place in the commons. It makes your work discoverable through its relationships and brings context into the record that others may not know.</p>
+            <p class="ph-p">Start with your portfolio URL. A(DAI)’s tools propose the relationships documented there. You check, edit, or remove additions before confirming. Your submission follows the review process before joining the public graph, with sources and attribution visible.</p>
+            <p class="ph-p">Machines assist with this work. Their suggested similarities remain distinct from documented relationships and people’s accounts.</p>
+          </section>
+          <section class="ph-sec">
+            <div class="ph-sec-label">Our principles</div>
             <ol class="ph-principles">
               <li><span class="ph-num">01</span> Plurality as constraint</li>
               <li><span class="ph-num">02</span> Artists as sovereign</li>
@@ -1138,17 +1138,18 @@
               <li><span class="ph-num">04</span> Provenance as ethics</li>
               <li><span class="ph-num">05</span> Intention over attention</li>
               <li><span class="ph-num">06</span> Commons without enclosure</li>
-              <li><span class="ph-num">07</span> Where language fails</li>
+              <li><span class="ph-num">07</span> Art exceeds the map</li>
             </ol>
           </section>
           <section class="ph-sec">
-            <div class="ph-sec-label">Next</div>
-            <p class="ph-line">A select cohort of artists, curators and institutions to seed the canon and shape its governance.</p>
-            <p class="ph-line">Each partner owns their assets; every contribution stays attributable.</p>
+            <div class="ph-sec-label">What comes next</div>
+            <p class="ph-p">We’re developing relational profiles through which people can explore the context around their practice and follow how it changes. This is also an experiment in what a social network might become when participation centres on shared knowledge, interests, and exchange rather than the accumulation of attention.</p>
+            <p class="ph-p">A(DAI)’s role is to steward the conditions for that participation. The longer-term aim is to share this responsibility and enable knowledge to travel with its attribution and history intact. Rights in artworks remain with their rights holders.</p>
+            <p class="ph-p">The commons is at an early stage. Those who contribute now will help shape both its knowledge and the practices through which it is maintained.</p>
           </section>
           <div class="ph-cta">
-            <a class="ph-cta-btn" href="/field-static/seed-thesis.html" target="_blank" rel="noopener">Read the Seed Thesis <span class="ph-arrow" aria-hidden="true">→</span></a>
-            <a class="ph-cta-btn" href="/field-static/co-governance.html" target="_blank" rel="noopener">Co-governance — Pre-seed <span class="ph-arrow" aria-hidden="true">→</span></a>
+            <a class="ph-cta-btn" href="/contribute">Contribute to the commons <span class="ph-arrow" aria-hidden="true">→</span></a>
+            <a class="ph-cta-btn" href="/field-static/seed-thesis.html" target="_blank" rel="noopener">Read the whitepaper <span class="ph-arrow" aria-hidden="true">→</span></a>
           </div>
         </div>
         <div class="ph-foot">
