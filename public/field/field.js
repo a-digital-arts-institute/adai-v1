@@ -1063,7 +1063,10 @@
       }
       .ph-eyebrow { color: #6a6a6c; font-size: 11px; letter-spacing: 0.08em; text-transform: lowercase; }
       .ph-title { color: var(--text, #E8E6E1); font-size: 17px; margin: 6px 0 0; letter-spacing: 0.02em; font-weight: 700; }
-      .ph-body { padding: 18px 26px 22px; overflow-y: auto; }
+      /* The body is the flex child that gives, so the CTA row below it is never
+         pushed past the bottom of the shell. min-height:0 lets it shrink below
+         its content height — without it the row scrolls out of reach. */
+      .ph-body { padding: 18px 26px 22px; overflow-y: auto; flex: 1 1 auto; min-height: 0; }
       .ph-p { color: #c8c6c1; font-size: 13px; line-height: 1.7; margin: 0 0 14px; }
       .ph-p:last-child { margin-bottom: 0; }
       .ph-p em { color: var(--text, #E8E6E1); font-style: italic; }
@@ -1079,7 +1082,10 @@
       .ph-principles li { color: #c8c6c1; font-size: 13px; line-height: 1.6; margin: 0 0 6px; display: flex; gap: 11px; }
       .ph-principles li:last-child { margin-bottom: 0; }
       .ph-num { color: #6a6a6c; flex: none; }
-      .ph-cta { margin: 4px 0 0; padding-top: 18px; border-top: 1px solid #2a2a2c; display: flex; flex-wrap: wrap; gap: 10px; }
+      /* Pinned between the scrolling body and the footer: the CTAs stay on
+         screen however far down the copy you are. Horizontal padding matches
+         .ph-body so the buttons line up with the text above them. */
+      .ph-cta { flex: none; margin: 0; padding: 14px 26px 16px; border-top: 1px solid #2a2a2c; display: flex; flex-wrap: wrap; gap: 10px; }
       .ph-cta-btn {
         display: inline-flex; align-items: center; gap: 8px;
         border: 1px solid #4169B0; color: #7e9fdc; background: transparent;
@@ -1147,10 +1153,10 @@
             <p class="ph-p">A(DAI)’s role is to steward the conditions for that participation. The longer-term aim is to share this responsibility and enable knowledge to travel with its attribution and history intact. Rights in artworks remain with their rights holders.</p>
             <p class="ph-p">The commons is at an early stage. Those who contribute now will help shape both its knowledge and the practices through which it is maintained.</p>
           </section>
-          <div class="ph-cta">
-            <a class="ph-cta-btn" href="/contribute">Contribute to the commons <span class="ph-arrow" aria-hidden="true">→</span></a>
-            <a class="ph-cta-btn" href="/field-static/seed-thesis.html" target="_blank" rel="noopener">Read the whitepaper <span class="ph-arrow" aria-hidden="true">→</span></a>
-          </div>
+        </div>
+        <div class="ph-cta">
+          <a class="ph-cta-btn" href="/contribute">Contribute to the commons <span class="ph-arrow" aria-hidden="true">→</span></a>
+          <a class="ph-cta-btn" href="/field-static/seed-thesis.html" target="_blank" rel="noopener">Read the whitepaper <span class="ph-arrow" aria-hidden="true">→</span></a>
         </div>
         <div class="ph-foot">
           <span>esc to close</span>
