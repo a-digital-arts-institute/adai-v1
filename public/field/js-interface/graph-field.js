@@ -1032,13 +1032,24 @@
     return n > 1 ? Math.min(2.2, 1 + 0.7 * Math.log2(n)) : 1;
   }
 
+  // Relations the subject contests (docs/CLAIM-SPEC.md §5): drawn dashed in
+  // the contest colour for everyone, until a curator decides. Loaded from
+  // /api/contested on start — not part of the cached graph stream.
+  const CONTESTED_COLOR = '#d4a574';
+  let contestedTriples = new Set();
+  function isContested(e) {
+    return !!e && contestedTriples.size > 0 &&
+      contestedTriples.has(`${e.source}\u0000${e.type}\u0000${e.target}`);
+  }
+
   function applyEdgeThreadStyle(ctx, item, baseAlpha, baseWidth) {
     const style = edgeThreadStyle(item);
     const alpha = clamp(baseAlpha * (style.alpha || 1), 0, 1);
     const width = Math.max(0.45, baseWidth * (style.width || 1) * sourceWeight(item));
-    const dash = style.dash || [];
+    const contested = isContested(item && item.edge);
+    const dash = contested ? [3, 4] : (style.dash || []);
     ctx.globalAlpha = alpha;
-    ctx.strokeStyle = item.edgeColor || '#888';
+    ctx.strokeStyle = contested ? CONTESTED_COLOR : (item.edgeColor || '#888');
     ctx.lineWidth = width;
     ctx.setLineDash(dash);
     ctx.lineDashOffset = dash.length ? -(hashString(item.id + item.edgeType) % 18) : 0;
@@ -3546,6 +3557,108 @@
       }
     }
 
+    // ---- personal lens (docs/CLAIM-SPEC.md §5) ----
+    // Signed in with a claimed page: the field opens on your node (unless the
+    // URL already names one), and "my field" (chip, or the m key) veils
+    // everything beyond your neighbourhood — 2 hops, 1 when that is too many.
+    // A personal VIEW of public data: nothing is hidden from anyone.
+    bundle.lens = { on: false, self: null, mine: [], sims: [], edges: [] };
+    const LENS_MAX = 500;
+    function lensNeighbourhood(seeds) {
+      const live = (e) => !isDerivedEdge(e);
+      const ring = (ids) => {
+        const out = new Set(ids);
+        for (const id of ids) for (const e of graph.edgesFor(id)) {
+          if (!live(e)) continue;
+          out.add(e.source === id ? e.target : e.source);
+        }
+        return out;
+      };
+      const one = ring(seeds);
+      const two = ring([...one]);
+      const set = two.size > LENS_MAX ? one : two;
+      const edges = [];
+      const seen = new Set();
+      for (const id of set) for (const e of graph.edgesFor(id)) {
+        if (!live(e) || seen.has(e) || !set.has(e.source) || !set.has(e.target)) continue;
+        seen.add(e);
+        edges.push(e);
+      }
+      return { set, edges };
+    }
+    function lensChip() {
+      let el = document.getElementById('adai-lens-chip');
+      if (el) return el;
+      el = document.createElement('button');
+      el.id = 'adai-lens-chip';
+      el.type = 'button';
+      Object.assign(el.style, {
+        position: 'fixed', left: '24px', bottom: '24px', zIndex: '40',
+        fontFamily: "'SF Mono', 'Menlo', monospace", fontSize: '10px', letterSpacing: '0.08em',
+        color: '#aaa', background: 'rgba(10,10,12,0.75)', border: '1px solid #333',
+        borderRadius: '10px', padding: '4px 10px', cursor: 'pointer',
+      });
+      el.addEventListener('click', () => setLens(!bundle.lens.on));
+      document.body.appendChild(el);
+      return el;
+    }
+    function setLens(on) {
+      const L = bundle.lens;
+      if (!L.self) return;
+      L.on = !!on;
+      if (L.on && !L.sims.length) {
+        const { set, edges } = lensNeighbourhood(L.mine);
+        L.sims = [...set].map(id => bundle.simById.get(id)).filter(Boolean);
+        L.edges = edges;
+      }
+      try { localStorage.setItem('adai-lens', L.on ? '1' : '0'); } catch { /* storage blocked */ }
+      const chip = lensChip();
+      chip.textContent = L.on ? '● my field — m' : '○ my field — m';
+      chip.style.color = L.on ? '#e8e6e1' : '#aaa';
+      chip.style.borderColor = L.on ? '#7eb8da' : '#333';
+    }
+    bundle.setLens = setLens;
+    fetch('/api/contested', { cache: 'no-cache' })
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => {
+        if (j && Array.isArray(j.relations)) {
+          contestedTriples = new Set(j.relations.map(r => `${r.source_id}\u0000${r.edge_type}\u0000${r.target_id}`));
+        }
+      })
+      .catch(() => {});
+    fetch('/api/intake/me', { credentials: 'same-origin', cache: 'no-cache' })
+      .then(r => (r.ok ? r.json() : null))
+      .then(me => {
+        const mine = ((me && me.claims) || [])
+          .filter(c => c.claim_status === 'approved' && graph.byId.has(c.id))
+          .map(c => c.id);
+        if (!mine.length) return;
+        const params = new URL(window.location.href).searchParams;
+        const named = params.get('node');
+        const L = bundle.lens;
+        L.mine = mine;
+        L.self = named && mine.includes(named) ? named : mine[0];
+        let stored = null;
+        try { stored = localStorage.getItem('adai-lens'); } catch { /* storage blocked */ }
+        setLens(params.get('lens') === '1' || stored === '1');
+        // Open on yourself, unless the link names another node or replays a reading.
+        if (!named && !params.get('reading')) {
+          setTimeout(() => {
+            if (window.ADAI_FIELD_STUDY?.zoomToNode?.(L.self)) return;
+            bundle.revealInPlace(L.self);
+          }, 700);
+        }
+      })
+      .catch(() => {});
+    document.addEventListener('keydown', (e) => {
+      if ((e.key !== 'm' && e.key !== 'M') || e.metaKey || e.ctrlKey || e.altKey) return;
+      const t = e.target;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+      if (!bundle.lens.self) return;
+      e.preventDefault();
+      setLens(!bundle.lens.on);
+    });
+
     // ---- interaction state ----
     const panel = createEntityPanel();
     let hoveredId = null;
@@ -3970,6 +4083,55 @@
             ctx.arc(s.x, s.y, s.r * 1.15, 0, Math.PI * 2);
             ctx.fill();
           }
+        }
+        // Personal lens: veil the field, then redraw your neighbourhood on
+        // top — threads first, then dots, your own node ringed and named.
+        if (bundle.lens && bundle.lens.on && bundle.lens.sims.length && !zoomed) {
+          ctx.globalAlpha = 0.78;
+          ctx.fillStyle = '#0a0a0c';
+          ctx.fillRect(0, 0, w, h);
+          const L = bundle.lens;
+          ctx.lineWidth = 0.8;
+          for (const e of L.edges) {
+            const a = bundle.simById.get(e.source), b = bundle.simById.get(e.target);
+            if (!a || !b) continue;
+            const contested = isContested(e);
+            ctx.globalAlpha = contested ? 0.9 : 0.35;
+            ctx.strokeStyle = contested ? CONTESTED_COLOR : (colorForEdge(e.type) || '#888');
+            ctx.setLineDash(contested ? [3, 4] : []);
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.stroke();
+          }
+          ctx.setLineDash([]);
+          for (const s of L.sims) {
+            ctx.globalAlpha = 0.95;
+            ctx.fillStyle = colorForNode(s);
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, Math.max(1.6, s.r * 1.4), 0, Math.PI * 2);
+            ctx.fill();
+          }
+          for (const id of L.mine) {
+            const s = bundle.simById.get(id);
+            if (!s) continue;
+            ctx.globalAlpha = 0.9;
+            ctx.strokeStyle = '#E8E6E1';
+            ctx.lineWidth = 1.4;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, Math.max(6, s.r * 3.2), 0, Math.PI * 2);
+            ctx.stroke();
+            const nm = graph.byId.get(id)?.name;
+            if (nm) {
+              ctx.font = `${CFG.NAME_TEXT_SIZE}px 'SF Mono', monospace`;
+              ctx.textBaseline = 'middle';
+              ctx.textAlign = 'left';
+              ctx.fillStyle = '#FFFFFF';
+              ctx.fillText(nm, s.x + Math.max(6, s.r * 3.2) + 6, s.y);
+            }
+          }
+          ctx.lineWidth = 1;
+          ctx.globalAlpha = 1;
         }
         // Archivist-driven highlights — a soft pulsing ring on each highlighted
         // sim dot. Auto-cleared after the TTL set when the set was installed.

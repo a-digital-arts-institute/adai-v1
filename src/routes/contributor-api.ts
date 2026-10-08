@@ -39,6 +39,8 @@ import { checkDirection } from "../intake/candidate.js";
 import { ensureContributorForEmail, normaliseEmail, revokeInvite, intakeOpen } from "../intake/auth.js";
 import { sendLoginEmail } from "../intake/mail.js";
 import { approveIntakeItem, rejectIntakeItem } from "../utils/review.js";
+import { backfillInviteClaims, endClaim, ClaimError } from "../claim/store.js";
+import { notifyAfterReview } from "../claim/mail.js";
 import {
   AdminActionError,
   revokeSignal,
@@ -779,7 +781,8 @@ router.post("/api/v1/invites", requireAdmin, async (req, res) => {
   const email = normaliseEmail(b.email);
   const name = typeof b.name === "string" ? b.name.trim() : "";
   const tier = typeof b.tier === "string" ? b.tier : "probationary";
-  const practitioner = typeof b.practitioner === "string" && b.practitioner ? b.practitioner : null;
+  // `node` (any claimable type) is the newer name for `practitioner`.
+  const practitioner = typeof b.node === "string" && b.node ? b.node : typeof b.practitioner === "string" && b.practitioner ? b.practitioner : null;
   if (!email) { res.status(400).set(JSON_HEADERS).json({ error: "email is required" }); return; }
   if (!name) { res.status(400).set(JSON_HEADERS).json({ error: "name is required — it is the public attribution on their contributions" }); return; }
   if (!["auto", "reviewed", "probationary"].includes(tier)) { res.status(400).set(JSON_HEADERS).json({ error: "tier must be auto | reviewed | probationary" }); return; }
@@ -788,6 +791,7 @@ router.post("/api/v1/invites", requireAdmin, async (req, res) => {
     return;
   }
   const c = ensureContributorForEmail(db, { email, name, tier, self_node_id: practitioner ?? undefined, invite: true });
+  if (practitioner) backfillInviteClaims(db); // the named node is theirs at once
   let sent = false;
   if (b.send === true) {
     try { await sendLoginEmail(db, email, null, "/contribute"); sent = true; } catch (e: any) { console.error("[invites] send failed:", e?.message ?? e); }
@@ -808,6 +812,40 @@ router.get("/api/v1/invites", requireAdmin, (_req, res) => {
     .all();
   const requests = db.prepare("SELECT email, first_at, last_at, count FROM intake_access_requests ORDER BY last_at DESC LIMIT 200").all();
   res.set(JSON_HEADERS).json({ invite_only: !intakeOpen(), invites, requests });
+});
+
+// ---- Claims (admin) — docs/CLAIM-SPEC.md ----------------------------------------
+
+router.get("/api/v1/claims", requireAdmin, (req, res) => {
+  const db = getDb();
+  const status = typeof req.query.status === "string" && req.query.status ? req.query.status : null;
+  const node = typeof req.query.node === "string" && req.query.node ? req.query.node : null;
+  const where: string[] = [];
+  const params: string[] = [];
+  if (status) { where.push("c.status = ?"); params.push(status); }
+  if (node) { where.push("c.node_id = ?"); params.push(node); }
+  const rows = db
+    .prepare(
+      `SELECT c.id, c.node_id, c.status, c.via, c.evidence, c.invited_by, c.queue_id, c.reviewed_by, c.reviewed_at, c.reason, c.created_at,
+              k.name AS contributor, (SELECT email FROM contributor_emails e WHERE e.contributor_id = c.contributor_id ORDER BY e.created_at LIMIT 1) AS email
+         FROM node_claims c LEFT JOIN contributors k ON k.id = c.contributor_id
+        ${where.length ? `WHERE ${where.join(" AND ")}` : ""}
+        ORDER BY c.created_at DESC LIMIT 500`
+    )
+    .all(...params);
+  res.set(JSON_HEADERS).json({ claims: rows });
+});
+
+router.post("/api/v1/claims/:id/revoke", requireAdmin, (req, res) => {
+  const reason = typeof req.body?.reason === "string" ? req.body.reason.trim() : "";
+  if (!reason) { res.status(400).set(JSON_HEADERS).json({ error: "reason is required" }); return; }
+  try {
+    const c = endClaim(getDb(), String(req.params.id), { actor: req.contributor!, mode: "revoked", reason });
+    res.set(JSON_HEADERS).json({ claim: c });
+  } catch (e) {
+    if (e instanceof ClaimError) { res.status(e.status).set(JSON_HEADERS).json({ error: e.code, message: e.message }); return; }
+    throw e;
+  }
 });
 
 router.post("/api/v1/invites/revoke", requireAdmin, (req, res) => {
@@ -1041,8 +1079,10 @@ router.post("/api/v1/review/bulk", requireAdmin, (req, res) => {
     const outcome = action === "approve"
       ? approveIntakeItem(db, r.id, reviewedBy)
       : rejectIntakeItem(db, r.id, String(reason), reviewedBy);
-    if (outcome.ok) processed += 1;
-    else failed.push({ intake_id: r.id, error: outcome.error });
+    if (outcome.ok) {
+      processed += 1;
+      void notifyAfterReview(db, r.id, action === "approve", action === "approve" ? null : String(reason));
+    } else failed.push({ intake_id: r.id, error: outcome.error });
   }
 
   // Failed items are still status='pending' in the DB, so they genuinely
@@ -1067,6 +1107,7 @@ router.post("/api/v1/review/:id/approve", requireAdmin, (req, res) => {
     return;
   }
   res.set(JSON_HEADERS).json({ intake_id: outcome.intake_id, status: "approved" });
+  void notifyAfterReview(db, outcome.intake_id, true, null);
 });
 
 // POST /api/v1/review/:id/reject — JSON twin of the web curator reject.
@@ -1083,6 +1124,7 @@ router.post("/api/v1/review/:id/reject", requireAdmin, (req, res) => {
     return;
   }
   res.set(JSON_HEADERS).json({ intake_id: outcome.intake_id, status: "rejected" });
+  void notifyAfterReview(db, outcome.intake_id, false, reason);
 });
 
 // ---------- Admin: correction primitives ------------------------------------

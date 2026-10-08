@@ -10,6 +10,7 @@
 import { initDb } from "../db.js";
 import { resolveCliDbPath } from "../utils/db-path.js";
 import { ensureContributorForEmail, normaliseEmail } from "../intake/auth.js";
+import { backfillInviteClaims } from "../claim/store.js";
 import { sendLoginEmail } from "../intake/mail.js";
 
 function arg(name: string): string | null {
@@ -44,6 +45,7 @@ async function main() {
     }
   }
   const c = ensureContributorForEmail(db, { email, name, tier, self_node_id: practitioner ?? undefined, invite: true });
+  if (practitioner) backfillInviteClaims(db); // the named node is theirs at once
   console.log(JSON.stringify({ contributor_id: c.id, name: c.name, trust_tier: c.trust_tier, email: c.email, self_node_id: c.self_node_id }));
   if (send) {
     await sendLoginEmail(db, email, null, "/contribute");

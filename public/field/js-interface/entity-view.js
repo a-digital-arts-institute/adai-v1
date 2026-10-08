@@ -522,6 +522,26 @@
     `;
   }
 
+  // Claimed badge / "is this you?" (docs/CLAIM-SPEC.md §2.4).
+  async function fillClaim(node) {
+    const el = document.getElementById('ev-claim');
+    if (!el || !['practitioner', 'collective', 'institution'].includes(node.type)) return;
+    const slug = node.slug || node.id.split(':').slice(1).join(':');
+    try {
+      const r = await fetch(`/api/claimed/${encodeURIComponent(node.type)}/${encodeURIComponent(slug)}`, { headers: { 'accept': 'application/json' } });
+      if (!r.ok || STATE.currentId !== node.id) return;
+      const j = await r.json();
+      if (STATE.currentId !== node.id) return;
+      if (j.claimed) {
+        el.innerHTML = `<span style="color:#6fbf8a">✓ claimed</span>` +
+          (j.claimed.handle ? ` · <a href="/@${escapeHtml(j.claimed.handle)}" style="color:inherit">@${escapeHtml(j.claimed.handle)}</a>` : '') +
+          (j.claimed.by.length ? ` · ${j.claimed.by.map(escapeHtml).join(', ')}` : '');
+      } else if (j.claim_url) {
+        el.innerHTML = `<a href="${escapeHtml(j.claim_url)}" style="color:inherit">is this you? claim this page →</a>`;
+      }
+    } catch { /* badge is optional */ }
+  }
+
   async function fillRoster(node) {
     const root = document.getElementById('ev-roster');
     if (!root) return;
@@ -698,6 +718,7 @@
       <article class="ev-article">
         ${renderBreadcrumb(node, showcase)}
         ${renderTitle(node, showcase)}
+        <p class="ev-mono-dim" id="ev-claim" style="margin:-4px 0 10px;font-size:11px"></p>
         ${renderTagline(showcase)}
         ${renderHero(node, showcase, neighborMap)}
         <hr class="ev-hr">
@@ -752,7 +773,7 @@
     // Kick off the async embedding-neighbours fetch. The placeholder
     // section already exists in the DOM; this fills it.
     const node = resolveGraphNode(id);
-    if (node) { fillEmbeddings(node); fillRoster(node); }
+    if (node) { fillEmbeddings(node); fillRoster(node); fillClaim(node); }
   }
 
   function close() {

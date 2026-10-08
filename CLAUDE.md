@@ -139,7 +139,8 @@ R2 backup bucket continuously.
 
 **Local tables** (NOT CRRs — never synced): `intake_queue` (review pipeline),
 `settings`, `contributor_tokens` (sha256-hashed bearer tokens), `node_embeddings`
-(768-d multimodal vectors), `archivist_sessions`, `rejected_ai_suggestions`, and
+(768-d multimodal vectors), `archivist_sessions`, `rejected_ai_suggestions`,
+`node_claims` + `relation_notes` (claims, below), and
 the URL-intake set: `magic_links`, `contributor_sessions`, `contributor_emails`
 (email → contributor, `self_node_id`), `drafts` (doubles as the worker job
 queue), `intake_usage`. Email never lands in a CRR.
@@ -191,7 +192,10 @@ empty — it requires evidence of artist intent, not thematic similarity.
   consent-filtered like the profile (`src/utils/history.ts`)
 - `GET /neighbours/:type/:slug` — similarity browser (top-20 cosine neighbours)
 - `GET /contribute` — signal submission form
-- `GET /review` — curator review queue
+- `GET /review` — curator review queue (curators only: a session whose email
+  is in `ADMIN_EMAILS` — falls back to `ADMIN_NOTIFY_EMAILS` — or whose
+  contributor holds an admin token; `POST /api/review/:id/*` likewise)
+- `GET /claim/:type/:slug` · `GET /me` · `GET /@:handle` — claims (below)
 - `GET /skill.md` — the contributor contract (verbatim `SKILL.md`)
 - `GET /whitepaper` — the current whitepaper; `/whitepaper/v1.7` pins a release
   (see *Whitepaper* below)
@@ -252,6 +256,28 @@ an external assistant can drive drafts. Secrets: `SESSION_SECRET`,
 the Machines API; the worker calls back over the public HTTPS URL
 (`WORKER_ADAI_URL`) — NOT Flycast, which `force_https` breaks; first-time Fly
 setup is in `docs/URL-INTAKE-SPEC.md` §14).
+
+### Claims, handles, the personal log (`docs/CLAIM-SPEC.md`)
+
+A contributor **claims** a practitioner / collective / institution page
+(`node_claims`, local). An invite naming the node (`contributor_emails.self_node_id`,
+backfilled into claims at boot) or a claimed peer's invite is instant;
+anything else is `/review?kind=claim` — and a second claim on a claimed
+practitioner always is. The public face is `metadata.claimed = {at, handle,
+by[]}` (written with its before-image) and a `claim` signal. **Handles** are
+`node_aliases(source='handle')` — that CRR's PK makes them unique; old
+handles keep resolving; `/@:handle` 302s to the node. Claimants never
+approve anything: on `/me` (`GET /api/me/log`) they **contest** a relation
+or an edit (public at once; `kind='contest'` — approve = uphold: the relation
+ends bi-temporally / the key returns to its before-image; reject = dismiss),
+add **context** (tier-gated, `kind='context'`), **object** to a pending item
+(settled by that item's outcome), and **invite** the unclaimed other end of a
+live relation (instant claim, 10/week). Notes are signals + `relation_notes`;
+they show on the profile, in `/history` and, for open contests, dashed in
+`/field` (`GET /api/contested`, deliberately off the cached stream). `/field`
+opens on a signed-in claimant's node; `m` / the chip veils everything beyond
+2 hops (1 past 500 nodes). Receipts (`/batch/:id`) ask "is one of these you?".
+Code: `src/claim/*`, `src/routes/claim.ts`; SKILL.md §1.9 + §4.6c.
 
 ### Contributor API (`/api/v1/*`) — bearer-token, AI-driven
 
