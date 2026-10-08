@@ -197,12 +197,12 @@ empty — it requires evidence of artist intent, not thematic similarity.
   contributor holds an admin token; `POST /api/review/:id/*` likewise)
 - `GET /claim/:type/:slug` · `GET /me` · `GET /@:handle` — claims (below)
 - `GET /skill.md` — the contributor contract (verbatim `SKILL.md`)
-- `GET /api/staging` — staging only: the switch state (see *Staging*)
 - `GET /whitepaper` — the current whitepaper; `/whitepaper/v1.7` pins a release
   (see *Whitepaper* below)
 
 ### JSON API
 - `GET /api/stats` — node/edge/signal counts (retired-filtered)
+- `GET /api/staging` — staging only: the switch state (see *Staging*)
 - `GET /api/graph` — full graph as D3 `{nodes, edges}`, `?type=` filter; nodes
   carry `cdn_image_url`/`image_url` when present
 - `GET /api/graph/:slug` — ego graph (1-hop)
