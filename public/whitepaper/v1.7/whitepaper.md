@@ -29,7 +29,7 @@ A(DAI) already has:
 - Correction tools
 - Machine-derived discovery layers
 
-The beta phase is testing these tools with real contributors. It will also develop claimable practice profiles, clearer review policies, visible replies and disagreements, partner contributions, and ways to export or fork the commons while preserving its sources and history. Some tools are working; the rights and responsibilities around them still need to be worked through together
+The beta phase is testing these tools with real contributors. It will also develop claimable practice profiles, clearer review policies, visible replies and disagreements, partner contributions, and ways to export or fork the commons while preserving its sources and history. Some tools are working; the rights and responsibilities around them still need to be worked through together.
 
 | Status | Meaning in this paper |
 |---|---|
@@ -40,7 +40,7 @@ The beta phase is testing these tools with real contributors. It will also devel
 
 ## A working example: Nguyen Wahed Gallery
 
-Nguyen Wahed Gallery put its archives on the record under its own name: thirty-nine exhibitions and fairs, and the eight artists it represents. No relation is an anonymous fact — hovering any node shows it is human-attested, by Nguyen Wahed gallery.. The gallery's programme becomes citable cultural context that others can review, correct, or contest.
+Nguyen Wahed Gallery put its archives on the record under its own name: thirty-nine exhibitions and fairs, and the eight artists it represents. No relation is an anonymous fact — hovering any node shows it is human-attested, by Nguyen Wahed Gallery. The gallery's programme becomes citable cultural context that others can review, correct, or contest.
 
 <figure id="figure-1">
 <img src="fig-1.webp" width="1600" height="911" alt="Nguyen Wahed Gallery in the Digital Arts Commons. A hovered relation shows its type, attestation, and contributor." loading="lazy">
@@ -137,7 +137,7 @@ The value is not volume. It is context, attribution, discoverability, correction
 
 ## 5 · The threshold: vouched-for
 
-A plural commons cannot impose one law of interpretation. It needs a simpler threshold: every public entry must have someone accountable standing behind it. No one speaks anonymously as the map, although they may contribute with a pseudo-anonymous identity:
+A plural commons cannot impose one law of interpretation. It needs a simpler threshold: every public entry must have someone accountable standing behind it. No one speaks anonymously as the map, although they may contribute with a pseudo-anonymous identity.
 
 Knowledge enters through three doors:
 
@@ -347,7 +347,7 @@ The map is a seed, not an enclosure. Your work stays yours. The commons should m
 - Haraway, D. (1988). "Situated knowledges." *Feminist Studies* 14(3): 575–599.
 - Rossenova, L., de Wild, K. & Espenschied, D. (2019). "Provenance for internet art: Using the W3C PROV data model."
 
-Full literature framework (will be) available at [digitalartsinstitute.io](http://digitalartsinstitute.io).
+Full literature framework will be available at [digitalartsinstitute.io](http://digitalartsinstitute.io).
 
 ## Appendix A · Governance questions in the roadmap
 
