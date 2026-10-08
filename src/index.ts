@@ -16,6 +16,7 @@ import { isSessionConfigured } from "./intake/auth.js";
 import { getDb } from "./db.js";
 import { backfillInviteClaims } from "./claim/store.js";
 import { htmlPage, HTML_HEADERS } from "./templates.js";
+import { isStaging, publicSwitches, stagingBanner } from "./utils/staging.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -59,6 +60,29 @@ app.use((req, res, next) => {
       req.path.startsWith("/api/claims") || req.path.startsWith("/api/me/") || req.path.startsWith("/api/review/access/")) return next();
   return generousJson(req, res, next);
 });
+
+// Staging (src/utils/staging.ts): kept out of search engines, every HTML
+// response carries the switch bar, /api/staging reports the switches.
+if (isStaging()) {
+  console.log("[staging] switches:", JSON.stringify(publicSwitches()));
+  app.use((_req, res, next) => {
+    res.setHeader("X-Robots-Tag", "noindex, nofollow");
+    const send = res.send.bind(res);
+    res.send = (body?: any) => {
+      if (typeof body === "string" && /^text\/html/i.test(String(res.getHeader("Content-Type") ?? "text/html")) && body.includes("</body>")) {
+        body = body.replace(/<\/body>(?![\s\S]*<\/body>)/, `${stagingBanner()}</body>`);
+      }
+      return send(body);
+    };
+    next();
+  });
+  app.get("/robots.txt", (_req, res) => res.type("text/plain").send("User-agent: *\nDisallow: /\n"));
+  app.get("/api/staging", (_req, res) => res.json({ env: "staging", switches: publicSwitches() }));
+  app.get("/field", (_req, res) => {
+    const file = path.join(__dirname, "..", "public", "field", "index.html");
+    res.set(HTML_HEADERS).send(fs.readFileSync(file, "utf-8"));
+  });
+}
 
 // /field-static serves the public/field tree (p5-derived data-driven graph view).
 // Mounted before route handlers so /field-static/* never reaches the page router.

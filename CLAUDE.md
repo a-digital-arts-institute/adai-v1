@@ -197,6 +197,7 @@ empty — it requires evidence of artist intent, not thematic similarity.
   contributor holds an admin token; `POST /api/review/:id/*` likewise)
 - `GET /claim/:type/:slug` · `GET /me` · `GET /@:handle` — claims (below)
 - `GET /skill.md` — the contributor contract (verbatim `SKILL.md`)
+- `GET /api/staging` — staging only: the switch state (see *Staging*)
 - `GET /whitepaper` — the current whitepaper; `/whitepaper/v1.7` pins a release
   (see *Whitepaper* below)
 
@@ -448,6 +449,31 @@ just wait-healthy  # poll /api/stats until healthy
   must go through the idempotent try/catch pattern in `src/db.ts` (keyed to
   SQLite's stable "duplicate column name" error). Don't strip those try/catch
   blocks; blowing away the volume is not an option.
+
+### Staging (`adai-staging`, `fly.staging.toml`)
+
+https://adai-staging.fly.dev runs **main on a copy of the prod DB** — the place
+to land and break things before a deliberate `just deploy` to prod.
+
+- **Code**: `.github/workflows/staging-deploy.yml` deploys main after CI passes;
+  `just staging-deploy` (or the Action run by hand) puts any branch up.
+- **Data, one way**: `entrypoint.sh` with `ADAI_ENV=staging` restores from the
+  prod Litestream replica on the first boot after 03:00 UTC
+  (`staging-refresh.yml` restarts a running machine at 03:15) and **never
+  replicates** — a staging writer in the backup bucket would corrupt the
+  disaster-recovery copy. `just staging-refresh` restores now.
+- **Switches** (`src/utils/staging.ts`, one secret `STAGING_SWITCHES`): every
+  outward integration is off by default and flipped per debugging session —
+  `mail=stdout|allowlist:<addr|@domain>,…|live`, `worker=on`, `r2=on`,
+  `gemini=on`, `archivist=off`, `data=keep` (skip the nightly restore).
+  `just staging-set mail=allowlist:x@y.z worker=on` sets the WHOLE state,
+  `just staging-reset` returns to defaults, `just staging-status` shows them;
+  a red bar on every staging page shows them too. On prod (`ADAI_ENV` unset)
+  every switch is on and nothing changes.
+- Staging is `noindex` (header + robots.txt). It shares the
+  `adai-intake-worker` app, so its `WORKER_KEY` equals prod's.
+- First time: `just staging-bootstrap`, set the R2 / worker secrets it prints,
+  `just staging-deploy`.
 
 ### Ops via `just`
 

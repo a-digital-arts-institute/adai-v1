@@ -27,6 +27,7 @@
 import crypto from "node:crypto";
 import type { DatabaseSync } from "node:sqlite";
 import { encodeBlob, l2normalise, DIMS, invalidateVectorCache } from "./vectors.js";
+import { geminiKey, isStaging } from "../utils/staging.js";
 
 const EMBED_MODEL = process.env.EMBED_MODEL || "gemini-embedding-2";
 export const TASK_PREFIX = "task: sentence similarity | query: ";
@@ -60,7 +61,7 @@ let cachedClient: any = null;
 
 async function getClient(): Promise<any> {
   if (cachedClient) return cachedClient;
-  const apiKey = process.env.GEMINI_API_KEY;
+  const apiKey = geminiKey();
   if (!apiKey) {
     throw new Error(
       "GEMINI_API_KEY missing — set as a Fly secret on production, in .env locally"
@@ -326,6 +327,7 @@ export async function embedNodeNow(db: DatabaseSync, nodeId: string): Promise<Em
 // but never throw into the request handler — the daily backfill catches
 // anything that fails here.
 export function embedNodeAsync(db: DatabaseSync, nodeId: string): void {
+  if (isStaging() && !geminiKey()) return; // gemini switched off on staging
   embedNodeNow(db, nodeId)
     .then((r) => {
       if (r.status === "error") {

@@ -11,6 +11,7 @@
 
 import crypto from "node:crypto";
 import { S3Client, HeadObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { switchOn } from "./utils/staging.js";
 
 const CT_EXT: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -42,6 +43,10 @@ interface R2Env {
 }
 
 function readEnv(): R2Env | null {
+  if (!switchOn("r2")) {
+    console.warn("[r2] disabled — staging switch r2 is off");
+    return null;
+  }
   const e = process.env;
   const missing: string[] = [];
   for (const k of ["R2_ENDPOINT", "R2_BUCKET", "R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_PUBLIC_BASE"]) {

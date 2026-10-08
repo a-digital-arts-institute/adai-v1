@@ -1,0 +1,33 @@
+name: staging-deploy
+
+# Deploy main to adai-staging once CI has passed on it. Run it by hand
+# (Actions → staging-deploy → "Use workflow from") to put any branch on
+# staging; the next merge to main puts main back.
+#
+# Required secret: FLY_API_TOKEN with deploy access to adai-staging.
+
+on:
+  workflow_run:
+    workflows: ["ci"]
+    branches: [main]
+    types: [completed]
+  workflow_dispatch:
+
+concurrency:
+  group: staging-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      # --ha=false: one machine, one volume (see the deploy notes in CLAUDE.md).
+      - run: flyctl deploy --config fly.staging.toml --ha=false --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

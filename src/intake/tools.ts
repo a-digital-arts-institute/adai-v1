@@ -15,6 +15,7 @@ import { l2normalise } from "../embed/vectors.js";
 import { topKByVector, withMetadata } from "../embed/neighbours.js";
 import { safeFetch, sniffImageMime, SsrfError } from "../utils/ssrf.js";
 import { PRESENT_TENSE_EDGE_TYPES } from "./candidate.js";
+import { geminiKey } from "../utils/staging.js";
 
 type AsyncHandler = (db: DatabaseSync, input: Record<string, unknown>) => Promise<unknown> | unknown;
 
@@ -116,7 +117,7 @@ export async function resolve_entity(db: DatabaseSync, input: Record<string, unk
 
   // 4. embedding top-5 (identity vectors), when a key is configured
   let embedding_note: string | undefined;
-  if (hits.length < 5 && process.env.GEMINI_API_KEY) {
+  if (hits.length < 5 && geminiKey()) {
     try {
       const parts = [name];
       if (type) parts.unshift(type === "practitioner" ? "Practitioner:" : type === "artwork" ? "Artwork:" : `${type}:`);
@@ -194,7 +195,7 @@ export async function image_neighbours(db: DatabaseSync, input: Record<string, u
   const url = asString(input.image_url);
   const k = clampInt(input.k, 5, 1, 10);
   if (!url) return { error: "image_url is required" };
-  if (!process.env.GEMINI_API_KEY) return { error: "embedding unavailable (GEMINI_API_KEY unset)" };
+  if (!geminiKey()) return { error: "embedding unavailable (GEMINI_API_KEY unset or staging switch off)" };
   let bytes: Buffer;
   try {
     const r = await safeFetch(url, { maxBytes: 10 * 1024 * 1024, timeoutMs: 15_000, headers: { accept: "image/*" } });

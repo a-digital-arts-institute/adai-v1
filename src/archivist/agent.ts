@@ -12,6 +12,7 @@
 // small and JSON-safe; never include raw model objects.
 
 import Anthropic from "@anthropic-ai/sdk";
+import { switchOn } from "../utils/staging.js";
 
 type MessageStream = ReturnType<Anthropic["messages"]["stream"]>;
 import type { DatabaseSync } from "node:sqlite";
@@ -57,13 +58,12 @@ function defaultModel(): string {
 }
 
 function getClient(): Anthropic | null {
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) return null;
-  return new Anthropic({ apiKey: key });
+  if (!isConfigured()) return null;
+  return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 }
 
 export function isConfigured(): boolean {
-  return !!process.env.ANTHROPIC_API_KEY;
+  return switchOn("archivist") && !!process.env.ANTHROPIC_API_KEY;
 }
 
 // Attach cache_control to the last tool so the entire tools block + the

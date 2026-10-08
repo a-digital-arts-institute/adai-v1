@@ -5,12 +5,14 @@
 
 import type { DatabaseSync } from "node:sqlite";
 import { pendingJobs, setMachineId, type Draft } from "./draft.js";
+import { switchOn } from "../utils/staging.js";
 
 const MACHINES_API = "https://api.machines.dev/v1";
 
 function cfg() {
   return {
-    image: process.env.WORKER_IMAGE || null,
+    // Staging spawns real machines only with the worker switch on.
+    image: switchOn("worker") ? process.env.WORKER_IMAGE || null : null,
     app: process.env.WORKER_APP || "adai-intake-worker",
     token: process.env.FLY_API_TOKEN || null,
     region: process.env.WORKER_REGION || "fra",
