@@ -197,6 +197,8 @@ empty — it requires evidence of artist intent, not thematic similarity.
   contributor holds an admin token; `POST /api/review/:id/*` likewise)
 - `GET /claim/:type/:slug` · `GET /me` · `GET /@:handle` — claims (below)
 - `GET /skill.md` — the contributor contract (verbatim `SKILL.md`)
+- `GET /whitepaper` — the current whitepaper; `/whitepaper/v1.7` pins a release
+  (see *Whitepaper* below)
 
 ### JSON API
 - `GET /api/stats` — node/edge/signal counts (retired-filtered)
@@ -345,6 +347,18 @@ CLIs resolve the DB path via `src/utils/db-path.ts` (`DB_PATH` → `/data/adai.d
 → `./adai.db`). `.tokens.json` (gitignored, repo root) holds the raw operator
 tokens for `just restore-tokens`. `contributor_tokens` is local-only — never a
 CRR (token material must never sync).
+
+## Whitepaper
+
+`src/routes/whitepaper.ts` renders `public/whitepaper/v<version>/whitepaper.md`
+(committed markdown, `marked`, raw `<figure>` HTML passes through) inside the
+site chrome. Each version is a release with its own directory, figures and
+permanent URL; `/whitepaper` is the first entry of `public/whitepaper/versions.json`.
+The raw markdown and figures are served beside it (`/whitepaper/v1.7/whitepaper.md`).
+The text is written in the team's Google Doc; a release comes in through
+`just whitepaper-import <file.docx> <version>` (pandoc + cwebp, host-only) as a PR.
+The .docx export holds every tab of the doc — only the paper itself ships.
+The `/field` philosophy panel's "Read the whitepaper" button points at `/whitepaper`.
 
 ## Embeddings
 
