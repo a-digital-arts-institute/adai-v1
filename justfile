@@ -168,6 +168,15 @@ shrink-oversized-prod-apply: _pull-live-db
     @rm -f /tmp/adai-cull.db /tmp/adai-cull.db-wal /tmp/adai-cull.db-shm /tmp/adai-shrink-patch.json
     @echo "[shrink] done — reclaim the now-orphaned originals with: just cull-orphans-prod-delete"
 
+# --- whitepaper ---------------------------------------------------------
+
+# Import a release from the Google Doc's .docx export into
+# public/whitepaper/v<version>/ (markdown + WebP figures) for a PR. Host-only:
+# brew install pandoc webp. See scripts/import-whitepaper.mjs for the steps after.
+[doc("Import a whitepaper release from .docx: just whitepaper-import ~/Downloads/x.docx 1.8")]
+whitepaper-import docx version:
+    node scripts/import-whitepaper.mjs "{{docx}}" {{version}}
+
 # --- URL intake (docs/URL-INTAKE-SPEC.md) ------------------------------
 
 # Main app + intake worker (poll mode) side by side. Needs SESSION_SECRET,

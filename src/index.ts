@@ -4,6 +4,7 @@ import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { initDb } from "./db.js";
 import pageRoutes from "./routes/pages.js";
+import whitepaperRoutes from "./routes/whitepaper.js";
 import apiRoutes from "./routes/api.js";
 import contributorApiRoutes from "./routes/contributor-api.js";
 import archivistRoutes from "./routes/archivist.js";
@@ -145,6 +146,7 @@ if (isSpawnerConfigured()) {
 } else {
   console.log("[intake] spawner not configured (WORKER_IMAGE / FLY_API_TOKEN) — run the worker locally");
 }
+app.use(whitepaperRoutes);
 app.use(pageRoutes);
 app.use(apiRoutes);
 app.use(contributorApiRoutes);

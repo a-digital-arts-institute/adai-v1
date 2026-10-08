@@ -1156,7 +1156,7 @@
         </div>
         <div class="ph-cta">
           <a class="ph-cta-btn" href="/contribute">Contribute to the commons <span class="ph-arrow" aria-hidden="true">→</span></a>
-          <a class="ph-cta-btn" href="/field-static/seed-thesis.html" target="_blank" rel="noopener">Read the whitepaper <span class="ph-arrow" aria-hidden="true">→</span></a>
+          <a class="ph-cta-btn" href="/whitepaper" target="_blank" rel="noopener">Read the whitepaper <span class="ph-arrow" aria-hidden="true">→</span></a>
         </div>
         <div class="ph-foot">
           <span>esc to close</span>
