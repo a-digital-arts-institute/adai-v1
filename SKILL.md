@@ -1,7 +1,7 @@
 ---
 name: adai-contribute
-description: Contribute to the A(DAI) Digital Arts Knowledge Commons graph (https://digitalartsinstitute.io) on behalf of a practitioner using their bearer token in ADAI_TOKEN. Use when the user wants to add a text signal about an existing node, create a node (practitioner, artwork, concept, scene, institution, collective, platform, etc.), add or supersede an edge (CREATED_BY, EMBODIES, PRACTICES, EXHIBITED_AT, CLASSIFIED_BY, BELONGS_TO, COLLABORATES_WITH, USES_TECHNIQUE, INFLUENCES, RESPONDS_TO, PARTICIPATED_IN, PRESENTED_BY, CURATED_BY, REPRESENTS), upload an image and attach it to a node, tag a session of writes with a batch_id, review their contribution history, claim the practitioner's own page and speak for it (contest or add context to relations about them, invite the people at the other end), or — with an admin-scope token — mint/list/revoke tokens, work the curator review queue (approve/reject/bulk), revoke a signal, retire a node, or roll back a contribution batch (provenance-preserving). Talks to /api/v1/* via curl. Respects trust tiers (auto/reviewed go live, probationary queue at /review). Never infer INFLUENCES or RESPONDS_TO from style or visual similarity; both require attested artist intent.
-version: 2026-10-03
+description: Contribute to the A(DAI) Digital Arts Knowledge Commons graph (https://digitalartsinstitute.io) on behalf of a practitioner using their bearer token in ADAI_TOKEN. Use when the user wants to add a text signal about an existing node, create a node (practitioner, artwork, concept, scene, institution, collective, platform, etc.), add or supersede an edge (CREATED_BY, EMBODIES, PRACTICES, EXHIBITED_AT, CLASSIFIED_BY, BELONGS_TO, COLLABORATES_WITH, USES_TECHNIQUE, INFLUENCES, RESPONDS_TO, PARTICIPATED_IN, PRESENTED_BY, CURATED_BY, REPRESENTS, HELD_BY), upload an image and attach it to a node, tag a session of writes with a batch_id, review their contribution history, claim the practitioner's own page and speak for it (contest or add context to relations about them, invite the people at the other end), or — with an admin-scope token — mint/list/revoke tokens, work the curator review queue (approve/reject/bulk), revoke a signal, retire a node, or roll back a contribution batch (provenance-preserving). Talks to /api/v1/* via curl. Respects trust tiers (auto/reviewed go live, probationary queue at /review). Never infer INFLUENCES or RESPONDS_TO from style or visual similarity; both require attested artist intent.
+version: 2026-10-09
 ---
 
 # A(DAI) contributor skill — for Claude (and any other AI assistant) writing to the knowledge commons
@@ -303,6 +303,7 @@ The graph is mostly edges. Use the curated edge types:
 | `USES_TECHNIQUE` | practitioner → technique | finer-grained than PRACTICES |
 | `BELONGS_TO` | practitioner → collective / scene | membership |
 | `EXHIBITED_AT` | artwork → institution / platform | where it showed |
+| `HELD_BY` | artwork → institution | in its collection — a museum, private or corporate collection (where it showed is `EXHIBITED_AT`) |
 | `PARTICIPATED_IN` | practitioner → project | artist took part in a show / fair |
 | `PRESENTED_BY` | project → institution / platform | gallery / host that presented the show (a platform-hosted series can have both) |
 | `CURATED_BY` | project → practitioner | the show's curator (where named) |
@@ -518,6 +519,7 @@ as above. Relation policy for anything sourced from a page, verbatim:
 |---|---|---|
 | CREATED_BY | artwork -> practitioner/collective | page attributes the work |
 | EXHIBITED_AT | artwork -> institution/project/platform | page lists the show, venue or platform |
+| HELD_BY | artwork -> institution | page lists the work in the institution's collection (collection record, accession number, credit line) |
 | PARTICIPATED_IN | practitioner -> project | page lists the artist in the show |
 | PRESENTED_BY | project -> institution/platform | page names the venue, organiser or host platform |
 | CURATED_BY | project -> practitioner | page names the curator |

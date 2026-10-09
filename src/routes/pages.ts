@@ -49,6 +49,7 @@ const EDGE_TYPE_LABEL: Record<string, string> = {
   COLLABORATES_WITH: "collaborates with",
   CREATED_BY: "created by",
   EXHIBITED_AT: "exhibited at",
+  HELD_BY: "held by",
   CLASSIFIED_BY: "classified by",
   LEGIBLE_TO: "legible to",
   PARTICIPATED_IN: "participated in",
@@ -240,7 +241,7 @@ function profileHandler(req: any, res: any) {
     const roster = rosterFor(db, node.id);
     if (roster.length) {
       const LIMIT = 300;
-      body += `<h3>artists (${roster.length})</h3><p class='meta'>Read off this graph: represented here, in shows presented here, or with works shown here.</p><ul class='edge-list'>`;
+      body += `<h3>artists (${roster.length})</h3><p class='meta'>Read off this graph: represented here, in shows presented here, or with works shown or held here.</p><ul class='edge-list'>`;
       for (const a of roster.slice(0, LIMIT)) {
         const why = [
           a.represented ? (a.estate ? "estate represented" : "represented") : "",

@@ -132,7 +132,7 @@ export function mePage(): string {
   const script = `${helpers}${LOGIN}
 const app = $('#app');
 const params = new URLSearchParams(location.search);
-const VERBS = { CREATED_BY: 'was created by', EXHIBITED_AT: 'was exhibited at', PARTICIPATED_IN: 'took part in', PRESENTED_BY: 'was presented by', CURATED_BY: 'was curated by', REPRESENTS: 'represents', USES_TECHNIQUE: 'uses the technique', EMBODIES: 'embodies', BELONGS_TO: 'belongs to', COLLABORATES_WITH: 'collaborates with', INFLUENCES: 'influences', RESPONDS_TO: 'responds to', PRACTICES: 'practices', CLASSIFIED_BY: 'is classified by' };
+const VERBS = { CREATED_BY: 'was created by', EXHIBITED_AT: 'was exhibited at', HELD_BY: 'is held by', PARTICIPATED_IN: 'took part in', PRESENTED_BY: 'was presented by', CURATED_BY: 'was curated by', REPRESENTS: 'represents', USES_TECHNIQUE: 'uses the technique', EMBODIES: 'embodies', BELONGS_TO: 'belongs to', COLLABORATES_WITH: 'collaborates with', INFLUENCES: 'influences', RESPONDS_TO: 'responds to', PRACTICES: 'practices', CLASSIFIED_BY: 'is classified by' };
 let L = null;
 function href(id, slug) { const t = id.split(':')[0]; return '/' + t + '/' + encodeURIComponent(slug || id.slice(t.length + 1).replace(/ /g, '-')); }
 function alertMsg(m, ok) { const d = document.createElement('div'); d.className = 'msg ' + (ok ? 'msg-ok' : 'msg-err'); d.textContent = m; app.prepend(d); setTimeout(() => d.remove(), 7000); }

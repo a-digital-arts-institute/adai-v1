@@ -386,6 +386,7 @@ Suggestable from a web page, with the page as evidence:
 |---|---|---|
 | CREATED_BY | artwork -> practitioner/collective | page attributes the work |
 | EXHIBITED_AT | artwork -> institution/project/platform | page lists the show, venue or platform |
+| HELD_BY | artwork -> institution | page lists the work in the institution's collection (collection record, accession number, credit line) |
 | PARTICIPATED_IN | practitioner -> project | page lists the artist in the show |
 | PRESENTED_BY | project -> institution/platform | page names the venue, organiser or host platform |
 | CURATED_BY | project -> practitioner | page names the curator |

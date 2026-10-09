@@ -7,7 +7,7 @@ export type CandidateState = "proposed" | "accepted" | "rejected" | "context_onl
 export type Origin = "site" | "graph" | "embedding" | "contributor";
 export type CandidateNodeType = "practitioner" | "artwork" | "project" | "institution" | "collective" | "concept" | "platform";
 export type SuggestableEdgeType =
-  | "CREATED_BY" | "EXHIBITED_AT" | "PARTICIPATED_IN" | "PRESENTED_BY" | "CURATED_BY"
+  | "CREATED_BY" | "EXHIBITED_AT" | "HELD_BY" | "PARTICIPATED_IN" | "PRESENTED_BY" | "CURATED_BY"
   | "REPRESENTS" | "USES_TECHNIQUE" | "EMBODIES" | "BELONGS_TO" | "COLLABORATES_WITH";
 export type Confidence = "high" | "medium" | "low";
 
