@@ -1,5 +1,5 @@
-// Staging: a second Fly app (adai-staging, fly.staging.toml) that runs main
-// against a nightly copy of the prod DB. ADAI_ENV=staging turns this on; on
+// Staging: a second Fly app (adai-staging, fly.staging.toml) that runs the
+// `staging` branch against a nightly copy of the prod DB. ADAI_ENV=staging turns this on; on
 // prod (ADAI_ENV unset) every integration is on and none of this applies.
 //
 // On staging each outward integration is behind a switch, off by default,

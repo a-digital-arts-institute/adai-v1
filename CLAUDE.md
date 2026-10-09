@@ -452,11 +452,13 @@ just wait-healthy  # poll /api/stats until healthy
 
 ### Staging (`adai-staging`, `fly.staging.toml`)
 
-https://adai-staging.fly.dev runs **main on a copy of the prod DB** — the place
+https://adai-staging.fly.dev runs **the `staging` branch on a copy of the prod DB** — the place
 to land and break things before a deliberate `just deploy` to prod.
 
-- **Code**: `.github/workflows/staging-deploy.yml` deploys main after CI passes;
-  `just staging-deploy` (or the Action run by hand) puts any branch up.
+- **Code**: `.github/workflows/staging-deploy.yml` deploys the `staging` branch
+  after CI passes on it — merges to main never move staging. `just
+  staging-promote` fast-forwards `staging` to main; `just staging-deploy` (or
+  the Action run by hand) puts any branch up until the next push to `staging`.
 - **Data, one way**: `entrypoint.sh` with `ADAI_ENV=staging` restores from the
   prod Litestream replica on the first boot after 03:00 UTC
   (`staging-refresh.yml` restarts a running machine at 03:15) and **never

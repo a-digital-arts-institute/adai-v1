@@ -1,5 +1,6 @@
-# adai-staging — main, running on a nightly copy of the prod DB.
-# Deployed by .github/workflows/staging-deploy.yml after CI passes on main, or
+# adai-staging — the `staging` branch, running on a nightly copy of the prod DB.
+# Deployed by .github/workflows/staging-deploy.yml after CI passes on that
+# branch (`just staging-promote` moves it to main), or
 # by hand with `just staging-deploy` (any branch). Same image as prod;
 # ADAI_ENV=staging makes entrypoint.sh restore-only (never replicates) and puts
 # every outward integration behind a switch (src/utils/staging.ts).
