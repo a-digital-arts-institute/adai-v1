@@ -150,9 +150,10 @@ Node types: practitioner, artwork, concept, scene, institution, collective,
 platform, publication, project, classification_regime. Plus 'related' as
 a low-resolution graph-stub type — ignore it in answers.
 
-The 9 curated edge types are CREATED_BY (artwork → practitioner/collective),
+The core curated edge types are CREATED_BY (artwork → practitioner/collective),
 EMBODIES (practitioner/artwork → concept), PRACTICES (practitioner → concept),
-EXHIBITED_AT (artwork → institution), CLASSIFIED_BY (any → classification_regime),
+EXHIBITED_AT (artwork → institution — where it was shown), HELD_BY (artwork →
+institution — in its collection), CLASSIFIED_BY (any → classification_regime),
 BELONGS_TO (practitioner → scene/collective), COLLABORATES_WITH (practitioner
 ↔ practitioner), USES_TECHNIQUE (artwork → concept — in the schema but effectively EMPTY in
 the live graph; never assume a work's technique is a queryable edge),

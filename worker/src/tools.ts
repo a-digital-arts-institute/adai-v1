@@ -15,7 +15,7 @@ import { checkQuote } from "./evidence.js";
 type Tool = Anthropic.Messages.Tool;
 
 const NODE_TYPES = ["practitioner", "artwork", "project", "institution", "collective", "concept", "platform"];
-const EDGE_TYPES = ["CREATED_BY", "EXHIBITED_AT", "PARTICIPATED_IN", "PRESENTED_BY", "CURATED_BY", "REPRESENTS", "USES_TECHNIQUE", "EMBODIES", "BELONGS_TO", "COLLABORATES_WITH"];
+const EDGE_TYPES = ["CREATED_BY", "EXHIBITED_AT", "HELD_BY", "PARTICIPATED_IN", "PRESENTED_BY", "CURATED_BY", "REPRESENTS", "USES_TECHNIQUE", "EMBODIES", "BELONGS_TO", "COLLABORATES_WITH"];
 const QUESTION_EDGE_TYPES = [...EDGE_TYPES, "INFLUENCES", "RESPONDS_TO"];
 
 const evidenceProps = {

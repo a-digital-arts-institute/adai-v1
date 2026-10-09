@@ -2,7 +2,7 @@
 //
 // A gallery's own edges are to works and shows; its artists sit one step
 // behind them (work → CREATED_BY → artist, artist → PARTICIPATED_IN → show
-// → PRESENTED_BY → gallery). The profile page leads with this roster, but it
+// → PRESENTED_BY → gallery). A collection's works reach it by HELD_BY. The profile page leads with this roster, but it
 // is DERIVED at read time and never written back as edges: a work shown at
 // a gallery does not make the gallery represent its maker. Only REPRESENTS
 // says that, and it is listed apart.
@@ -51,14 +51,15 @@ export function rosterFor(db: DatabaseSync, orgId: string): RosterEntry[] {
     )
     .all(orgId) as any[]) { const a = get(r.pid); a.shows.add(r.show); if (r.estate) a.estate = true; }
 
-  // works shown here, directly or in a show the org presented
+  // works shown here (directly or in a show the org presented) or held in its collection
   for (const r of db
     .prepare(
       `SELECT c.target_id AS pid, x.source_id AS work FROM edges x
          JOIN edges c ON c.source_id = x.source_id AND c.edge_type = 'CREATED_BY' AND c.valid_until IS NULL
-        WHERE x.edge_type = 'EXHIBITED_AT' AND x.valid_until IS NULL
-          AND (x.target_id = ?
-               OR x.target_id IN (SELECT source_id FROM edges WHERE target_id = ? AND edge_type = 'PRESENTED_BY' AND valid_until IS NULL))`
+        WHERE x.valid_until IS NULL
+          AND ((x.edge_type IN ('EXHIBITED_AT', 'HELD_BY') AND x.target_id = ?)
+               OR (x.edge_type = 'EXHIBITED_AT'
+                   AND x.target_id IN (SELECT source_id FROM edges WHERE target_id = ? AND edge_type = 'PRESENTED_BY' AND valid_until IS NULL)))`
     )
     .all(orgId, orgId) as any[]) get(r.pid).works.add(r.work);
 

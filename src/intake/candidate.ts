@@ -34,7 +34,7 @@ export type CandidateNodeType = (typeof CANDIDATE_NODE_TYPES)[number];
 // §7 — the only edge types a page may attest. INFLUENCES / RESPONDS_TO reach
 // the graph only through a `question` the contributor answered.
 export const SUGGESTABLE_EDGE_TYPES = [
-  "CREATED_BY", "EXHIBITED_AT", "PARTICIPATED_IN", "PRESENTED_BY", "CURATED_BY",
+  "CREATED_BY", "EXHIBITED_AT", "HELD_BY", "PARTICIPATED_IN", "PRESENTED_BY", "CURATED_BY",
   "REPRESENTS", "USES_TECHNIQUE", "EMBODIES", "BELONGS_TO", "COLLABORATES_WITH",
 ] as const;
 export type SuggestableEdgeType = (typeof SUGGESTABLE_EDGE_TYPES)[number];
@@ -48,6 +48,7 @@ const ARTIST = ["practitioner", "collective"];
 export const EDGE_DIRECTIONS: Record<string, { source: readonly string[]; target: readonly string[]; symmetric?: boolean }> = {
   CREATED_BY: { source: ["artwork"], target: ARTIST },
   EXHIBITED_AT: { source: ["artwork"], target: ["institution", "project", "platform"] },
+  HELD_BY: { source: ["artwork"], target: ["institution"] },
   PARTICIPATED_IN: { source: ARTIST, target: ["project"] },
   PRESENTED_BY: { source: ["project"], target: ["institution", "platform", "collective"] },
   CURATED_BY: { source: ["project"], target: ARTIST },

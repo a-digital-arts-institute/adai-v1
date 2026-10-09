@@ -6,6 +6,7 @@ import assert from "node:assert/strict";
 import { freshDb, insertNode } from "./helpers.js";
 import { rosterFor } from "../src/utils/roster.js";
 import { SERVER_HANDLERS } from "../src/archivist/tools.js";
+import { checkDirection, SUGGESTABLE_EDGE_TYPES } from "../src/intake/candidate.js";
 
 function edge(db: ReturnType<typeof freshDb>, s: string, t: string, type: string, live = true) {
   db.prepare(
@@ -46,6 +47,30 @@ describe("rosterFor", () => {
       ["Frieder Nake", false, 2, 0],
       ["Georg Nees", false, 1, 1],
     ]);
+  });
+
+  it("a collection's roster counts the works it holds; HELD_BY does not travel through shows", () => {
+    const db = freshDb();
+    insertNode(db, "institution:outlier", "institution", "The Outlier Collection");
+    insertNode(db, "practitioner:mapan", "practitioner", "William Mapan");
+    insertNode(db, "practitioner:other", "practitioner", "Other Artist");
+    insertNode(db, "project:show", "project", "A Show");
+    insertNode(db, "artwork:held", "artwork", "Held Work");
+    insertNode(db, "artwork:stray", "artwork", "Stray Work");
+    edge(db, "artwork:held", "institution:outlier", "HELD_BY");
+    edge(db, "artwork:held", "practitioner:mapan", "CREATED_BY");
+    edge(db, "project:show", "institution:outlier", "PRESENTED_BY");
+    edge(db, "artwork:stray", "project:show", "HELD_BY");                 // not a collection: ignored
+    edge(db, "artwork:stray", "practitioner:other", "CREATED_BY");
+    const r = rosterFor(db, "institution:outlier");
+    assert.deepEqual(r.map((a) => [a.name, a.works]), [["William Mapan", 1]]);
+  });
+
+  it("HELD_BY runs artwork -> institution; the reverse is refused with a swap", () => {
+    const types: Record<string, string> = { "artwork:w": "artwork", "institution:c": "institution" };
+    assert.doesNotThrow(() => checkDirection({ source: "artwork:w", target: "institution:c", edge_type: "HELD_BY" }, (r) => types[r] ?? null));
+    assert.throws(() => checkDirection({ source: "institution:c", target: "artwork:w", edge_type: "HELD_BY" }, (r) => types[r] ?? null), /Swap source and target/);
+    assert.ok((SUGGESTABLE_EDGE_TYPES as readonly string[]).includes("HELD_BY"));
   });
 
   it("the archivist's get_node carries the roster for an institution (the field and /data read the same helper)", () => {
