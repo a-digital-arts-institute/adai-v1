@@ -4,6 +4,10 @@
 // (src/notify/digest.ts) and the URL-intake emails (src/intake/mail.ts).
 // Without RESEND_API_KEY the message is logged to stdout in full; that is
 // the dev transport, and it is what makes magic links usable locally.
+// On staging the mail switch decides which recipients get real mail; the
+// rest are logged the same way (src/utils/staging.ts).
+
+import { isStaging, mailRoute } from "./staging.js";
 
 export interface MailMessage {
   from: string;
@@ -26,21 +30,28 @@ export function resendApiKey(): string | null {
   return process.env.RESEND_API_KEY || null;
 }
 
+function logMail(msg: MailMessage, why: string): void {
+  const banner = "-".repeat(72);
+  console.log(
+    `\n${banner}\n[mail] (stdout transport — ${why})\nFrom: ${msg.from}\nTo: ${msg.to.join(", ")}` +
+      (msg.replyTo?.length ? `\nReply-To: ${msg.replyTo.join(", ")}` : "") +
+      `\nSubject: ${msg.subject}\n\n${msg.text}\n${banner}\n`
+  );
+}
+
 export async function sendMail(msg: MailMessage): Promise<MailResult> {
+  const { live, held } = mailRoute(msg.to);
+  if (held.length) logMail({ ...msg, to: held }, "held by the staging mail switch");
+  if (!live.length) return { id: "", transport: "stdout" };
   const apiKey = resendApiKey();
   if (!apiKey) {
-    const banner = "-".repeat(72);
-    console.log(
-      `\n${banner}\n[mail] (stdout transport — RESEND_API_KEY unset)\nFrom: ${msg.from}\nTo: ${msg.to.join(", ")}` +
-        (msg.replyTo?.length ? `\nReply-To: ${msg.replyTo.join(", ")}` : "") +
-        `\nSubject: ${msg.subject}\n\n${msg.text}\n${banner}\n`
-    );
+    logMail({ ...msg, to: live }, "RESEND_API_KEY unset");
     return { id: "", transport: "stdout" };
   }
   const body: Record<string, unknown> = {
     from: msg.from,
-    to: msg.to,
-    subject: msg.subject,
+    to: live,
+    subject: isStaging() ? `[staging] ${msg.subject}` : msg.subject,
     html: msg.html,
     text: msg.text,
   };

@@ -168,6 +168,78 @@ shrink-oversized-prod-apply: _pull-live-db
     @rm -f /tmp/adai-cull.db /tmp/adai-cull.db-wal /tmp/adai-cull.db-shm /tmp/adai-shrink-patch.json
     @echo "[shrink] done — reclaim the now-orphaned originals with: just cull-orphans-prod-delete"
 
+# --- staging (adai-staging, fly.staging.toml) -------------------------
+#
+# main runs on a nightly copy of the prod DB; staging never replicates and
+# every outward integration sits behind a switch (src/utils/staging.ts):
+#   mail=stdout|allowlist:<addr|@domain>,…|live  worker=on  r2=on  gemini=on
+#   archivist=off  data=keep
+# CI deploys main after it passes; `just staging-deploy` puts any branch up.
+
+staging_app  := "adai-staging"
+staging_host := "https://" + staging_app + ".fly.dev"
+
+# Deploy the working tree to staging (any branch; the next merge to main replaces it).
+[doc("Deploy the current working tree to staging.")]
+staging-deploy:
+    FLY_REMOTE_BUILDER_REGION=iad flyctl deploy --config fly.staging.toml --ha=false
+
+# Set the switches. The arguments are the WHOLE state: unnamed switches return
+# to their defaults. Restarts the machine (the DB copy is kept).
+[doc("Set staging switches (whole state): just staging-set mail=allowlist:a@x.y worker=on")]
+staging-set +switches:
+    flyctl secrets set STAGING_SWITCHES="{{switches}}" -a {{staging_app}}
+
+# Every switch back to its default.
+[doc("Reset every staging switch to its default.")]
+staging-reset:
+    flyctl secrets unset STAGING_SWITCHES -a {{staging_app}}
+
+# Show the switches staging is running with.
+[doc("Show the staging switches.")]
+staging-status:
+    @curl -fsS {{staging_host}}/api/staging | jq .
+
+# Fresh copy of the prod DB now (also overrides data=keep for this restore).
+[doc("Restore a fresh copy of the prod DB on staging now.")]
+staging-refresh:
+    @curl -fs {{staging_host}}/api/stats >/dev/null
+    flyctl ssh console --app {{staging_app}} -C "touch /data/.refresh"
+    flyctl machine list --app {{staging_app}} --json | jq -r '.[].id' | xargs -n1 flyctl machine restart --app {{staging_app}}
+
+[doc("Tail recent staging logs.")]
+staging-logs:
+    flyctl logs --app {{staging_app}} --no-tail | tail -40
+
+[doc("SSH into the staging machine.")]
+staging-ssh:
+    @curl -fs {{staging_host}}/api/stats >/dev/null
+    flyctl ssh console --app {{staging_app}}
+
+# One-time: app + volume + the secrets that can come from here. Generates
+# staging's own session secrets and copies the API keys present in .env; the
+# R2 and worker secrets it prints must be set by hand.
+[doc("Create the staging app and volume, set its generated + .env secrets (run once).")]
+staging-bootstrap:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    flyctl apps create {{staging_app}} || true
+    flyctl volumes list -a {{staging_app}} --json | jq -e 'length > 0' >/dev/null \
+      || flyctl volumes create data --size 1 --region fra -a {{staging_app}} --yes
+    {
+      echo "SESSION_SECRET=$(openssl rand -hex 24)"
+      echo "ARCHIVIST_SESSION_SECRET=$(openssl rand -hex 24)"
+      grep -E '^(GEMINI_API_KEY|ANTHROPIC_API_KEY|RESEND_API_KEY|RESEND_FROM|ADMIN_NOTIFY_EMAILS|ADMIN_EMAILS)=' .env || true
+    } | flyctl secrets import -a {{staging_app}} --stage
+    echo
+    echo "now set, with: flyctl secrets set NAME=value … -a {{staging_app}} --stage"
+    echo "  required  R2_ENDPOINT R2_BACKUP_BUCKET R2_BACKUP_ACCESS_KEY_ID R2_BACKUP_SECRET_ACCESS_KEY"
+    echo "            (a read-only token on the backup bucket is enough — staging only restores)"
+    echo "  r2=on     R2_BUCKET R2_ACCESS_KEY_ID R2_SECRET_ACCESS_KEY R2_PUBLIC_BASE"
+    echo "  worker=on WORKER_KEY (the same as prod's: the worker app holds one key)"
+    echo "            WORKER_IMAGE FLY_API_TOKEN (just deploy-worker sets WORKER_IMAGE on both apps)"
+    echo "then: just staging-deploy"
+
 # --- whitepaper ---------------------------------------------------------
 
 # Import a release from the Google Doc's .docx export into
@@ -219,6 +291,7 @@ deploy-worker:
     tag="registry.fly.io/adai-intake-worker:$tag_short"
     echo "[worker] image $tag"
     flyctl secrets set WORKER_IMAGE="$tag" -a {{app}}
+    if flyctl status -a {{staging_app}} >/dev/null 2>&1; then flyctl secrets set WORKER_IMAGE="$tag" -a {{staging_app}}; fi
 
 # One-time: worker app + its secrets (WORKER_KEY must equal the main app's).
 [doc("Create the worker Fly app and set its secrets (run once).")]
