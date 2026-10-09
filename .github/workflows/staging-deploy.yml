@@ -1,15 +1,17 @@
 name: staging-deploy
 
-# Deploy main to adai-staging once CI has passed on it. Run it by hand
+# Deploy the `staging` branch to adai-staging once CI has passed on it.
+# Staging moves only when that branch does — merges to main never touch it;
+# `just staging-promote` fast-forwards it to main. Run this by hand
 # (Actions → staging-deploy → "Use workflow from") to put any branch on
-# staging; the next merge to main puts main back.
+# staging; the next push to `staging` puts it back.
 #
 # Required secret: FLY_API_TOKEN with deploy access to adai-staging.
 
 on:
   workflow_run:
     workflows: ["ci"]
-    branches: [main]
+    branches: [staging]
     types: [completed]
   workflow_dispatch:
 

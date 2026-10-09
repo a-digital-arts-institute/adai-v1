@@ -170,19 +170,28 @@ shrink-oversized-prod-apply: _pull-live-db
 
 # --- staging (adai-staging, fly.staging.toml) -------------------------
 #
-# main runs on a nightly copy of the prod DB; staging never replicates and
+# The `staging` branch runs on a nightly copy of the prod DB; staging never replicates and
 # every outward integration sits behind a switch (src/utils/staging.ts):
 #   mail=stdout|allowlist:<addr|@domain>,…|live  worker=on  r2=on  gemini=on
 #   archivist=off  data=keep
-# CI deploys main after it passes; `just staging-deploy` puts any branch up.
+# CI deploys the `staging` branch after it passes (merges to main never touch
+# it); `just staging-promote` moves it to main, `just staging-deploy` puts
+# any working tree up.
 
 staging_app  := "adai-staging"
 staging_host := "https://" + staging_app + ".fly.dev"
 
-# Deploy the working tree to staging (any branch; the next merge to main replaces it).
+# Deploy the working tree to staging (any branch; the next push to `staging` replaces it).
 [doc("Deploy the current working tree to staging.")]
 staging-deploy:
     FLY_REMOTE_BUILDER_REGION=iad flyctl deploy --config fly.staging.toml --ha=false
+
+# Fast-forward the `staging` branch to origin/main; CI then deploys it.
+# Refuses (non-fast-forward) if staging has commits main doesn't.
+[doc("Fast-forward the staging branch to main (CI deploys it).")]
+staging-promote:
+    git fetch origin main
+    git push origin origin/main:refs/heads/staging
 
 # Set the switches. The arguments are the WHOLE state: unnamed switches return
 # to their defaults. Restarts the machine (the DB copy is kept).
