@@ -21,7 +21,8 @@ import crypto from "node:crypto";
 import type { DatabaseSync } from "node:sqlite";
 import { isAutoMerge, type AuthedContributor } from "../auth.js";
 import { insertSignal, priorValues, recordPrior } from "../utils/contribution.js";
-import { insertAdminSignal } from "../utils/admin-actions.js";
+import { insertAdminSignal, withdrawSignals, AdminActionError } from "../utils/admin-actions.js";
+import { standsFor } from "../utils/contributor-node.js";
 import { tripleKey } from "../utils/claims.js";
 import { ClaimError, CLAIMABLE_TYPES, approvedClaimsFor, claimedNodeIds, hasApprovedClaim, requestClaim, contributorById, type Claim } from "./store.js";
 
@@ -40,6 +41,7 @@ export interface RelationNote {
   meta_key: string | null;
   edit_signal_id: string | null;
   queue_ref: string | null;
+  withdraw: { signal_id: string | null; batch_id: string | null } | null;
   node_id: string;
   contributor_id: string;
   by: string | null; // claimant display name
@@ -72,6 +74,7 @@ function rowToNote(r: any): RelationNote {
     meta_key: r.meta_key ?? null,
     edit_signal_id: r.edit_signal_id ?? null,
     queue_ref: r.queue_ref ?? null,
+    withdraw: r.withdraw_signal_id || r.withdraw_batch_id ? { signal_id: r.withdraw_signal_id ?? null, batch_id: r.withdraw_batch_id ?? null } : null,
     node_id: r.node_id,
     contributor_id: r.contributor_id,
     by: r.by_name ?? null,
@@ -151,6 +154,36 @@ export interface FileNoteArgs {
   relation?: RelationRef;   // contest / context on a relation
   edit?: { key: string; signal_id: string }; // contest on a metadata edit
   queue_id?: string;        // objection to a pending item
+  withdraw?: { signal_id?: string; batch_id?: string }; // contest: withdraw what was posted as you (issue #70)
+}
+
+/**
+ * The live signals a withdrawal covers: one contribution, or a batch's
+ * active ones posted as `nodeId`. Each must come from a contributor that
+ * stands for the claimed node (a token linked to it): a claimant can ask to
+ * take back what was said in their name, never what others said, so the
+ * rest of a shared batch (the team's follow-up edits) is left out.
+ */
+export function withdrawalTargets(db: DatabaseSync, nodeId: string, w: { signal_id?: string | null; batch_id?: string | null }): string[] {
+  if (w.signal_id) {
+    const s = db.prepare("SELECT id, submitted_by, status FROM signals WHERE id = ?").get(w.signal_id) as any;
+    if (!s || s.status !== "active") throw new ClaimError(404, "not_live", "that contribution is not live");
+    if (!standsFor(db, s.submitted_by, nodeId)) throw new ClaimError(403, "not_posted_as_you", "that contribution was not posted as your page");
+    return [s.id];
+  }
+  if (w.batch_id) {
+    // Active signals, minus those a curator already turned down (never in the graph).
+    const rows = db.prepare(
+      `SELECT s.id, s.submitted_by FROM signals s
+        WHERE s.batch_id = ? AND s.status = 'active'
+          AND NOT EXISTS (SELECT 1 FROM intake_queue iq WHERE iq.signal_id = s.id AND iq.status = 'rejected')`
+    ).all(w.batch_id) as any[];
+    if (!rows.length) throw new ClaimError(404, "not_live", "nothing live in that batch");
+    const mine = rows.filter((r) => standsFor(db, r.submitted_by, nodeId));
+    if (!mine.length) throw new ClaimError(403, "not_posted_as_you", "nothing in that batch was posted as your page");
+    return mine.map((r) => r.id);
+  }
+  throw new ClaimError(400, "withdraw_required", "withdraw needs {signal_id} or {batch_id}");
 }
 
 function liveRelation(db: DatabaseSync, r: RelationRef): boolean {
@@ -188,8 +221,28 @@ export function fileNote(db: DatabaseSync, args: FileNoteArgs): RelationNote {
   let metaKey: string | null = null;
   let editSignal: string | null = null;
   let queueRef: string | null = null;
+  let withdraw: { signal_id: string | null; batch_id: string | null } | null = null;
 
-  if (args.kind === "objection") {
+  if (args.withdraw) {
+    if (args.kind !== "contest") throw new ClaimError(400, "bad_kind", "a withdrawal is filed as a contest");
+    const w = { signal_id: args.withdraw.signal_id || null, batch_id: args.withdraw.signal_id ? null : args.withdraw.batch_id || null };
+    const ids = withdrawalTargets(db, args.node_id, w);
+    // One open request per contribution: none on this target, none on a
+    // batch that holds it, none on a contribution inside this batch.
+    const ph = ids.map(() => "?").join(",");
+    const batchOf = w.signal_id ? ((db.prepare("SELECT batch_id FROM signals WHERE id = ?").get(w.signal_id) as any)?.batch_id ?? null) : w.batch_id;
+    const dup = db.prepare(
+      `SELECT 1 FROM relation_notes WHERE kind = 'contest' AND state = 'open'
+         AND (withdraw_signal_id IN (${ph}) OR (withdraw_batch_id IS NOT NULL AND withdraw_batch_id = ?)) LIMIT 1`
+    ).get(...ids, batchOf);
+    if (dup) throw new ClaimError(409, "already_requested", "a withdrawal of this is already with a curator");
+    withdraw = w;
+    const what = w.signal_id
+      ? ((db.prepare("SELECT title FROM signals WHERE id = ?").get(w.signal_id) as any)?.title ?? w.signal_id)
+      : `batch ${w.batch_id} (${ids.length} contribution${ids.length === 1 ? "" : "s"})`;
+    title = `Withdrawal requested: ${what}`;
+    content = { action: "withdraw", withdraw: w, signals: ids.length, node_id: args.node_id, note };
+  } else if (args.kind === "objection") {
     if (!args.queue_id) throw new ClaimError(400, "queue_id_required", "an objection names the pending item");
     const q = db.prepare("SELECT id, status FROM intake_queue WHERE id = ?").get(args.queue_id) as any;
     if (!q || q.status !== "pending") throw new ClaimError(404, "not_pending", "that item is no longer pending");
@@ -244,9 +297,9 @@ export function fileNote(db: DatabaseSync, args: FileNoteArgs): RelationNote {
       );
     }
     db.prepare(
-      `INSERT INTO relation_notes (signal_id, kind, source_id, edge_type, target_id, meta_key, edit_signal_id, queue_ref, node_id, contributor_id, note, state, queue_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-    ).run(signalId, args.kind, rel?.source_id ?? null, rel?.edge_type ?? null, rel?.target_id ?? null, metaKey, editSignal, queueRef, args.node_id, args.contributor.id, note, state, queueId);
+      `INSERT INTO relation_notes (signal_id, kind, source_id, edge_type, target_id, meta_key, edit_signal_id, queue_ref, withdraw_signal_id, withdraw_batch_id, node_id, contributor_id, note, state, queue_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ).run(signalId, args.kind, rel?.source_id ?? null, rel?.edge_type ?? null, rel?.target_id ?? null, metaKey, editSignal, queueRef, withdraw?.signal_id ?? null, withdraw?.batch_id ?? null, args.node_id, args.contributor.id, note, state, queueId);
     db.exec("COMMIT");
     return getNote(db, signalId)!;
   } catch (e) {
@@ -277,10 +330,11 @@ export function withdrawNote(db: DatabaseSync, signalId: string, contributorId: 
  * superseded by one admin signal. A metadata edit: the key goes back to the
  * before-image that edit recorded (when it recorded one).
  */
-export function upholdContest(db: DatabaseSync, queueId: string, opts: { by: string; reason?: string | null }): { edges_ended: number; restored: boolean } {
+export function upholdContest(db: DatabaseSync, queueId: string, opts: { by: string; reason?: string | null }): { edges_ended: number; restored: boolean; withdrawn?: number } {
   const n = noteByQueueId(db, queueId);
   if (!n || n.kind !== "contest") throw new ClaimError(404, "contest_not_found", queueId);
   if (n.state !== "open") throw new ClaimError(409, "contest_settled", `contest is ${n.state}`);
+  if (n.withdraw) return upholdWithdrawal(db, n, opts);
   const anchor = insertAdminSignal(db, {
     by: opts.by,
     title: `Contest upheld: ${n.relation ? `${n.relation.source_id} ${n.relation.edge_type} ${n.relation.target_id}` : `${n.node_id} · ${n.meta_key}`}`,
@@ -309,6 +363,53 @@ export function upholdContest(db: DatabaseSync, queueId: string, opts: { by: str
   }
   settle(db, n, "upheld", opts.by, opts.reason ?? null, anchor);
   return { edges_ended: edges, restored };
+}
+
+/**
+ * Uphold a withdrawal: it unlinks, it hides nothing. The signals are
+ * revoked and the relations they made end bi-temporally, under one admin
+ * signal; every page stays (none is retired), and so does what others
+ * added. Bylines are untouched: the record still says who posted it, and
+ * that it was withdrawn at the subject's request.
+ */
+function upholdWithdrawal(db: DatabaseSync, n: RelationNote, opts: { by: string; reason?: string | null }): { edges_ended: number; restored: boolean; withdrawn: number } {
+  db.exec("BEGIN");
+  try {
+    // Re-read what is live now: a batch may have shrunk since it was filed.
+    let ids: string[];
+    try {
+      ids = withdrawalTargets(db, n.node_id, n.withdraw!);
+    } catch (e) {
+      if (e instanceof ClaimError && e.code === "not_live") ids = [];
+      else throw e;
+    }
+    const anchor = insertAdminSignal(db, {
+      by: opts.by,
+      title: `Withdrawal upheld: ${n.withdraw!.signal_id ?? `batch ${n.withdraw!.batch_id}`}`,
+      content: { action: "uphold_withdrawal", contest_signal_id: n.signal_id, node_id: n.node_id, withdraw: n.withdraw, signals: ids, reason: opts.reason ?? null },
+    });
+    let edges = 0;
+    if (ids.length) {
+      try {
+        const r = withdrawSignals(db, ids, {
+          reason: `at the request of the subject (${n.node_id})${opts.reason ? `: ${opts.reason}` : ""}`,
+          by: opts.by,
+          anchor,
+          label: n.withdraw!.batch_id ?? n.withdraw!.signal_id ?? n.signal_id,
+        });
+        edges = r.edges_superseded ?? 0;
+      } catch (e) {
+        if (e instanceof AdminActionError) throw new ClaimError(e.status, e.code, e.message);
+        throw e;
+      }
+    }
+    settle(db, n, "upheld", opts.by, opts.reason ?? null, anchor);
+    db.exec("COMMIT");
+    return { edges_ended: edges, restored: false, withdrawn: ids.length };
+  } catch (e) {
+    try { db.exec("ROLLBACK"); } catch { /* already rolled back */ }
+    throw e;
+  }
 }
 
 export function dismissContest(db: DatabaseSync, queueId: string, opts: { by: string; reason: string }): void {

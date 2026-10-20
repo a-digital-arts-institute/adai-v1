@@ -397,6 +397,8 @@ CREATE TABLE IF NOT EXISTS relation_notes (
     meta_key        TEXT,                            -- contest on a metadata edit: the key …
     edit_signal_id  TEXT,                            -- … and the signal that wrote it
     queue_ref       TEXT,                            -- objection: the intake_queue row objected to
+    withdraw_signal_id TEXT,                         -- withdrawal (a contest): one contribution posted as the subject …
+    withdraw_batch_id  TEXT,                         -- … or a whole upload batch (issue #70)
     node_id         TEXT NOT NULL,                   -- the claimed node it was written from
     contributor_id  TEXT NOT NULL,
     note            TEXT NOT NULL,

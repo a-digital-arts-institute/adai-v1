@@ -7,7 +7,9 @@ import { htmlEscape } from "../templates.js";
 import { fieldPath } from "../utils/site.js";
 import { collapseClaims, CLAIM_COLS } from "../utils/claims.js";
 import { approvedClaimsFor, CLAIMABLE_TYPES, claimByQueueId } from "./store.js";
-import { noteByQueueId, objectionsFor, type RelationNote } from "./notes.js";
+import { noteByQueueId, objectionsFor, withdrawalTargets, type RelationNote } from "./notes.js";
+import { withdrawalPlan } from "../utils/admin-actions.js";
+import { contributionCards, type ContributionRow } from "../utils/signal-prose.js";
 
 const esc = (v: unknown): string => htmlEscape(String(v ?? ""));
 
@@ -68,6 +70,42 @@ function relationLine(db: DatabaseSync, r: { source_id: string; edge_type: strin
   return `${nodeLink(db, r.source_id)} <span class='edge-type'>${esc(r.edge_type)}</span> ${nodeLink(db, r.target_id)}`;
 }
 
+/**
+ * A withdrawal request (issue #70): what it covers, as sentences, and what
+ * upholding would do (the dry-run plan): signals revoked, the relations they
+ * made ended. It unlinks; no page is retired.
+ */
+function withdrawalCard(db: DatabaseSync, n: RelationNote): string {
+  const w = n.withdraw!;
+  let html = `<h3>Withdraw ${w.signal_id ? "a contribution" : `batch <code>${esc(w.batch_id)}</code>`} posted as ${nodeLink(db, n.node_id)}</h3>`;
+  let ids: string[] = [];
+  try {
+    ids = withdrawalTargets(db, n.node_id, w);
+  } catch (e: any) {
+    return html + `<p class='msg msg-err'>${esc(e?.message ?? "cannot withdraw this any more")} — dismiss it.</p>`;
+  }
+  const ph = ids.map(() => "?").join(",");
+  const rows = db.prepare(
+    `SELECT s.id, s.title, s.content, s.source_url, s.source_type, s.submitted_by, s.created_at, s.consent_attribution, s.batch_id, iq.proposed_nodes, iq.proposed_edges
+       FROM signals s LEFT JOIN intake_queue iq ON iq.signal_id = s.id WHERE s.id IN (${ph}) ORDER BY s.created_at ASC LIMIT 60`
+  ).all(...ids) as unknown as ContributionRow[];
+  html += `<details${ids.length <= 3 ? " open" : ""}><summary class='meta'>${ids.length} contribution${ids.length === 1 ? "" : "s"}${ids.length > 60 ? " (first 60 shown)" : ""}</summary>${contributionCards(db, rows)}</details>`;
+  const plan = withdrawalPlan(db, ids, { label: w.batch_id ?? w.signal_id ?? "" });
+  html += `<p class='meta'>Upholding revokes ${plan.signals_active} signal${plan.signals_active === 1 ? "" : "s"} and ends the ${plan.edges_to_supersede} relation${plan.edges_to_supersede === 1 ? "" : "s"} they made. No page is retired, and bylines are unchanged.` +
+    (w.batch_id ? othersInBatch(db, w.batch_id, ids) : "") +
+    (plan.patches_to_review.length ? ` ${plan.patches_to_review.length} edit${plan.patches_to_review.length === 1 ? "" : "s"} to page details (descriptions, images) stay as they are.` : "") + `</p>`;
+  return html;
+}
+
+function othersInBatch(db: DatabaseSync, batchId: string, mine: string[]): string {
+  const total = Number((db.prepare(
+    `SELECT COUNT(*) AS n FROM signals s WHERE s.batch_id = ? AND s.status = 'active'
+        AND NOT EXISTS (SELECT 1 FROM intake_queue iq WHERE iq.signal_id = s.id AND iq.status = 'rejected')`
+  ).get(batchId) as any).n);
+  const others = total - mine.length;
+  return others > 0 ? ` ${others} contribution${others === 1 ? "" : "s"} by others in the batch ${others === 1 ? "stays" : "stay"}.` : "";
+}
+
 /** The pending claim / contest / context cards on /review. */
 export function claimReviewCards(db: DatabaseSync, kind: "claim" | "contest" | "context"): string {
   const items = db
@@ -104,7 +142,9 @@ export function claimReviewCards(db: DatabaseSync, kind: "claim" | "contest" | "
       const n = noteByQueueId(db, item.id);
       if (!n) { html += `<p class='meta'>note row missing</p></div>`; continue; }
       const who = `${esc(n.by ?? item.submitted_by)}${n.handle ? ` (@${esc(n.handle)})` : ""}, claimant of ${nodeLink(db, n.node_id)}`;
-      if (n.relation) {
+      if (n.withdraw) {
+        html += withdrawalCard(db, n);
+      } else if (n.relation) {
         html += `<h3>${relationLine(db, n.relation)}</h3>`;
         const sources = collapseClaims(db
           .prepare(`SELECT ${CLAIM_COLS} FROM edges e LEFT JOIN signals s ON s.id = e.signal_id WHERE e.source_id = ? AND e.edge_type = ? AND e.target_id = ? AND e.valid_until IS NULL`)
@@ -116,7 +156,7 @@ export function claimReviewCards(db: DatabaseSync, kind: "claim" | "contest" | "
       }
       html += `<p class='meta'>${kind === "contest" ? "Contested" : "Note"} by ${who} · ${esc(item.created_at)}</p><blockquote style='border-left:2px solid #444;padding-left:0.8rem;margin:0.5rem 0'>${esc(n.note)}</blockquote>`;
       html += kind === "contest"
-        ? buttons(item.id, n.relation ? "Uphold — end the relation" : "Uphold — restore the value", "Dismiss")
+        ? buttons(item.id, n.withdraw ? "Uphold — withdraw it" : n.relation ? "Uphold — end the relation" : "Uphold — restore the value", "Dismiss")
         : buttons(item.id, "Publish note", "Reject");
     }
     html += `</div>`;

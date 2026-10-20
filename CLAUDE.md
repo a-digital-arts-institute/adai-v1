@@ -291,7 +291,9 @@ or an edit (public at once; `kind='contest'` — approve = uphold: the relation
 ends bi-temporally / the key returns to its before-image; reject = dismiss),
 add **context** (tier-gated, `kind='context'`), **object** to a pending item
 (settled by that item's outcome), and **invite** the unclaimed other end of a
-live relation (instant claim, 10/week). Notes are signals + `relation_notes`;
+live relation (instant claim, 10/week), and ask a curator to **withdraw** what a
+token linked to their node posted ("Posted as you"; bylines unchanged; upheld =
+unlink: signals revoked, their relations ended, no page retired; CLAIM-SPEC §4.1b). Notes are signals + `relation_notes`;
 they show on the profile, in `/history` and, for open contests, dashed in
 `/field` (`GET /api/contested`, deliberately off the cached stream). `/field`
 opens on a signed-in claimant's node; `m` / the chip veils everything beyond

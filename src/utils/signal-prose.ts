@@ -130,13 +130,13 @@ export function contributionByline(db: DatabaseSync, c: ContributionRow): string
 }
 
 /** A list of contributions as cards: sentences, then the byline. */
-export function contributionCards(db: DatabaseSync, rows: ContributionRow[]): string {
+export function contributionCards(db: DatabaseSync, rows: ContributionRow[], extra?: (c: ContributionRow) => string): string {
   const link = nodeLinker(db);
   let html = "";
   for (const c of rows) {
     const lines = contributionLines(db, c, link);
     if (!lines.length) continue;
-    html += `<div class='card'>${lines.map((l) => `<div style='margin-bottom:0.3rem'>${l}</div>`).join("")}<p class='meta'>${contributionByline(db, c)}</p></div>`;
+    html += `<div class='card'>${lines.map((l) => `<div style='margin-bottom:0.3rem'>${l}</div>`).join("")}<p class='meta'>${contributionByline(db, c)}</p>${extra ? extra(c) : ""}</div>`;
   }
   return html;
 }
