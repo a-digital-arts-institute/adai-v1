@@ -366,11 +366,11 @@ export function upholdContest(db: DatabaseSync, queueId: string, opts: { by: str
 }
 
 /**
- * Uphold a withdrawal: what was posted as the subject comes out of the
- * commons the way a batch is retired (signals revoked, their relations
- * ended, the nodes they created retired), under one admin signal. The
- * claimed page itself is never retired. Bylines are untouched: the record
- * still says who posted it, and that it was withdrawn at the subject's request.
+ * Uphold a withdrawal: it unlinks, it hides nothing. The signals are
+ * revoked and the relations they made end bi-temporally, under one admin
+ * signal; every page stays (none is retired), and so does what others
+ * added. Bylines are untouched: the record still says who posted it, and
+ * that it was withdrawn at the subject's request.
  */
 function upholdWithdrawal(db: DatabaseSync, n: RelationNote, opts: { by: string; reason?: string | null }): { edges_ended: number; restored: boolean; withdrawn: number } {
   db.exec("BEGIN");
@@ -395,7 +395,6 @@ function upholdWithdrawal(db: DatabaseSync, n: RelationNote, opts: { by: string;
           reason: `at the request of the subject (${n.node_id})${opts.reason ? `: ${opts.reason}` : ""}`,
           by: opts.by,
           anchor,
-          keep: [n.node_id],
           label: n.withdraw!.batch_id ?? n.withdraw!.signal_id ?? n.signal_id,
         });
         edges = r.edges_superseded ?? 0;

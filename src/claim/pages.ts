@@ -72,8 +72,8 @@ function relationLine(db: DatabaseSync, r: { source_id: string; edge_type: strin
 
 /**
  * A withdrawal request (issue #70): what it covers, as sentences, and what
- * upholding would do (the dry-run plan): signals revoked, relations ended,
- * nodes retired — the claimed page itself never.
+ * upholding would do (the dry-run plan): signals revoked, the relations they
+ * made ended. It unlinks; no page is retired.
  */
 function withdrawalCard(db: DatabaseSync, n: RelationNote): string {
   const w = n.withdraw!;
@@ -90,12 +90,10 @@ function withdrawalCard(db: DatabaseSync, n: RelationNote): string {
        FROM signals s LEFT JOIN intake_queue iq ON iq.signal_id = s.id WHERE s.id IN (${ph}) ORDER BY s.created_at ASC LIMIT 60`
   ).all(...ids) as unknown as ContributionRow[];
   html += `<details${ids.length <= 3 ? " open" : ""}><summary class='meta'>${ids.length} contribution${ids.length === 1 ? "" : "s"}${ids.length > 60 ? " (first 60 shown)" : ""}</summary>${contributionCards(db, rows)}</details>`;
-  const plan = withdrawalPlan(db, ids, { keep: [n.node_id], label: w.batch_id ?? w.signal_id ?? "" });
-  html += `<p class='meta'>Upholding revokes ${plan.signals_active} signal${plan.signals_active === 1 ? "" : "s"}, ends ${plan.edges_to_supersede} relation${plan.edges_to_supersede === 1 ? "" : "s"}` +
-    (plan.nodes_to_retire.length ? ` and retires ${plan.nodes_to_retire.length} node${plan.nodes_to_retire.length === 1 ? "" : "s"} they created (${plan.nodes_to_retire.slice(0, 12).map((id) => nodeLink(db, id)).join(", ")}${plan.nodes_to_retire.length > 12 ? ", …" : ""})` : "") +
-    `. ${nodeLink(db, n.node_id)} itself stays. Bylines are unchanged.` +
+  const plan = withdrawalPlan(db, ids, { label: w.batch_id ?? w.signal_id ?? "" });
+  html += `<p class='meta'>Upholding revokes ${plan.signals_active} signal${plan.signals_active === 1 ? "" : "s"} and ends the ${plan.edges_to_supersede} relation${plan.edges_to_supersede === 1 ? "" : "s"} they made. No page is retired, and bylines are unchanged.` +
     (w.batch_id ? othersInBatch(db, w.batch_id, ids) : "") +
-    (plan.patches_to_review.length ? ` ${plan.patches_to_review.length} edit${plan.patches_to_review.length === 1 ? "" : "s"} to existing pages are not rolled back (see the batch tools).` : "") + `</p>`;
+    (plan.patches_to_review.length ? ` ${plan.patches_to_review.length} edit${plan.patches_to_review.length === 1 ? "" : "s"} to page details (descriptions, images) stay as they are.` : "") + `</p>`;
   return html;
 }
 

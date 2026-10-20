@@ -1,7 +1,8 @@
 // "Posted as you" (#70, point 4): once a page is claimed, what a token linked
 // to it contributed shows on the claimant's /me. The bylines stay the
 // token's; the claimant can ask to withdraw a contribution or a whole batch,
-// and a curator decides (uphold = retired like a batch, the claimed page kept).
+// and a curator decides (uphold = unlink: signals revoked, their relations
+// ended; no page is retired).
 
 import { it } from "node:test";
 import assert from "node:assert/strict";
@@ -124,15 +125,18 @@ it("posted as you: listed on /me, withdrawal asked by the claimant, decided by a
     assert.ok(log.posted_as.batches.find((b: any) => b.batch_id === "outlier-1").requested);
     const card = (await call("GET", "/review?kind=contest", curator)).text;
     assert.match(card, /Uphold — withdraw it/);
-    assert.match(card, /retires 2 nodes/);
-    assert.match(card, /itself stays/);
+    assert.match(card, /No page is retired/);
+    assert.doesNotMatch(card, /retires \d/);
 
     assert.equal((await call("POST", `/api/review/${queueId}/approve`, curator, {})).status, 200);
     const signals = db.prepare("SELECT status, submitted_by FROM signals WHERE batch_id = 'outlier-1'").all() as any[];
     assert.ok(signals.length >= 5 && signals.every((s) => s.status === "revoked"), "signals revoked");
     assert.ok(signals.every((s) => s.submitted_by === "Outlier Collection" || s.submitted_by === outlier.contributor_id), "bylines unchanged");
-    for (const w of works) assert.equal(JSON.parse((db.prepare("SELECT metadata FROM nodes WHERE id = ?").get(w) as any).metadata).retired, true);
-    assert.notEqual(JSON.parse((db.prepare("SELECT metadata FROM nodes WHERE id = ?").get(instId) as any).metadata).retired, true, "the claimed page stays");
+    for (const id of [...works, instId]) {
+      assert.notEqual(JSON.parse((db.prepare("SELECT metadata FROM nodes WHERE id = ?").get(id) as any).metadata).retired, true, `${id} stays: a withdrawal unlinks, it hides nothing`);
+    }
+    // what others said about the works stays live
+    assert.equal((db.prepare("SELECT COUNT(*) AS n FROM edges WHERE edge_type = 'EXHIBITED_AT' AND valid_until IS NULL").get() as any).n, 1);
     assert.equal((db.prepare("SELECT COUNT(*) AS n FROM edges WHERE edge_type = 'HELD_BY' AND valid_until IS NULL").get() as any).n, 0);
     const note = db.prepare("SELECT state FROM relation_notes WHERE queue_id = ?").get(queueId) as any;
     assert.equal(note.state, "upheld");

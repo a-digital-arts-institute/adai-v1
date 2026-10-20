@@ -171,7 +171,7 @@ A token can stand for a node (an institution posting its collection), and the te
 - `/me` lists them under **Posted as you** (`posted_as` in `GET /api/me/log`, the same rows as `/<type>/<slug>/contributions`).
 - `POST /api/me/contest` `{withdraw: {signal_id} | {batch_id}, note, node_id}` asks a curator to withdraw one contribution, or a batch's live contributions **posted as the node**. Whatever others added to the same batch is left out. It's a contest (`relation_notes.withdraw_signal_id` / `withdraw_batch_id`), so it uses the same queue, notes and cancel. There's one open request per contribution.
 - It's public right away on `/<type>/<slug>/contributions` ("the subject asked to withdraw this").
-- **Upheld**: the covered signals are retired the way a batch is (`withdrawSignals` in `src/utils/admin-actions.ts`): signals revoked, their relations ended, the nodes they created retired. The claimed node itself is never retired. Edits to pre-existing nodes are not rolled back. The `/review` card shows this plan before the curator decides.
+- **Upheld**: the withdrawal unlinks; it hides nothing (`withdrawSignals` in `src/utils/admin-actions.ts`). The covered signals are revoked and the relations they made end bi-temporally. **No page is retired**, including ones those signals created: the artwork or artist exists whoever first said so, and others may have built on it. Page details (descriptions, images) are not rolled back, and what others added stays. The `/review` card shows this plan before the curator decides.
 - **Dismissed**: nothing changes.
 - Later (not built): the claimant marks an item "I stand behind this" as a new statement. It shows as confirmed by the subject, and doesn't count as an extra source.
 

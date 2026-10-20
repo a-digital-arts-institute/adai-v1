@@ -256,8 +256,9 @@ function buildBatchPlan(db: DatabaseSync, batchId: string): BatchRetirePlan & { 
 
 // The plan for any set of signals (ordered oldest first): a batch, or the
 // contributions a claimant asked to withdraw. `keep` lists nodes never to
-// retire even when these signals created them (the claimant's own page).
-function buildSignalsPlan(db: DatabaseSync, batchId: string, signals: PlanSignal[], keep: string[]): BatchRetirePlan & { signalIds: string[] } {
+// retire even when these signals created them; "all" retires none (a
+// withdrawal unlinks, it never hides a page).
+function buildSignalsPlan(db: DatabaseSync, batchId: string, signals: PlanSignal[], keep: string[] | "all"): BatchRetirePlan & { signalIds: string[] } {
   const signalIds = signals.map((s) => s.id);
   const batchStart = signals[0]!.created_at;
   const placeholders = signalIds.map(() => "?").join(",");
@@ -307,8 +308,8 @@ function buildSignalsPlan(db: DatabaseSync, batchId: string, signals: PlanSignal
       try { meta = JSON.parse(node.metadata); } catch { meta = {}; }
     }
     if (meta.retired === true) continue; // already retired
-    if (keep.includes(nodeId)) {
-      nodesSkipped.push(nodeId); // kept on purpose (e.g. the claimant's own page)
+    if (keep === "all" || keep.includes(nodeId)) {
+      nodesSkipped.push(nodeId); // kept on purpose
     } else if (typeof node.created_at === "string" && node.created_at >= batchStart) {
       nodesToRetire.push(nodeId);
     } else {
@@ -446,40 +447,39 @@ function applyRetirePlan(
 }
 
 /**
- * Withdraw a set of contributions the way a batch is retired: revoke the
- * signals, supersede the relations they anchor, retire the nodes they
- * created (never one in `keep`, never one that existed before), reject what
- * is still pending. Patches to pre-existing nodes come back in
- * patches_to_review. Runs under the caller's anchor and transaction: a
- * claimant's upheld withdrawal (issue #70, src/claim/notes.ts).
+ * Withdraw a set of contributions: revoke the signals, end the relations
+ * they anchor (bi-temporally), reject what is still pending. It unlinks; it
+ * never hides anything: no node is retired, even one these signals created
+ * (the artwork or the artist exists whoever first said so, and others may
+ * have built on it), and edits to existing nodes are not rolled back (they
+ * come back in patches_to_review). Runs under the caller's anchor and
+ * transaction: a claimant's upheld withdrawal (issue #70, src/claim/notes.ts).
  *
  * withdrawalPlan is the dry run (the curator's review card shows it);
  * withdrawSignals carries it out.
  */
-export function withdrawalPlan(db: DatabaseSync, signalIds: string[], opts: { keep?: string[]; label: string }): BatchRetirePlan {
+export function withdrawalPlan(db: DatabaseSync, signalIds: string[], opts: { label: string }): BatchRetirePlan {
+  const { signalIds: _ids, ...plan } = withdrawalPlanFor(db, signalIds, opts.label);
+  return plan;
+}
+
+function withdrawalPlanFor(db: DatabaseSync, signalIds: string[], label: string): BatchRetirePlan & { signalIds: string[] } {
   if (!signalIds.length) throw new AdminActionError(400, "no_signals", "nothing to withdraw");
   const ph = signalIds.map(() => "?").join(",");
   const signals = db
     .prepare(`SELECT id, submitted_by, created_at, status FROM signals WHERE id IN (${ph}) ORDER BY created_at ASC`)
     .all(...signalIds) as PlanSignal[];
   if (!signals.length) throw new AdminActionError(404, "signal_not_found", "no such contributions");
-  const { signalIds: _ids, ...plan } = buildSignalsPlan(db, opts.label, signals, opts.keep ?? []);
-  return plan;
+  return buildSignalsPlan(db, label, signals, "all");
 }
 
 /** Carry out withdrawalPlan (see above). */
 export function withdrawSignals(
   db: DatabaseSync,
   signalIds: string[],
-  opts: { reason: string; by: string; anchor: string; keep?: string[]; label: string }
+  opts: { reason: string; by: string; anchor: string; label: string }
 ): RetireBatchResult {
-  if (!signalIds.length) throw new AdminActionError(400, "no_signals", "nothing to withdraw");
-  const ph = signalIds.map(() => "?").join(",");
-  const signals = db
-    .prepare(`SELECT id, submitted_by, created_at, status FROM signals WHERE id IN (${ph}) ORDER BY created_at ASC`)
-    .all(...signalIds) as PlanSignal[];
-  if (!signals.length) throw new AdminActionError(404, "signal_not_found", "no such contributions");
-  const { signalIds: ids, ...plan } = buildSignalsPlan(db, opts.label, signals, opts.keep ?? []);
+  const { signalIds: ids, ...plan } = withdrawalPlanFor(db, signalIds, opts.label);
   return applyRetirePlan(db, plan, ids, { reason: `withdrawn: ${opts.reason}`, by: opts.by, anchor: opts.anchor, nodeReason: opts.reason });
 }
 
