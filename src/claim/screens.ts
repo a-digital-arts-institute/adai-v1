@@ -181,6 +181,31 @@ function pendingRow(p) {
     p.my_objections.map(o => '<div class="n-contest">your objection: ' + esc(o.note) + ' <span class="pill">' + esc(o.state) + '</span></div>').join('') +
     (p.my_objections.some(o => o.state === 'open') ? '' : '<form class="obj"><textarea name="note" required maxlength="2000" placeholder="Object: tell the curator what is wrong before they decide."></textarea><button class="btn" type="submit">Object</button></form>') + '</div>';
 }
+function postedAsSection(P) {
+  if (!P) return '';
+  const who = P.as.map(esc).join(', ');
+  const ask = (attrs, label) => '<a href="#" class="wd-ask" ' + attrs + '>' + label + '</a>';
+  const asked = '<span class="pill">withdrawal requested</span>';
+  const batches = P.batches.map(b => {
+    const head = (b.batch_id ? 'batch <code>' + esc(b.batch_id) + '</code>' : 'single contribution') + ' · ' + esc((b.first_at || '').slice(0, 10)) + ' · ' + b.contributions.length + ' contribution' + (b.contributions.length === 1 ? '' : 's');
+    const whole = b.requested ? asked : (b.can_withdraw_batch && b.contributions.length > 1 ? ask('data-wd-batch="' + esc(b.batch_id) + '"', 'ask to withdraw all ' + b.batch_signals + ' posted as you in this batch') + (b.batch_others ? ' <span class="lede">(the ' + b.batch_others + ' others added to it stay)</span>' : '') : '');
+    const items = b.contributions.map(c => '<div class="item" data-sig="' + esc(c.signal_id) + '">' + c.html.map(l => '<div>' + l + '</div>').join('') +
+      '<div class="lede">by ' + esc(c.by || '') + ' · ' + esc((c.created_at || '').slice(0, 10)) + (c.source_url ? ' · <a href="' + esc(c.source_url) + '" target="_blank" rel="noopener">source</a>' : '') + ' · ' +
+      (c.requested || b.requested ? asked : ask('data-wd-sig="' + esc(c.signal_id) + '"', 'ask to withdraw')) + '</div><div class="slot"></div></div>').join('');
+    return '<details class="batch"' + (P.batches.length === 1 ? ' open' : '') + '><summary class="lede">' + head + '</summary>' + (whole ? '<div class="lede">' + whole + '</div>' : '') + '<div class="slot batch-slot"></div>' + items + '</details>';
+  }).join('');
+  return '<section><h3>Posted as you (' + P.total + ')</h3><p class="lede">' + who + ' put these in the commons as this page, through a token linked to it. They stay credited to ' + who + ': the record keeps who said what. If one should not be there, ask a curator to withdraw it; it comes out of the commons once they agree.</p>' + (batches || '<p class="lede">Nothing live.</p>') + '</section>';
+}
+function askWithdraw(a) {
+  const sig = a.dataset.wdSig, batch = a.dataset.wdBatch;
+  const target = sig ? $('.slot', a.closest('.item')) : $('.batch-slot', a.closest('details'));
+  target.innerHTML = '<form><textarea name="note" required maxlength="2000" placeholder="Why should ' + (sig ? 'this' : 'this whole batch') + ' come out of the commons? A curator reads this and decides."></textarea><button class="btn primary" type="submit">Ask to withdraw</button></form>';
+  $('form', target).onsubmit = async (e) => {
+    e.preventDefault();
+    const r = await api('POST', '/api/me/contest', { node_id: L.node.id, withdraw: sig ? { signal_id: sig } : { batch_id: batch }, note: e.target.note.value });
+    if (r.ok) { alertMsg('Withdrawal requested — a curator decides.', true); load(); } else alertMsg((r.json && r.json.message) || 'could not send');
+  };
+}
 function evRow(e) {
   if (e.kind === 'note') {
     return '<div class="ev">' + esc((e.at || '').slice(0, 10)) + ' · <b>' + (e.note_kind === 'contest' ? 'contested' : 'context') + '</b> <span class="pill">' + esc(e.state) + '</span> ' + esc(e.note) + (e.by ? ' · by ' + esc(e.by) : '') + '</div>';
@@ -204,14 +229,16 @@ function render() {
   const n = L.node;
   let h = tabs + '<h2>' + esc(n.name) + ' <span class="pill">' + esc(n.type) + '</span>' + (n.handle ? ' <a href="/@' + esc(n.handle) + '" style="font-size:13px">@' + esc(n.handle) + '</a>' : '') + '</h2>' +
     '<p class="lede"><a href="' + href(n.id, n.slug) + '">page</a> · <a href="' + href(n.id, n.slug) + '/history">full history</a> · <a href="/field/' + encodeURIComponent(n.type) + '/' + encodeURIComponent(n.slug) + '?lens=1">field</a> · <a href="/claim/' + esc(n.type) + '/' + encodeURIComponent(n.slug) + '">handle &amp; claim</a></p>' +
-    '<p class="lede">Curators approve every change to the commons. Here you speak for this page: add context to a relation, contest one that is wrong (it shows as contested until a curator decides), object to proposals still in review, and invite the people at the other end.</p>';
+    '<p class="lede">Curators approve every change to the commons. Here you speak for this page: add context to a relation, contest one that is wrong (it shows as contested until a curator decides), object to proposals still in review, invite the people at the other end, and ask to withdraw what was posted as this page.</p>';
   h += '<section><h3>Relations (' + L.relations.length + ')</h3>' + (L.relations.map(relRow).join('') || '<p class="lede">None yet.</p>') + '</section>';
   h += '<section><h3>In review about you (' + L.pending.length + ')</h3>' + (L.pending.map(pendingRow).join('') || '<p class="lede">Nothing pending.</p>') + '</section>';
-  h += '<section><h3>Your notes</h3>' + (L.my_notes.map(x => '<div class="ev"><span class="pill">' + esc(x.kind) + '</span> <span class="pill">' + esc(x.state) + '</span> ' + esc(x.note) + (x.resolution ? ' — <i>' + esc(x.resolution) + '</i>' : '') + '</div>').join('') || '<p class="lede">None yet.</p>') + '</section>';
+  h += postedAsSection(L.posted_as);
+  h += '<section><h3>Your notes</h3>' + (L.my_notes.map(x => '<div class="ev"><span class="pill">' + (x.withdraw ? 'withdrawal' : esc(x.kind)) + '</span> <span class="pill">' + esc(x.state) + '</span> ' + esc(x.note) + (x.resolution ? ' — <i>' + esc(x.resolution) + '</i>' : '') + (x.withdraw && x.state === 'open' ? ' <a href="#" data-wd="' + esc(x.signal_id) + '">cancel request</a>' : '') + '</div>').join('') || '<p class="lede">None yet.</p>') + '</section>';
   h += '<section><h3>Invites (' + L.invites_left + ' left this week)</h3>' + (L.invites.map(x => '<div class="ev">' + esc(x.name) + ' · ' + esc(x.invitee || '') + ' · ' + esc((x.created_at || '').slice(0, 10)) + ' <span class="pill">' + esc(x.status) + '</span></div>').join('') || '<p class="lede">None sent.</p>') + '</section>';
   h += '<section><h3>History</h3>' + (L.history.map(evRow).join('') || '<p class="lede">Nothing yet.</p>') + '</section>';
   app.innerHTML = h;
   app.querySelectorAll('.rel [data-act]').forEach(b => b.onclick = () => openForm(b.closest('.rel'), b.dataset.act));
+  app.querySelectorAll('.wd-ask').forEach(a => a.onclick = (e) => { e.preventDefault(); askWithdraw(a); });
   app.querySelectorAll('[data-wd]').forEach(a => a.onclick = async (e) => { e.preventDefault(); await api('POST', '/api/me/notes/' + encodeURIComponent(a.dataset.wd) + '/withdraw', {}); load(); });
   app.querySelectorAll('form.obj').forEach(f => f.onsubmit = async (e) => {
     e.preventDefault();

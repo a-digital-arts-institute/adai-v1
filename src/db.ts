@@ -78,6 +78,15 @@ function runMigrations(db: DatabaseSync) {
   } catch (e: any) {
     if (!String(e?.message ?? e).includes("duplicate column name")) throw e;
   }
+  // relation_notes.withdraw_signal_id / withdraw_batch_id (Oct 2026): a
+  // claimant asks to withdraw what a token posted as their node (issue #70).
+  for (const col of ["withdraw_signal_id", "withdraw_batch_id"]) {
+    try {
+      db.exec(`ALTER TABLE relation_notes ADD COLUMN ${col} TEXT`);
+    } catch (e: any) {
+      if (!String(e?.message ?? e).includes("duplicate column name")) throw e;
+    }
+  }
 }
 
 export function getDb(): DatabaseSync {

@@ -240,15 +240,24 @@ function priorFor(db: DatabaseSync, signalId: string | null, op: string, nodeId:
   }
 }
 
+type PlanSignal = { id: string; submitted_by: string; created_at: string; status: string };
+
 function buildBatchPlan(db: DatabaseSync, batchId: string): BatchRetirePlan & { signalIds: string[] } {
   const signals = db
     .prepare(
       "SELECT id, submitted_by, created_at, status FROM signals WHERE batch_id = ? ORDER BY created_at ASC"
     )
-    .all(batchId) as Array<{ id: string; submitted_by: string; created_at: string; status: string }>;
+    .all(batchId) as PlanSignal[];
   if (signals.length === 0) {
     throw new AdminActionError(404, "batch_not_found", `no signals carry batch_id ${batchId}`);
   }
+  return buildSignalsPlan(db, batchId, signals, []);
+}
+
+// The plan for any set of signals (ordered oldest first): a batch, or the
+// contributions a claimant asked to withdraw. `keep` lists nodes never to
+// retire even when these signals created them (the claimant's own page).
+function buildSignalsPlan(db: DatabaseSync, batchId: string, signals: PlanSignal[], keep: string[]): BatchRetirePlan & { signalIds: string[] } {
   const signalIds = signals.map((s) => s.id);
   const batchStart = signals[0]!.created_at;
   const placeholders = signalIds.map(() => "?").join(",");
@@ -298,7 +307,9 @@ function buildBatchPlan(db: DatabaseSync, batchId: string): BatchRetirePlan & { 
       try { meta = JSON.parse(node.metadata); } catch { meta = {}; }
     }
     if (meta.retired === true) continue; // already retired
-    if (typeof node.created_at === "string" && node.created_at >= batchStart) {
+    if (keep.includes(nodeId)) {
+      nodesSkipped.push(nodeId); // kept on purpose (e.g. the claimant's own page)
+    } else if (typeof node.created_at === "string" && node.created_at >= batchStart) {
       nodesToRetire.push(nodeId);
     } else {
       nodesSkipped.push(nodeId); // pre-existing — the batch's create was a no-op
@@ -371,7 +382,6 @@ export function retireBatch(
     return { dry_run: true, ...plan };
   }
 
-  const placeholders = signalIds.map(() => "?").join(",");
   return withTx(db, () => {
     const anchor = insertAdminSignal(db, {
       by: opts.by,
@@ -386,42 +396,91 @@ export function retireBatch(
         patches_to_review: plan.patches_to_review,
       },
     });
-
-    const revoked = db
-      .prepare("UPDATE signals SET status = 'revoked' WHERE batch_id = ? AND status = 'active'")
-      .run(batchId);
-
-    const superseded = db
-      .prepare(
-        `UPDATE edges SET valid_until = ${NOW_SQL}, invalidated_by = ?
-          WHERE valid_until IS NULL AND signal_id IN (${placeholders})`
-      )
-      .run(anchor, ...signalIds);
-
-    let nodeEdgeCount = 0;
-    for (const nodeId of plan.nodes_to_retire) {
-      const r = retireNodeInner(db, nodeId, { reason: opts.reason, by: opts.by, anchor });
-      nodeEdgeCount += r.edges_superseded;
-    }
-
-    const rejected = db
-      .prepare(
-        `UPDATE intake_queue
-            SET status = 'rejected', rejection_reason = ?, reviewed_by = ?, reviewed_at = ${NOW_SQL}
-          WHERE status = 'pending' AND signal_id IN (${placeholders})`
-      )
-      .run(`batch retired: ${opts.reason}`, `api-${opts.by}`, ...signalIds);
-
-    return {
-      ...plan,
-      retired: true,
-      admin_signal_id: anchor,
-      signals_revoked: Number(revoked.changes),
-      edges_superseded: Number(superseded.changes) + nodeEdgeCount,
-      nodes_retired: plan.nodes_to_retire.length,
-      pending_rejected: Number(rejected.changes),
-    };
+    return applyRetirePlan(db, plan, signalIds, { reason: `batch retired: ${opts.reason}`, by: opts.by, anchor, nodeReason: opts.reason });
   });
+}
+
+// Carry out a plan under an anchor the caller wrote. No transaction of its
+// own: the caller holds one.
+function applyRetirePlan(
+  db: DatabaseSync,
+  plan: BatchRetirePlan,
+  signalIds: string[],
+  opts: { reason: string; by: string; anchor: string; nodeReason: string }
+): RetireBatchResult {
+  const placeholders = signalIds.map(() => "?").join(",");
+  const revoked = db
+    .prepare(`UPDATE signals SET status = 'revoked' WHERE id IN (${placeholders}) AND status = 'active'`)
+    .run(...signalIds);
+
+  const superseded = db
+    .prepare(
+      `UPDATE edges SET valid_until = ${NOW_SQL}, invalidated_by = ?
+        WHERE valid_until IS NULL AND signal_id IN (${placeholders})`
+    )
+    .run(opts.anchor, ...signalIds);
+
+  let nodeEdgeCount = 0;
+  for (const nodeId of plan.nodes_to_retire) {
+    const r = retireNodeInner(db, nodeId, { reason: opts.nodeReason, by: opts.by, anchor: opts.anchor });
+    nodeEdgeCount += r.edges_superseded;
+  }
+
+  const rejected = db
+    .prepare(
+      `UPDATE intake_queue
+          SET status = 'rejected', rejection_reason = ?, reviewed_by = ?, reviewed_at = ${NOW_SQL}
+        WHERE status = 'pending' AND signal_id IN (${placeholders})`
+    )
+    .run(opts.reason, `api-${opts.by}`, ...signalIds);
+
+  return {
+    ...plan,
+    retired: true,
+    admin_signal_id: opts.anchor,
+    signals_revoked: Number(revoked.changes),
+    edges_superseded: Number(superseded.changes) + nodeEdgeCount,
+    nodes_retired: plan.nodes_to_retire.length,
+    pending_rejected: Number(rejected.changes),
+  };
+}
+
+/**
+ * Withdraw a set of contributions the way a batch is retired: revoke the
+ * signals, supersede the relations they anchor, retire the nodes they
+ * created (never one in `keep`, never one that existed before), reject what
+ * is still pending. Patches to pre-existing nodes come back in
+ * patches_to_review. Runs under the caller's anchor and transaction: a
+ * claimant's upheld withdrawal (issue #70, src/claim/notes.ts).
+ *
+ * withdrawalPlan is the dry run (the curator's review card shows it);
+ * withdrawSignals carries it out.
+ */
+export function withdrawalPlan(db: DatabaseSync, signalIds: string[], opts: { keep?: string[]; label: string }): BatchRetirePlan {
+  if (!signalIds.length) throw new AdminActionError(400, "no_signals", "nothing to withdraw");
+  const ph = signalIds.map(() => "?").join(",");
+  const signals = db
+    .prepare(`SELECT id, submitted_by, created_at, status FROM signals WHERE id IN (${ph}) ORDER BY created_at ASC`)
+    .all(...signalIds) as PlanSignal[];
+  if (!signals.length) throw new AdminActionError(404, "signal_not_found", "no such contributions");
+  const { signalIds: _ids, ...plan } = buildSignalsPlan(db, opts.label, signals, opts.keep ?? []);
+  return plan;
+}
+
+/** Carry out withdrawalPlan (see above). */
+export function withdrawSignals(
+  db: DatabaseSync,
+  signalIds: string[],
+  opts: { reason: string; by: string; anchor: string; keep?: string[]; label: string }
+): RetireBatchResult {
+  if (!signalIds.length) throw new AdminActionError(400, "no_signals", "nothing to withdraw");
+  const ph = signalIds.map(() => "?").join(",");
+  const signals = db
+    .prepare(`SELECT id, submitted_by, created_at, status FROM signals WHERE id IN (${ph}) ORDER BY created_at ASC`)
+    .all(...signalIds) as PlanSignal[];
+  if (!signals.length) throw new AdminActionError(404, "signal_not_found", "no such contributions");
+  const { signalIds: ids, ...plan } = buildSignalsPlan(db, opts.label, signals, opts.keep ?? []);
+  return applyRetirePlan(db, plan, ids, { reason: `withdrawn: ${opts.reason}`, by: opts.by, anchor: opts.anchor, nodeReason: opts.reason });
 }
 
 // ---------- list batches ------------------------------------------------------

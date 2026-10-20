@@ -6,8 +6,10 @@
 import type { DatabaseSync } from "node:sqlite";
 import { collapseClaims, CLAIM_COLS, tripleKey } from "../utils/claims.js";
 import { nodeHistory } from "../utils/history.js";
+import { contributorsAs, postedAs } from "../utils/contributor-node.js";
+import { contributionLines } from "../utils/signal-prose.js";
 import { CLAIMABLE_TYPES, approvedClaimsFor, claimsOf } from "./store.js";
-import { invitesLeft, notesByContributor, publicNotesFor, notesByTriple, objectionsFor, queueItemTouches, INVITES_PER_WEEK, type RelationNote } from "./notes.js";
+import { invitesLeft, withdrawalTargets, notesByContributor, publicNotesFor, notesByTriple, objectionsFor, queueItemTouches, INVITES_PER_WEEK, type RelationNote } from "./notes.js";
 
 function parse(s: unknown): any {
   if (typeof s !== "string" || !s) return null;
@@ -132,6 +134,61 @@ export function buildLog(db: DatabaseSync, contributorId: string, nodeId: string
     node: current,
     relations,
     pending: pendingAbout(db, id, contributorId),
+    posted_as: postedAsYou(db, id),
     history: (history?.events ?? []).slice(0, 200),
   };
+}
+
+/**
+ * "Posted as you" (issue #70): what tokens linked to this page put in the
+ * commons, grouped by upload batch, newest first. The bylines stay the
+ * token's; the claimant can ask a curator to withdraw a contribution or a
+ * whole batch (a contest with `withdraw`), and sees the requests still open.
+ */
+function postedAsYou(db: DatabaseSync, nodeId: string) {
+  const as = contributorsAs(db, nodeId);
+  if (!as.length) return null;
+  const rows = postedAs(db, nodeId);
+  const open = db
+    .prepare("SELECT signal_id, withdraw_signal_id, withdraw_batch_id FROM relation_notes WHERE kind = 'contest' AND state = 'open' AND node_id = ? AND (withdraw_signal_id IS NOT NULL OR withdraw_batch_id IS NOT NULL)")
+    .all(nodeId) as any[];
+  const bySignal = new Map(open.filter((o) => o.withdraw_signal_id).map((o) => [o.withdraw_signal_id, o.signal_id]));
+  const byBatch = new Map(open.filter((o) => o.withdraw_batch_id).map((o) => [o.withdraw_batch_id, o.signal_id]));
+  const batches: Array<{ batch_id: string | null; first_at: string | null; last_at: string | null; requested: string | null; contributions: any[] }> = [];
+  const index = new Map<string, (typeof batches)[number]>();
+  for (const r of rows) {
+    const lines = contributionLines(db, r);
+    if (!lines.length) continue;
+    const key = r.batch_id ?? `single:${r.id}`;
+    let b = index.get(key);
+    if (!b) {
+      b = { batch_id: r.batch_id, first_at: r.created_at, last_at: r.created_at, requested: r.batch_id ? byBatch.get(r.batch_id) ?? null : null, contributions: [] };
+      index.set(key, b);
+      batches.push(b);
+    }
+    if (r.created_at && (!b.first_at || r.created_at < b.first_at)) b.first_at = r.created_at;
+    b.contributions.push({
+      signal_id: r.id,
+      created_at: r.created_at,
+      by: as.find((c) => c.id === r.submitted_by || c.name === r.submitted_by)?.name ?? r.submitted_by,
+      source_url: r.source_url,
+      html: lines,
+      requested: bySignal.get(r.id) ?? null,
+    });
+  }
+  // A batch request covers the batch's live contributions posted as this
+  // page; what others added to the same batch is left out (and counted).
+  const out = batches.map((b) => {
+    let mine = 0;
+    let others = 0;
+    if (b.batch_id) {
+      try { mine = withdrawalTargets(db, nodeId, { batch_id: b.batch_id }).length; } catch { mine = 0; }
+      others = Number((db.prepare(
+        `SELECT COUNT(*) AS n FROM signals s WHERE s.batch_id = ? AND s.status = 'active'
+            AND NOT EXISTS (SELECT 1 FROM intake_queue iq WHERE iq.signal_id = s.id AND iq.status = 'rejected')`
+      ).get(b.batch_id) as any).n) - mine;
+    }
+    return { ...b, can_withdraw_batch: mine > 0, batch_signals: mine, batch_others: others };
+  });
+  return { as: as.map((c) => c.name), total: rows.length, batches: out };
 }

@@ -22,7 +22,7 @@ import { notesByTriple, publicNotesFor } from "../claim/notes.js";
 import { renderEntityView, nodePath, type EntityNode, type EntityViewer } from "../entity/view.js";
 import { entityPage } from "../entity/page.js";
 import { movedTo } from "../utils/moved.js";
-import { contributorsAs } from "../utils/contributor-node.js";
+import { contributorsAs, postedAs } from "../utils/contributor-node.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PROJECT_ROOT = path.join(__dirname, "..", "..");
@@ -678,19 +678,16 @@ function contributionsHandler(type: string) {
       res.set(HTML_HEADERS).send(htmlPage(`${node.name} — contributions`, body, "", { fieldNode: node }));
       return;
     }
-    const keys = as.flatMap((c) => [c.id, c.name]);
-    const rows = db.prepare(
-      `SELECT s.title, s.content, s.source_url, s.source_type, s.submitted_by, s.created_at, s.consent_attribution, iq.proposed_nodes, iq.proposed_edges
-         FROM signals s LEFT JOIN intake_queue iq ON iq.signal_id = s.id
-        WHERE s.submitted_by IN (${keys.map(() => "?").join(", ")}) AND s.status = 'active'
-          AND (iq.id IS NULL OR iq.status = 'approved')
-          AND (s.consent_attribution IS NULL OR s.consent_attribution != 'anonymous')
-          AND (s.consent_scope IS NULL OR s.consent_scope != 'structural_only')
-        ORDER BY s.created_at DESC
-        LIMIT 500`
-    ).all(...keys) as unknown as ContributionRow[];
+    const rows: ContributionRow[] = postedAs(db, node.id);
     body += `<p class='meta'>${htmlEscape(node.name)} contributes to the commons as ${as.map((c) => htmlEscape(c.name)).join(", ")}. Newest first; what is still waiting for review is not listed.</p>`;
-    body += rows.length ? contributionCards(db, rows) : `<p class='meta'>Nothing yet.</p>`;
+    // Open withdrawal requests from the page's claimant show on what they cover (issue #70).
+    const open = db
+      .prepare("SELECT withdraw_signal_id, withdraw_batch_id FROM relation_notes WHERE kind = 'contest' AND state = 'open' AND node_id = ? AND (withdraw_signal_id IS NOT NULL OR withdraw_batch_id IS NOT NULL)")
+      .all(node.id) as Array<{ withdraw_signal_id: string | null; withdraw_batch_id: string | null }>;
+    const asked = (c: any) => open.some((o) => (o.withdraw_signal_id && o.withdraw_signal_id === c.id) || (o.withdraw_batch_id && o.withdraw_batch_id === c.batch_id))
+      ? `<p class='meta' style='color:#d4a574'>⚑ the subject asked to withdraw this; a curator decides</p>`
+      : "";
+    body += rows.length ? contributionCards(db, rows, asked) : `<p class='meta'>Nothing yet.</p>`;
     res.set(HTML_HEADERS).send(htmlPage(`${node.name} — contributions`, body, "", { fieldNode: node }));
   };
 }

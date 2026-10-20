@@ -35,6 +35,47 @@ export function contributorNode(db: DatabaseSync, submittedBy: string | null | u
   return row ?? null;
 }
 
+/** Does the contributor behind `submittedBy` stand for `nodeId` now? */
+export function standsFor(db: DatabaseSync, submittedBy: string | null | undefined, nodeId: string): boolean {
+  return contributorNode(db, submittedBy)?.id === nodeId;
+}
+
+export interface PostedAsRow {
+  id: string;
+  title: string | null;
+  content: string | null;
+  source_url: string | null;
+  source_type: string | null;
+  submitted_by: string | null;
+  created_at: string | null;
+  consent_attribution: string | null;
+  batch_id: string | null;
+  proposed_nodes: string | null;
+  proposed_edges: string | null;
+}
+
+/**
+ * What the contributors standing for `nodeId` put in the commons, newest
+ * first: live, attributed, not structural-only, not waiting in (or turned
+ * down by) review. One list for /<type>/<slug>/contributions and the
+ * claimant's "Posted as you" on /me.
+ */
+export function postedAs(db: DatabaseSync, nodeId: string, limit = 500): PostedAsRow[] {
+  const as = contributorsAs(db, nodeId);
+  if (!as.length) return [];
+  const keys = as.flatMap((c) => [c.id, c.name]);
+  return db.prepare(
+    `SELECT s.id, s.title, s.content, s.source_url, s.source_type, s.submitted_by, s.created_at, s.consent_attribution, s.batch_id, iq.proposed_nodes, iq.proposed_edges
+       FROM signals s LEFT JOIN intake_queue iq ON iq.signal_id = s.id
+      WHERE s.submitted_by IN (${keys.map(() => "?").join(", ")}) AND s.status = 'active'
+        AND (iq.id IS NULL OR iq.status = 'approved')
+        AND (s.consent_attribution IS NULL OR s.consent_attribution != 'anonymous')
+        AND (s.consent_scope IS NULL OR s.consent_scope != 'structural_only')
+      ORDER BY s.created_at DESC, s.rowid DESC
+      LIMIT ?`
+  ).all(...keys, limit) as unknown as PostedAsRow[];
+}
+
 /** The contributors that stand for a node, with how many active signals each has. */
 export function contributorsAs(db: DatabaseSync, nodeId: string): Array<{ id: string; name: string; signals: number }> {
   const rows = db.prepare(

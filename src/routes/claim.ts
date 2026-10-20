@@ -10,6 +10,7 @@
 //   POST /api/claims/handle           {node_id, handle}
 //   GET  /api/me/log?node=
 //   POST /api/me/contest | /context | /objection | /invite
+//        (contest {withdraw: {signal_id | batch_id}}: withdraw what was posted as you, issue #70)
 //   POST /api/me/notes/:signal_id/withdraw
 //   POST /api/review/access/approve | /reject   curator: a signed-out claim request
 
@@ -222,6 +223,7 @@ function noteRoute(kind: "contest" | "context" | "objection") {
         relation: b.relation && typeof b.relation === "object" ? { source_id: str(b.relation.source_id, 300), edge_type: str(b.relation.edge_type, 60), target_id: str(b.relation.target_id, 300) } : undefined,
         edit: b.edit && typeof b.edit === "object" ? { key: str(b.edit.key, 120), signal_id: str(b.edit.signal_id, 120) } : undefined,
         queue_id: str(b.queue_id, 120) || undefined,
+        withdraw: b.withdraw && typeof b.withdraw === "object" ? { signal_id: str(b.withdraw.signal_id, 120) || undefined, batch_id: str(b.withdraw.batch_id, 120) || undefined } : undefined,
       });
       res.status(201).set(JSON_HEADERS).json({ note: n });
     } catch (e) { fail(res, e); }

@@ -152,6 +152,7 @@ This is a session page (like `/draft/:id`) with a JSON twin, `GET /api/me/log`, 
 3. **Your notes**: the state of each contest (open / upheld / dismissed) and each context note.
 4. **Invites you sent**: whether each one was accepted, and how many you have left this week.
 5. **Metadata edits** on your nodes (from `nodeHistory`), read-only, with a contest button that files a contest on the edit. It works the same way, with `relation` replaced by `{node_id, key}`.
+6. **Posted as you** (issue #70): what tokens linked to your node (`contributor_tokens.node_id`) put in the commons, grouped by batch. See §4.1b.
 
 ### 4.1 Contest
 
@@ -162,6 +163,17 @@ This is a session page (like `/draft/:id`) with a JSON twin, `GET /api/me/log`, 
   - **Upheld**: every live claim row of that triple is superseded bi-temporally by one `api_admin` signal (`invalidated_by`), reusing `src/utils/admin-actions.ts`. The relation shows as *ended (contested by subject)* in history.
   - **Dismissed**: the public mark comes off the relation, and the contest signal plus the curator's reason stay in history.
 - You can only contest a relation that touches a node you've claimed.
+
+### 4.1b Withdraw what was posted as you (issue #70)
+
+A token can stand for a node (an institution posting its collection), and the team may have run it on the node's behalf. So when the node is claimed, those contributions are **not** rewritten as the claimant's own: the bylines stay the token's.
+
+- `/me` lists them under **Posted as you** (`posted_as` in `GET /api/me/log`, the same rows as `/<type>/<slug>/contributions`).
+- `POST /api/me/contest` `{withdraw: {signal_id} | {batch_id}, note, node_id}` asks a curator to withdraw one contribution, or a batch's live contributions **posted as the node**. Whatever others added to the same batch is left out. It's a contest (`relation_notes.withdraw_signal_id` / `withdraw_batch_id`), so it uses the same queue, notes and cancel. There's one open request per contribution.
+- It's public right away on `/<type>/<slug>/contributions` ("the subject asked to withdraw this").
+- **Upheld**: the covered signals are retired the way a batch is (`withdrawSignals` in `src/utils/admin-actions.ts`): signals revoked, their relations ended, the nodes they created retired. The claimed node itself is never retired. Edits to pre-existing nodes are not rolled back. The `/review` card shows this plan before the curator decides.
+- **Dismissed**: nothing changes.
+- Later (not built): the claimant marks an item "I stand behind this" as a new statement. It shows as confirmed by the subject, and doesn't count as an extra source.
 
 ### 4.2 Contextualise
 
