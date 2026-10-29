@@ -630,6 +630,244 @@ router.post("/api/v1/edges", requireToken, (req, res) => {
   res.set(JSON_HEADERS).json({ status, signal_id: signalId, intake_id, warnings });
 });
 
+// ---------- POST /api/v1/packages -----------------------------------------
+// JSON: { batch_id?, nodes: [{ ref?, type, name, slug?, metadata?, aliases? }],
+//         edges: [{ source_id, target_id, edge_type, confidence?, event_time?,
+//                   supersedes_edge_id? }] }
+//
+// New nodes AND the edges between them (or to existing nodes) in ONE write.
+// An edge endpoint is a live node id, or a reference to a node of this same
+// payload (its `ref`, its `type:slug` id, or its unique `name`). Needed because
+// a probationary contributor's POST /nodes only queues, so POST /edges to the
+// new node (which must be live) can never be queued.
+//
+// Everything is validated up front: any problem → 400 listing every bad item,
+// nothing written. Writes: probationary → ONE intake_queue row carrying
+// proposed_nodes + proposed_edges (approved / rejected together at /review;
+// approveIntakeItem creates nodes first, then edges, with dedupe remapping);
+// auto / reviewed → applied now through the same materialise* functions, in one
+// transaction, plus an approved audit row.
+
+const MAX_PACKAGE_NODES = 300;
+const MAX_PACKAGE_EDGES = 600;
+
+type PackageProblem = { item: string; index: number; error: string };
+
+router.post("/api/v1/packages", requireToken, (req, res) => {
+  const db = getDb();
+  const body = req.body ?? {};
+  const batch = parseBatchId(body.batch_id);
+  if (!batch.ok) {
+    res.status(400).set(JSON_HEADERS).json({ error: "invalid batch_id", hint: BATCH_ID_HINT });
+    return;
+  }
+  const rawNodes = body.nodes === undefined ? [] : body.nodes;
+  const rawEdges = body.edges === undefined ? [] : body.edges;
+  if (!Array.isArray(rawNodes) || !Array.isArray(rawEdges)) {
+    res.status(400).set(JSON_HEADERS).json({ error: "nodes and edges must be arrays" });
+    return;
+  }
+  if (rawNodes.length + rawEdges.length === 0) {
+    res.status(400).set(JSON_HEADERS).json({ error: "empty package: send at least one node or edge" });
+    return;
+  }
+  if (rawNodes.length > MAX_PACKAGE_NODES || rawEdges.length > MAX_PACKAGE_EDGES) {
+    res.status(400).set(JSON_HEADERS).json({
+      error: "package_too_large",
+      message: `a package holds at most ${MAX_PACKAGE_NODES} nodes and ${MAX_PACKAGE_EDGES} edges; split it into several packages (same batch_id)`,
+      limits: { nodes: MAX_PACKAGE_NODES, edges: MAX_PACKAGE_EDGES },
+      got: { nodes: rawNodes.length, edges: rawEdges.length },
+    });
+    return;
+  }
+
+  const problems: PackageProblem[] = [];
+  const warnings: string[] = [];
+  const bad = (item: string, index: number, error: string) => problems.push({ item, index, error });
+  const isObj = (v: unknown): v is Record<string, any> => !!v && typeof v === "object" && !Array.isArray(v);
+
+  // ---- nodes: same validation and slug rules as POST /api/v1/nodes ----------
+  type Prepared = { ref: string | null; op: Extract<ProposedNodeOp, { op: "create_node" }>; id: string; existing: string | null };
+  const prepared: Prepared[] = [];
+  const keyToIndex = new Map<string, number>(); // reference string → prepared index
+  const claimed = new Map<string, number>(); // final-ish id → first index (duplicate check)
+  rawNodes.forEach((n: any, i: number) => {
+    if (!isObj(n)) return bad("node", i, "must be an object");
+    const { ref, type, name, slug: providedSlug, metadata, aliases } = n;
+    if (ref !== undefined && (typeof ref !== "string" || !ref.trim())) return bad("node", i, "ref must be a non-empty string");
+    if (!type || typeof type !== "string") return bad("node", i, "type is required");
+    if (!name || typeof name !== "string") return bad("node", i, "name is required");
+    if (metadata !== undefined && (metadata === null || typeof metadata !== "object" || Array.isArray(metadata))) return bad("node", i, "metadata must be a JSON object");
+    if (aliases !== undefined && !Array.isArray(aliases)) return bad("node", i, "aliases must be an array");
+    const aliasItems: Array<{ source: string; external_id: string }> = [];
+    for (const a of aliases ?? []) {
+      if (!a || typeof a.source !== "string" || typeof a.external_id !== "string") return bad("node", i, "each alias needs {source, external_id}");
+      aliasItems.push({ source: a.source, external_id: a.external_id });
+    }
+    if (!KNOWN_NODE_TYPES.has(type)) warnings.push(`nodes[${i}]: unknown node type "${type}" — accepted, but check CLAUDE.md`);
+    let meta: Record<string, any> = metadata ?? {};
+    if (type === "concept" && req.contributor!.scope !== "admin") {
+      meta = { ...meta, tag_origin: "contributor" };
+      warnings.push(`nodes[${i}]: concept created as a contributor-origin tag, not a curated field`);
+    }
+    if (type === "institution" && meta.kind !== undefined && meta.kind !== null) {
+      const k = normaliseOrgKinds(meta.kind);
+      if (!k.ok) return bad("node", i, `invalid_kind: ${orgKindsError(k.unknown)}`);
+      meta = { ...meta, kind: k.kinds };
+    }
+    let slug: string;
+    if (typeof providedSlug === "string" && providedSlug.length > 0) {
+      slug = slugify(providedSlug);
+      if (slug !== providedSlug) warnings.push(`nodes[${i}]: slug "${providedSlug}" normalised to "${slug}"`);
+    } else {
+      slug = slugForCreate((id) => !!db.prepare("SELECT 1 FROM nodes WHERE id = ?").get(id), type, name);
+    }
+    if (!slug) return bad("node", i, "invalid_slug: the name (or slug) has no letters or digits to make an address from");
+    const id = `${type}:${slug}`;
+    // Resolve through (type, slug) so a legacy spaced id is matched, not duplicated.
+    let existing: string | null = null;
+    if (db.prepare("SELECT 1 FROM nodes WHERE id = ?").get(id)) existing = id;
+    else existing = existingNodeBySlug(db, type, slug);
+    if (existing) warnings.push(`nodes[${i}]: a ${type} with slug "${slug}" already exists as ${existing} — not created again; edges use that id`);
+    const dupe = claimed.get(`${type}:${slug}`);
+    if (dupe !== undefined) return bad("node", i, `duplicates nodes[${dupe}] (same type and slug ${id})`);
+    claimed.set(`${type}:${slug}`, i);
+    prepared.push({ ref: ref ?? null, op: { op: "create_node", type, name, slug, metadata: meta, aliases: aliasItems }, id, existing });
+    const here = prepared.length - 1;
+    // `ref`s and ids must be unambiguous; a name works only while it is unique.
+    if (ref !== undefined) {
+      if (keyToIndex.has(ref.trim())) bad("node", i, `ref "${ref}" is already used by another node of this package`);
+      else keyToIndex.set(ref.trim(), here);
+    }
+  });
+  // ids second (an explicit ref wins over an id or name of the same spelling), names last.
+  prepared.forEach((p, idx) => { if (!keyToIndex.has(p.id)) keyToIndex.set(p.id, idx); });
+  const nameCount = new Map<string, number>();
+  prepared.forEach((p) => nameCount.set(p.op.name, (nameCount.get(p.op.name) ?? 0) + 1));
+  prepared.forEach((p, idx) => { if (nameCount.get(p.op.name) === 1 && !keyToIndex.has(p.op.name)) keyToIndex.set(p.op.name, idx); });
+
+  // ---- edges ---------------------------------------------------------------
+  const proposedEdges: ProposedEdge[] = [];
+  const seenEdges = new Set<string>();
+  const resolveEnd = (v: unknown, label: string, i: number): string | null => {
+    if (!v || typeof v !== "string") { bad("edge", i, `${label} is required`); return null; }
+    const li = keyToIndex.get(v);
+    if (li !== undefined) { const p = prepared[li]!; return p.existing ?? p.id; }
+    if (db.prepare("SELECT 1 FROM nodes WHERE id = ?").get(v)) return v;
+    bad("edge", i, `${label} "${v}" is neither a live node id nor the ref/id/name of a node in this package`);
+    return null;
+  };
+  rawEdges.forEach((e: any, i: number) => {
+    if (!isObj(e)) return bad("edge", i, "must be an object");
+    const edge_type = e.edge_type;
+    if (!edge_type || typeof edge_type !== "string") return bad("edge", i, "edge_type is required");
+    const source_id = resolveEnd(e.source_id ?? e.source, "source_id", i);
+    const target_id = resolveEnd(e.target_id ?? e.target, "target_id", i);
+    if (e.supersedes_edge_id !== undefined && e.supersedes_edge_id !== null) {
+      if (typeof e.supersedes_edge_id !== "string" || !db.prepare("SELECT 1 FROM edges WHERE id = ?").get(e.supersedes_edge_id)) {
+        return bad("edge", i, `supersedes_edge_id does not exist: ${String(e.supersedes_edge_id)}`);
+      }
+    }
+    if (!source_id || !target_id) return;
+    if (source_id === target_id) return bad("edge", i, "source and target are the same node");
+    const key = `${source_id}|${edge_type}|${target_id}`;
+    if (seenEdges.has(key) && !e.supersedes_edge_id) {
+      warnings.push(`edges[${i}]: duplicate of an earlier edge in this package (${edge_type}) — ignored`);
+      return;
+    }
+    seenEdges.add(key);
+    if (!CURATED_EDGE_TYPES.has(edge_type)) warnings.push(`edges[${i}]: uncurated edge type "${edge_type}" — accepted, but prefer a curated one (§1.4)`);
+    try {
+      checkDirection({ source: source_id, target: target_id, edge_type }, (ref) => (ref.includes(":") ? ref.slice(0, ref.indexOf(":")) : null));
+    } catch (err: any) {
+      warnings.push(`edges[${i}]: direction: ${err?.message ?? err}`);
+    }
+    if (edge_type === "INFLUENCES" || edge_type === "RESPONDS_TO") {
+      warnings.push(`edges[${i}]: ${edge_type} edges should reflect attested artist intent — make sure a statement, interview or first-person attestation backs it.`);
+    }
+    proposedEdges.push({
+      source_id,
+      target_id,
+      edge_type,
+      confidence: typeof e.confidence === "string" ? e.confidence : "medium",
+      event_time: typeof e.event_time === "string" ? e.event_time : null,
+      supersedes_edge_id: typeof e.supersedes_edge_id === "string" ? e.supersedes_edge_id : null,
+    });
+  });
+
+  if (problems.length) {
+    res.status(400).set(JSON_HEADERS).json({
+      error: "invalid_package",
+      message: `${problems.length} problem(s); nothing was written`,
+      problems,
+    });
+    return;
+  }
+
+  const contributor = req.contributor!;
+  const auto = isAutoMerge(contributor.trust_tier);
+  const createOps = prepared.filter((p) => !p.existing).map((p) => p.op);
+  const createdByLabel = `api-${contributor.name}`;
+  const targetNode = proposedEdges[0]?.target_id ?? prepared[0]!.existing ?? prepared[0]!.id;
+
+  db.exec("BEGIN IMMEDIATE");
+  let result: any;
+  try {
+    const signalId = insertSignal(db, {
+      contributor,
+      title: `Package: ${createOps.length} node(s), ${proposedEdges.length} edge(s)`,
+      content: JSON.stringify({ nodes: createOps, edges: proposedEdges }),
+      source_type: "api_package",
+      batch_id: batch.value,
+      pending: !auto,
+    });
+    if (auto) {
+      const created: string[] = [];
+      for (const op of createOps) {
+        const r = materialiseCreateNode(db, op, { signalId, createdBy: createdByLabel });
+        if (r.created) created.push(r.node_id);
+      }
+      let edgesWritten = 0;
+      for (const e of proposedEdges) {
+        materialiseEdge(db, { ...e, signal_id: signalId }, { signalId, createdBy: createdByLabel });
+        edgesWritten++;
+      }
+      const { intake_id } = insertIntake(db, {
+        contributor,
+        signal_id: signalId,
+        target_node: targetNode,
+        proposed_nodes: createOps,
+        proposed_edges: proposedEdges,
+      });
+      ensureContributorRow(db, contributor, signalId);
+      bumpApprovedCount(db, contributor.id, signalId);
+      result = { status: "approved", signal_id: signalId, intake_id, created_nodes: created, edges: edgesWritten };
+    } else {
+      const { intake_id, status } = insertIntake(db, {
+        contributor,
+        signal_id: signalId,
+        target_node: targetNode,
+        proposed_nodes: createOps,
+        proposed_edges: proposedEdges,
+      });
+      ensureContributorRow(db, contributor, signalId);
+      result = { status, signal_id: signalId, intake_id, queued_nodes: createOps.length, edges: proposedEdges.length };
+    }
+    db.exec("COMMIT");
+  } catch (e) {
+    try { db.exec("ROLLBACK"); } catch { /* already rolled back */ }
+    throw e;
+  }
+  if (auto) for (const id of result.created_nodes as string[]) embedNodeAsync(db, id);
+  res.set(JSON_HEADERS).json({
+    ...result,
+    // reference → the id the node has (or will have once approved)
+    node_ids: Object.fromEntries(prepared.map((p, i) => [p.ref ?? p.id, p.existing ?? p.id])),
+    existing_nodes: prepared.filter((p) => p.existing).map((p) => p.existing),
+    warnings,
+  });
+});
+
 // ---------- POST /api/v1/images -------------------------------------------
 // multipart/form-data { image, node_id }   — or
 // application/json    { node_id, image_base64, mime_type }   — or

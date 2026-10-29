@@ -426,6 +426,51 @@ as the facts change.
 }
 ```
 
+### 1.4b `POST /api/v1/packages` — new nodes and their edges in one write
+
+`POST /edges` needs both ends to be **live** nodes. For a `probationary`
+contributor `POST /nodes` only *queues*, so an edge to a node you just created
+cannot be sent until a curator approves it. Use a **package** instead: the new
+nodes and the edges between them (or to existing nodes) travel together.
+
+```bash
+curl -s -X POST "$ADAI_BASE/api/v1/packages" \
+  -H "Authorization: Bearer $ADAI_TOKEN" -H "Content-Type: application/json" \
+  -d '{
+    "batch_id": "residency-2026-06-08",
+    "nodes": [
+      {"ref": "show", "type": "project", "name": "Residency Show"},
+      {"ref": "w1", "type": "artwork", "name": "Work One", "metadata": {"year": 2026}}
+    ],
+    "edges": [
+      {"source_id": "w1", "target_id": "practitioner:patrick-tresset", "edge_type": "CREATED_BY"},
+      {"source_id": "practitioner:patrick-tresset", "target_id": "show", "edge_type": "PARTICIPATED_IN"}
+    ]
+  }'
+```
+
+- **Nodes** take the same fields as §1.2 (`type`, `name`, `slug?`, `metadata?`,
+  `aliases?`) plus an optional `ref`, a local handle.
+- **Edge ends** (`source_id`, `target_id`; `source` / `target` also work) are
+  either a live node id or a reference to a node of the same package: its `ref`,
+  its `type:slug` id, or its `name` when that is unique in the package. Edge
+  fields are those of §1.4 (`confidence?`, `event_time?`, `supersedes_edge_id?`).
+- A node whose (type, slug) already exists — a legacy spaced id included — is
+  **not created again**: edges attach to the existing node and the response
+  lists it in `existing_nodes`.
+- Everything is checked first. Any problem → `400 invalid_package` with a
+  `problems` list (`{item, index, error}` for every bad node/edge) and **nothing
+  is written**. Limits: 300 nodes and 600 edges per package
+  (`400 package_too_large`); split bigger uploads into several packages with the
+  same `batch_id`.
+- **probationary**: ONE review item holds the nodes and edges; approving creates
+  the nodes then the edges, **rejecting drops all of it**. Response:
+  `status: "pending"`, `intake_id`, `signal_id`, `node_ids` (ref → the id the
+  node has or will have). **auto / reviewed**: applied at once in one
+  transaction, `status: "approved"`, `created_nodes`.
+- Warnings (unknown types, direction, INFLUENCES/RESPONDS_TO attestation) come
+  back in `warnings`, as for the single endpoints.
+
 ### 1.5 `POST /api/v1/images` — upload an image and attach it
 
 The practitioner just dropped a file in your sandbox. Hash it, push it to
@@ -524,7 +569,7 @@ doing more than a couple of related writes** (a show's worth of artworks,
 a gallery archive, any §6 bulk intake). For one-off contributions it's
 fine to omit.
 
-- `POST /signals`, `POST /nodes`, `POST /edges`: pass `"batch_id": "..."`
+- `POST /signals`, `POST /nodes`, `POST /edges`, `POST /packages`: pass `"batch_id": "..."`
   in the JSON body.
 - `POST /images`: pass `batch_id` as a multipart field (or JSON key).
 - `PATCH /nodes/:id`: the body IS the metadata merge-patch, so the handle
