@@ -15,7 +15,7 @@ import { getDb } from "../db.js";
 import { JSON_HEADERS } from "../templates.js";
 import { ownedBySql } from "../utils/authorship.js";
 import { requireToken, requireAdmin, isAutoMerge } from "../auth.js";
-import { mintToken, revokeTokenByPrefix, listTokens, setTokenNode, MintError } from "../utils/token-mint.js";
+import { mintToken, revokeTokenByPrefix, listTokens, setTokenNode, setContributorTier, MintError } from "../utils/token-mint.js";
 import { slugify, slugForCreate } from "../utils/slug.js";
 import {
   insertSignal,
@@ -36,7 +36,8 @@ import { uploadImage, isR2Configured } from "../r2.js";
 import { mirrorImageFromUrl, ImageFetchError } from "../utils/images.js";
 import { sniffImageMime } from "../utils/ssrf.js";
 import { getSkillVersion } from "../utils/skill-version.js";
-import { embedNodeAsync } from "../embed/server.js";
+import { embedNodeAsync, embedNodesAsync } from "../embed/server.js";
+import { NODE_NOT_RETIRED } from "../utils/visibility.js";
 import { normaliseOrgKinds, orgKindsError, ORG_KINDS } from "../utils/org-kinds.js";
 import { checkDirection } from "../intake/candidate.js";
 import { ensureContributorForEmail, normaliseEmail, revokeInvite, intakeOpen, requestedName } from "../intake/auth.js";
@@ -648,8 +649,11 @@ router.post("/api/v1/edges", requireToken, (req, res) => {
 // auto / reviewed → applied now through the same materialise* functions, in one
 // transaction, plus an approved audit row.
 
-const MAX_PACKAGE_NODES = 300;
-const MAX_PACKAGE_EDGES = 600;
+// A probationary package is approved or rejected whole, so it must stay small
+// enough for a curator to judge at once; bigger uploads are several packages
+// under one batch_id.
+const MAX_PACKAGE_NODES = 100;
+const MAX_PACKAGE_EDGES = 300;
 
 type PackageProblem = { item: string; index: number; error: string };
 
@@ -685,6 +689,8 @@ router.post("/api/v1/packages", requireToken, (req, res) => {
   const warnings: string[] = [];
   const bad = (item: string, index: number, error: string) => problems.push({ item, index, error });
   const isObj = (v: unknown): v is Record<string, any> => !!v && typeof v === "object" && !Array.isArray(v);
+  const isRetiredNode = (id: string) =>
+    !!db.prepare(`SELECT 1 FROM nodes WHERE id = ? AND NOT (${NODE_NOT_RETIRED})`).get(id);
 
   // ---- nodes: same validation and slug rules as POST /api/v1/nodes ----------
   type Prepared = { ref: string | null; op: Extract<ProposedNodeOp, { op: "create_node" }>; id: string; existing: string | null };
@@ -728,11 +734,12 @@ router.post("/api/v1/packages", requireToken, (req, res) => {
     let existing: string | null = null;
     if (db.prepare("SELECT 1 FROM nodes WHERE id = ?").get(id)) existing = id;
     else existing = existingNodeBySlug(db, type, slug);
+    if (existing && isRetiredNode(existing)) return bad("node", i, `${existing} exists but is retired: give this node another slug, or ask an admin`);
     if (existing) warnings.push(`nodes[${i}]: a ${type} with slug "${slug}" already exists as ${existing} — not created again; edges use that id`);
     const dupe = claimed.get(`${type}:${slug}`);
     if (dupe !== undefined) return bad("node", i, `duplicates nodes[${dupe}] (same type and slug ${id})`);
     claimed.set(`${type}:${slug}`, i);
-    prepared.push({ ref: ref ?? null, op: { op: "create_node", type, name, slug, metadata: meta, aliases: aliasItems }, id, existing });
+    prepared.push({ ref: ref === undefined ? null : ref.trim(), op: { op: "create_node", type, name, slug, metadata: meta, aliases: aliasItems }, id, existing });
     const here = prepared.length - 1;
     // `ref`s and ids must be unambiguous; a name works only while it is unique.
     if (ref !== undefined) {
@@ -753,7 +760,10 @@ router.post("/api/v1/packages", requireToken, (req, res) => {
     if (!v || typeof v !== "string") { bad("edge", i, `${label} is required`); return null; }
     const li = keyToIndex.get(v);
     if (li !== undefined) { const p = prepared[li]!; return p.existing ?? p.id; }
-    if (db.prepare("SELECT 1 FROM nodes WHERE id = ?").get(v)) return v;
+    if (db.prepare("SELECT 1 FROM nodes WHERE id = ?").get(v)) {
+      if (isRetiredNode(v)) { bad("edge", i, `${label} "${v}" is a retired node`); return null; }
+      return v;
+    }
     bad("edge", i, `${label} "${v}" is neither a live node id nor the ref/id/name of a node in this package`);
     return null;
   };
@@ -808,7 +818,10 @@ router.post("/api/v1/packages", requireToken, (req, res) => {
   const auto = isAutoMerge(contributor.trust_tier);
   const createOps = prepared.filter((p) => !p.existing).map((p) => p.op);
   const createdByLabel = `api-${contributor.name}`;
-  const targetNode = proposedEdges[0]?.target_id ?? prepared[0]!.existing ?? prepared[0]!.id;
+  // The item is "about" a node this package creates, never an existing page
+  // its edges merely touch (that page's contributions list and claimant
+  // notifications read target_node).
+  const targetNode = prepared.find((p) => !p.existing)?.id ?? prepared[0]?.existing ?? proposedEdges[0]!.target_id;
 
   db.exec("BEGIN IMMEDIATE");
   let result: any;
@@ -858,7 +871,7 @@ router.post("/api/v1/packages", requireToken, (req, res) => {
     try { db.exec("ROLLBACK"); } catch { /* already rolled back */ }
     throw e;
   }
-  if (auto) for (const id of result.created_nodes as string[]) embedNodeAsync(db, id);
+  if (auto) embedNodesAsync(db, result.created_nodes as string[]);
   res.set(JSON_HEADERS).json({
     ...result,
     // reference → the id the node has (or will have once approved)
@@ -1239,17 +1252,45 @@ router.post("/api/v1/tokens/:prefix/revoke", requireAdmin, (req, res) => {
 // PATCH /api/v1/tokens/:prefix {"node": "<node id>" | null} — the node the
 // token's contributor stands for (issue #70): bylines of its contributions
 // link to it, and its page says it contributes. null clears it.
+// {"tier": "auto" | "reviewed" | "probationary"} — the trust tier of the
+// token's contributor (all their tokens; takes effect on the next request).
+// Either or both, in one transaction.
 router.patch("/api/v1/tokens/:prefix", requireAdmin, (req, res) => {
   const db = getDb();
   const body = req.body ?? {};
-  if (!("node" in body) || (body.node !== null && typeof body.node !== "string")) {
-    res.status(400).set(JSON_HEADERS).json({ error: "node is required: a node id, or null to clear it" });
+  const hasNode = "node" in body;
+  const hasTier = "tier" in body;
+  if (!hasNode && !hasTier) {
+    res.status(400).set(JSON_HEADERS).json({ error: "send node (a node id, or null to clear it) and/or tier (auto | reviewed | probationary)" });
     return;
   }
+  if (hasNode && body.node !== null && typeof body.node !== "string") {
+    res.status(400).set(JSON_HEADERS).json({ error: "node must be a node id, or null to clear it" });
+    return;
+  }
+  if (hasTier && typeof body.tier !== "string") {
+    res.status(400).set(JSON_HEADERS).json({ error: "tier must be one of auto, reviewed, probationary" });
+    return;
+  }
+  const prefix = String(req.params.prefix);
+  db.exec("BEGIN IMMEDIATE");
   try {
-    const r = setTokenNode(db, String(req.params.prefix), body.node || null);
-    res.set(JSON_HEADERS).json({ ...r, set_by: { id: req.contributor!.id, name: req.contributor!.name, token_prefix: req.contributor!.token_prefix } });
+    // Both or neither: a bad node id must not leave the tier changed.
+    const tierResult = hasTier ? setContributorTier(db, prefix, body.tier) : null;
+    const nodeResult = hasNode ? setTokenNode(db, prefix, body.node || null) : null;
+    db.exec("COMMIT");
+    if (tierResult && tierResult.previous !== tierResult.trust_tier) {
+      console.log(`[tokens] ${req.contributor!.name} set ${tierResult.contributor_name}'s tier ${tierResult.previous} → ${tierResult.trust_tier}`);
+    }
+    res.set(JSON_HEADERS).json({
+      ...(nodeResult ?? {}),
+      ...(tierResult
+        ? { token_prefix: tierResult.token_prefix, contributor_id: tierResult.contributor_id, contributor_name: tierResult.contributor_name, trust_tier: tierResult.trust_tier, previous_tier: tierResult.previous }
+        : {}),
+      set_by: { id: req.contributor!.id, name: req.contributor!.name, token_prefix: req.contributor!.token_prefix },
+    });
   } catch (e: any) {
+    try { db.exec("ROLLBACK"); } catch { /* already rolled back */ }
     if (e instanceof MintError) {
       res.status(e.status).set(JSON_HEADERS).json({ error: e.code, detail: e.message });
       return;
@@ -1269,6 +1310,7 @@ function deriveAction(sourceType: string | null, proposedNodes: string | null): 
   let action = "signal";
   if (sourceType === "api_edge") action = "add_edge";
   else if (sourceType === "api_image") action = "attach_image";
+  else if (sourceType === "api_package") action = "package";
   else if (sourceType === "api_node") {
     action = "create_node";
     try {
