@@ -6,7 +6,7 @@ import { parseParams } from '../lib/params.ts'
 import { TimeCoil } from './TimeCoil.tsx'
 
 const manifest: Manifest = {
-  version: 1, from: 'fixture', built: '', site: 'https://digitalartsinstitute.io',
+  version: 1, built: '', site: 'https://digitalartsinstitute.io',
   artists: [{ id: 'artist:a', slug: 'a', name: 'A', type: 'practitioner' }, { id: 'artist:b', slug: 'b', name: 'B', type: 'practitioner' }],
   works: ['a', 'b'].map((slug, i) => ({ id: `artwork:${slug}`, slug, title: slug, artist: `artist:${slug}`, by: [slug], year: 2000 + i, date: String(2000 + i), basis: 'fixture', firm: true, img: `/${slug}.png`, source: 'A(DAI)' })),
 }

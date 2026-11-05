@@ -32,8 +32,7 @@ export interface ManifestWork {
 
 export interface Manifest {
   version: 1
-  /** where the data was read from, and when */
-  from: string
+  /** when it was built */
   built: string
   /** the A(DAI) site the credit links to */
   site: string

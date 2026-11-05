@@ -24,7 +24,7 @@ function manifest(): Manifest {
   for (let a = 0; a < 20; a++) for (let i = 0; i < 6; i++) works.push(work(`artist:mid${a}`, 1990 + a, a % 2 ? 'fxhash' : 'SuperRare'))
   for (let a = 0; a < 200; a++) works.push(work(`artist:one${a}`, 2000 + (a % 25), a % 3 ? 'fxhash' : 'Art Blocks'))
   works.push(work('artist:mixed', 2010, 'fxhash'), work('artist:mixed', 2011, 'fxhash'), work('artist:mixed', 2012, 'V&A'))
-  return { version: 1, from: '', built: '', site: '', artists: [], works }
+  return { version: 1, built: '', site: '', artists: [], works }
 }
 
 describe('the city', () => {

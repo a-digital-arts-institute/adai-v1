@@ -78,7 +78,6 @@ works.sort((x, y) => x.year - y.year || x.id.localeCompare(y.id))
 
 const manifest: Manifest = {
   version: 1,
-  from: dbPath.replace(process.env.HOME ?? '\0', '~'),
   built: new Date().toISOString(),
   site,
   artists: [...artists.values()].sort((x, y) => x.id.localeCompare(y.id)),
