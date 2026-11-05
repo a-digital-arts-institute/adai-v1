@@ -113,6 +113,7 @@ Then:
 1. The intake is **invite-only**: invite yourself first or no link is sent
    (`just invite you@x.y "Name" auto [practitioner:slug]`; `probationary`
    confirms go to `/review`). `INTAKE_OPEN=1` in `.env` skips the check.
+   `INTAKE_LOGIN_LINK_MINUTES` (default 15, max 10080) sets the sign-in link lifetime.
    On prod: `just invite-prod …` or the admin endpoints `/api/v1/invites`
    (SKILL.md §4.6b).
 2. http://localhost:8080/contribute → your email → "Send me a link".

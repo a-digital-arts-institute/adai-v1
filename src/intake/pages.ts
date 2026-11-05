@@ -2,6 +2,7 @@
 // /contribute, /draft/:id, /batch/:id. Vanilla JS, no framework. The draft
 // page is deliberately plain — the cards are where scope wants to grow.
 
+import { loginLinkHuman } from "./auth.js";
 import { htmlPage, htmlEscape } from "../templates.js";
 
 const CSS = `
@@ -185,7 +186,7 @@ function loginForm(msg) {
     const b = $('button', e.target); b.disabled = true;
     const email = e.target.email.value;
     const r = await api('POST', '/api/intake/login', { email });
-    if (r.ok) { app.innerHTML = '<div class="msg msg-ok">If this address is invited, a sign-in link is on its way (valid for 15 minutes). If not, your request has been passed on to the A(DAI) team.</div>'; requestDetails(app, email); }
+    if (r.ok) { app.innerHTML = '<div class="msg msg-ok">If this address is invited, a sign-in link is on its way (valid for ${loginLinkHuman()}). If not, your request has been passed on to the A(DAI) team.</div>'; requestDetails(app, email); }
     else { b.disabled = false; alertMsg(r.json && r.json.message || 'could not send'); }
   };
 }

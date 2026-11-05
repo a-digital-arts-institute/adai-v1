@@ -5,6 +5,7 @@
 
 import type { DatabaseSync } from "node:sqlite";
 import { shell, helpers } from "../intake/pages.js";
+import { loginLinkHuman } from "../intake/auth.js";
 import { htmlEscape } from "../templates.js";
 import { CLAIMABLE_TYPES, approvedClaimsFor, claimsOf, suggestHandle } from "./store.js";
 
@@ -29,14 +30,14 @@ const CSS = `<style>
 #intake .ok { color: #6fbf8a; } #intake .bad { color: #bf6f6f; }
 </style>`;
 
-const LOGIN = `
+const LOGIN = () => `
 function loginForm(el, redirect, lead) {
   el.innerHTML = '<p class="lede">' + lead + '</p><form id="lf"><label>your email</label><div class="row"><input type="email" name="email" required autocomplete="email"><button class="btn primary" type="submit">Send me a link</button></div></form>';
   $('#lf').onsubmit = async (e) => {
     e.preventDefault();
     const email = e.target.email.value;
     await api('POST', '/api/intake/login', { email, redirect });
-    el.innerHTML = '<div class="msg msg-ok">If this address may sign in, a link is on its way (valid 15 minutes).</div>';
+    el.innerHTML = '<div class="msg msg-ok">If this address may sign in, a link is on its way (valid ${loginLinkHuman()}).</div>';
     requestDetails(el, email);
   };
 }
@@ -69,7 +70,7 @@ export function claimPage(node: { id: string; type: string; name: string; slug: 
 <h2>${htmlEscape(node.name)} <span class="pill">${htmlEscape(node.type)}</span></h2>
 <p class="lede">Claiming says “this page is me” (or “mine”, for a collective or an institution). A claimed page shows a badge and a short <b>@handle</b> link, and gives you a log of everything the commons holds about it, where you can add context, contest what is wrong, and invite the people at the other end. You do not edit the page directly — curators still review changes. <a href="${href}">Back to the page</a>.</p>
 <div id="app"><p class="progress">loading…</p></div>`;
-  const script = `${helpers}${LOGIN}
+  const script = `${helpers}${LOGIN()}
 const NODE = ${JSON.stringify(node).replace(/</g, "\\u003c")};
 const app = $('#app');
 function alertMsg(m) { const d = document.createElement('div'); d.className = 'msg msg-err'; d.textContent = m; app.prepend(d); setTimeout(() => d.remove(), 7000); }
@@ -132,7 +133,7 @@ export function mePage(): string {
   const body = `${CSS}
 <div class="kicker">YOUR LOG</div>
 <div id="app"><p class="progress">loading…</p></div>`;
-  const script = `${helpers}${LOGIN}
+  const script = `${helpers}${LOGIN()}
 const app = $('#app');
 const params = new URLSearchParams(location.search);
 const VERBS = { CREATED_BY: 'was created by', EXHIBITED_AT: 'was exhibited at', HELD_BY: 'is held by', PARTICIPATED_IN: 'took part in', PRESENTED_BY: 'was presented by', CURATED_BY: 'was curated by', REPRESENTS: 'represents', USES_TECHNIQUE: 'uses the technique', EMBODIES: 'embodies', BELONGS_TO: 'belongs to', COLLABORATES_WITH: 'collaborates with', INFLUENCES: 'influences', RESPONDS_TO: 'responds to', PRACTICES: 'practices', CLASSIFIED_BY: 'is classified by', DOCUMENTS: 'documents' };

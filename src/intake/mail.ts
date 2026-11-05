@@ -4,7 +4,7 @@
 
 import type { DatabaseSync } from "node:sqlite";
 import { sendMail, textToHtml } from "../utils/mail.js";
-import { issueMagicLink, baseUrl } from "./auth.js";
+import { issueMagicLink, baseUrl, loginLinkHuman } from "./auth.js";
 import type { Draft } from "./draft.js";
 import type { ConfirmResult } from "./draft.js";
 
@@ -27,7 +27,7 @@ export async function send(to: string, subject: string, text: string, html?: str
 export async function sendLoginEmail(db: DatabaseSync, email: string, ip: string | null, redirect?: string | null): Promise<void> {
   const link = issueMagicLink(db, { email, purpose: "login", redirect: redirect ?? null, ip });
   const text =
-    `Here is your A(DAI) sign-in link. It works once and expires in 15 minutes:\n\n${link.url}\n\n` +
+    `Here is your A(DAI) sign-in link. It works once and expires in ${loginLinkHuman()}:\n\n${link.url}\n\n` +
     `If you did not ask for this, ignore it.`;
   await send(email, "Your A(DAI) sign-in link", text);
 }

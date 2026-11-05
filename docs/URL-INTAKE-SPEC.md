@@ -99,7 +99,7 @@ CREATE TABLE IF NOT EXISTS magic_links (
     purpose         TEXT NOT NULL DEFAULT 'login',  -- login | draft_ready | receipt
     redirect        TEXT,                           -- path to land on after login
     created_at      TEXT DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
-    expires_at      TEXT NOT NULL,                  -- login: +15 min, draft/receipt: +7 days
+    expires_at      TEXT NOT NULL,                  -- login: +15 min (INTAKE_LOGIN_LINK_MINUTES), draft/receipt: +7 days
     used_at         TEXT,
     ip              TEXT
 );
@@ -136,7 +136,7 @@ Email never lands in a CRR. `contributors` (a CRR, no `metadata` column, and alt
 
 ### 4.3 Invites and tiers
 
-`npm run invite -- --email x@y.z --name "Name" --tier auto [--practitioner "practitioner:name"]` inserts the contributor + `contributor_emails` row up front (unverified) so that on first login the tier is already right. `--practitioner` stores `contributor_emails.self_node_id`, which lets the agent treat that node as the subject by default. **Invite-only (Sept 26, 2026).** Only invited, unrevoked addresses (`contributor_emails.invited_at`, `revoked_at IS NULL`) get a sign-in link; `readSession` and `/auth/:token` re-check it, so a revoke ends sessions and unused links at once. An uninvited request gets the same answer (no enumeration), sends no link, and lands in `intake_access_requests`; the admins (`ADMIN_NOTIFY_EMAILS`) get at most one email a day per address. Admin endpoints: `POST /api/v1/invites` `{email, name, tier?, practitioner?, send?}`, `GET /api/v1/invites` (invites + pending requests), `POST /api/v1/invites/revoke` `{email}` — SKILL.md §4.6b. `INTAKE_OPEN=1` disables the check (local demos). Bearer tokens (`/api/v1`, usable on `/api/intake/*`) are unaffected — they are issued by hand.
+`npm run invite -- --email x@y.z --name "Name" --tier auto [--practitioner "practitioner:name"]` inserts the contributor + `contributor_emails` row up front (unverified) so that on first login the tier is already right. `--practitioner` stores `contributor_emails.self_node_id`, which lets the agent treat that node as the subject by default. **Invite-only (Sept 26, 2026).** Only invited, unrevoked addresses (`contributor_emails.invited_at`, `revoked_at IS NULL`) get a sign-in link; `readSession` and `/auth/:token` re-check it, so a revoke ends sessions and unused links at once. An uninvited request gets the same answer (no enumeration), sends no link, and lands in `intake_access_requests`; the admins (`ADMIN_NOTIFY_EMAILS`) get at most one email a day per address. Admin endpoints: `POST /api/v1/invites` `{email, name, tier?, practitioner?, send?}`, `GET /api/v1/invites` (invites + pending requests), `POST /api/v1/invites/revoke` `{email}` — SKILL.md §4.6b. `INTAKE_OPEN=1` disables the check (local demos). `INTAKE_LOGIN_LINK_MINUTES` sets how long a sign-in link lives (default 15, max 10080 = 7 days; invalid → 15); the mail and sign-in screens state the real duration. Bearer tokens (`/api/v1`, usable on `/api/intake/*`) are unaffected — they are issued by hand.
 
 ### 4.4 Magic links in notification emails
 
@@ -482,7 +482,7 @@ Sending domain: fragcolor.com is already verified on Resend (the digest sends fr
 
 Three messages, all short:
 
-1. **Login**: "Your A(DAI) sign-in link" with the 15 min link. One sentence: "If you did not ask for this, ignore it."
+1. **Login**: "Your A(DAI) sign-in link" with the login link (15 min by default, see INTAKE_LOGIN_LINK_MINUTES). One sentence: "If you did not ask for this, ignore it."
 2. **Draft ready**: "Your draft from {domain} is ready": the subject's name, the counts as bullets (questions waiting, works, shows and venues, people, relations, images, already in A(DAI)) and a 7-day magic link to `/draft/:id`. Not the agent's summary: it runs to a page, and it is on the draft page (issue #73). Also sent when a pass fails with no candidates: "We could not read {domain}" with the error in plain words and a reply-to.
 3. **Receipt**: "Received: {n} items from {domain}" with the outcome (live or in review), links to the batch page and to the subject's profile.
 
@@ -537,7 +537,7 @@ WORKER_KEY=dev ADAI_URL=http://localhost:8080 npm run intake:worker   # in worke
 - The worker has no graph write path. `/internal/intake/tool` is an allowlist of read tools; the draft endpoints only touch `drafts`. Import-level test in section 16.
 - `WORKER_KEY` is only accepted on `/internal/*` and those routes are not mounted if the key is unset.
 - Sessions: HMAC cookie like the archivist, 30 days sliding, one row per session, revocable by deleting the row.
-- Magic links: 15 min for login, 7 days for notifications, single use, hashed at rest.
+- Magic links: 15 min for login (configurable: `INTAKE_LOGIN_LINK_MINUTES`, positive integer up to 10080 = 7 days; unset or invalid → 15; links stay single use), 7 days for notifications, single use, hashed at rest.
 - Fetching (worker `fetch_page`, `image_url` transport, `image_neighbours`) shares one SSRF guard: http(s) only, DNS resolved and checked against private ranges, redirects re-checked, 20 MiB cap, 20 s timeout.
 - Budget: reuse the daily USD gate logic from `ratelimit.ts` against a sibling `intake_usage` table (same shape as `archivist_usage`, PK `date`); no migration of the archivist table. Per-pass cap `INTAKE_MAX_USD_PER_DRAFT`. Per contributor 30 drafts a day, 6 active (beta defaults).
 - Nothing from a page is written to the graph without a quote attached to a signal. That is the audit trail.

@@ -18,6 +18,8 @@ import {
   isInvited,
   recordAccessRequest,
   revokeInvite,
+  loginLinkMinutes,
+  loginLinkHuman,
 } from "../src/intake/auth.js";
 
 before(() => {
@@ -166,5 +168,45 @@ describe("invite-only", () => {
     assert.equal((db.prepare("SELECT count FROM intake_access_requests WHERE email = 'x@example.org'").get() as any).count, 2);
     ensureContributorForEmail(db, { email: "x@example.org", name: "X", invite: true });
     assert.equal(db.prepare("SELECT 1 FROM intake_access_requests WHERE email = 'x@example.org'").get(), undefined);
+  });
+});
+
+describe("login link lifetime (INTAKE_LOGIN_LINK_MINUTES)", () => {
+  const set = (v?: string) => { if (v === undefined) delete process.env.INTAKE_LOGIN_LINK_MINUTES; else process.env.INTAKE_LOGIN_LINK_MINUTES = v; };
+  const minutesLeft = (iso: string) => Math.round((Date.parse(iso.includes("T") ? iso : iso.replace(" ", "T") + "Z") - Date.now()) / 60_000);
+  it("defaults to 15 minutes", () => {
+    set();
+    assert.equal(loginLinkMinutes(), 15);
+    assert.equal(loginLinkHuman(), "15 minutes");
+    assert.equal(minutesLeft(issueMagicLink(freshDb(), { email: "a@example.org", purpose: "login" }).expires_at), 15);
+  });
+  it("env overrides it, in human terms", () => {
+    set("120");
+    assert.equal(loginLinkHuman(), "2 hours");
+    assert.equal(minutesLeft(issueMagicLink(freshDb(), { email: "a@example.org", purpose: "login" }).expires_at), 120);
+    set("4320"); assert.equal(loginLinkHuman(), "3 days");
+    set("1"); assert.equal(loginLinkHuman(), "1 minute");
+    set("90"); assert.equal(loginLinkHuman(), "90 minutes");
+    set();
+  });
+  it("invalid or out-of-range values fall back to 15", () => {
+    for (const v of ["", "abc", "0", "-5", "1.5", "10081", "1e3"]) { set(v); assert.equal(loginLinkMinutes(), 15, v); }
+    set("10080"); assert.equal(loginLinkMinutes(), 10080);
+    set();
+  });
+  it("sign-in mail and notification links", async () => {
+    set("180");
+    const sent: string[] = [];
+    const { sendLoginEmail } = await import("../src/intake/mail.js");
+    const orig = console.log; console.log = (...a: any[]) => { sent.push(a.join(" ")); };
+    try { await sendLoginEmail(freshDb(), "a@example.org", null); } finally { console.log = orig; }
+    set();
+    assert.ok(sent.join("\n").includes("expires in 3 hours"), sent.join("\n"));
+  });
+  it("notification links stay at 7 days", () => {
+    set("5");
+    const l = issueMagicLink(freshDb(), { email: "a@example.org", purpose: "receipt" });
+    assert.equal(minutesLeft(l.expires_at), 7 * 1440);
+    set();
   });
 });
