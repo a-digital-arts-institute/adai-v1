@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { fieldUrl } from '../lib/field.ts'
+import { MODE_KEY } from '../lib/keys.ts'
 import type { ManifestWork } from '../lib/manifest.ts'
 
 /** the keys the field hands back to the gallery (A(DAI)'s js-interface/embed.js) */
-const KEYS = ['v']
+const KEYS = [MODE_KEY]
 
 /**
  * The field: A(DAI)'s own view of the commons (its `/field` page, the Shape of Time field), shown as it is, untouched,

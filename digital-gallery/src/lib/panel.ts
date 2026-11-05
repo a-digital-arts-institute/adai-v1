@@ -15,8 +15,16 @@ export function wheelWorks(e: { deltaY: number; deltaMode: number }): number {
   return -px / WHEEL_PER_WORK
 }
 
-/** Settle the lead against the run's progress on the work on stage (0..1): which way to step, and the lead left after it. */
+/** below this the wheel's lead is at rest: it leads the walk by nothing and never steps the run */
+export const LEAD_REST = 0.01
+
+/**
+ * Settle the wheel's lead against the run's progress on the work on stage (0..1): which way the wheel steps the run,
+ * and the lead left after it. Only the wheel steps here: the run's own clock (the stepper) moves it on at the hold and
+ * the walk follows that, so a wheel at rest never steps, however far the progress has come.
+ */
 export function settle(progress: number, lead: number): { step: number; lead: number } {
+  if (Math.abs(lead) < LEAD_REST) return { step: 0, lead }
   let v = progress + lead
   let step = 0
   // the run restarts its progress at 0 on each new work

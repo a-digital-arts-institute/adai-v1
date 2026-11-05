@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { WHEEL_PER_WORK, panelFrame, settle, wheelWorks } from './panel.ts'
+import { LEAD_REST, WHEEL_PER_WORK, panelFrame, settle, wheelWorks } from './panel.ts'
 
 describe('the wheel', () => {
   it('moves forward scrolling up, back scrolling down, a work per WHEEL_PER_WORK px', () => {
@@ -23,6 +23,12 @@ describe('the wheel', () => {
   })
   it('steps several works for a long fling', () => {
     expect(settle(0, 3.2).step).toBe(3)
+  })
+  it('never steps the run on its own: at rest with the hold reached, the stepper does that', () => {
+    expect(settle(1, 0)).toEqual({ step: 0, lead: 0 })
+    expect(settle(1, LEAD_REST / 2)).toEqual({ step: 0, lead: LEAD_REST / 2 })
+    expect(settle(1, -LEAD_REST / 2).step).toBe(0)
+    expect(settle(1, LEAD_REST).step).toBe(1)
   })
 })
 

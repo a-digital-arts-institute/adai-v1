@@ -146,6 +146,8 @@ body,
   letter-spacing: 0.14em;
   text-transform: uppercase;
   white-space: nowrap;
+  /* words only: a click lands on whatever is under them, faded or not */
+  pointer-events: none;
   transition: opacity var(--t-slow) var(--ease);
 }
 .hint[data-gone] {

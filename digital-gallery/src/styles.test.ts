@@ -17,3 +17,9 @@ describe('overlays stack above the stage', () => {
       expect(zOf(sel)).toBeGreaterThan(stage)
     })
 })
+
+describe('the key hint', () => {
+  it('never takes a click, faded or not', () => {
+    expect(/(^|\n)\.hint \{[^}]*?pointer-events:\s*none/.test(css)).toBe(true)
+  })
+})

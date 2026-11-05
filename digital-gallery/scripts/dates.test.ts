@@ -14,6 +14,10 @@ describe('V&A date text', () => {
     expect(readDateText('1967-1970')).toEqual({ year: 1968.5, label: '1967–1970', firm: false })
     expect(readDateText('1967-70')).toEqual({ year: 1968.5, label: '1967–1970', firm: false })
   })
+  it('reads an ongoing work as firm, from its start', () => {
+    expect(readDateText('2025–')).toEqual({ year: 2025, label: '2025–', firm: true })
+    expect(readDateText('1985-present')).toEqual({ year: 1985, label: '1985–', firm: true })
+  })
   it('takes the one year out of a longer phrase', () => {
     expect(readDateText('Spring, 1995')).toEqual({ year: 1995, label: 'c. 1995', firm: false })
   })
@@ -29,6 +33,17 @@ describe('dateOf', () => {
     const d = dateOf('artwork:a', { year_start: 2021, year_end: 2021, date_text: '1990' })!
     expect(Math.floor(d.year)).toBe(2021)
     expect(d).toMatchObject({ label: '2021', firm: true })
+  })
+  it('places a work by its structured year whatever its words say, and labels it with its words', () => {
+    const d = dateOf('artwork:the-shape-of-time', { year_start: 2025, year_raw: '2025–', year_ongoing: true })!
+    expect(Math.floor(d.year)).toBe(2025)
+    expect(d).toMatchObject({ label: '2025–', firm: true })
+    const e = dateOf('artwork:late', { year_start: 1980, year_raw: 'late 20th century' })!
+    expect(Math.floor(e.year)).toBe(1980)
+    expect(e).toMatchObject({ label: 'late 20th century', firm: false })
+    expect(dateOf('artwork:ongoing', { year_start: 2025, year_ongoing: true })).toMatchObject({ label: '2025–', firm: true })
+    expect(dateOf('artwork:decade', { year_start: 1950, year_raw: '1950s' })).toMatchObject({ label: '1950s', firm: false })
+    expect(dateOf('artwork:words-only', { year_raw: 'c.1974' })).toMatchObject({ label: 'c.1974', firm: false })
   })
   it('uses the fxhash mint date to the day', () => {
     const d = dateOf('artwork:b', { mint_opens_at: '2021-11-06T17:52:58.000Z' })!

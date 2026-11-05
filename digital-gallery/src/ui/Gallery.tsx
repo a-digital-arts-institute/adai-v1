@@ -81,7 +81,8 @@ export function Gallery(props: {
       const L = live.current
       const held = L.paused ? L.heldFor : L.heldFor + (now - L.shownAt) / 1000
       const progress = Math.min(1, held / hold)
-      // the wheel's lead: step the run when it reaches another work, ease it away once the wheel rests
+      // the wheel's lead: step the run when it carries the walk to another work (the run's own clock moves it on at
+      // the hold, and the walk follows that); ease the lead away once the wheel rests
       const s = settle(progress, L.lead)
       if (s.step) {
         Object.assign(L, { pos: L.pos + s.step, shownAt: now, heldFor: 0, lead: s.lead })

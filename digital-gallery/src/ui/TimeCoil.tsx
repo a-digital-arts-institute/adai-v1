@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { gesture, startPaused } from '../lib/gesture.ts'
-import { TITLE, workLabel } from '../lib/copy.ts'
-import { keyAction, type Action } from '../lib/keys.ts'
+import { NEXT_VIEW, TITLE, workLabel } from '../lib/copy.ts'
+import { MODE_KEY, keyAction, type Action } from '../lib/keys.ts'
 import { layout, nextMode, type Mode } from '../lib/layout.ts'
 import type { Manifest, ManifestWork } from '../lib/manifest.ts'
 import { CoilOrder } from '../lib/order.ts'
@@ -204,7 +204,7 @@ export function TimeCoil({ manifest, settings }: { manifest: Manifest; settings:
       }}
     >
       {mode === 'field' ? (
-        <Field site={manifest.site} current={state.current} onBrowse={browse} onKey={(k) => k === 'v' && act.current('mode')} />
+        <Field site={manifest.site} current={state.current} onBrowse={browse} onKey={(k) => k === MODE_KEY && act.current('mode')} />
       ) : (
         <>
           {mode === 'gallery' ? (
@@ -277,7 +277,7 @@ export function TimeCoil({ manifest, settings }: { manifest: Manifest; settings:
       <Hint gone={touched} touch={touch} />
       {touch && <ModeButton mode={mode} onClick={() => act.current('mode')} />}
       {mode === 'field' && (
-        <button className="field-next" onClick={() => act.current('mode')} title="The next view (m)">
+        <button className="field-next" onClick={() => act.current('mode')} title={NEXT_VIEW}>
           mode ›
         </button>
       )}

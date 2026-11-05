@@ -1,8 +1,11 @@
 // Every word the stage can show. Nothing else renders text over the void.
 import { workUrl } from './commons.ts'
+import { MODE_KEY } from './keys.ts'
 import type { ManifestWork } from './manifest.ts'
 
-export const KEY_HINT = 'space pause · ← → step · v view · i credit · f fullscreen'
+export const KEY_HINT = `space pause · ← → step · ${MODE_KEY} view · i credit · f fullscreen`
+/** the `mode ›` button's tooltip */
+export const NEXT_VIEW = `The next view (${MODE_KEY})`
 export const TOUCH_HINT = 'tap background to pause · swipe to step'
 export const COMMONS = 'A(DAI) Digital Arts Commons'
 export const RIGHTS_NOTE = 'Image rights stay with the artist and other rights holders.'
@@ -10,7 +13,7 @@ export const NOTICE = 'No manifest yet. Run npm run manifest.'
 /** the page's name, before a work is on stage */
 export const TITLE = 'A(DAI) Digital Gallery'
 
-export const STAGE_COPY = { KEY_HINT, TOUCH_HINT, COMMONS, RIGHTS_NOTE, NOTICE }
+export const STAGE_COPY = { KEY_HINT, TOUCH_HINT, NEXT_VIEW, COMMONS, RIGHTS_NOTE, NOTICE }
 
 export interface CreditLines {
   title: string

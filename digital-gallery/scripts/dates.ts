@@ -59,6 +59,9 @@ export function readDateText(text: string): { year: number; label: string; firm:
     const a = +m[1]!, b = m[2]!.length === 2 ? Math.floor(a / 100) * 100 + +m[2]! : +m[2]!
     if (plausible(a) && plausible(b) && b >= a) return { year: (a + b) / 2, label: `${a}–${b}`, firm: false }
   }
+  // an ongoing work ("2025–", "1985–present"): firm, from its start
+  m = /^(\d{4})\s*[-–]\s*(?:present|now|ongoing)?$/i.exec(s)
+  if (m && plausible(+m[1]!)) return { year: +m[1]!, label: `${m[1]}–`, firm: true }
   const years = [...s.matchAll(/\b(19|20)\d{2}\b/g)].map((x) => +x[0])
   if (years.length === 1 && plausible(years[0]!)) return { year: years[0]!, label: `c. ${years[0]}`, firm: false }
   return null
@@ -72,17 +75,23 @@ export function dateOf(id: string, meta: Meta, artblocks: ArtBlocksDates = {}): 
   const num = (k: string) => (typeof meta[k] === 'number' && Number.isFinite(meta[k]) ? (meta[k] as number) : null)
   const inYear = spread(id)
 
+  // The structured year places the work. The record's own words (`year_raw`), when it has them, label it, as the site
+  // shows them, and say whether the date is firm; without a structured year they place it too.
+  const raw = str('year_raw')
+  const read = raw ? readDateText(raw) : null
   const ys = num('year_start')
-  if (ys !== null && plausible(ys) && !str('year_raw')) {
+  if (ys !== null && plausible(ys)) {
     const ye = num('year_end')
     const range = ye !== null && ye > ys
-    return { year: ys + inYear, label: range ? `${ys}–${ye}` : String(ys), basis: 'year on the A(DAI) record', firm: true }
+    const ongoing = meta.year_ongoing === true || meta.year_ongoing === 1
+    return {
+      year: ys + inYear,
+      label: raw ?? (range ? `${ys}–${ye}` : ongoing ? `${ys}–` : String(ys)),
+      basis: raw ? `"${raw}" on the A(DAI) record` : 'year on the A(DAI) record',
+      firm: raw ? (read?.firm ?? false) : true,
+    }
   }
-  const raw = str('year_raw')
-  if (raw) {
-    const r = readDateText(raw)
-    if (r) return { year: r.year + inYear, label: r.label, basis: `"${raw}" on the A(DAI) record`, firm: r.firm }
-  }
+  if (raw && read) return { year: read.year + inYear, label: raw, basis: `"${raw}" on the A(DAI) record`, firm: read.firm }
   // MoMA/Wikidata and older contributions use `year`, sometimes as an ISO date.
   const year = str('year') ?? (num('year') !== null ? String(num('year')) : null)
   if (year) {

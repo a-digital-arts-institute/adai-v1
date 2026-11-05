@@ -1,6 +1,9 @@
 // keys → actions (kept pure so the map is tested, not just the handler).
 export type Action = 'pause' | 'next' | 'prev' | 'mode' | 'fullscreen' | 'credit' | 'close' | 'warp'
 
+/** the key that steps through the views: a key the framed field never binds, so it can hand it back (embed.js) */
+export const MODE_KEY = 'v'
+
 export function keyAction(key: string): Action | null {
   switch (key) {
     case ' ':
@@ -10,8 +13,8 @@ export function keyAction(key: string): Action | null {
       return 'next'
     case 'ArrowLeft':
       return 'prev'
-    case 'v':
-    case 'V':
+    case MODE_KEY:
+    case MODE_KEY.toUpperCase():
       return 'mode'
     case 'f':
     case 'F':
