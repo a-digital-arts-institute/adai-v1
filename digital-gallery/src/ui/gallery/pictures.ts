@@ -9,6 +9,8 @@ export interface Picture {
 
 /** at most this many images decode at once */
 const LOADS = 4
+/** a load slot is given back after this long, so a hung request cannot hold one for good */
+const FETCH_TIMEOUT = 20_000
 
 const release = (picture: Picture) => {
   picture.tex.dispose()
@@ -57,7 +59,10 @@ export class Pictures {
       }
       this.loading++
       try {
-        const blob = await (await fetch(url, { mode: 'cors' })).blob()
+        // the signal also bounds reading the body
+        const r = await fetch(url, { mode: 'cors', signal: AbortSignal.timeout(FETCH_TIMEOUT) })
+        if (!r.ok) throw new Error(`${r.status} ${url}`)
+        const blob = await r.blob()
         const probe = await createImageBitmap(blob)
         const aspect = probe.width / probe.height
         const k = Math.min(1, this.maxPx / Math.max(probe.width, probe.height))

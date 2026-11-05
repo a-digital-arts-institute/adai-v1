@@ -1,11 +1,10 @@
 import { useEffect, useMemo, useRef } from 'react'
-import * as THREE from 'three'
 import { dataUrl } from '../lib/commons.ts'
 import { cityOf, viewOf } from '../lib/city.ts'
 import type { Manifest, ManifestWork } from '../lib/manifest.ts'
 import { Look, spring, type Spring } from '../lib/motion.ts'
 import { CityScene } from './city/city3d.ts'
-import { fitWindow, ndc } from './three/screen.ts'
+import { fitWindow, mountRenderer, ndc } from './three/screen.ts'
 
 /** how near the eye comes to the work on stage, and how far back the wheel may draw it (an aerial view of the city) */
 const NEAR = 3.6
@@ -22,7 +21,7 @@ const CLIMB = 0.32
  */
 export function City(props: { manifest: Manifest; works: Map<string, ManifestWork>; current: ManifestWork | null; paused: boolean; hold: number; onPick: (id: string) => void; onPause: () => void; onHover: (id: string | null) => void }) {
   const { manifest, works, current, paused, hold, onPick, onPause, onHover } = props
-  const canvas = useRef<HTMLCanvasElement>(null)
+  const host = useRef<HTMLDivElement>(null)
   const city = useMemo(() => cityOf(manifest), [manifest])
   const scene = useRef<CityScene | null>(null)
   // the camera reads these every frame; React only writes them
@@ -31,8 +30,7 @@ export function City(props: { manifest: Manifest; works: Map<string, ManifestWor
   cb.current = { onPick, onPause, onHover }
 
   useEffect(() => {
-    const cv = canvas.current!
-    const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, powerPreference: 'high-performance' })
+    const { renderer, canvas: cv, drop } = mountRenderer(host.current!, "The city: the commons' works as the panels of its artists' buildings")
     let s: CityScene | null = null
     let alive = true
     const resize = () => {
@@ -127,7 +125,7 @@ export function City(props: { manifest: Manifest; works: Map<string, ManifestWor
       window.removeEventListener('pointermove', onPoint)
       document.removeEventListener('pointerout', onLeave)
       s?.dispose()
-      renderer.dispose()
+      drop()
       scene.current = null
     }
   }, [works, city, hold])
@@ -146,5 +144,5 @@ export function City(props: { manifest: Manifest; works: Map<string, ManifestWor
     L.paused = paused
   }, [paused])
 
-  return <canvas ref={canvas} className="gallery" aria-label="The city: the commons' works as the panels of its artists' buildings" />
+  return <div ref={host} />
 }

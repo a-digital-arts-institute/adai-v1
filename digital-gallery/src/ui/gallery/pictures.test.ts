@@ -4,7 +4,7 @@ import { Pictures } from './pictures.ts'
 let bitmaps: Array<{ width: number; height: number; close: ReturnType<typeof vi.fn> }>
 beforeEach(() => {
   bitmaps = []
-  vi.stubGlobal('fetch', vi.fn(async () => ({ blob: async () => new Blob() })))
+  vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, status: 200, blob: async () => new Blob() })))
   vi.stubGlobal('createImageBitmap', vi.fn(async (_blob, options) => {
     const bitmap = { width: 100, height: 50, close: vi.fn() }
     if (options) bitmaps.push(bitmap)
@@ -19,6 +19,20 @@ describe('pictures across navigation and transient failures', () => {
     const pictures = new Pictures(() => true)
     expect(await pictures.get('a')).toBeNull()
     expect(await pictures.get('a')).not.toBeNull()
+    pictures.dispose()
+  })
+  it('treats an error response as a failure, and retries it on a later visit', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce({ ok: false, status: 503, blob: async () => new Blob() } as Response)
+    const pictures = new Pictures(() => true)
+    expect(await pictures.get('a')).toBeNull()
+    expect(createImageBitmap).not.toHaveBeenCalled()
+    expect(await pictures.get('a')).not.toBeNull()
+    pictures.dispose()
+  })
+  it('bounds every request with a timeout signal', async () => {
+    const pictures = new Pictures(() => true)
+    await pictures.get('a')
+    expect(vi.mocked(fetch).mock.calls[0]![1]!.signal).toBeInstanceOf(AbortSignal)
     pictures.dispose()
   })
   it('closes decoded bitmaps on eviction and disposal', async () => {

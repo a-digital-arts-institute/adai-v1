@@ -5,7 +5,7 @@ import type { ManifestWork } from '../lib/manifest.ts'
 import { EYE, diveHeading, divePoint } from '../lib/vortex.ts'
 import { VortexScene } from './vortex/vortex3d.ts'
 import { WarpPass } from './vortex/warpPass.ts'
-import { fitWindow, ndc } from './three/screen.ts'
+import { fitWindow, mountRenderer, ndc } from './three/screen.ts'
 
 /** a jump farther than this many works fades through black instead of streaming everything between past the viewer */
 const FAR_WORKS = 8
@@ -48,7 +48,7 @@ export function Vortex(props: {
   onHover: (id: string | null) => void
 }) {
   const { works, order, pos, paused, hold, warp, onPortal, onArrive, onLanded, onPause, onHover } = props
-  const canvas = useRef<HTMLCanvasElement>(null)
+  const host = useRef<HTMLDivElement>(null)
   const vortex = useRef<VortexScene | null>(null)
   // the flow reads these every frame; React only writes them
   const live = useRef({ pos, paused, shownAt: performance.now(), heldFor: 0, order, warp })
@@ -56,8 +56,7 @@ export function Vortex(props: {
   cb.current = { onPortal, onArrive, onLanded, onPause, onHover }
 
   useEffect(() => {
-    const cv = canvas.current!
-    const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, powerPreference: 'high-performance' })
+    const { renderer, canvas: cv, drop } = mountRenderer(host.current!, "The vortex: the commons' works spiralling into a well in spacetime")
     const v = new VortexScene(works)
     const pass = new WarpPass()
     v.setOrder(live.current.order)
@@ -181,7 +180,7 @@ export function Vortex(props: {
       document.removeEventListener('pointerout', onLeave)
       pass.dispose()
       v.dispose()
-      renderer.dispose()
+      drop()
       vortex.current = null
     }
   }, [works, hold])
@@ -210,5 +209,5 @@ export function Vortex(props: {
     L.paused = paused
   }, [paused])
 
-  return <canvas ref={canvas} className="gallery" aria-label="The vortex: the commons' works spiralling into a well in spacetime" />
+  return <div ref={host} />
 }

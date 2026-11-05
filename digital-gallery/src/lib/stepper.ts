@@ -1,6 +1,7 @@
 // The stage: two pooled <img> slots, fed by the coil's order. Each work holds the stage for `hold` ms; the next one is
 // decoded in the idle slot before it takes the stage, so a swap never shows an empty frame. Works that fail to load
-// are skipped in the direction of travel.
+// are skipped in the direction of travel; after a run of them the stepper waits (longer each time) and tries again, so
+// an unattended screen never stops for good when the network or the image host is down for a while.
 import type { CoilOrder } from './order.ts'
 
 export interface StepperHooks {
@@ -24,8 +25,10 @@ export interface Clock {
 
 const realClock: Clock = { now: () => performance.now(), set: (fn, ms) => window.setTimeout(fn, ms), clear: (t) => window.clearTimeout(t) }
 
-/** give up on a run of broken images after this many */
+/** stop skipping a run of broken images after this many, and wait before trying again */
 const MAX_SKIPS = 8
+/** the longest wait before trying again */
+const MAX_BACKOFF = 5 * 60_000
 
 export class Stepper {
   userPaused = false
@@ -38,6 +41,8 @@ export class Stepper {
   private deadline = 0
   private remaining: number
   private alive = true
+  /** runs of broken images since a work last took the stage; while > 0 the hold timer is the wait before the next try */
+  private stalls = 0
   private warm = new Map<string, HTMLImageElement>()
   private slots: [Slot, Slot]
   private srcOf: (id: string) => string
@@ -113,11 +118,12 @@ export class Stepper {
     } catch {
       if (!this.alive || mine !== this.token) return
       this.hooks.error(id)
-      if (skips >= MAX_SKIPS) return
+      if (skips >= MAX_SKIPS) return this.backoff()
       return this.go(dir === 1 ? this.order.next() : this.order.prev(), dir, skips + 1)
     }
     if (!this.alive || mine !== this.token) return
     const out = this.onStage
+    this.stalls = 0
     this.slot = next
     this.onStage = id
     this.hooks.show(id, next)
@@ -128,9 +134,16 @@ export class Stepper {
     this.preload(this.srcOf(this.order.peek(2)))
   }
 
+  /** A run of broken images: wait, twice as long each time up to MAX_BACKOFF, then move on and try again. */
+  private backoff(): void {
+    this.remaining = Math.min(this.hold * 2 ** this.stalls, MAX_BACKOFF)
+    this.stalls++
+    this.retime()
+  }
+
   /** (Re)arm the hold timer from what is left of it, or freeze what is left while paused. */
   private retime(): void {
-    if (!this.alive || this.onStage === null) return
+    if (!this.alive || (this.onStage === null && this.stalls === 0)) return
     this.clock.clear(this.timer)
     if (this.paused) {
       if (this.deadline) this.remaining = Math.max(0, this.deadline - this.clock.now())

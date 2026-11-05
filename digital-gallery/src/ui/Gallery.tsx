@@ -1,12 +1,11 @@
 import { useEffect, useMemo, useRef } from 'react'
-import * as THREE from 'three'
 import { BAY, eyeZ, sideOf } from '../lib/hall.ts'
 import { Glide, Look, spring } from '../lib/motion.ts'
 import type { Manifest, ManifestWork } from '../lib/manifest.ts'
 import { panelFrame, settle, wheelWorks } from '../lib/panel.ts'
 import { AsciiPass } from './gallery/asciiPass.ts'
 import { Hall, type ArtistCard, type Pose } from './gallery/hall3d.ts'
-import { fitWindow, ndc } from './three/screen.ts'
+import { fitWindow, mountRenderer, ndc } from './three/screen.ts'
 
 /** a jump farther than this many bays fades through black instead of a walk past everything on the way */
 const FAR_BAYS = 6
@@ -36,7 +35,7 @@ export function Gallery(props: {
   onHover: (id: string | null) => void
 }) {
   const { manifest, works, order, pos, paused, hold, open, onOpen, onClose, onStep, onPause, onHover } = props
-  const canvas = useRef<HTMLCanvasElement>(null)
+  const host = useRef<HTMLDivElement>(null)
   const hall = useRef<Hall | null>(null)
   // the walk reads these every frame; React only writes them
   const live = useRef({ pos, paused, shownAt: performance.now(), heldFor: 0, order, open, lead: 0, wheelAt: 0 })
@@ -56,8 +55,7 @@ export function Gallery(props: {
   }, [manifest])
 
   useEffect(() => {
-    const cv = canvas.current!
-    const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, powerPreference: 'high-performance' })
+    const { renderer, canvas: cv, drop } = mountRenderer(host.current!, "The gallery: the commons' works suspended in the dark")
     const h = new Hall(works, artists)
     const pass = new AsciiPass(h.camera)
     h.setOrder(live.current.order)
@@ -147,7 +145,7 @@ export function Gallery(props: {
       document.removeEventListener('pointerout', onLeave)
       pass.dispose()
       h.dispose()
-      renderer.dispose()
+      drop()
       hall.current = null
     }
   }, [works, artists, hold])
@@ -176,5 +174,5 @@ export function Gallery(props: {
     L.paused = paused
   }, [paused])
 
-  return <canvas ref={canvas} className="gallery" aria-label="The gallery: the commons' works suspended in the dark" />
+  return <div ref={host} />
 }

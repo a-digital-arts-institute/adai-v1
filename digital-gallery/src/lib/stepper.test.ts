@@ -126,4 +126,42 @@ describe('stepper', () => {
     await flush()
     expect(log).toEqual(['show w0@0'])
   })
+  it('waits and tries again after a run of broken images, longer each time', async () => {
+    const broken = ['w0', 'w1', 'w2', 'w3', 'w4']
+    const { s, log, tick } = setup(broken)
+    s.start()
+    for (let i = 0; i < 12; i++) await flush()
+    const errors = log.length
+    expect(errors).toBe(9)
+    expect(log.every((l) => l.startsWith('error'))).toBe(true)
+    // still down at the first retry: one more run of errors, then a longer wait
+    tick(4000)
+    for (let i = 0; i < 12; i++) await flush()
+    expect(log.length).toBe(errors * 2)
+    broken.length = 0
+    tick(7999)
+    await flush()
+    expect(log.length).toBe(errors * 2)
+    tick(1)
+    await flush()
+    expect(log.at(-1)).toMatch(/^show /)
+  })
+  it('the wait before a retry freezes while paused, like a hold', async () => {
+    const broken = ['w0', 'w1', 'w2', 'w3', 'w4']
+    const { s, log, tick } = setup(broken)
+    s.start()
+    for (let i = 0; i < 12; i++) await flush()
+    broken.length = 0
+    s.setUserPaused(true)
+    tick(60000)
+    await flush()
+    expect(log.some((l) => l.startsWith('show'))).toBe(false)
+    s.setUserPaused(false)
+    tick(3999)
+    await flush()
+    expect(log.some((l) => l.startsWith('show'))).toBe(false)
+    tick(1)
+    await flush()
+    expect(log.at(-1)).toMatch(/^show /)
+  })
 })
