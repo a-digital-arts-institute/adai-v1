@@ -2,7 +2,7 @@
 // (docs/URL-INTAKE-SPEC.md §4).
 //
 // No passwords, no token paste. A contributor types an email, gets a
-// single-use link (15 min), and lands with an HMAC-signed session cookie
+// single-use link (15 min by default; INTAKE_LOGIN_LINK_MINUTES), and lands with an HMAC-signed session cookie
 // (30 days, sliding). Notification emails carry 7-day links with a
 // redirect so a phone tap logs in and lands on the right page.
 //
@@ -19,8 +19,25 @@ import { slugify } from "../utils/slug.js";
 
 export const SESSION_COOKIE = "adai_session";
 const SESSION_DAYS = 30;
-const LOGIN_LINK_MINUTES = 15;
+const LOGIN_LINK_DEFAULT_MINUTES = 15;
+const LOGIN_LINK_MAX_MINUTES = 7 * 24 * 60;
 const NOTIFY_LINK_DAYS = 7;
+
+/** Login-link lifetime in minutes: INTAKE_LOGIN_LINK_MINUTES (positive integer,
+ *  at most 7 days), else 15. Read on each call so a change needs no code. */
+export function loginLinkMinutes(): number {
+  const raw = (process.env.INTAKE_LOGIN_LINK_MINUTES ?? "").trim();
+  if (!/^\d+$/.test(raw)) return LOGIN_LINK_DEFAULT_MINUTES;
+  const n = Number(raw);
+  return n >= 1 && n <= LOGIN_LINK_MAX_MINUTES ? n : LOGIN_LINK_DEFAULT_MINUTES;
+}
+
+/** The login-link lifetime in words: "15 minutes", "2 hours", "3 days". */
+export function loginLinkHuman(): string {
+  const m = loginLinkMinutes();
+  const [n, unit] = m % 1440 === 0 ? [m / 1440, "day"] : m % 60 === 0 ? [m / 60, "hour"] : [m, "minute"];
+  return `${n} ${unit}${n === 1 ? "" : "s"}`;
+}
 
 export type LinkPurpose = "login" | "draft_ready" | "receipt";
 
@@ -132,7 +149,7 @@ export function issueMagicLink(
   args: { email: string; purpose: LinkPurpose; redirect?: string | null; ip?: string | null }
 ): IssuedLink {
   const raw = crypto.randomBytes(24).toString("base64url");
-  const ttl = args.purpose === "login" ? LOGIN_LINK_MINUTES * 60_000 : NOTIFY_LINK_DAYS * 86_400_000;
+  const ttl = args.purpose === "login" ? loginLinkMinutes() * 60_000 : NOTIFY_LINK_DAYS * 86_400_000;
   const expires_at = plusIso(ttl);
   const redirect = args.redirect && args.redirect.startsWith("/") && !args.redirect.startsWith("//") ? args.redirect : null;
   db.prepare(
