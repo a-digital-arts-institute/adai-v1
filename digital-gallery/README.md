@@ -14,9 +14,11 @@ repository, beside the server, like `worker/`.
   or `mode ›` moves on, even after clicking into the field: the field hands `v` back (A(DAI)'s
   `public/field/js-interface/embed.js`, a postMessage handshake, in this repository; it hands back only keys the field
   itself never binds).
-- **gallery**: the works suspended on cables in the dark on either side of a slow walk; real up to the work
-  on stage, fine ASCII in the distance. The view follows the mouse, sprung; the wheel walks forward (up) and back
-  (down); a far jump fades through black. Click a work to open it: the camera comes up to it and a panel beside it
+- **gallery**: the works suspended on cables in the dark on either side of a slow walk; real up to the work on stage,
+  then by distance dissolving into an ordered dither that loses tones as it recedes, which opens into an ether: soft dots
+  in the colours of the works behind them, blurring wider and dimming until they are gone. Dither and ether settle over a
+  few frames, so the walk never flickers. A near work leaving the frame fades as it goes (half out, it has begun). The
+  view follows the mouse, sprung; the wheel walks forward (up) and back (down); a far jump fades through black. Click a work to open it: the camera comes up to it and a panel beside it
   gives its words, facts and tags and its neighbourhood in the commons (makers, their other works, concepts, where it
   was shown, visually close works), from per-work files `npm run manifest` writes to `public/data/works/`.
 - **vortex**: a sheet of spacetime, ruled with a faint dithered grid, curving down into a well; you look out across it.

@@ -2,7 +2,9 @@
 // The turn's works hang in its order on either side of the walk, staggered (left, right, left …) so every work moves the
 // walk on by half a bay. A decade floats overhead where the walk first reaches a new one, and a card floats before the
 // first work of each run of one artist's works. The scene is seen through one depth-aware pass: the real picture up to
-// and a little past the focus, about a third of the way into the view, then ASCII on into the distance.
+// and a little past the focus, about a third of the way into the view; then, deeper, it dissolves into an ordered
+// dither that loses tones as it recedes, which opens into an ether of soft dots that blur and dim away into the distance,
+// each stage easing into the next.
 
 /** how far the walk moves along z for each pair of works */
 export const BAY = 4.6
@@ -19,9 +21,15 @@ export const MAX_W = 2.4
 export const MAX_H = 2.1
 /** how far ahead of the eye the work on stage sits */
 export const FOCUS = 9
-/** how far past the focus the picture stays real, then how far it takes to turn into ASCII */
-export const SHARP = 2.2
-export const SOFT = 2.6
+/** how far past the focus the picture stays sharp */
+export const SHARP = 1.8
+/** past that (all from the sharp edge): how far the sharp picture takes to dissolve into its dither, how far the dither
+ * takes to coarsen fully, where the ether starts and ends taking over, and where its dots have blurred and dimmed away */
+export const DITHER_IN = 2.6
+export const COARSE = 7
+export const ETHER_IN = 4.5
+export const ETHER_FULL = 16
+export const ETHER_GONE = 32
 /** how many bays the gallery builds behind and ahead of the eye */
 export const BEHIND = 2
 export const AHEAD = 11
@@ -46,12 +54,19 @@ export function hangSize(aspect: number): { w: number; h: number } {
   return { w, h: w / aspect }
 }
 
-/** 1 = the real picture, 0 = ASCII, by distance from the eye (the shader does the same per pixel): real up close */
+const smooth = (a: number, b: number, x: number) => {
+  const t = Math.min(1, Math.max(0, (x - a) / (b - a)))
+  return t * t * (3 - 2 * t)
+}
+
+/** 1 = the picture (sharp or dithered), 0 = the ether, by distance from the eye (as the shader does per pixel) */
 export function sharpness(d: number): number {
-  const x = (d - FOCUS - SHARP) / SOFT
-  if (x <= 0) return 1
-  if (x >= 1) return 0
-  return 1 - x * x * (3 - 2 * x)
+  return 1 - smooth(FOCUS + SHARP + ETHER_IN, FOCUS + SHARP + ETHER_FULL, d)
+}
+
+/** how far the picture has dithered down at distance d: 0 sharp, 1 its coarsest dither */
+export function coarse(d: number): number {
+  return smooth(FOCUS + SHARP, FOCUS + SHARP + COARSE, d)
 }
 
 export interface Marker {

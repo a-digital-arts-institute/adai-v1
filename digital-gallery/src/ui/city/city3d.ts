@@ -101,7 +101,10 @@ export class CityScene {
     this.city = city
     this.works = works
     this.scene.background = new THREE.Color('#000')
-    this.scene.fog = new THREE.Fog('#000', 90, city.radius * 4)
+    // fog from 90 out to four radii; a small city (a few dozen works) still keeps its far edge past the near one,
+    // or every work and label would sit in full fog, black on black
+    const far = Math.max(city.radius * 4, 150)
+    this.scene.fog = new THREE.Fog('#000', Math.min(90, far * 0.6), far)
 
     // the ground's fine grid
     const ground = new THREE.Mesh(

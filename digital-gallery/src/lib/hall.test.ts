@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { BAY, FOCUS, MAX_H, MAX_W, cardStarts, eyeZ, hangSize, inView, markersFor, sharpness, sideOf, zOf } from './hall.ts'
+import { BAY, FOCUS, MAX_H, MAX_W, cardStarts, coarse, eyeZ, hangSize, inView, markersFor, sharpness, sideOf, zOf } from './hall.ts'
 
 describe('hanging', () => {
   it('staggers the works left, right, half a bay apart, running ahead into -z', () => {
@@ -28,7 +28,7 @@ describe('hanging', () => {
 })
 
 describe('the sharp band', () => {
-  it('is the real picture up close and at the focus, ASCII far away', () => {
+  it('is the real picture up close and at the focus, the ether far away', () => {
     expect(sharpness(0.5)).toBe(1)
     expect(sharpness(FOCUS)).toBe(1)
     expect(sharpness(40)).toBe(0)
@@ -53,5 +53,20 @@ describe('decades and cards', () => {
   })
   it("floats a card at the start of each artist's run", () => {
     expect(cardStarts(['a', 'a', 'b', 'b', 'b', 'a', 'c'])).toEqual([0, 2, 5, 6])
+  })
+})
+
+describe('the way into the distance', () => {
+  it('is sharp on stage, at its coarsest dither far away', () => {
+    expect(coarse(FOCUS)).toBe(0)
+    expect(coarse(40)).toBe(1)
+  })
+  it('dithers down before the ether comes in, so the picture loses detail first', () => {
+    const d = [...Array(60).keys()].map((k) => k * 0.5).find((x) => coarse(x) > 0.3)!
+    expect(sharpness(d)).toBe(1)
+  })
+  it('coarsens monotonically', () => {
+    let last = 0
+    for (let d = 0; d < 30; d += 0.5) (expect(coarse(d)).toBeGreaterThanOrEqual(last), (last = coarse(d)))
   })
 })

@@ -3,7 +3,7 @@ import { BAY, eyeZ, sideOf } from '../lib/hall.ts'
 import { Glide, Look, spring } from '../lib/motion.ts'
 import type { Manifest, ManifestWork } from '../lib/manifest.ts'
 import { panelFrame, settle, wheelWorks } from '../lib/panel.ts'
-import { AsciiPass } from './gallery/asciiPass.ts'
+import { EtherPass } from './gallery/etherPass.ts'
 import { Hall, type ArtistCard, type Pose } from './gallery/hall3d.ts'
 import { fitWindow, mountRenderer, ndc } from './three/screen.ts'
 
@@ -14,7 +14,7 @@ const WHEEL_REST = 600
 
 /**
  * The gallery: the walk past the suspended works. The work on stage hangs at the focus, a third of the way into the view;
- * the real render runs up to it and a little past, then turns to ASCII into the distance. While it holds, the eye walks on
+ * the real render runs up to it and a little past, then dithers into an ether of fading dots. While it holds, the eye walks on
  * toward the next one, so the walk never stops unless paused; the wheel walks it forward (up) and back (down). Everything
  * the camera does is sprung, so nothing jolts: the walk, the turn toward the side the work hangs on, the look that
  * follows the mouse, and the move in to an open work. Click a work to open it: the camera comes up to it and frames it
@@ -57,7 +57,7 @@ export function Gallery(props: {
   useEffect(() => {
     const { renderer, canvas: cv, drop } = mountRenderer(host.current!, "The gallery: the commons' works suspended in the dark")
     const h = new Hall(works, artists)
-    const pass = new AsciiPass(h.camera)
+    const pass = new EtherPass(h.camera)
     h.setOrder(live.current.order)
     hall.current = h
     const resize = () => {

@@ -119,6 +119,16 @@ export class Hall {
     // the works turn a little on their cables, each in its own time
     for (const [i, it] of this.items) it.group.rotation.y = it.turn + Math.sin(t * 0.25 + i * 1.7) * 0.02
     for (const [i, sp] of this.cardObjs) sp.position.y = 3.25 + Math.sin(t * 0.9 + i * 1.7) * 0.07
+    // a work leaving the frame fades as it goes, by how much of it is still in view: half out, it has begun
+    this.camera.updateMatrixWorld()
+    for (const it of this.items.values()) {
+      it.group.updateMatrixWorld()
+      const x = Math.min(1, Math.max(0, (inFrame(it.picture, this.camera) - 0.1) / 0.45))
+      const f = x * x * (3 - 2 * x)
+      // (a picture still loading keeps its dark placeholder, faded the same)
+      it.picture.material.color.setScalar(it.picture.material.map ? f : 0.075 * f)
+      it.plaque.material.opacity = f
+    }
   }
 
   /**
@@ -201,7 +211,7 @@ export class Hall {
 
   /**
    * The label under a work: title, maker, date, set straight on the dark. Its whole quad writes depth (no alpha test),
-   * so the ASCII pass sees the label as near and never turns the dark between its letters into glyphs.
+   * so the ether pass sees the label as near and never dithers the dark between its letters.
    */
   private plaqueTexture(w: ManifestWork): THREE.CanvasTexture {
     return canvasTexture(512, 128, (ctx) => {
@@ -301,4 +311,21 @@ function clip(ctx: CanvasRenderingContext2D, s: string, max: number): string {
     else hi = mid - 1
   }
   return s.slice(0, lo) + '…'
+}
+
+const CORNERS = [-0.5, 0.5].flatMap((x) => [-0.5, 0.5].map((y) => new THREE.Vector3(x, y, 0)))
+
+/** how much of a picture (a unit plane, scaled) lies inside the camera's view: 0 none, 1 all */
+function inFrame(mesh: THREE.Object3D, camera: THREE.Camera): number {
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity
+  for (const c of CORNERS) {
+    const p = c.clone().applyMatrix4(mesh.matrixWorld).applyMatrix4(camera.matrixWorldInverse)
+    if (p.z > -0.01) return 0
+    p.applyMatrix4(camera.projectionMatrix)
+    x0 = Math.min(x0, p.x), x1 = Math.max(x1, p.x), y0 = Math.min(y0, p.y), y1 = Math.max(y1, p.y)
+  }
+  const w = x1 - x0, h = y1 - y0
+  if (w <= 0 || h <= 0) return 0
+  const ox = Math.max(0, Math.min(1, x1) - Math.max(-1, x0)), oy = Math.max(0, Math.min(1, y1) - Math.max(-1, y0))
+  return (ox * oy) / (w * h)
 }
