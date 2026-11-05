@@ -3,7 +3,7 @@ import { fieldUrl } from '../lib/field.ts'
 import type { ManifestWork } from '../lib/manifest.ts'
 
 /** the keys the field hands back to the gallery (A(DAI)'s js-interface/embed.js) */
-const KEYS = ['m']
+const KEYS = ['v']
 
 /**
  * The field: A(DAI)'s own view of the commons (its `/field` page, the Shape of Time field), shown as it is, untouched,
@@ -11,8 +11,8 @@ const KEYS = ['m']
  * the work that was on stage; from there it is A(DAI)'s to drive. The run holds while it is open, since none of the
  * gallery's own stage shows.
  *
- * A framed page keeps the keyboard once clicked, so the gallery's `m` would be lost there. On load the gallery asks the
- * field for it back, and the field (A(DAI)'s embed.js) hands `m` back as a message instead of using it; only messages
+ * A framed page keeps the keyboard once clicked, so the gallery's `v` would be lost there. On load the gallery asks the
+ * field for it back, and the field (A(DAI)'s embed.js) hands `v` back as a message instead of using it; only messages
  * from this frame, from the origin the field was loaded from, are taken.
  */
 export function Field(props: { site: string; current: ManifestWork | null; onBrowse: (b: boolean) => void; onKey: (key: string) => void }) {

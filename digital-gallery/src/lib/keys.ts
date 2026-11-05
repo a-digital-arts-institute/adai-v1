@@ -10,8 +10,8 @@ export function keyAction(key: string): Action | null {
       return 'next'
     case 'ArrowLeft':
       return 'prev'
-    case 'm':
-    case 'M':
+    case 'v':
+    case 'V':
       return 'mode'
     case 'f':
     case 'F':

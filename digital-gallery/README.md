@@ -2,7 +2,7 @@
 
 The artworks of the [A(DAI) Digital Arts Commons](https://digitalartsinstitute.io) as one endless stream, braided
 forward through time, after Time Coil (204's `mind.art`, itself a remake of mind.lol). Each work holds the stage for four
-seconds. Four views, `m` to step through them.
+seconds. Four views, `v` to step through them.
 
 A trimmed fork of A(DAI) Coil (30 Oct 2026): it keeps A(DAI)'s field and the gallery, vortex and city, and leaves out
 the coil, the tunnel, the spiral, a second (non-commons) gallery and recording. It is its own package in this
@@ -10,9 +10,10 @@ repository, beside the server, like `worker/`.
 
 - **field** (default): A(DAI)'s own view of the commons, its `/field` page (the Shape of Time field), shown as it is from
   the A(DAI) site and opened on the work that was on stage; from there A(DAI) drives. `?field=http://localhost:8080`
-  points it at a local A(DAI) (a local origin only: nothing else is framed here). The run holds while it is open; `m`
-  or `mode ›` moves on, even after clicking into the field: the field hands `m` back (A(DAI)'s
-  `public/field/js-interface/embed.js`, a postMessage handshake, in this repository).
+  points it at a local A(DAI) (a local origin only: nothing else is framed here). The run holds while it is open; `v`
+  or `mode ›` moves on, even after clicking into the field: the field hands `v` back (A(DAI)'s
+  `public/field/js-interface/embed.js`, a postMessage handshake, in this repository; it hands back only keys the field
+  itself never binds).
 - **gallery**: the works suspended on cables in the dark on either side of a slow walk; real up to the work
   on stage, fine ASCII in the distance. The view follows the mouse, sprung; the wheel walks forward (up) and back
   (down); a far jump fades through black. Click a work to open it: the camera comes up to it and a panel beside it
@@ -47,7 +48,7 @@ npm run dev         # http://localhost:5250
 
 `npm run manifest -- --db <path>` reads another database; `--site <url>` changes where the credit links (default the live site).
 
-Keys: `space` pause · `←` `→` previous/next · `m` mode · `i` credit · `f` fullscreen · `j` wormhole (vortex) · `esc` close.
+Keys: `space` pause · `←` `→` previous/next · `v` view · `i` credit · `f` fullscreen · `j` wormhole (vortex) · `esc` close.
 In the 3D views, tap the background to pause or resume and swipe left/right to step; tapping a work keeps its view's action (open, dive or select).
 URL: `?work=<artwork slug>` `?artist=<slug>` `?seed=` `?fuzz=0..1` `?hold=<seconds>` `?paused=1` `?mode=field|gallery|vortex|city` `?field=<A(DAI) url>`.
 

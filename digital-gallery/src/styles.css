@@ -291,7 +291,7 @@ body,
   }
 }
 
-/* ── touch: switch the view (no `m` key) ── */
+/* ── touch: switch the view (no `v` key) ── */
 .mode-button {
   position: fixed;
   right: max(14px, env(safe-area-inset-right));

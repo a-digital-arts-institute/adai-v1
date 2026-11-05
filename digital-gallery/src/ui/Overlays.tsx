@@ -44,7 +44,7 @@ export function Credit({ work, site, run, onClose }: { work: ManifestWork; site:
 
 const NEXT_LABEL: Record<Mode, string> = { field: 'Switch to the gallery', gallery: 'Switch to the vortex', vortex: 'Switch to the city', city: 'Switch to the A(DAI) field' }
 
-/** Touch screens have no `m` key: this button steps through the A(DAI) field, the gallery, the vortex and the city. */
+/** Touch screens have no `v` key: this button steps through the A(DAI) field, the gallery, the vortex and the city. */
 export function ModeButton({ mode, onClick }: { mode: Mode; onClick: () => void }) {
   return (
     <button className="mode-button" onClick={onClick} aria-label={NEXT_LABEL[mode]}>

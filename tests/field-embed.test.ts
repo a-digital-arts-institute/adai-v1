@@ -12,10 +12,10 @@ function frame(standalone = false) {
   const window: any = { parent, addEventListener: (name: string, fn: any) => { listeners[name] = fn; } };
   if (standalone) window.parent = window;
   vm.runInNewContext(script, { window });
-  const hello = (source: any = parent, origin = 'https://gallery.example') => listeners.message?.({ source, origin, data: { adai: 'embed-hello', keys: ['m'] } });
+  const hello = (source: any = parent, origin = 'https://gallery.example', keys: unknown[] = ['v']) => listeners.message?.({ source, origin, data: { adai: 'embed-hello', keys } });
   const key = (options: any = {}) => {
     let prevented = false, stopped = false;
-    listeners.keydown?.({ key: 'm', target: {}, ...options, preventDefault: () => { prevented = true; }, stopImmediatePropagation: () => { stopped = true; } });
+    listeners.keydown?.({ key: 'v', target: {}, ...options, preventDefault: () => { prevented = true; }, stopImmediatePropagation: () => { stopped = true; } });
     return { prevented, stopped };
   };
   return { listeners, messages, hello, key };
@@ -29,8 +29,8 @@ test('the field only hands keys to its own parent after a handshake', () => {
   assert.deepEqual(f.key(), { prevented: false, stopped: false });
   f.hello();
   assert.equal(f.messages[0].data.adai, 'embed-ready');
-  assert.deepEqual(f.key({ key: 'M' }), { prevented: true, stopped: true });
-  assert.equal(f.messages[1].data.key, 'm');
+  assert.deepEqual(f.key({ key: 'V' }), { prevented: true, stopped: true });
+  assert.equal(f.messages[1].data.key, 'v');
   assert.equal(f.messages[1].origin, 'https://gallery.example');
 });
 
@@ -42,6 +42,22 @@ test('the framed field preserves typing, modified keys, and keys its parent did 
     { target: { tagName: 'SELECT' } }, { target: { isContentEditable: true } },
     { ctrlKey: true }, { metaKey: true }, { altKey: true }, { key: 'f' },
   ]) assert.deepEqual(f.key(options), { prevented: false, stopped: false });
+  assert.equal(f.messages.length, 1);
+});
+
+test('a framer can only take keys the field itself never binds', () => {
+  const f = frame();
+  const all = [...'abcdefghijklmnopqrstuvwxyz0123456789/?+=-_ '];
+  f.hello(undefined, undefined, all);
+  assert.deepEqual([...f.messages[0].data.keys], ['v']);
+  for (const key of all.filter((k) => k !== 'v')) assert.deepEqual(f.key({ key }), { prevented: false, stopped: false });
+  assert.equal(f.messages.length, 1);
+});
+
+test('a keydown without a key (autofill) is ignored, not thrown on', () => {
+  const f = frame();
+  f.hello();
+  for (const key of [undefined, null, 42]) assert.doesNotThrow(() => f.key({ key }));
   assert.equal(f.messages.length, 1);
 });
 

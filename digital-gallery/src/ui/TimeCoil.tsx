@@ -204,7 +204,7 @@ export function TimeCoil({ manifest, settings }: { manifest: Manifest; settings:
       }}
     >
       {mode === 'field' ? (
-        <Field site={manifest.site} current={state.current} onBrowse={browse} onKey={(k) => k === 'm' && act.current('mode')} />
+        <Field site={manifest.site} current={state.current} onBrowse={browse} onKey={(k) => k === 'v' && act.current('mode')} />
       ) : (
         <>
           {mode === 'gallery' ? (
