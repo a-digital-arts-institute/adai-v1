@@ -20,7 +20,9 @@ repository, beside the server, like `worker/`.
   few frames, so the walk never flickers. A near work leaving the frame fades as it goes (half out, it has begun). The
   view follows the mouse, sprung; the wheel walks forward (up) and back (down); a far jump fades through black. Click a work to open it: the camera comes up to it and a panel beside it
   gives its words, facts and tags and its neighbourhood in the commons (makers, their other works, concepts, where it
-  was shown, visually close works), from per-work files `npm run manifest` writes to `public/data/works/`.
+  was shown, visually close works), from per-work files `npm run manifest` writes to `public/data/works/`. Click the
+  open work again (or ⤢ on the panel) to see it full screen, whole on black and zoomable (*Full-screen zoom* below);
+  × or a click on the black around it closes it, escape steps back.
 - **vortex**: a sheet of spacetime, ruled with a faint dithered grid, curving down into a well; you look out across it.
   The works are tiled densely on its slope along one spiral that slides on toward the throat: the work on stage lifts
   off to float in front of you, then falls down the well. The view follows the mouse too.
@@ -50,7 +52,8 @@ npm run dev         # http://localhost:5250
 
 `npm run manifest -- --db <path>` reads another database; `--site <url>` changes where the credit links (default the live site).
 
-Keys: `space` pause · `←` `→` previous/next · `v` view · `i` credit · `f` fullscreen · `j` wormhole (vortex) · `esc` close.
+Keys: `space` pause · `←` `→` previous/next · `v` view · `i` credit · `f` fullscreen · `j` wormhole (vortex) · `esc` close ·
+full screen: `+` `−` zoom, `0` whole, arrows pan.
 In the 3D views, tap the background to pause or resume and swipe left/right to step; tapping a work keeps its view's action (open, dive or select).
 URL: `?work=<artwork slug>` `?artist=<slug>` `?seed=` `?fuzz=0..1` `?hold=<seconds>` `?paused=1` `?mode=field|gallery|vortex|city` `?field=<A(DAI) url>`.
 
@@ -67,3 +70,11 @@ Works without a readable date stay off (95 of 3,595 at the first build).
 
 Code and data follow A(DAI)'s layers: the graph is CC BY-SA 4.0; the artwork images are not licensed by it and stay
 with the artists and other rights holders. Images load from A(DAI)'s own mirror; nothing is copied here.
+
+**Full-screen zoom** (`src/ui/zoomer.js`, from the AWO coil). In the full-screen work, the wheel or a pinch zooms about
+the pointer, on and on, until one pixel of the picture is 48 px across (from 3 px a pixel they show square, not
+smeared); a drag pans; a click on the picture at its whole goes three times in; a double click, `0`, escape or a click
+on the black returns to the whole; `+` `-` zoom and the arrow keys pan while zoomed. Zoomed in, an overview in the
+bottom-left corner shows the whole picture with the part in view framed, the zoom (and how many screen px a picture
+pixel spans), and "whole"; a click or drag on it moves the view. The picture is A(DAI)'s mirror copy: deeper than that
+there is no more detail, only bigger pixels.

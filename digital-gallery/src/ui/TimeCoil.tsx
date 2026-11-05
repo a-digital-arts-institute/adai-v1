@@ -14,6 +14,7 @@ import { Timeline } from './Timeline.tsx'
 import { Vortex } from './Vortex.tsx'
 import { City } from './City.tsx'
 import { WorkPanel } from './WorkPanel.tsx'
+import { PictureFull } from './PictureFull.tsx'
 import { panelFrame } from '../lib/panel.ts'
 import { wormholeExit } from '../lib/vortex.ts'
 
@@ -52,6 +53,8 @@ export function TimeCoil({ manifest, settings }: { manifest: Manifest; settings:
   useEffect(() => setHover(null), [mode])
   // the work open for a closer look in the gallery, if any
   const [open, setOpen] = useState<string | null>(null)
+  // the open work shown full screen
+  const [full, setFull] = useState<string | null>(null)
   // jumps into the vortex's wormhole: how many so far, and where the latest lets out
   const [warp, setWarp] = useState<{ n: number; to: string | null }>({ n: 0, to: null })
   // the line shown on the way down a wormhole
@@ -103,8 +106,10 @@ export function TimeCoil({ manifest, settings }: { manifest: Manifest; settings:
     else if (action === 'next') s.advance()
     else if (action === 'prev') s.back()
     else if (action === 'fullscreen') void (document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()).catch(() => undefined)
-    else if (action === 'mode') (s.setHeld(false), setOpen(null), setDiving(false), setMode(nextMode))
+    else if (action === 'mode') (s.setHeld(false), setOpen(null), setFull(null), setDiving(false), setMode(nextMode))
     else if (action === 'credit') setCredit((c) => !c)
+    // escape steps back one layer at a time: the full-screen picture, then the open work
+    else if (action === 'close' && full) setFull(null)
     else if (action === 'close') (setCredit(false), s.setHeld(browsingNow.current || diving), setOpen(null))
     else if (action === 'warp' && mode === 'vortex' && turnOrder.length > 1) {
       const to = turnOrder[wormholeExit(state.pos, turnOrder.length, Math.random())]!
@@ -159,6 +164,8 @@ export function TimeCoil({ manifest, settings }: { manifest: Manifest; settings:
     const s = stepper.current
     if (!s) return
     setTouched(true)
+    // a second click on the open work shows it full screen
+    if (open === id) return setFull(id)
     if (state.current?.id !== id) s.jump(id)
     s.setHeld(true)
     setOpen(id)
@@ -184,7 +191,7 @@ export function TimeCoil({ manifest, settings }: { manifest: Manifest; settings:
         suppressClick.current = false
         // The canvases pick works on a tap; touch swipes still step through the run.
         const target = e.target as Element
-        const excluded = target.closest('button, a, .credit, .timeline, .work-panel') || (e.pointerType !== 'touch' && target.closest('.gallery'))
+        const excluded = target.closest('button, a, .credit, .timeline, .work-panel, .picture-full') || (e.pointerType !== 'touch' && target.closest('.gallery'))
         stroke.current = excluded || !e.isPrimary ? null : { x: e.clientX, y: e.clientY, t: performance.now() }
       }}
       onPointerUp={(e) => {
@@ -261,8 +268,9 @@ export function TimeCoil({ manifest, settings }: { manifest: Manifest; settings:
             </p>
           )}
           {mode === 'gallery' && open && works.get(open) && (
-            <WorkPanel key={open} work={works.get(open)!} index={indexOf.get(open)!} site={manifest.site} frame={panelFrame(view.W, view.H)} onOpen={openWork} onClose={closeWork} />
+            <WorkPanel key={open} work={works.get(open)!} index={indexOf.get(open)!} site={manifest.site} frame={panelFrame(view.W, view.H)} onOpen={openWork} onClose={closeWork} onFull={() => setFull(open)} />
           )}
+          {mode === 'gallery' && full && works.get(full) && <PictureFull key={`full:${full}`} work={works.get(full)!} onClose={() => setFull(null)} />}
           {!open && (hover ? works.get(hover) : state.current) && (
             <div className="gallery-label" data-hovered={hover || undefined}>
               {workLabel((hover ? works.get(hover) : state.current)!)}

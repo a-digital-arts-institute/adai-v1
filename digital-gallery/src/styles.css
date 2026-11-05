@@ -414,6 +414,10 @@ body,
   cursor: pointer;
   transition: background var(--t-short) var(--ease), border-color var(--t-short) var(--ease);
 }
+.work-panel-actions {
+  display: inline-flex;
+  gap: 8px;
+}
 .work-panel-close:hover {
   background: rgb(232 225 211 / 0.1);
   border-color: rgb(232 225 211 / 0.4);
@@ -757,4 +761,168 @@ body,
 .field-next:focus-visible {
   color: var(--cream);
   opacity: 1;
+}
+
+/* ── the open work full screen: whole on black, zoomable (zoomer.js); from the AWO coil ── */
+.picture-full {
+  position: fixed;
+  inset: 0;
+  z-index: 600;
+  background: #000;
+  animation: picture-full-in var(--t-short) var(--ease) both;
+}
+.picture-full .picture-full-caption,
+.picture-full .picture-full-close {
+  z-index: 2;
+  transition: opacity var(--t-short) var(--ease);
+}
+.picture-full.zm-in .picture-full-caption {
+  opacity: 0.35;
+}
+
+/* ── deep zoom (zoomer.js): the picture on a stage that scales and slides; the overview bottom left ── */
+.zm {
+  overflow: hidden;
+  touch-action: none;
+  cursor: zoom-out;
+}
+.zm-stage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  cursor: zoom-in;
+}
+.zm.zm-in,
+.zm.zm-in .zm-stage {
+  cursor: grab;
+}
+.zm.zm-dragging,
+.zm.zm-dragging .zm-stage {
+  cursor: grabbing;
+}
+.zm-stage img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.zm-stage .zm-hi {
+  opacity: 0;
+  transition: opacity var(--t-short) var(--ease);
+}
+.zm-stage .zm-hi[data-shown] {
+  opacity: 1;
+}
+.zm-crisp .zm-stage img {
+  image-rendering: pixelated;
+}
+.zm-map {
+  position: absolute;
+  left: max(24px, env(safe-area-inset-left));
+  bottom: 56px;
+  z-index: 3;
+  display: grid;
+  gap: 7px;
+  justify-items: start;
+  padding: 7px;
+  background: rgb(0 0 0 / 0.62);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--t-short) var(--ease);
+}
+.zm-map[data-shown] {
+  opacity: 1;
+  pointer-events: auto;
+}
+.zm-pic {
+  position: relative;
+  overflow: hidden;
+  line-height: 0;
+  border: 1px solid rgb(232 225 211 / 0.3);
+  background: #000;
+  box-shadow: 0 4px 24px rgb(0 0 0 / 0.6);
+  cursor: crosshair;
+  touch-action: none;
+}
+.zm-pic img {
+  display: block;
+  max-width: 180px;
+  max-height: 140px;
+  user-select: none;
+}
+.zm-frame {
+  position: absolute;
+  border: 1.5px solid var(--orange);
+  box-shadow: 0 0 0 999px rgb(0 0 0 / 0.55);
+  pointer-events: none;
+}
+.zm-readout {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font: 500 10px/1 ui-monospace, Menlo, monospace;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  text-shadow: 0 1px 6px #000;
+}
+.zm-whole {
+  padding: 3px 7px;
+  border: 1px solid rgb(232 225 211 / 0.25);
+  background: rgb(0 0 0 / 0.5);
+  color: var(--cream);
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+.zm-whole:hover {
+  border-color: var(--cream);
+}
+.picture-full-caption {
+  position: absolute;
+  left: 24px;
+  right: 80px;
+  bottom: 16px;
+  margin: 0;
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+  color: var(--cream);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.picture-full-caption .t {
+  font: italic 400 20px/1.2 var(--title);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.picture-full-caption .m {
+  color: var(--muted);
+  font: 400 12px/1 ui-monospace, Menlo, monospace;
+}
+.picture-full-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgb(232 225 211 / 0.25);
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.4);
+  color: var(--cream);
+  font: 300 20px/1 var(--ui);
+  cursor: pointer;
+}
+.picture-full-close:hover {
+  background: rgb(232 225 211 / 0.12);
+}
+@keyframes picture-full-in {
+  from {
+    opacity: 0;
+  }
 }

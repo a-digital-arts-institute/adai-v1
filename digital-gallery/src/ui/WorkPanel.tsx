@@ -10,10 +10,11 @@ const short = (s: string, n = 24) => (s.length > n ? s.slice(0, n - 1) + '…' :
 /**
  * The open work, up close: the panel beside it (under it on a tall screen). Its title, makers and date at once, from
  * the manifest; its words, facts, tags and neighbourhood in the commons as soon as its detail file arrives. Works in
- * the neighbourhood that hang here open in place; everything else opens in A(DAI).
+ * the neighbourhood that hang here open in place; everything else opens in A(DAI). ⤢ (or a click on the open work)
+ * shows the picture full screen.
  */
-export function WorkPanel(props: { work: ManifestWork; index: number; site: string; frame: PanelFrame; onOpen: (id: string) => void; onClose: () => void }) {
-  const { work, index, site, frame, onOpen, onClose } = props
+export function WorkPanel(props: { work: ManifestWork; index: number; site: string; frame: PanelFrame; onOpen: (id: string) => void; onClose: () => void; onFull: () => void }) {
+  const { work, index, site, frame, onOpen, onClose, onFull } = props
   const [detail, setDetail] = useState<Detail | null>(null)
 
   useEffect(() => {
@@ -36,9 +37,14 @@ export function WorkPanel(props: { work: ManifestWork; index: number; site: stri
           {work.source}
           {kind ? ` · ${kind}` : ''}
         </p>
-        <button className="work-panel-close" onClick={onClose} aria-label="Close">
-          ×
-        </button>
+        <span className="work-panel-actions">
+          <button className="work-panel-close" onClick={onFull} aria-label="Show the work full screen" title="Full screen (or click the work)">
+            ⤢
+          </button>
+          <button className="work-panel-close" onClick={onClose} aria-label="Close">
+            ×
+          </button>
+        </span>
       </header>
       <h1>{work.title}</h1>
       <p className="by">
